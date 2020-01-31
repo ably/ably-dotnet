@@ -20,8 +20,17 @@ namespace IO.Ably
         /// </summary>
         public CipherParams CipherParams { get; private set; }
 
+        /// <summary>
+        /// Params allows custom parameters to be passed to the server when attaching the channel.
+        /// In that list are 'delta' and 'rewind'. For more information about channel params visit
+        /// https://www.ably.io/documentation/realtime/channel-params.
+        /// </summary>
         public ChannelParams Params = new ChannelParams();
 
+        /// <summary>
+        /// Channel Modes like Params are passed to the server when attaching the channel.
+        /// They let specify how the channel will behave and what is allowed. <see cref="ChannelMode"/>.
+        /// </summary>
         public ChannelModes Modes = new ChannelModes();
 
         /// <summary>

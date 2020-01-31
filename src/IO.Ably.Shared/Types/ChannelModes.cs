@@ -3,15 +3,36 @@ using IO.Ably.Types;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Realtime channel modes.
+    /// </summary>
     public enum ChannelMode
     {
+        /// <summary>
+        /// Presence mode. Allows the attached channel to enter Presence.
+        /// </summary>
         Presence,
+
+        /// <summary>
+        /// Publish mode. Allows the messages to be published to the attached channel.
+        /// </summary>
         Publish,
+
+        /// <summary>
+        /// Subscribe mode. Allows the attached channel to subscribe to messages.
+        /// </summary>
         Subscribe,
-        PresenceSubscribe
+
+        /// <summary>
+        /// PresenceSubscribe. Allows the attached channel to subscribe to Presence updates.
+        /// </summary>
+        PresenceSubscribe,
     }
 
-    public static class ChannelModeExtensions
+    /// <summary>
+    /// Helper methods when dealing with Channel Models.
+    /// </summary>
+    internal static class ChannelModeExtensions
     {
         public static ProtocolMessage.Flag? ToFlag(this ChannelMode mode)
         {
@@ -54,23 +75,25 @@ namespace IO.Ably
         }
     }
 
+    /// <summary>
+    /// Set of Channel modes. It's used inside ChannelOptions.
+    /// </summary>
     public class ChannelModes : HashSet<ChannelMode>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelModes"/> class.
+        /// </summary>
         public ChannelModes()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelModes"/> class.
+        /// </summary>
+        /// <param name="modes">A list of modes to be populated.</param>
         public ChannelModes(IEnumerable<ChannelMode> modes)
             : base(modes)
         {
-        }
-
-        public void Add(params ChannelMode[] modes)
-        {
-            foreach (var mode in modes)
-            {
-                Add(mode);
-            }
         }
     }
 }
