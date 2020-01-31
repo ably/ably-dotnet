@@ -83,6 +83,12 @@ namespace IO.Ably.Types
             return (value.Value & (int)flag) != 0;
         }
 
+        /// <summary>
+        /// Channel params is a Dictionary&lt;string, string&gt; which is used to pass parameters to the server when
+        /// attaching a channel. Some params include `delta` and `rewind`. The server will also echo the params in the
+        /// ATTACHED message.
+        /// For more information https://www.ably.io/documentation/realtime/channel-params.
+        /// </summary>
         [JsonProperty("params")]
         public ChannelParams Params { get; set; }
 
@@ -234,6 +240,10 @@ namespace IO.Ably.Types
             return HasFlag(Flags, flag);
         }
 
+        /// <summary>
+        /// Convenience method to add <see cref="Flag"/> to the Flags property.
+        /// </summary>
+        /// <param name="flag"><see cref="Flag"/> to be added.</param>
         public void SetFlag(Flag flag)
         {
             var value = Flags.GetValueOrDefault();
@@ -241,7 +251,7 @@ namespace IO.Ably.Types
             Flags = value;
         }
 
-        public void SetModesAsFlags(IEnumerable<ChannelMode> modes)
+        internal void SetModesAsFlags(IEnumerable<ChannelMode> modes)
         {
             foreach (var mode in modes)
             {
