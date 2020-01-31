@@ -116,6 +116,33 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL4j")]
+        public async Task WhenChannelIsAlreadyAttached_AndReAttachIsForcedByChangingChannelOptions_ShouldPassAttachResumeFlagInAttachMessage(Protocol protocol)
+        {
+            var sentMessages = new List<ProtocolMessage>();
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                var optionsTransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add,
+                };
+                options.TransportFactory = optionsTransportFactory;
+            });
+
+            var channel = client.Channels.Get("Test");
+            await channel.AttachAsync();
+
+            var result = await channel.SetOptionsAsync(new ChannelOptions().WithModes(ChannelMode.Publish));
+
+            result.IsSuccess.Should().BeTrue();
+            var attachMessages = sentMessages.Where(x => x.Action == ProtocolMessage.MessageAction.Attach).ToList();
+            attachMessages.Should().HaveCount(2);
+            attachMessages.First().Flags.Should().BeNull();
+            attachMessages.Last().HasFlag(ProtocolMessage.Flag.AttachResume).Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
