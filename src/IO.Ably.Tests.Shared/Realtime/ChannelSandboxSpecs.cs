@@ -172,7 +172,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTL4j2")]
+        [Trait("spec", "RTL4k1")]
         public async Task ChannelParamsIncludedInTheAttachedMessage_ShouldBeExposedAsReadonlyOnChannel(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
