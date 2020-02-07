@@ -6,7 +6,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {
-        public const string EncodingNameStr = "cipher";
+        private const string EncodingNameStr = "cipher";
 
         public override string EncodingName => EncodingNameStr;
 
