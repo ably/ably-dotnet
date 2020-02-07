@@ -23,11 +23,9 @@ namespace IO.Ably.MessageEncoders
             // Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = (payload.Data as byte[]).GetText(),
-                    Encoding = RemoveCurrentEncodingPart(payload),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    (payload.Data as byte[]).GetText(),
+                    RemoveCurrentEncodingPart(payload)));
             }
 
             return Result.Ok(new ProcessedPayload(payload));
