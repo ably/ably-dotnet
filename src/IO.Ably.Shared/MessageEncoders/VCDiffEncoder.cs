@@ -45,11 +45,9 @@ namespace IO.Ably.MessageEncoders
                 var nextEncoding = RemoveCurrentEncodingPart(payload);
 
                 context.PreviousPayload = new PayloadCache(result.AsByteArray(), nextEncoding);
-                return Result.Ok(new ProcessedPayload
-                {
-                    Data = result.AsByteArray(),
-                    Encoding = RemoveCurrentEncodingPart(payload),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    result.AsByteArray(),
+                    RemoveCurrentEncodingPart(payload)));
             }
             catch (Exception ex)
             {

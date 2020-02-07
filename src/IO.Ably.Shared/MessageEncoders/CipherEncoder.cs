@@ -42,11 +42,9 @@ namespace IO.Ably.MessageEncoders
                     return Result.Fail<ProcessedPayload>(new ErrorInfo("Expected data to be byte[] but received " + payload.Data.GetType()));
                 }
 
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = payload.Data = cipher.Decrypt(payload.Data as byte[]),
-                    Encoding = RemoveCurrentEncodingPart(payload),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    payload.Data = cipher.Decrypt(payload.Data as byte[]),
+                    RemoveCurrentEncodingPart(payload)));
             }
             catch (AblyException ex)
             {
@@ -92,11 +90,9 @@ namespace IO.Ably.MessageEncoders
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
-            var result = new ProcessedPayload()
-            {
-                Data = cipher.Encrypt(currentPayload.Data as byte[]),
-                Encoding = AddEncoding(currentPayload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}"),
-            };
+            var result = new ProcessedPayload(
+                cipher.Encrypt(currentPayload.Data as byte[]),
+                AddEncoding(currentPayload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}"));
 
             return Result.Ok(result);
         }
