@@ -7,9 +7,14 @@ namespace IO.Ably.Realtime
     {
         public static LastMessageIds Empty = new LastMessageIds();
 
-        public string LastMessageId { get; }
+        public string LastMessageId { get; internal set; } // To make testing easier.
 
         public string ProtocolMessageChannelSerial { get; }
+
+        public override string ToString()
+        {
+            return $"LastMessageId: {LastMessageId}. ChannelSerial: {ProtocolMessageChannelSerial}.";
+        }
 
         private LastMessageIds()
         {
