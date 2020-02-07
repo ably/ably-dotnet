@@ -172,6 +172,23 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL4j2")]
+        public async Task ChannelParamsIncludedInTheAttachedMessage_ShouldBeExposedAsReadonlyOnChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            var options = new ChannelOptions(
+                channelParams: new ChannelParams() { { "delta", "vcdiff" }, { "martin", "no chance" } });
+            var channel = client.Channels.Get("Test", options);
+
+            await channel.AttachAsync();
+
+            channel.Params["delta"].Should().Be("vcdiff");
+            channel.Params.Should().HaveCount(1);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
