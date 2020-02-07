@@ -82,13 +82,15 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         public async Task DeltaSupport_ShouldWork(Protocol protocol)
         {
             string testName = "delta-channel".AddRandomSuffix();
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
             var realtime = await GetRealtimeClient(protocol);
             var channel = realtime.Channels.Get("[?delta=vcdiff]" + testName);
 
             var received = new List<Message>();
-            channel.Subscribe(message => { received.Add(message); });
+            channel.Subscribe(message =>
+            {
+                received.Add(message);
+                Output.WriteLine(((RealtimeChannel)channel).LastSuccessfulMessageIds.ToString());
+            });
             channel.Error += (sender, args) =>
                 throw new Exception(args.Reason.Message);
             /* subscribe */
@@ -115,6 +117,109 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 var original = testData[i];
                 Assert.Equal(data, original);
             }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL21")]
+        public async Task ChannelWithDeltasEnabled_ShouldSupportProcessingMultipleMessagesInSamePayload(Protocol protocol)
+        {
+            string testName = "delta-channel".AddRandomSuffix();
+            var receivedMessages = new List<ProtocolMessage>();
+            var realtime = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                var optionsTransportFactory = new TestTransportFactory()
+                {
+                    BeforeDataProcessed = receivedMessages.Add,
+                };
+                options.TransportFactory = optionsTransportFactory;
+            });
+            var channel = realtime.Channels.Get("[?delta=vcdiff]" + testName);
+
+            var waitForDone = new TaskCompletionAwaiter();
+            var received = new List<Message>();
+            int count = 0;
+            channel.Subscribe(message =>
+            {
+                count++;
+                received.Add(message);
+                if (count == 3)
+                {
+                    waitForDone.Done();
+                }
+            });
+
+            channel.Error += (sender, args) =>
+                throw new Exception(args.Reason.Message);
+            /* subscribe */
+            await channel.AttachAsync();
+
+            var testData = new[]
+            {
+                new TestData("bar", 1, "active"),
+                new TestData("bar", 2, "active"),
+                new TestData("bar", 3, "inactive"),
+            };
+
+            await channel.PublishAsync(testData.Select(x => new Message(x.Count.ToString(), x)));
+            await waitForDone;
+
+            for (var i = 0; i < received.Count; i++)
+            {
+                var message = received[i];
+                var data = ((JToken)message.Data).ToObject<TestData>();
+                var original = testData[i];
+                Assert.Equal(data, original);
+            }
+
+            receivedMessages
+                .Where(x => x.Action == ProtocolMessage.MessageAction.Message)
+                .Should().HaveCount(1);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL20")]
+        public async Task ChannelWithDeltaEncoding_WhenStoredLastMessageIdDoesNotMatchWithWhatServerThinks_ShouldReattachChannel(Protocol protocol)
+        {
+            string testName = "delta-channel".AddRandomSuffix();
+            var realtime = await GetRealtimeClient(protocol);
+            var channel = realtime.Channels.Get("[?delta=vcdiff]" + testName);
+            await channel.AttachAsync();
+
+            var changeStates = new List<ChannelStateChange>();
+            channel.On(changeStates.Add);
+            int count = 0;
+            channel.Subscribe(message =>
+            {
+                if (count == 0)
+                {
+                    ((RealtimeChannel)channel).LastSuccessfulMessageIds.LastMessageId = "override";
+                }
+
+                count++;
+            });
+
+            var testData = new[]
+            {
+                new TestData("bar", 1, "active"),
+                new TestData("bar", 2, "active"),
+                new TestData("bar", 3, "inactive"),
+            };
+
+            foreach (var data in testData)
+            {
+                await channel.PublishAsync(data.Count.ToString(), data);
+                await Task.Delay(500);
+            }
+
+            // The first message is sent twice because we messed up with lastmessageIds
+            await new ConditionalAwaiter(() => count == 3, () => $"Count is {count}.");
+
+            // Should transition to attaching
+            changeStates.First().Current.Should().Be(ChannelState.Attaching);
+            changeStates.First().Error.Code.Should().Be(40018);
+
         }
 
         [Theory]
