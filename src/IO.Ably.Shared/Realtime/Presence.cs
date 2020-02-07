@@ -475,8 +475,8 @@ namespace IO.Ably.Realtime
                         91001,
                         HttpStatusCode.BadRequest);
                     Logger.Warning(error.ToString());
-                    ActionUtils.SafeExecute(() => callback?.Invoke(true, error), Logger, nameof(UpdatePresence));
-                    break;
+                    ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
+                    return;
             }
 
             switch (_channel.State)
@@ -500,8 +500,8 @@ namespace IO.Ably.Realtime
                 default:
                     var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", 91001);
                     Logger.Warning(error.ToString());
-                    ActionUtils.SafeExecute(() => callback?.Invoke(true, error), Logger, nameof(UpdatePresence));
-                    break;
+                    ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
+                    return;
             }
         }
 
