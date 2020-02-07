@@ -5,7 +5,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal class VCDiffEncoder : MessageEncoder
     {
-        public const string EncodingNameStr = "vcdiff";
+        private const string EncodingNameStr = "vcdiff";
 
         public override string EncodingName => EncodingNameStr;
 

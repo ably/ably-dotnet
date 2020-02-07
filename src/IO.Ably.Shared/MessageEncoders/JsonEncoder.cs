@@ -9,7 +9,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
-        public const string EncodingNameStr = "json";
+        private const string EncodingNameStr = "json";
 
         public override string EncodingName => EncodingNameStr;
 

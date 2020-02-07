@@ -4,7 +4,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Utf8Encoder : MessageEncoder
     {
-        public const string EncodingNameStr = "utf-8";
+        private const string EncodingNameStr = "utf-8";
 
         public override string EncodingName => EncodingNameStr;
 
