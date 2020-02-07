@@ -1419,6 +1419,19 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL16")]
+            public async Task SetChannelOptions_ShouldUpdateStoreOptionsOnTheChannel()
+            {
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
+                var newOptions = new ChannelOptions(true);
+                channel.Options.Should().NotBeSameAs(newOptions);
+
+                channel.SetOptions(newOptions);
+
+                channel.Options.Should().BeSameAs(newOptions);
+            }
+
+            [Fact]
             [Trait("spec", "RTL17")]
             public async Task WhenMessageReceivedWhileChannelIsAttaching_ShouldIgnoreMessage()
             {
