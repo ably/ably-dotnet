@@ -9,11 +9,11 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.DotNetCore20.Realtime
 {
-    [Trait("spec", "RSL6d")]
+    [Trait("spec", "RTL19")]
     public class DeltaLastMessageSpecs : AblyRealtimeSpecs
     {
         [Fact]
-        [Trait("spec", "RSL6d2")]
+        [Trait("spec", "RTL19b")]
         public async Task WithStringMessage_ShouldKeepItWithoutProcessing()
         {
             var (realtime, c) = await GetClientAndChannel();
@@ -35,7 +35,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RSL6d2")]
+        [Trait("spec", "RTL19b")]
         public async Task WithBinaryMessage_ShouldKeepItPreviousPayloadInBinaryForm()
         {
             var (realtime, c) = await GetClientAndChannel();
@@ -57,7 +57,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RSL6d1")]
+        [Trait("spec", "RTL19a")]
         public async Task WithBase64Message_ShouldKeepBase64DecodedPayload()
         {
             var (realtime, c) = await GetClientAndChannel();

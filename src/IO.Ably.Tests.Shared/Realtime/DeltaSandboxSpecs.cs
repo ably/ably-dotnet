@@ -119,16 +119,16 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSL6c")]
-        [Trait("spec", "RSL6c1")]
+        [Trait("spec", "RTL18")]
+        [Trait("spec", "RTL18c")]
         public async Task WhenDeltaDecodeFail_ShouldSetStateToAttachingLogTheErrorAndDiscardTheMessage(Protocol protocol)
         {
-            string channelName = "[?delta=vcdiff]delta-channel".AddRandomSuffix();
+            string channelName = "delta-channel".AddRandomSuffix();
             var testSink = new TestLoggerSink();
             using (((DefaultLogger.InternalLogger)Logger).SetTempDestination(testSink))
             {
                 var realtime = await GetRealtimeClient(protocol);
-                var channel = realtime.Channels.Get(channelName);
+                var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams() { { "delta", "vcdiff" } }));
 
                 var received = new List<Message>();
                 channel.Subscribe(message => { received.Add(message); });
@@ -153,12 +153,12 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
                 await channel.WaitForState(ChannelState.Attached);
 
-                await new ConditionalAwaiter(() => received.Count() == 2);
+                await new ConditionalAwaiter(() => received.Count() == 2, () => "Recevied: " + received.Count());
 
                 received.Should().HaveCount(2);
                 received[1].Data.Should().Be("second message");
 
-                // RSL6c2 - we make sure the message is not emitted to subscribers
+                // RTL17 - we make sure the message is not emitted to subscribers
                 received.Should().NotContain(x => x.Id == "badMessage");
 
                 bool hasVcdiffErrorMessage = testSink.Messages.Any(x => x.StartsWith(LogLevel.Error.ToString())
