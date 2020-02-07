@@ -1081,6 +1081,24 @@ namespace IO.Ably.Tests.Realtime
                     protocolMessage.Params.ShouldBeEquivalentTo(channelParams);
                 }
 
+                [Fact]
+                [Trait("spec", "RTL4l")]
+                public async Task SendsChannelModesWithAttachMessage()
+                {
+                    var client = await GetConnectedClient();
+                    var modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish);
+                    var channelOptions = new ChannelOptions(modes: modes);
+                    var channel = await GetTestChannel(client, channelOptions: channelOptions);
+                    channel.Attach();
+
+                    channel.WaitForState(ChannelState.Attaching);
+                    await client.ProcessCommands();
+
+                    var protocolMessage = LastCreatedTransport.LastMessageSend;
+                    protocolMessage.HasFlag(ProtocolMessage.Flag.Presence).Should().BeTrue();
+                    protocolMessage.HasFlag(ProtocolMessage.Flag.Publish).Should().BeTrue();
+                }
+
                 public ClientIdSpecs(ITestOutputHelper output)
                     : base(output)
                 {
