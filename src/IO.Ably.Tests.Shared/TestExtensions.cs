@@ -57,7 +57,7 @@ namespace IO.Ably.Tests
         }
 
         /// <summary>
-        /// Figure out a way to yield the current thread so a command can be processed
+        /// This method yields the current thread and waits until the whole command queue is processed.
         /// </summary>
         /// <returns></returns>
         public static async Task ProcessCommands(this IRealtimeClient client)
