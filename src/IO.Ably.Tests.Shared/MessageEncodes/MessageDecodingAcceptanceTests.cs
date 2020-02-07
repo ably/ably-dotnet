@@ -62,7 +62,7 @@ namespace IO.Ably.AcceptanceTests
                         GenerateKey(Crypto.DefaultKeylength),
                         Encryption.CipherMode.CBC));
 
-                var context = channelOptions.ToEncodingDecodingContext();
+                var context = channelOptions.ToDecodingContext();
                 var result = MessageHandler.DecodePayload(payload, context);
 
                 result.IsFailure.Should().BeTrue();

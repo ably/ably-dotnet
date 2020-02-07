@@ -324,7 +324,7 @@ namespace IO.Ably.MessageEncoders
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
-                var context = request.ChannelOptions.ToEncodingDecodingContext();
+                var context = request.ChannelOptions.ToDecodingContext();
                 typedResult.Items.AddRange(ParseMessagesResponse(response, context));
             }
 
@@ -337,7 +337,7 @@ namespace IO.Ably.MessageEncoders
             if (typeof(T) == typeof(PresenceMessage))
             {
                 var typedResult = result as PaginatedResult<PresenceMessage>;
-                var context = request.ChannelOptions.ToEncodingDecodingContext();
+                var context = request.ChannelOptions.ToDecodingContext();
                 typedResult.Items.AddRange(ParsePresenceMessages(response, context));
             }
 
@@ -466,7 +466,7 @@ namespace IO.Ably.MessageEncoders
             IEnumerable<IMessage> messages,
             ChannelOptions options)
         {
-            var context = options.ToEncodingDecodingContext();
+            var context = options.ToDecodingContext();
             return DecodeMessages(protocolMessage, messages, context);
         }
 
@@ -547,7 +547,7 @@ namespace IO.Ably.MessageEncoders
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null)
             where T : IMessage
         {
-            var context = options.ToEncodingDecodingContext();
+            var context = options.ToDecodingContext();
             var result = DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
             if (result.IsFailure)
             {
@@ -560,7 +560,7 @@ namespace IO.Ably.MessageEncoders
         internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null)
             where T : IMessage
         {
-            var context = options.ToEncodingDecodingContext();
+            var context = options.ToDecodingContext();
             foreach (var encoded in encodedArray)
             {
                 DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
