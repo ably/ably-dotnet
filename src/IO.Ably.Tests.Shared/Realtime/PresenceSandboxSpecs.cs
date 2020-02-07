@@ -1720,14 +1720,11 @@ namespace IO.Ably.Tests.Realtime
                         await client.WaitForState(state);
 
                         var didError = false;
-                        try
-                        {
-                            channel.Presence.Enter(client.Connection.State.ToString());
-                        }
-                        catch (AblyException e)
+                        var result = await channel.Presence.EnterAsync(client.Connection.State.ToString());
+                        if (result.IsFailure)
                         {
                             didError = true;
-                            e.ErrorInfo.Code.Should().Be(91001);
+                            result.Error.Code.Should().Be(91001);
                             errCount++;
                         }
 
@@ -1780,14 +1777,11 @@ namespace IO.Ably.Tests.Realtime
                         await channel.WaitForState(state);
 
                         var didError = false;
-                        try
-                        {
-                            channel.Presence.Enter(client.Connection.State.ToString());
-                        }
-                        catch (AblyException e)
+                        var result = await channel.Presence.EnterAsync(client.Connection.State.ToString());
+                        if (result.IsFailure)
                         {
                             didError = true;
-                            e.ErrorInfo.Code.Should().Be(91001);
+                            result.Error.Code.Should().Be(91001);
                             errCount++;
                         }
 

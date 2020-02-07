@@ -98,7 +98,11 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
             {
                 // Arrange
-                var client = GetRealtimeClient();
+                var client = GetRealtimeClient(options =>
+                {
+                    options.RealtimeRequestTimeout = TimeSpan.FromSeconds(60);
+                    options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(60);
+                });
 
                 await client.WaitForState(ConnectionState.Connecting);
 
