@@ -1380,7 +1380,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
-            [Trait("spec", "RTL16")]
+            [Trait("spec", "RTL17")]
             public async Task WhenMessageReceivedWhileChannelIsAttaching_ShouldIgnoreMessage()
             {
                 var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
