@@ -49,12 +49,13 @@ namespace IO.Ably.Realtime
 
                     if (protocolMessage.Flags.HasValue)
                     {
-                        channel.AttachedModes = new ChannelModes(((ProtocolMessage.Flag)protocolMessage.Flags.Value).FromFlag());
+                        var modes = new ChannelModes(((ProtocolMessage.Flag)protocolMessage.Flags.Value).FromFlag());
+                        channel.Modes = new ReadOnlyChannelModes(modes.ToList());
                     }
 
                     if (protocolMessage.Params != null)
                     {
-                        channel.AttachedParams = protocolMessage.Params;
+                        channel.Params = new ReadOnlyChannelParams(protocolMessage.Params);
                     }
 
                     if (channel.State == ChannelState.Attached)
