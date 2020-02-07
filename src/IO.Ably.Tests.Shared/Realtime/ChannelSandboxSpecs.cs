@@ -189,6 +189,23 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL4m")]
+        public async Task ChannelModesIncludedInTheAttachedMessage_ShouldBeExposedAsReadonlyOnChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            var options = new ChannelOptions(
+                modes: new ChannelModes(ChannelMode.Presence, ChannelMode.Subscribe));
+            var channel = client.Channels.Get("Test", options);
+
+            await channel.AttachAsync();
+
+            channel.Modes.Should().HaveCount(2);
+            channel.Modes.Should().BeEquivalentTo(ChannelMode.Presence, ChannelMode.Subscribe);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
