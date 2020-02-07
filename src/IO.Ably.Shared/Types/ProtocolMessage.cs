@@ -60,6 +60,8 @@ namespace IO.Ably.Types
             HasLocalPresence = 1 << 3,
             Transient = 1 << 4,
             AttachResume = 1 << 5,
+
+            // Channel modes
             Presence = 1 << 16,
             Publish = 1 << 17,
             Subscribe = 1 << 18,
@@ -69,7 +71,7 @@ namespace IO.Ably.Types
         }
 
         /// <summary>
-        /// Helper method to check for the existance of a flag in an integer.
+        /// Helper method to check for the existence of a flag in an integer.
         /// </summary>
         /// <param name="value">int value storing the flag.</param>
         /// <param name="flag">flag we check for.</param>
