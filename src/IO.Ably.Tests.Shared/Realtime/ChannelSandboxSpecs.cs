@@ -206,6 +206,35 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL16a")]
+        public async Task SetOptions_WithDifferentModesOrParams_ShouldReAttachChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channelParams = new ChannelParams() { { "delta", "vcdiff" } };
+            var options = new ChannelOptions(channelParams: channelParams);
+            var channel = client.Channels.Get("test", options);
+            await channel.AttachAsync();
+            channel.Params.Should().ContainKey("delta");
+            var states = new List<(ChannelState, ProtocolMessage)>();
+            channel.On(x =>
+            {
+                Output.WriteLine(x.ToString());
+                states.Add((x.Current, x.ProtocolMessage));
+            });
+            var newOptions = new ChannelOptions(channelParams: channelParams, modes: new ChannelModes(ChannelMode.Publish, ChannelMode.Subscribe));
+            await channel.SetOptionsAsync(newOptions);
+
+            await client.ProcessCommands();
+
+            states.Should().HaveCount(2);
+            Output.WriteLine(states.Select(x => x.Item1.ToString()).JoinStrings());
+            states.First(x => x.Item1 == ChannelState.Attached)
+                .Item2.HasFlag(ProtocolMessage.Flag.Publish).Should().BeTrue();
+        }
+
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
