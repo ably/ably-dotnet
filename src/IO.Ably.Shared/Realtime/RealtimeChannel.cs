@@ -78,9 +78,9 @@ namespace IO.Ably.Realtime
             set => _options = value ?? new ChannelOptions();
         }
 
-        public ChannelParams AttachedParams { get; set; }
+        public ReadOnlyChannelParams Params { get; internal set; }
 
-        public ChannelModes AttachedModes { get; set; }
+        public ReadOnlyChannelModes Modes { get; internal set; }
 
         public string Name { get; }
 

@@ -17,6 +17,18 @@ namespace IO.Ably.Realtime
         ChannelState State { get; }
 
         /// <summary>
+        /// Channel params that the server has recognised and validated.
+        /// It cannot be used to set ChannelParams on this channel. See <see cref="SetOptions"/>.
+        /// </summary>
+        ReadOnlyChannelParams Params { get; }
+
+        /// <summary>
+        /// Channel modes received from the server during Attach of this channel.
+        /// It cannot be used to set ChannelModes on this channel. See <see cref="SetOptions"/>.
+        /// </summary>
+        ReadOnlyChannelModes Modes { get; }
+
+        /// <summary>
         /// Channel name.
         /// </summary>
         string Name { get; }
