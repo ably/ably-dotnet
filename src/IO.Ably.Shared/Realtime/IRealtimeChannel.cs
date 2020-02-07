@@ -187,8 +187,8 @@ namespace IO.Ably.Realtime
         /// then the channel will be reattached.
         /// </summary>
         /// <param name="options">the new <see cref="ChannelOptions"/> for the channel.</param>
-        /// <param name="callback">callback that will indicate whether the method succeeded.</param>
-        void SetOptions(ChannelOptions options, Action<bool, ErrorInfo> callback);
+        /// <param name="callback">optional callback that will indicate whether the method succeeded.</param>
+        void SetOptions(ChannelOptions options, Action<bool, ErrorInfo> callback = null);
 
         /// <summary>
         /// Updates the options for a channel. If the ChannelModes or ChannelParams differ and the channel is Attaching or Attached
