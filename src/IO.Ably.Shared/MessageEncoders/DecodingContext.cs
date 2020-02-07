@@ -38,7 +38,7 @@ namespace IO.Ably.MessageEncoders
     /// <summary>
     /// Helpers methods for <see cref="DecodingContext"/>.
     /// </summary>
-    internal static class EncodingDecodingContextHelpers
+    internal static class ChannelOptionsExtensions
     {
         /// <summary>
         /// Creates a new <see cref="DecodingContext"/> from the provided <see cref="ChannelOptions"/>.
