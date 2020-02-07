@@ -751,11 +751,14 @@ namespace IO.Ably.Realtime
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
-        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed)
+        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed, ProtocolMessage message = null)
         {
             if (State == ChannelState.Attached)
             {
-                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed));
+                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed)
+                {
+                    ProtocolMessage = message,
+                });
             }
         }
 
