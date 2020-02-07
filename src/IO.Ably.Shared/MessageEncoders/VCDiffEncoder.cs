@@ -54,10 +54,37 @@ namespace IO.Ably.MessageEncoders
             catch (Exception ex)
             {
                 var error =
-                    $"Payload Encoding: {context.PreviousPayload?.Encoding}. Payload: {context.PreviousPayload?.GetBytes().Length} bytes";
+                    $"Payload Encoding: {payload.Encoding}. Payload data: {GetPayloadString()}";
                 logger.Error("Error decoding vcdiff message: " + error, ex);
 
                 return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Failed to decode vcdiff message", ex));
+            }
+
+            string GetPayloadString()
+            {
+                try
+                {
+                    if (payload.Data == null)
+                    {
+                        return "null";
+                    }
+
+                    if (payload.Data is byte[])
+                    {
+                        return (payload.Data as byte[]).ToBase64();
+                    }
+
+                    if (payload.Data is string)
+                    {
+                        return payload.Data as string;
+                    }
+
+                    return string.Empty;
+                }
+                catch
+                {
+                    return string.Empty;
+                }
             }
         }
     }
