@@ -102,6 +102,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="modes">A list of modes to be populated.</param>
         public ChannelModes(params ChannelMode[] modes)
+            : base(modes)
         {
         }
     }
