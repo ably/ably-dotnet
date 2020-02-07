@@ -6,32 +6,6 @@ namespace IO.Ably.MessageEncoders
 {
     internal abstract class MessageEncoder
     {
-        public class ProcessedPayload : IPayload
-        {
-            public object Data { get; set; }
-
-            public string Encoding { get; set; }
-
-            public ProcessedPayload()
-            {
-            }
-
-            public ProcessedPayload(object data, string encoding)
-            {
-                Data = data;
-                Encoding = encoding;
-            }
-
-            public ProcessedPayload(IPayload payload)
-            {
-                if (payload != null)
-                {
-                    Data = payload.Data;
-                    Encoding = payload.Encoding;
-                }
-            }
-        }
-
         public abstract string EncodingName { get; }
 
         public abstract bool CanProcess(string currentEncoding);
