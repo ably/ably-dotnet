@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace IO.Ably
 {
@@ -8,5 +9,20 @@ namespace IO.Ably
     /// </summary>
     public class ChannelParams : Dictionary<string, string>
     {
+    }
+
+    /// <summary>
+    /// Read only version of <see cref="ChannelParams"/>.
+    /// </summary>
+    public class ReadOnlyChannelParams : ReadOnlyDictionary<string, string>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReadOnlyChannelParams"/> class.
+        /// </summary>
+        /// <param name="dictionary">original dictionary used to initialize ReadOnlyChannelParams.</param>
+        public ReadOnlyChannelParams(IDictionary<string, string> dictionary)
+            : base(dictionary)
+        {
+        }
     }
 }
