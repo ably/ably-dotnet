@@ -45,7 +45,7 @@ namespace IO.Ably.MessageEncoders
         /// </summary>
         /// <param name="options">the <see cref="ChannelOptions"/> used in the new context.</param>
         /// <returns><see cref="DecodingContext"/> created with passed Channel options.</returns>
-        public static DecodingContext ToEncodingDecodingContext(this ChannelOptions options)
+        public static DecodingContext ToDecodingContext(this ChannelOptions options)
         {
             return new DecodingContext(options ?? new ChannelOptions());
         }
