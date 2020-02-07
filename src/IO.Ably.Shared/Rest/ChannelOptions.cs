@@ -58,15 +58,28 @@ namespace IO.Ably
         /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
         /// </summary>
         /// <param name="encrypted">whether it is encrypted.</param>
-        /// <param name="params">optional, <see cref="IO.Ably.CipherParams"/>.</param>
-        public ChannelOptions(bool encrypted = false, CipherParams @params = null)
-            : this(null, encrypted, @params) { }
+        /// <param name="params">optional, <see cref="CipherParams"/>.</param>
+        /// <param name="modes">optional, <see cref="ChannelModes"/>.</param>
+        /// <param name="channelParams">optional, <see cref="ChannelParams"/>.</param>
+        public ChannelOptions(
+            bool encrypted = false,
+            CipherParams @params = null,
+            ChannelModes modes = null,
+            ChannelParams channelParams = null)
+            : this(null, encrypted, @params, modes, channelParams) { }
 
-        internal ChannelOptions(ILogger logger, bool encrypted = false, CipherParams @params = null)
+        internal ChannelOptions(
+            ILogger logger,
+            bool encrypted = false,
+            CipherParams @params = null,
+            ChannelModes modes = null,
+            ChannelParams channelParams = null)
         {
             Logger = logger ?? DefaultLogger.LoggerInstance;
             Encrypted = encrypted;
             CipherParams = @params ?? Crypto.GetDefaultParams();
+            Modes = modes;
+            Params = channelParams;
         }
 
         /// <summary>
