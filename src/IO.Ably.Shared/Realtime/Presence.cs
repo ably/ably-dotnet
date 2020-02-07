@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using IO.Ably.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
@@ -469,11 +470,13 @@ namespace IO.Ably.Realtime
                 case ConnectionState.Connected:
                     break;
                 default:
-                    throw new AblyException(
-                        new ErrorInfo(
-                            $"Unable to enter presence channel when connection is in a ${_connection.Connection.State} state",
-                            91001,
-                            HttpStatusCode.BadRequest));
+                    var error = new ErrorInfo(
+                        $"Unable to enter presence channel when connection is in a ${_connection.Connection.State} state.",
+                        91001,
+                        HttpStatusCode.BadRequest);
+                    Logger.Warning(error.ToString());
+                    ActionUtils.SafeExecute(() => callback?.Invoke(true, error), Logger, nameof(UpdatePresence));
+                    break;
             }
 
             switch (_channel.State)
@@ -495,7 +498,10 @@ namespace IO.Ably.Realtime
                     _connection.Send(message, callback);
                     break;
                 default:
-                    throw new AblyException($"Unable to enter presence channel in {_channel.State} state", 91001, HttpStatusCode.BadRequest);
+                    var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", 91001);
+                    Logger.Warning(error.ToString());
+                    ActionUtils.SafeExecute(() => callback?.Invoke(true, error), Logger, nameof(UpdatePresence));
+                    break;
             }
         }
 
