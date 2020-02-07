@@ -1393,6 +1393,42 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL16a")]
+            public async Task SetChannelOptionsWithoutModesOrParams_ShouldIndicateSuccessImmediately()
+            {
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
+                var newOptions = new ChannelOptions(true);
+                channel.Options.Should().NotBeSameAs(newOptions);
+                var states = new List<ChannelState>();
+                channel.On(x => states.Add(x.Current));
+
+                await channel.SetOptionsAsync(newOptions);
+
+                channel.Options.Should().BeSameAs(newOptions);
+                states.Should().BeEmpty(); // No state change happened.
+            }
+
+            [Fact]
+            [Trait("spec", "RTL16a")]
+            public async Task SetOptions_WithSameModesAndParams_ShouldIndicateSuccessImmediately()
+            {
+                var client = await GetConnectedClient(_switchBinaryOff);
+                var options = new ChannelOptions(channelParams: new ChannelParams() { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
+                var newOptions = new ChannelOptions(true, channelParams: new ChannelParams() { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
+                var channel = client.Channels.Get("test", options);
+                ((RealtimeChannel)channel).SetChannelState(ChannelState.Attached);
+
+                channel.Options.Should().NotBeSameAs(newOptions);
+                var states = new List<ChannelState>();
+                channel.On(x => states.Add(x.Current));
+
+                await channel.SetOptionsAsync(newOptions);
+
+                channel.Options.Should().BeSameAs(newOptions);
+                states.Should().BeEmpty(); // No state change happened.
+            }
+
+            [Fact]
             [Trait("spec", "RTL17")]
             public async Task WhenMessageReceivedWhileChannelIsAttaching_ShouldIgnoreMessage()
             {
