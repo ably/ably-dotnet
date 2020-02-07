@@ -25,11 +25,9 @@ namespace IO.Ably.MessageEncoders
 
             try
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = JsonHelper.Deserialize(payload.Data as string),
-                    Encoding = RemoveCurrentEncodingPart(payload),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    JsonHelper.Deserialize(payload.Data as string),
+                    RemoveCurrentEncodingPart(payload)));
             }
             catch (Exception ex)
             {
@@ -52,11 +50,9 @@ namespace IO.Ably.MessageEncoders
 
             if (NeedsJsonEncoding(payload))
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = JsonHelper.Serialize(payload.Data),
-                    Encoding = AddEncoding(payload, EncodingName),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    JsonHelper.Serialize(payload.Data),
+                    AddEncoding(payload, EncodingName)));
             }
 
             return Result.Ok(new ProcessedPayload(payload));

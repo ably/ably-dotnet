@@ -16,6 +16,12 @@ namespace IO.Ably.MessageEncoders
             {
             }
 
+            public ProcessedPayload(object data, string encoding)
+            {
+                Data = data;
+                Encoding = encoding;
+            }
+
             public ProcessedPayload(IPayload payload)
             {
                 if (payload != null)

@@ -13,11 +13,9 @@ namespace IO.Ably.MessageEncoders
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string data)
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = data.FromBase64(),
-                    Encoding = RemoveCurrentEncodingPart(payload),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    data.FromBase64(),
+                    RemoveCurrentEncodingPart(payload)));
             }
 
             return Result.Ok(new ProcessedPayload(payload));
@@ -36,11 +34,9 @@ namespace IO.Ably.MessageEncoders
 
             if (data is byte[] bytes)
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = bytes.ToBase64(),
-                    Encoding = AddEncoding(payload, EncodingName),
-                });
+                return Result.Ok(new ProcessedPayload(
+                    bytes.ToBase64(),
+                    AddEncoding(payload, EncodingName)));
             }
 
             return Result.Ok(new ProcessedPayload(payload));
