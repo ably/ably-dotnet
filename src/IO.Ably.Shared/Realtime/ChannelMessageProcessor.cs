@@ -64,7 +64,7 @@ namespace IO.Ably.Realtime
                         if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                         {
                             channel.Presence.ChannelAttached(protocolMessage);
-                            channel.EmitUpdate(protocolMessage.Error, false);
+                            channel.EmitUpdate(protocolMessage.Error, false, protocolMessage);
                         }
                     }
                     else
