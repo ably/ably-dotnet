@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IO.Ably.Types;
 
 namespace IO.Ably
@@ -101,6 +102,21 @@ namespace IO.Ably
         /// </summary>
         /// <param name="modes">A list of modes to be populated.</param>
         public ChannelModes(params ChannelMode[] modes)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Read only version of <see cref="ChannelModes"/>.
+    /// </summary>
+    public class ReadOnlyChannelModes : ReadOnlyCollection<ChannelMode>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReadOnlyChannelModes"/> class.
+        /// </summary>
+        /// <param name="list">list of channelModes.</param>
+        public ReadOnlyChannelModes(IList<ChannelMode> list)
+            : base(list)
         {
         }
     }
