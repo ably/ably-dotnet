@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\TestAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
