@@ -219,7 +219,6 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             // Should transition to attaching
             changeStates.First().Current.Should().Be(ChannelState.Attaching);
             changeStates.First().Error.Code.Should().Be(40018);
-
         }
 
         [Theory]
