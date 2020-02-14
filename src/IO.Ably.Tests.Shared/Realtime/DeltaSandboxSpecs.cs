@@ -229,17 +229,34 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         {
             string channelName = "delta-channel".AddRandomSuffix();
             var testSink = new TestLoggerSink();
+            var taskAwaiter = new TaskCompletionAwaiter(5000);
+            var firstMessageReceived = new TaskCompletionAwaiter();
             using (((DefaultLogger.InternalLogger)Logger).SetTempDestination(testSink))
             {
                 var realtime = await GetRealtimeClient(protocol);
                 var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams() { { "delta", "vcdiff" } }));
 
                 var received = new List<Message>();
-                channel.Subscribe(message => { received.Add(message); });
+                channel.Subscribe(message =>
+                {
+                    received.Add(message);
+                    if (received.Count == 1)
+                    {
+                        firstMessageReceived.Done();
+                    }
+
+                    if (received.Count == 2)
+                    {
+                        taskAwaiter.Done();
+                    }
+                });
 
                 await channel.AttachAsync();
                 // We wait for the first message to be acknowledged. Any consequent messages will be deltas
                 await channel.PublishAsync("firstMessage", new TestData("bar", 1, "active"));
+
+                (await firstMessageReceived).Should().BeTrue("First message should be received before continuing with broken message");
+
                 channel.Publish("second", "second message"); // We don't want to wait for the acknowledgement
                 realtime.ExecuteCommand(ProcessMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
                 {
@@ -257,7 +274,9 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
                 await channel.WaitForState(ChannelState.Attached);
 
-                await new ConditionalAwaiter(() => received.Count() == 2, () => "Recevied: " + received.Count());
+                var result = await taskAwaiter;
+
+                result.Should().BeTrue("TaskAwaiter Done() Should be called.");
 
                 received.Should().HaveCount(2);
                 received[1].Data.Should().Be("second message");

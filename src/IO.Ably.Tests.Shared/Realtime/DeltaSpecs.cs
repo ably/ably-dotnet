@@ -132,7 +132,16 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             channel.SetChannelState(ChannelState.Attached);
 
             List<Message> messages = new List<Message>();
-            channel.Subscribe(messages.Add);
+            var taskAwaiter = new TaskCompletionAwaiter();
+            channel.Subscribe(x =>
+            {
+                messages.Add(x);
+                if (messages.Count == 4)
+                {
+                    taskAwaiter.Done();
+                }
+            });
+
             var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 Channel = channel.Name,
@@ -147,8 +156,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
             await realtime.ProcessMessage(protocolMessage);
 
-            var awaiter = new ConditionalAwaiter(() => messages.Count >= 4, () => "Received: " + messages.Count);
-            await awaiter;
+            await taskAwaiter;
 
             messages[0].Data.Should().BeOfType<string>();
             IsCorrectFile(((string)messages[0].Data).GetBytes(), "delta.1");
