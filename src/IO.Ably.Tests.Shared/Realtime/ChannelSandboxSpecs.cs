@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.DotNetCore20;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
@@ -231,7 +232,6 @@ namespace IO.Ably.Tests.Realtime
             states.First(x => x.Item1 == ChannelState.Attached)
                 .Item2.HasFlag(ProtocolMessage.Flag.Publish).Should().BeTrue();
         }
-
 
         [Theory]
         [ProtocolData]
