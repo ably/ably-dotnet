@@ -14,7 +14,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler
     {
-        internal ILogger Logger { get; private set; }
+        internal ILogger Logger { get; }
 
         internal static Base64Encoder Base64Encoder = new Base64Encoder();
 
@@ -23,12 +23,11 @@ namespace IO.Ably.MessageEncoders
             new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VCDiffEncoder(), Base64Encoder,
         };
 
-        public List<MessageEncoder> Encoders = new List<MessageEncoder>();
-        private static readonly Type[] UnsupportedTypes = new[]
-            {
+        private static readonly Type[] UnsupportedTypes =
+        {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
                 typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte),
-            };
+        };
 
         private readonly Protocol _protocol;
 
