@@ -147,7 +147,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
             await realtime.ProcessMessage(protocolMessage);
 
-            var awaiter = new ConditionalAwaiter(() => messages.Count == 4);
+            var awaiter = new ConditionalAwaiter(() => messages.Count >= 4, () => "Received: " + messages.Count);
             await awaiter;
 
             messages[0].Data.Should().BeOfType<string>();
