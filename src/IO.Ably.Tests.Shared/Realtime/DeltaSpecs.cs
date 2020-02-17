@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             channel.SetChannelState(ChannelState.Attached);
 
             List<Message> messages = new List<Message>();
-            var taskAwaiter = new TaskCompletionAwaiter();
+            var taskAwaiter = new TaskCompletionAwaiter(15000);
             channel.Subscribe(x =>
             {
                 messages.Add(x);
@@ -155,8 +155,10 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             };
 
             await realtime.ProcessMessage(protocolMessage);
-
-            await taskAwaiter;
+            await realtime.ProcessCommands();
+            
+            var result = await taskAwaiter;
+            result.Should().BeTrue("Four messages should have been received.");
 
             messages[0].Data.Should().BeOfType<string>();
             IsCorrectFile(((string)messages[0].Data).GetBytes(), "delta.1");
