@@ -1,5 +1,20 @@
 # Change Log
 
+## [1.1.17](https://github.com/ably/ably-dotnet/tree/1.1.17) (2020-02-17)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.16...1.1.17)
+
+**Fixed bugs:**
+
+- Don't throw exceptions when there is a callback passed [\#397](https://github.com/ably/ably-dotnet/issues/397)
+
+**Closed issues:**
+
+- Remove develop branch [\#393](https://github.com/ably/ably-dotnet/issues/393)
+
+**Merged pull requests:**
+
+- Fix \#397. Call callback instead of throwing AblyException [\#398](https://github.com/ably/ably-dotnet/pull/398) ([marto83](https://github.com/marto83))
+
 ## [1.1.16](https://github.com/ably/ably-dotnet/tree/1.1.16) (2020-01-31)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.15...1.1.16)
 
