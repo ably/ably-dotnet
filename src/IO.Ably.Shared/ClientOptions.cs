@@ -279,7 +279,7 @@ namespace IO.Ably
         /// <summary>
         /// Switched on IdempotentRest publishing. Currently switched off by default in libraries with version less than 1.2.
         /// Default before 1.2: false.
-        /// Default after 1.2: true.
+        /// Default from 1.2: true.
         /// </summary>
         public bool IdempotentRestPublishing { get; set; } = Defaults.ProtocolVersionNumber >= 1.2;
 
