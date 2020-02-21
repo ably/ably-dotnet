@@ -295,7 +295,7 @@ namespace IO.Ably.Realtime.Workflow
                     else if (State.Connection.CurrentStateObject.CanQueue)
                     {
                         Logger.Debug("Queuing message");
-                        State.PendingMessages.Enqueue(new MessageAndCallback(
+                        State.PendingMessages.Add(new MessageAndCallback(
                             cmd.ProtocolMessage,
                             cmd.Callback,
                             Logger));
@@ -888,11 +888,12 @@ namespace IO.Ably.Realtime.Workflow
                 Logger.Debug("Sending pending message: Count: " + State.PendingMessages.Count);
             }
 
-            while (State.PendingMessages.Count > 0)
+            foreach (var pendingMessage in State.PendingMessages)
             {
-                var queuedMessage = State.PendingMessages.Dequeue();
-                SendMessage(queuedMessage.Message, queuedMessage.Callback);
+                SendMessage(pendingMessage.Message, pendingMessage.Callback);
             }
+
+            State.PendingMessages.Clear();
         }
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error)
