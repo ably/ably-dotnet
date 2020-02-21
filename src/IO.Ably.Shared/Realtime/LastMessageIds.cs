@@ -7,7 +7,9 @@ namespace IO.Ably.Realtime
     {
         public static LastMessageIds Empty = new LastMessageIds();
 
-        public string LastMessageId { get; internal set; } // To make testing easier.
+        // The internal set is to make things easier with testing where I need to simulate mismatching LastMessageIds
+        // which should trigger the delta recovery process.
+        public string LastMessageId { get; internal set; }
 
         public string ProtocolMessageChannelSerial { get; }
 
