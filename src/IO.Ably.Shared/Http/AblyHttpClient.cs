@@ -138,7 +138,8 @@ namespace IO.Ably
             {
                 EnsureMaxRetryDurationNotExceeded();
 
-                Logger.Debug("Executing request: " + host + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
+                Logger.Debug(
+                    $"Executing request. Host: {host}. Request: {request.Url}. {(currentTry > 0 ? $"try {currentTry}" : string.Empty)}");
 
                 try
                 {
