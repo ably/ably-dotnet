@@ -437,18 +437,18 @@ namespace IO.Ably.Realtime.Workflow
     {
         public ErrorInfo Error { get; }
 
-        public Exception Exception { get; }
+        public AblyException Exception { get; }
 
         public bool ClearConnectionKey { get; }
 
-        private HandleConnectingErrorCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
+        private HandleConnectingErrorCommand(ErrorInfo error, AblyException ex, bool clearConnectionKey)
         {
             Error = error;
             Exception = ex;
             ClearConnectionKey = clearConnectionKey;
         }
 
-        public static HandleConnectingErrorCommand Create(ErrorInfo error = null, Exception ex = null, bool clearConnectionKey = false) =>
+        public static HandleConnectingErrorCommand Create(ErrorInfo error = null, AblyException ex = null, bool clearConnectionKey = false) =>
             new HandleConnectingErrorCommand(error, ex, clearConnectionKey);
 
         protected override string ExplainData()
