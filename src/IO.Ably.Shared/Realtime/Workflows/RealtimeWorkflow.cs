@@ -326,6 +326,7 @@ namespace IO.Ably.Realtime.Workflow
                                 try
                                 {
                                     await AttemptANewConnection();
+                                    return EmptyCommand.Instance;
                                 }
                                 catch (AblyException e)
                                 {
@@ -376,9 +377,9 @@ namespace IO.Ably.Realtime.Workflow
                     // Exceptions only come from Transport
                     var error = cmd.Error ?? cmd.Exception.ErrorInfo;
 
-                    if (cmd.Error.IsTokenError)
+                    if (error.IsTokenError)
                     {
-                        return HandleConnectingTokenErrorCommand.Create(cmd.Error)
+                        return HandleConnectingTokenErrorCommand.Create(error)
                             .TriggeredBy(cmd);
                     }
 
@@ -423,7 +424,7 @@ namespace IO.Ably.Realtime.Workflow
                                 AblyException ablyException = null;
                                 if (cmd.Exception != null)
                                 {
-                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.BadRequest);
+                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.ServiceUnavailable);
                                 }
 
                                 return HandleConnectingErrorCommand.Create(null, ablyException, false).TriggeredBy(cmd);
