@@ -134,7 +134,7 @@ namespace IO.Ably
             var numberOfRetries = Options.HttpMaxRetryCount; // One for the first request
             var host = GetHost();
 
-            while (currentTry < numberOfRetries)
+            do
             {
                 EnsureMaxRetryDurationNotExceeded();
 
@@ -148,6 +148,11 @@ namespace IO.Ably
                     if (response.Success)
                     {
                         return response.AblyResponse;
+                    }
+
+                    if (request.SkipRetry)
+                    {
+                        break;
                     }
 
                     if (CanRetry && response.CanRetry)
@@ -185,6 +190,7 @@ namespace IO.Ably
                     throw new AblyException(new ErrorInfo("Error executing request. " + ex.Message, 50000), ex);
                 }
             }
+            while (currentTry < numberOfRetries);
 
             throw new AblyException(new ErrorInfo("Error executing request", 50000));
 
