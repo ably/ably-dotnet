@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
@@ -90,6 +91,8 @@ namespace IO.Ably.Tests.Infrastructure
             _handler = new MessageHandler(protocol);
         }
 
+        public bool ThrowOnConnect { get; set; } = false;
+
         public Guid Id => WrappedTransport.Id;
 
         public TransportState State => WrappedTransport.State;
@@ -113,6 +116,11 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Connect()
         {
+            if (ThrowOnConnect)
+            {
+                throw new SocketException();
+            }
+
             WrappedTransport.Connect();
         }
 
