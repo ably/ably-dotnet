@@ -57,29 +57,13 @@ namespace IO.Ably.Tests
 
         public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
 
-        public TransportState TransportState => Transport.State;
-
         public ITransport Transport { get; set; }
-
-        public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
 
         public Connection Connection { get; set; }
 
         public TimeSpan SuspendRetryTimeout { get; set; }
 
-        public void ClearTokenAndRecordRetry()
-        {
-            TriedToRenewToken = true;
-        }
-
         private bool TriedToRenewToken { get; set; }
-
-        public Task SetState(ConnectionStateBase state, bool skipAttach)
-        {
-            State = state;
-            LastSetState = state;
-            return TaskConstants.BooleanTrue;
-        }
 
         public bool AllowTransportCreating { get; set; }
 

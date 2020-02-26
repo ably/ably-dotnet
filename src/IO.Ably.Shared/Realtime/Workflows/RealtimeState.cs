@@ -134,7 +134,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public ConnectionAttemptsInfo AttemptsInfo { get; }
 
-        public Queue<MessageAndCallback> PendingMessages { get; }
+        public List<MessageAndCallback> PendingMessages { get; }
 
         public List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
@@ -150,7 +150,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             Connection = new ConnectionData(fallbackHosts);
             AttemptsInfo = new ConnectionAttemptsInfo(now);
-            PendingMessages = new Queue<MessageAndCallback>();
+            PendingMessages = new List<MessageAndCallback>();
         }
 
         public JObject WhatDoIHave(bool writeToLog = false)
