@@ -322,9 +322,9 @@ namespace IO.Ably
             {
                 if ((Now() - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
                 {
-                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Defaults.CommulativeFailedRequestTimeOutInSeconds);
+                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Options.HttpMaxRetryDuration.TotalSeconds);
                     throw new AblyException(
-                        new ErrorInfo($"Cumulative retry timeout of {Defaults.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
+                        new ErrorInfo($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded. The value is controlled by `ClientOptions.HttpMaxRetryDuration`.", 50000, null));
                 }
             }
         }
