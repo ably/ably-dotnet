@@ -156,7 +156,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
             await realtime.ProcessMessage(protocolMessage);
             await realtime.ProcessCommands();
-            
+
             var result = await taskAwaiter;
             result.Should().BeTrue("Four messages should have been received.");
 
