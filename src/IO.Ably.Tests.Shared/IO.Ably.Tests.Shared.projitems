@@ -95,6 +95,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeWorkflowSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\AblyHttpClientSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptionsDefaultsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\JwtSandboxSpec.cs" />
