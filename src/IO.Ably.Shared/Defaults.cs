@@ -46,14 +46,13 @@ namespace IO.Ably
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
-        public const int CommulativeFailedRequestTimeOutInSeconds = 10;
 
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
         public const int HttpMaxRetryCount = 3;
         public static readonly TimeSpan ChannelRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan HttpMaxRetryDuration = TimeSpan.FromSeconds(15);
-        public static readonly TimeSpan MaxHttpRequestTimeout = TimeSpan.FromSeconds(15);
+        public static readonly TimeSpan MaxHttpRequestTimeout = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan MaxHttpOpenTimeout = TimeSpan.FromSeconds(4);
         public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
