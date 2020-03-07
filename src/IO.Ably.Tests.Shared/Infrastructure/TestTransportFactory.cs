@@ -6,12 +6,22 @@ namespace IO.Ably.Tests.Infrastructure
 {
     public class TestTransportFactory : ITransportFactory
     {
+        private readonly Action<TestTransportWrapper> _onWrappedTransportCreated;
         internal Action<TestTransportWrapper> OnTransportCreated = delegate { };
 
         internal Action<ProtocolMessage> OnMessageSent = delegate { };
 
         internal Action<ProtocolMessage> BeforeDataProcessed;
         internal Action<ProtocolMessage> AfterDataReceived;
+
+        public TestTransportFactory()
+        {
+        }
+
+        internal TestTransportFactory(Action<TestTransportWrapper> onWrappedTransportCreated)
+        {
+            _onWrappedTransportCreated = onWrappedTransportCreated;
+        }
 
         public ITransport CreateTransport(TransportParams parameters)
         {
@@ -22,6 +32,7 @@ namespace IO.Ably.Tests.Infrastructure
             transport.BeforeDataProcessed = BeforeDataProcessed;
             OnTransportCreated(transport);
             transport.MessageSent = OnMessageSent;
+            _onWrappedTransportCreated?.Invoke(transport);
             return transport;
         }
     }

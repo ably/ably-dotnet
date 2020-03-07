@@ -1231,6 +1231,46 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "402")]
+        public async Task WhenInternetConnectionIsLost_WithoutOSNotification_ShouldBehaveProperly(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new OutputLoggerSink(Output);
+
+            var transportFactory = new TestTransportFactory(transport => { transport.ThrowOnConnect = true; });
+
+            var client = await GetRealtimeClient(
+                protocol,
+                (options, settings) =>
+                {
+                    options.AutoConnect = false;
+                    options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+                    options.TransportFactory = transportFactory;
+                });
+
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(5);
+
+            var oldExecuteRequest = client.RestClient.ExecuteHttpRequest;
+
+            client.RestClient.ExecuteHttpRequest = request =>
+            {
+                // Throw 500
+                if (request.Url.Contains("internet"))
+                {
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.BadGateway });
+                }
+
+                return oldExecuteRequest(request);
+            };
+
+            client.Connect();
+
+            // should auto connect again
+            await client.WaitForState(ConnectionState.Suspended, TimeSpan.FromSeconds(10));
+        }
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
         {

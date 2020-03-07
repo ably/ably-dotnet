@@ -323,9 +323,15 @@ namespace IO.Ably.Realtime.Workflow
                             if (State.AttemptsInfo.TriedToRenewToken == false)
                             {
                                 ClearTokenAndRecordRetry();
-                                await AttemptANewConnection(); // We recreate the transport after clearing the token
-
-                                return EmptyCommand.Instance;
+                                try
+                                {
+                                    await AttemptANewConnection();
+                                    return EmptyCommand.Instance;
+                                }
+                                catch (AblyException e)
+                                {
+                                    return HandleConnectingErrorCommand.Create(null, e);
+                                }
                             }
 
                             return SetDisconnectedStateCommand.Create(cmd.Error).TriggeredBy(cmd);
@@ -366,42 +372,37 @@ namespace IO.Ably.Realtime.Workflow
 
                 case HandleConnectingErrorCommand cmd:
 
-                    var exceptionErrorInfo = cmd.Exception != null ? new ErrorInfo(cmd.Exception.Message, 80000, HttpStatusCode.BadGateway) { InnerException = cmd.Exception } : null;
-                    ErrorInfo resolvedError = cmd.Error ?? exceptionErrorInfo;
+                    // split into two parts
+                    // Errors come from error messages
+                    // Exceptions only come from Transport
+                    var error = cmd.Error ?? cmd.Exception.ErrorInfo;
 
-                    if (resolvedError == null)
+                    if (error.IsTokenError)
                     {
-                        Logger.Warning("Connecting Error protocol message received without error object.");
-                        return SetFailedStateCommand.Create(null).TriggeredBy(cmd);
-                    }
-
-                    // If it is a Token error we delegate the error handling to HandleConnectingTokenErrorCommand
-                    if (resolvedError.IsTokenError)
-                    {
-                        return HandleConnectingTokenErrorCommand.Create(resolvedError)
+                        return HandleConnectingTokenErrorCommand.Create(error)
                             .TriggeredBy(cmd);
                     }
 
-                    if (await Client.RestClient.CanFallback(resolvedError))
+                    if (error.IsRetryableStatusCode())
                     {
                         if (State.ShouldSuspend(Now))
                         {
                             return SetSuspendedStateCommand.Create(
-                                    resolvedError ?? ErrorInfo.ReasonSuspended,
+                                    error,
                                     clearConnectionKey: true)
                                 .TriggeredBy(cmd);
                         }
-                        else
-                        {
-                            return SetDisconnectedStateCommand.Create(
-                                    resolvedError ?? ErrorInfo.ReasonDisconnected,
-                                    clearConnectionKey: true)
-                                .TriggeredBy(cmd);
-                        }
-                    }
 
-                    return SetFailedStateCommand.Create(resolvedError)
-                        .TriggeredBy(cmd);
+                        return SetDisconnectedStateCommand.Create(
+                                error,
+                                clearConnectionKey: true)
+                            .TriggeredBy(cmd);
+                    }
+                    else
+                    {
+                        return SetFailedStateCommand.Create(error)
+                            .TriggeredBy(cmd);
+                    }
 
                 case HandleTrasportEventCommand cmd:
 
@@ -420,7 +421,13 @@ namespace IO.Ably.Realtime.Workflow
                             case ConnectionState.Closing:
                                 return SetClosedStateCommand.Create(exception: cmd.Exception).TriggeredBy(cmd);
                             case ConnectionState.Connecting:
-                                return HandleConnectingErrorCommand.Create(null, cmd.Exception, false).TriggeredBy(cmd);
+                                AblyException ablyException = null;
+                                if (cmd.Exception != null)
+                                {
+                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.ServiceUnavailable);
+                                }
+
+                                return HandleConnectingErrorCommand.Create(null, ablyException, false).TriggeredBy(cmd);
                             case ConnectionState.Connected:
                                 var errorInfo =
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
@@ -679,7 +686,7 @@ namespace IO.Ably.Realtime.Workflow
                                 return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }
 
-                            throw;
+                            return HandleConnectingErrorCommand.Create(null, ex);
                         }
 
                     case SetFailedStateCommand cmd:

@@ -78,7 +78,7 @@ namespace IO.Ably.Transport
                     throw;
                 }
 
-                throw new AblyException(ex);
+                throw new AblyException(new ErrorInfo("Error creating Socket Transport", ErrorCodes.ConnectionFailed, HttpStatusCode.ServiceUnavailable), ex);
             }
         }
 

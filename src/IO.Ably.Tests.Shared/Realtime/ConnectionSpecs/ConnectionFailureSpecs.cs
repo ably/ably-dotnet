@@ -77,6 +77,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToDisconnected()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+            var taskAwaiter = new TaskCompletionAwaiter(taskCount: 2);
             var client = GetClientWithFakeTransport(
                 opts =>
             {
@@ -92,11 +93,22 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
+            var stateChanges = new List<ConnectionStateChange>();
+            client.Connection.On(stateChange =>
+            {
+                if (stateChange.Current == ConnectionState.Disconnected)
+                {
+                    taskAwaiter.Tick();
+                }
+
+                stateChanges.Add(stateChange);
+            });
+
             await client.WaitForState(ConnectionState.Connecting);
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            await client.WaitForState(ConnectionState.Disconnected);
+            await taskAwaiter.Task;
 
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
