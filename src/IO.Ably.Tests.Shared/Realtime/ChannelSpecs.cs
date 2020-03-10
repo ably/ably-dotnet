@@ -1189,7 +1189,11 @@ namespace IO.Ably.Tests.Realtime
                 new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] { message });
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
-                await awaiter.Task;
+                await client.ProcessCommands();
+
+                var result = await awaiter.Task;
+
+                result.Should().BeTrue("Operation did not complete in time.");
 
                 msgReceived.Should().BeTrue();
                 errorEmitted.Should().BeTrue();

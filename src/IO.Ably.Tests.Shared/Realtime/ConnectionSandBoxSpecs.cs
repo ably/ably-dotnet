@@ -1236,9 +1236,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "402")]
         public async Task WhenInternetConnectionIsLost_WithoutOSNotification_ShouldBehaveProperly(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-
             var transportFactory = new TestTransportFactory(transport => { transport.ThrowOnConnect = true; });
 
             var client = await GetRealtimeClient(

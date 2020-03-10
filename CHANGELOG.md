@@ -1,5 +1,23 @@
 # Change Log
 
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.17...1.1.18)
+
+**Fixed bugs:**
+
+- Cumulative retry timeout of 10s was exceeded [\#404](https://github.com/ably/ably-dotnet/issues/404)
+- Connection moves to Failed when there is no internet connection [\#402](https://github.com/ably/ably-dotnet/issues/402)
+- Could not load type of field IO.Ably.Transport.ConnectionManager [\#384](https://github.com/ably/ably-dotnet/issues/384)
+
+**Closed issues:**
+
+- Error thrown when trying to initialize Ably object in Unity [\#371](https://github.com/ably/ably-dotnet/issues/371)
+
+**Merged pull requests:**
+
+- Issues/404 [\#405](https://github.com/ably/ably-dotnet/pull/405) ([marto83](https://github.com/marto83))
+- Issues/402 [\#403](https://github.com/ably/ably-dotnet/pull/403) ([marto83](https://github.com/marto83))
+- Issue/384 [\#401](https://github.com/ably/ably-dotnet/pull/401) ([marto83](https://github.com/marto83))
+
 ## [1.1.17](https://github.com/ably/ably-dotnet/tree/1.1.17) (2020-02-17)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.16...1.1.17)
 
