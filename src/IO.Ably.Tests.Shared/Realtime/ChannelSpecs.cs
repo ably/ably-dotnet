@@ -480,31 +480,45 @@ namespace IO.Ably.Tests.Realtime
                 counter.Should().Be(2);
             }
 
-            [Fact]
+            [Theory]
             [Trait("spec", "RTL4b")]
-            public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError()
+            [Trait("issue", "409")]
+            [InlineData(ConnectionState.Closed)]
+            [InlineData(ConnectionState.Closing)]
+            [InlineData(ConnectionState.Suspended)]
+            [InlineData(ConnectionState.Failed)]
+            public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError(ConnectionState state)
             {
                 var client = await GetConnectedClient();
 
-                // Closed
-                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("closed").Attach());
+                var waiter = new TaskCompletionAwaiter();
+                switch (state)
+                {
+                    case ConnectionState.Closed:
+                        client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
+                        break;
+                    case ConnectionState.Closing:
+                        client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
+                        break;
+                    case ConnectionState.Suspended:
+                        client.Workflow.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
+                        break;
+                    case ConnectionState.Failed:
+                        client.Workflow.SetState(new ConnectionFailedState(
+                            client.ConnectionManager,
+                            ErrorInfo.ReasonFailed,
+                            Logger));
+                        break;
+                }
 
-                // Closing
-                client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("closing").Attach());
+                client.Channels.Get("suspended").Attach((success, error) =>
+                {
+                    success.Should().BeFalse();
+                    error.Should().NotBeNull();
+                    waiter.SetCompleted();
+                });
 
-                // Suspended
-                client.Workflow.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
-                var error = Assert.Throws<AblyException>(() => client.Channels.Get("suspended").Attach());
-                error.ErrorInfo.Code.Should().Be(500);
-
-                // Failed
-                client.Workflow.SetState(new ConnectionFailedState(
-                    client.ConnectionManager,
-                    ErrorInfo.ReasonFailed,
-                    Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("failed").Attach());
+                await waiter.Task;
             }
 
             [Fact]
