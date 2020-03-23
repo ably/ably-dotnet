@@ -185,9 +185,18 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            if (IsTerminalConnectionState)
+            // NOTE: This is already properly fixed in 1.2 branch
+            if (IsTerminalConnectionState || ConnectionState == ConnectionState.Suspended)
             {
-                throw new AblyException($"Cannot attach when connection is in {ConnectionState} state");
+                var connectionState = RealtimeClient.State.Connection.CurrentStateObject;
+                var connectionStateError = connectionState.Error ?? connectionState.DefaultErrorInfo;
+                ActionUtils.SafeExecute(() => callback?.Invoke(
+                    false,
+                    new ErrorInfo(
+                        $"Cannot attach when connection is in {ConnectionState} state",
+                        ErrorCodes.ChannelOperationFailed,
+                        cause: connectionStateError)));
+                return;
             }
 
             Attach(null, null, callback);
