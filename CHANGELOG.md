@@ -1,5 +1,15 @@
 # Change Log
 
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.18...1.1.19)
+
+**Fixed bugs:**
+
+- Unexpected error: The current state \[Suspended\] does not allow messages to be sent [\#409](https://github.com/ably/ably-dotnet/issues/409)
+
+**Merged pull requests:**
+
+- Close issue \#409. Call error callback instead of through exception wh… [\#410](https://github.com/ably/ably-dotnet/pull/410) ([marto83](https://github.com/marto83))
+
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.17...1.1.18)
 
 **Fixed bugs:**
