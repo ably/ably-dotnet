@@ -313,6 +313,8 @@ Target.create "Package - Build All" (fun _ ->
                     "DebugSymbols", "True"
                     "Configuration", buildMode
                     "StyleCopEnabled", "True"
+                    "Package", "True"
+                    "DefineConstants", "PACKAGE"
                 ]
          }
   MSBuild.build setParams packageSolution
