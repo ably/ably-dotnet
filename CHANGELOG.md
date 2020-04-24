@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.1.20](https://github.com/ably/ably-dotnet/tree/1.1.20) (2020-04-24)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.19...1.1.20)
+
+**Closed issues:**
+
+- Signed version of the .Net Standard 2.x assembly [\#412](https://github.com/ably/ably-dotnet/issues/412)
+
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.18...1.1.19)
 
 **Fixed bugs:**
