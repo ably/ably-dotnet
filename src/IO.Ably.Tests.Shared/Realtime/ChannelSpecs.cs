@@ -481,7 +481,7 @@ namespace IO.Ably.Tests.Realtime
                 counter.Should().Be(2);
             }
 
-            [Theory]
+            [Fact]
             [Trait("spec", "RTL4b")]
             public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldCallCallbackWithError()
             {
@@ -521,7 +521,8 @@ namespace IO.Ably.Tests.Realtime
                     r.Error.Cause.Code.Should().Be(defaultErrorInfo.Code);
                 }
             }
-            
+
+            [Theory]
             [Trait("issue", "409")]
             [InlineData(ConnectionState.Closed)]
             [InlineData(ConnectionState.Closing)]
