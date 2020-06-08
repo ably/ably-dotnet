@@ -334,12 +334,12 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "TO3n")]
-            public void ClientOptions_IdempotentPublishingDefaultToFalseForVersionsBelow1_1()
+            public void ClientOptions_IdempotentPublishingDefaultToTrueForProtocolVersion12()
             {
                 var clientOptions = new ClientOptions();
 
                 // This test needs to change once we implement v1.2
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+                clientOptions.IdempotentRestPublishing.Should().BeTrue();
             }
 
             private static async Task MakeAnyRequest(AblyRest client)

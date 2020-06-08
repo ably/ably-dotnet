@@ -107,27 +107,27 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2f")]
-        public async Task ShouldSetTransportVersionParameterTov11()
+        public async Task ShouldSetTransportVersionParameterToProtocolVersion()
         {
             var client = await GetConnectedClient();
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
-                .WhichValue.Should().Be("1.1");
+                .WhichValue.Should().Be(Defaults.ProtocolVersion);
         }
 
         [Fact]
         [Trait("spec", "RTN2g")]
-        public async Task ShouldSetTransportLibVersionParamater()
+        public async Task ShouldSetTransportLibVersionParameter()
         {
-            string pattern = @"^dotnet(.?\w*)-1.1.(\d+)$";
+            string pattern = $@"^dotnet(.?\w*)-{Defaults.ProtocolVersion}.(\d+)$";
 
             // validate the regex pattern
-            Regex.Match("dotnet-1.1.321", pattern).Success.Should().BeTrue();
-            Regex.Match("dotnet.framework-1.1.321", pattern).Success.Should().BeTrue();
-            Regex.Match("dotnet.netstandard20-1.1.0", pattern).Success.Should().BeTrue();
-            Regex.Match("xdotnet-1.1.321", pattern).Success.Should().BeFalse();
-            Regex.Match("csharp.netstandard20-1.1.0", pattern).Success.Should().BeFalse();
+            Regex.Match($"dotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
+            Regex.Match($"dotnet.framework-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
+            Regex.Match($"dotnet.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeTrue();
+            Regex.Match($"xdotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeFalse();
+            Regex.Match($"csharp.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeFalse();
 
             var client = await GetConnectedClient();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
