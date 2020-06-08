@@ -186,6 +186,24 @@ channel.On(ChannelState.Attached, args =>
 });
 ```
 
+### Subscribing to a channel in delta mode
+
+Subscribing to a channel in delta mode enables [delta compression](https://www.ably.io/documentation/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+
+Request a Vcdiff formatted delta stream using channel options when you get the channel:
+
+```csharp
+var channelParams = new ChannelParams();
+channelParams.Add("delta", "vcdiff");
+var channelOptions = new ChannelOptions();
+channelOptions.Params = channelParams;
+var channel = ably.Channels.Get(ChannelName, channelOptions);
+```
+
+Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
+
+If you would like to inspect the `Message` instances in order to identify whether the `Data` they present was rendered from a delta message from Ably then you can see if `Extras.Delta.Format` equals `"vcdiff"`.
+
 ### Publishing to a channel
 
 The client support a callback and async publishing. The simplest way to publish is:
