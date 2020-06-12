@@ -327,6 +327,11 @@ Target.create "Package - Merge json.net" (fun _ ->
               |> Seq.map (Path.combine "src")
               |> Seq.map (fun path -> sprintf "%s/bin/%s" path buildMode)
 
+  // Copy all files necessary
+  paths 
+  |> Seq.iter ( fun path -> !! (Path.combine path "IO.Ably*") |> Shell.copy (Path.combine path "packaged"))
+  
+  // Merge newtonsoft json inside ably and overwrite the files in the package folder with the merged ones
   paths 
   |> Seq.iter ( fun path -> mergeJsonNet path (Path.combine path "packaged"))
 
