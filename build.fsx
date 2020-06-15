@@ -324,8 +324,8 @@ Target.create "Package - Build All" (fun _ ->
 Target.create "Package - Merge json.net" (fun _ -> 
   let projectsToMerge = [ "IO.Ably.Android"; "IO.Ably.iOS"; "IO.Ably.NETFramework" ]
   let binFolderPaths = projectsToMerge 
-              |> Seq.map (Path.combine "src")
-              |> Seq.map (fun path -> sprintf "%s/bin/%s" path buildMode)
+                        |> Seq.map (Path.combine "src")
+                        |> Seq.map (fun path -> sprintf "%s/bin/%s" path buildMode)
 
   // Copy all IO.Ably* files to the `packaged folder` 
   binFolderPaths 
