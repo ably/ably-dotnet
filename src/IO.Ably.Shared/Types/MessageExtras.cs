@@ -46,8 +46,13 @@ namespace IO.Ably.Types
         /// <returns>returns the inner json.</returns>
         public JToken ToJson()
         {
-            var result = Data?.DeepClone();
-            if (result != null && Delta != null)
+            if (Data == null && Delta == null)
+            {
+                return null;
+            }
+
+            var result = Data?.DeepClone() ?? new JObject();
+            if (Delta != null)
             {
                 result[DeltaProperty] = JObject.FromObject(Delta);
             }
