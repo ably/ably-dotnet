@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.2.1](https://github.com/ably/ably-dotnet/tree/1.2.1) (2020-06-12)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.0...1.2.1)
+
+Fixes packaging issue for .NET Framework, Xamarin.iOS and Xamarin.Android
+
+- Close issue \#419. Failed to resolve IO.Ably.DeltaCodec [\#419](https://github.com/ably/ably-dotnet/issues/419) ([marto83](https://github.com/marto83))
+
 ## [1.2.0](https://github.com/ably/ably-dotnet/tree/1.2.0) (2020-06-08)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.20...1.2.0)
 
