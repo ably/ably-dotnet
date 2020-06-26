@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageExtrasConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
