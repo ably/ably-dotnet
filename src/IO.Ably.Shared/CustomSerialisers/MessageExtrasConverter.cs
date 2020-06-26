@@ -13,8 +13,7 @@ namespace IO.Ably.CustomSerialisers
         {
             if (value is MessageExtras messageExtras)
             {
-                // TODO: Investigate if there is a better way to do that.
-                writer.WriteRawValue(messageExtras.ToJson().ToString());
+                messageExtras.ToJson().WriteTo(writer);
             }
         }
 
