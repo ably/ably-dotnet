@@ -11,12 +11,12 @@ namespace IO.Ably.Types
         private const string DeltaProperty = "delta";
 
         [JsonIgnore]
-        private JToken Data { get; set; }
+        private JToken Data { get; }
 
         /// <summary>
         /// Delta extras is part of the Ably delta's functionality.
         /// </summary>
-        public DeltaExtras Delta { get; set; }
+        public DeltaExtras Delta { get; private set; }
 
         /// <summary>
         /// Messages extras is a flexible object that may other properties that are not exposed by the strongly typed implementation.
@@ -69,11 +69,22 @@ namespace IO.Ably.Types
         /// <summary>
         /// Format.
         /// </summary>
-        public string Format { get; set; }
+        public string Format { get; }
 
         /// <summary>
         /// From.
         /// </summary>
-        public string From { get; set; }
+        public string From { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeltaExtras"/> class.
+        /// </summary>
+        /// <param name="from">from parameter.</param>
+        /// <param name="format">format parameter.</param>
+        public DeltaExtras(string from, string format)
+        {
+            From = from;
+            Format = format;
+        }
     }
 }
