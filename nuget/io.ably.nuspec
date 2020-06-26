@@ -9,7 +9,7 @@
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
         <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
-        <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
+        <iconUrl>https://s3.amazonaws.com/files.ably.com/logo-70x70.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
         <summary>Ably is realtime data delivery platform for internet-enabled devices. See https://www.ably.io for more info</summary>
