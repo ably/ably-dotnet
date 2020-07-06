@@ -16,7 +16,7 @@ namespace IO.Ably.Types
         /// <summary>
         /// Delta extras is part of the Ably delta's functionality.
         /// </summary>
-        public DeltaExtras Delta { get; private set; }
+        public DeltaExtras Delta { get; }
 
         /// <summary>
         /// Messages extras is a flexible object that may other properties that are not exposed by the strongly typed implementation.
@@ -25,12 +25,7 @@ namespace IO.Ably.Types
         public MessageExtras(JToken data = null)
         {
             Data = data;
-            ParseData();
-        }
-
-        private void ParseData()
-        {
-            if (Data != null && Data is JObject dataObject)
+            if (data != null && data is JObject dataObject)
             {
                 var deltaProp = dataObject[DeltaProperty];
                 if (deltaProp != null && deltaProp is JObject deltaObject)
