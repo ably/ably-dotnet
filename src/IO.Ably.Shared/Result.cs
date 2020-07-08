@@ -62,9 +62,6 @@ namespace IO.Ably
 #pragma warning enable SA1129 // Do not use default value constructor
     }
 
-    // https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
-    // Slightly modified version of the above
-
     /// <summary>
     /// Result class representing the result of an operation.
     /// </summary>
