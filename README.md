@@ -1,8 +1,8 @@
 # ably-dotnet
 
 [![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
-[![NetFramework build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet?branchName=master)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=1&branchName=master)
-[![NetStandard build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet%20(1)?branchName=master)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=2&branchName=master)
+[![NetFramework build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet?branchName=main)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=1&branchName=main)
+[![NetStandard build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet%20(1)?branchName=main)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=2&branchName=main)
 
 A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service. This library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
