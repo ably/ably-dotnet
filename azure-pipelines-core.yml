@@ -3,7 +3,7 @@
 # Add steps that publish symbols, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 trigger:
-- master
+- main
 - poc/*
 
 resources:
@@ -18,7 +18,7 @@ jobs:
     vmImage: 'windows-2019'
   steps:
   - script: dotnet tool install fake-cli --tool-path .
-  # Run Build with Test target when not merging a release branch into master
+  # Run Build with Test target when not merging a release branch into main
   #- script: .\build.cmd Test
   #condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) 
 
