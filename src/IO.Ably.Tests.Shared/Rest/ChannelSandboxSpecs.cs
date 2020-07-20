@@ -372,6 +372,9 @@ namespace IO.Ably.Tests.Rest
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
+
+                await Task.Delay(1000);
+
                 var message = (await channel.HistoryAsync()).Items.First();
                 if (message.Data is byte[])
                 {
@@ -403,6 +406,8 @@ namespace IO.Ably.Tests.Rest
             {
                 await channel.PublishAsync("name" + i, "data" + i);
             }
+
+            await Task.Delay(1000);
 
             // Assert
             var history = await channel.HistoryAsync(new PaginatedRequestParams() { Limit = 10 });
@@ -489,7 +494,7 @@ namespace IO.Ably.Tests.Rest
 
             await Task.Delay(1000);
 
-            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));CanPublishAMessageAndRetrieveIt256
 
             var message = (await channel2.HistoryAsync()).Items.First();
 
