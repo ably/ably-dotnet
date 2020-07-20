@@ -494,7 +494,7 @@ namespace IO.Ably.Tests.Rest
 
             await Task.Delay(1000);
 
-            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));CanPublishAMessageAndRetrieveIt256
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
 
             var message = (await channel2.HistoryAsync()).Items.First();
 
@@ -577,7 +577,6 @@ namespace IO.Ably.Tests.Rest
             await client1.AblyAuth.AddAuthHeader(request);
             var response = await httpClient.Execute(request);
 
-
             // Assert
             var historyData = JArray.Parse(response.TextResponse);
             var responseData = (JObject)historyData.First;
@@ -593,7 +592,7 @@ namespace IO.Ably.Tests.Rest
             }
             else
             {
-                var r = (string) responseData["data"];
+                var r = (string)responseData["data"];
                 r.Should().Be((string)messageData["data"]);
             }
         }
