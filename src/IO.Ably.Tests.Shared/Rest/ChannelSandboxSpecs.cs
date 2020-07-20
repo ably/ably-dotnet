@@ -74,6 +74,8 @@ namespace IO.Ably.Tests.Rest
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.PublishAsync(message);
 
+            await Task.Delay(1000);
+
             var result = await channel.HistoryAsync();
             result.Items.First().ClientId.Should().Be("999");
         }
@@ -283,6 +285,8 @@ namespace IO.Ably.Tests.Rest
 
             // restore the SendAsync method
             client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
+
+            await Task.Delay(1000);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -555,13 +559,17 @@ namespace IO.Ably.Tests.Rest
                 await channel.PublishAsync("event", messageData["expectedValue"]);
             }
 
+            await Task.Delay(1000);
+
             var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get, Protocol.Json);
             await client1.AblyAuth.AddAuthHeader(request);
             var response = await httpClient.Execute(request);
 
+
             // Assert
             var historyData = JArray.Parse(response.TextResponse);
             var responseData = (JObject)historyData.First;
+            responseData.Should().NotBeNull();
 
             if (expectedType == "binary")
             {
@@ -573,7 +581,8 @@ namespace IO.Ably.Tests.Rest
             }
             else
             {
-                ((string)responseData["data"]).Should().Be((string)messageData["data"]);
+                var r = (string) responseData["data"];
+                r.Should().Be((string)messageData["data"]);
             }
         }
 
