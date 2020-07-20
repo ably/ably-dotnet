@@ -235,6 +235,8 @@ namespace IO.Ably.Tests.Rest
             // restore the SendAsync method
             client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
 
+            await Task.Delay(1000);
+
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
             history.Items[0].Name.Should().Be($"test1{suffix}");
@@ -485,7 +487,10 @@ namespace IO.Ably.Tests.Rest
             var payload = "test payload";
             await channel1.PublishAsync("test", payload);
 
+            await Task.Delay(1000);
+
             var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
+
             var message = (await channel2.HistoryAsync()).Items.First();
 
             loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
@@ -513,6 +518,8 @@ namespace IO.Ably.Tests.Rest
             var client1 = await GetRestClient(protocol);
             await client1.AblyAuth.AddAuthHeader(request);
             await httpClient.Execute(request);
+
+            await Task.Delay(1000);
 
             var channel = client1.Channels.Get(channelName);
             var result = await channel.HistoryAsync();
