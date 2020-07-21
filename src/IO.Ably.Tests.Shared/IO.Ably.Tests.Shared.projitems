@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageExtrasConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaLastMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ExtraSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />

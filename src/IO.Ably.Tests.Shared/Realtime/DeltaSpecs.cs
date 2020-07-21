@@ -7,6 +7,7 @@ using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,6 +15,13 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 {
     public class DeltaSpecs : AblyRealtimeSpecs
     {
+        private MessageExtras CreateExtrasWithDelta(DeltaExtras delta)
+        {
+            var jObject = new JObject();
+            jObject["delta"] = JObject.FromObject(delta);
+            return new MessageExtras(jObject);
+        }
+
         [Fact]
         [Trait("spec", "RSL6c2")]
         public async Task WhenMessageRecevied_WithDeltaError_ShouldNotPassMessageToChannelSubscriber()
@@ -37,7 +45,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channel.Name,
                     Messages = new[]
                     {
-                        new Message() { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                        new Message() { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
                     },
                 }));
 
@@ -72,7 +80,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channel.Name,
                     Messages = new[]
                     {
-                        new Message { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                        new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
                     },
                 }));
 
@@ -108,7 +116,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channel.Name,
                     Messages = new[]
                     {
-                        new Message() { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                        new Message() { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
                     },
                 }));
 

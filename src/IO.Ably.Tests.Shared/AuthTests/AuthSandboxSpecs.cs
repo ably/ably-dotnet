@@ -748,6 +748,8 @@ namespace IO.Ably.Tests
             var channel = authCallbackClient.Channels["pesisted:test"];
             await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
+            await Task.Delay(1000);
+
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");

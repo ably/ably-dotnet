@@ -74,6 +74,8 @@ namespace IO.Ably.Tests.Rest
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.PublishAsync(message);
 
+            await Task.Delay(1000);
+
             var result = await channel.HistoryAsync();
             result.Items.First().ClientId.Should().Be("999");
         }
@@ -233,6 +235,8 @@ namespace IO.Ably.Tests.Rest
             // restore the SendAsync method
             client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
 
+            await Task.Delay(1000);
+
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
             history.Items[0].Name.Should().Be($"test1{suffix}");
@@ -283,6 +287,8 @@ namespace IO.Ably.Tests.Rest
 
             // restore the SendAsync method
             client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
+
+            await Task.Delay(1000);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -366,6 +372,9 @@ namespace IO.Ably.Tests.Rest
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
+
+                await Task.Delay(1000);
+
                 var message = (await channel.HistoryAsync()).Items.First();
                 if (message.Data is byte[])
                 {
@@ -397,6 +406,8 @@ namespace IO.Ably.Tests.Rest
             {
                 await channel.PublishAsync("name" + i, "data" + i);
             }
+
+            await Task.Delay(1000);
 
             // Assert
             var history = await channel.HistoryAsync(new PaginatedRequestParams() { Limit = 10 });
@@ -481,7 +492,10 @@ namespace IO.Ably.Tests.Rest
             var payload = "test payload";
             await channel1.PublishAsync("test", payload);
 
+            await Task.Delay(1000);
+
             var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
+
             var message = (await channel2.HistoryAsync()).Items.First();
 
             loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
@@ -509,6 +523,8 @@ namespace IO.Ably.Tests.Rest
             var client1 = await GetRestClient(protocol);
             await client1.AblyAuth.AddAuthHeader(request);
             await httpClient.Execute(request);
+
+            await Task.Delay(1000);
 
             var channel = client1.Channels.Get(channelName);
             var result = await channel.HistoryAsync();
@@ -555,6 +571,8 @@ namespace IO.Ably.Tests.Rest
                 await channel.PublishAsync("event", messageData["expectedValue"]);
             }
 
+            await Task.Delay(1000);
+
             var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get, Protocol.Json);
             await client1.AblyAuth.AddAuthHeader(request);
             var response = await httpClient.Execute(request);
@@ -562,6 +580,7 @@ namespace IO.Ably.Tests.Rest
             // Assert
             var historyData = JArray.Parse(response.TextResponse);
             var responseData = (JObject)historyData.First;
+            responseData.Should().NotBeNull();
 
             if (expectedType == "binary")
             {
@@ -573,7 +592,8 @@ namespace IO.Ably.Tests.Rest
             }
             else
             {
-                ((string)responseData["data"]).Should().Be((string)messageData["data"]);
+                var r = (string)responseData["data"];
+                r.Should().Be((string)messageData["data"]);
             }
         }
 
@@ -592,6 +612,9 @@ namespace IO.Ably.Tests.Rest
             await channel1.PublishAsync("test", payload);
 
             var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
+
+            await Task.Delay(1000);
+
             var message = (await channel2.HistoryAsync()).Items.First();
 
             loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
