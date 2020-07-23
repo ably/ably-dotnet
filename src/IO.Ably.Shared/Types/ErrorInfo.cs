@@ -29,7 +29,7 @@ namespace IO.Ably
         internal const string HrefBase = "https://help.ably.io/error/";
 
         /// <summary>
-        /// Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json).
+        /// Ably error code (see https://github.com/ably/ably-common/blob/main/protocol/errors.json).
         /// </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
