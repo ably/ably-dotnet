@@ -1,4 +1,5 @@
 # ably-dotnet
+# ably-dotnet
 
 [![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
 [![NetFramework build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet?branchName=main)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=1&branchName=main)
@@ -428,8 +429,9 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Building and Packaging
 
-The build scripts are written partly using `fake' and partly in powershell using PSake and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written using `fake' and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
 
+    choco install fake
     choco install nuget.commandline
 
 Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests. 
