@@ -105,7 +105,7 @@ namespace IO.Ably
         /// Default: null.
         /// </summary>
         [JsonIgnore]
-        public ILoggerSink LogHandler { get; set; }
+        public ILoggerSink LogHander { get; set; }
 
         /// <summary>
         /// For development environments only. Allows a non default host for the rest service.

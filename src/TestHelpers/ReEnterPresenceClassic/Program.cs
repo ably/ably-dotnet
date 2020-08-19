@@ -18,7 +18,7 @@ namespace ReEnterPresenceClassic
         {
             var opts = new ClientOptions(AblyKey)
             {
-                LogHandler = new ConsoleLogSink(),
+                LogHander = new ConsoleLogSink(),
                 LogLevel = LogLevel.Debug,
                 ClientId = $"client-{Guid.NewGuid().ToString().Substring(0, 8)}"
             };

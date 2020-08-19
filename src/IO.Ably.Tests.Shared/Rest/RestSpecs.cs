@@ -327,7 +327,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3c")]
             public void WithLogHandler_ShouldUseNewLogHandler()
             {
-                new AblyRest(new ClientOptions(ValidKey) { LogHandler = new TestLogHandler() });
+                new AblyRest(new ClientOptions(ValidKey) { LogHander = new TestLogHandler() });
 
                 Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
             }

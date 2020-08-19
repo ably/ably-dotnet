@@ -102,9 +102,9 @@ namespace IO.Ably
                 Logger.LogLevel = Options.LogLevel.Value;
             }
 
-            if (Options.LogHandler != null)
+            if (Options.LogHander != null)
             {
-                Logger.LoggerSink = Options.LogHandler;
+                Logger.LoggerSink = Options.LogHander;
             }
 
             Logger.Debug("Protocol set to: " + Protocol);

@@ -67,7 +67,7 @@ namespace RealtimeChat
                 AutoConnect = false,
                 ClientId = clientId,
                 LogLevel = LogLevel.Debug,
-                LogHandler = new CustomLoggerSink(message => Context.Post(state => logBox.Items.Add(message), null))
+                LogHander = new CustomLoggerSink(message => Context.Post(state => logBox.Items.Add(message), null))
             };
             this.client = new AblyRealtime(options);
             this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
