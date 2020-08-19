@@ -105,6 +105,7 @@ namespace IO.Ably
         /// Default: null.
         /// </summary>
         [JsonIgnore]
+        [ObsoleteAttribute("This property is obsolete/deprecated", false)]
         public ILoggerSink LogHander { get; set; }
 
         /// <summary>
