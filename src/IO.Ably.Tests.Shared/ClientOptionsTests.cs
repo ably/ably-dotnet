@@ -11,7 +11,7 @@ namespace IO.Ably.Tests.Shared
     {
         [Fact]
         [Obsolete]
-        public void Options_WithLogHanderReturns_LogHandlerWithSameLoggerSink()
+        public void Options_WithLogHander_ReturnsLogHandlerWithSameLoggerSink()
         {
             var testLoggerSink = new TestLoggerSink();
             var options = new ClientOptions()
@@ -31,7 +31,7 @@ namespace IO.Ably.Tests.Shared
 
         [Fact]
         [Obsolete]
-        public void Options_WithLogHandlerReturns_LogHanderWithSameLoggerSink()
+        public void Options_WithLogHandler_ReturnsLogHanderWithSameLoggerSink()
         {
             var testLoggerSink = new TestLoggerSink();
             var options = new ClientOptions()
