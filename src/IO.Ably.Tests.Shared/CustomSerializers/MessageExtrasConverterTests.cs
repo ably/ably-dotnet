@@ -117,7 +117,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
 
         [Fact]
         [Trait("spec ", "tm2i")]
-        public void ShouldSerialize_Message_WithArbitraryMessageExtras()
+        public void ShouldParse_Message_WithArbitraryMessageExtras()
         {
             var json = @"{
                             'id':'UniqueId',
