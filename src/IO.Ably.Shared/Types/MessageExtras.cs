@@ -1,3 +1,4 @@
+using IO.Ably.CustomSerialisers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,6 +7,7 @@ namespace IO.Ably.Types
     /// <summary>
     /// Extra properties on the Message.
     /// </summary>
+    [JsonConverter(typeof(MessageExtrasConverter))]
     public class MessageExtras
     {
         private const string DeltaProperty = "delta";
@@ -16,6 +18,7 @@ namespace IO.Ably.Types
         /// <summary>
         /// Delta extras is part of the Ably delta's functionality.
         /// </summary>
+        [JsonIgnore]
         public DeltaExtras Delta { get; }
 
         /// <summary>
@@ -41,18 +44,7 @@ namespace IO.Ably.Types
         /// <returns>returns the inner json.</returns>
         public JToken ToJson()
         {
-            if (Data == null && Delta == null)
-            {
-                return null;
-            }
-
-            var result = Data?.DeepClone() ?? new JObject();
-            if (Delta != null)
-            {
-                result[DeltaProperty] = JObject.FromObject(Delta);
-            }
-
-            return result;
+            return Data?.DeepClone();
         }
     }
 
