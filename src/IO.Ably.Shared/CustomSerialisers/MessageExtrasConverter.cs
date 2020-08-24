@@ -20,7 +20,7 @@ namespace IO.Ably.CustomSerialisers
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var extrasToken = JToken.Load(reader);
-            return new MessageExtras(extrasToken);
+            return MessageExtras.From(extrasToken);
         }
 
         public override bool CanConvert(Type objectType)
