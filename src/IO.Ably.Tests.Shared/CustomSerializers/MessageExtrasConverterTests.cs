@@ -1,18 +1,27 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using IO.Ably.CustomSerialisers;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
 {
     public class MessageExtrasConverterTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
         public JsonSerializerSettings JsonSettings = JsonHelper.Settings;
+
+        public MessageExtrasConverterTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
 
         [Fact]
         [Trait("spec ", "tm2i")]
@@ -38,12 +47,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
             var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
             var serializedJToken = JToken.Parse(serialized);
 
-            Assert.True(JToken.DeepEquals(serializedJToken, originalJToken));
-
-            // todo: upgrade testing library - https://github.com/fluentassertions/fluentassertions.json/issues/7
-            // https://stackoverflow.com/questions/52645603/how-to-compare-two-json-objects-using-c-sharp
-
-            // serializedJToken.Should().BeEquivalentTo(originalJToken);
+            JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
         }
 
         [Fact]
@@ -69,7 +73,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
 
             var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
             var serializedJToken = JToken.Parse(serialized);
-            Assert.True(JToken.DeepEquals(serializedJToken, originalJToken));
+            JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
         }
 
         [Fact]
@@ -91,7 +95,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
 
             var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
             var serializedJToken = JToken.Parse(serialized);
-            Assert.True(JToken.DeepEquals(serializedJToken, originalJToken));
+            JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
         }
 
         [Fact]

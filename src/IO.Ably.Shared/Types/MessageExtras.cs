@@ -16,7 +16,7 @@ namespace IO.Ably.Types
         /// Data holds actual extra information associated with message.
         /// </summary>
         [JsonIgnore]
-        public JToken Data { get; }
+        private JToken Data { get; }
 
         /// <summary>
         /// Delta extras is part of the Ably delta's functionality.
