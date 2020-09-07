@@ -1,3 +1,4 @@
+using IO.Ably.CustomSerialisers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,16 +7,21 @@ namespace IO.Ably.Types
     /// <summary>
     /// Extra properties on the Message.
     /// </summary>
+    [JsonConverter(typeof(MessageExtrasConverter))]
     public class MessageExtras
     {
         private const string DeltaProperty = "delta";
 
+        /// <summary>
+        /// Data holds actual extra information associated with message.
+        /// </summary>
         [JsonIgnore]
         private JToken Data { get; }
 
         /// <summary>
         /// Delta extras is part of the Ably delta's functionality.
         /// </summary>
+        [JsonIgnore]
         public DeltaExtras Delta { get; }
 
         /// <summary>
@@ -23,16 +29,29 @@ namespace IO.Ably.Types
         /// </summary>
         /// <param name="data">the json object passed to Message extras.</param>
         public MessageExtras(JToken data = null)
+            : this(data, null)
+        {
+        }
+
+        private MessageExtras(JToken data, DeltaExtras delta)
         {
             Data = data;
+            Delta = delta;
+        }
+
+        internal static MessageExtras From(JToken data = null)
+        {
+            DeltaExtras delta = null;
             if (data != null && data is JObject dataObject)
             {
                 var deltaProp = dataObject[DeltaProperty];
                 if (deltaProp != null && deltaProp is JObject deltaObject)
                 {
-                    Delta = deltaObject.ToObject<DeltaExtras>();
+                    delta = deltaObject.ToObject<DeltaExtras>();
                 }
             }
+
+            return new MessageExtras(data, delta);
         }
 
         /// <summary>
@@ -41,18 +60,7 @@ namespace IO.Ably.Types
         /// <returns>returns the inner json.</returns>
         public JToken ToJson()
         {
-            if (Data == null && Delta == null)
-            {
-                return null;
-            }
-
-            var result = Data?.DeepClone() ?? new JObject();
-            if (Delta != null)
-            {
-                result[DeltaProperty] = JObject.FromObject(Delta);
-            }
-
-            return result;
+            return Data?.DeepClone();
         }
     }
 

@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EncryptionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorInfoTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\JAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyCollectionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySandboxFixture.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonDeserializationBugTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\JDiff.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonMessageSerializerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LoggerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Base64EncoderTests.cs" />
