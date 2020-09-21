@@ -178,12 +178,7 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken(ServerTimeOffset() ?? Now()))
-            {
-                return CurrentToken;
-            }
-
-            return await RenewToken();
+            return await Task.FromResult(CurrentToken);
         }
 
         /// <summary>
@@ -193,30 +188,12 @@ namespace IO.Ably
         /// <exception cref="AblyException">Throws an exception if the new token is not valid.</exception>
         internal async Task<TokenDetails> RenewToken()
         {
-            if (TokenRenewable)
-            {
-                var token = await RequestTokenAsync();
+            if (!TokenRenewable) { throw new AblyException(ErrorInfo.NonRenewableToken); }
+            var token = await RequestTokenAsync();
 
-                await OnAuthUpdated(token, false);
-
-                var now = ServerTimeOffset() ?? Now();
-                if (token.IsValidToken(now))
-                {
-                    CurrentToken = token;
-                    return token;
-                }
-
-                if (token != null && token.IsExpired(now))
-                {
-                    throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
-                }
-            }
-            else
-            {
-                throw new AblyException(ErrorInfo.NonRenewableToken);
-            }
-
-            return null;
+            await OnAuthUpdated(token, false);
+            CurrentToken = token;
+            return token;
         }
 
         /// <summary>
