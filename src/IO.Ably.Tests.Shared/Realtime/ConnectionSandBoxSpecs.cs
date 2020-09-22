@@ -920,59 +920,6 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h2")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFailsWithFatalError_ShouldBecomeFailedAndEmitError(Protocol protocol)
-        {
-            var authClient = await GetRestClient(protocol);
-
-            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
-            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(10); // Cheat the client
-            var client = await GetRealtimeClient(protocol, (options, settings) =>
-            {
-                options.TokenDetails = tokenDetails;
-
-                // has means to renew that should result in a fatal error
-                // return a 403 to simulate a fatal error, per RSA4d.
-                options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
-            });
-
-            await client.WaitForState(ConnectionState.Connected);
-
-            var stateChanges = new List<ConnectionStateChange>();
-            client.Connection.Once(ConnectionEvent.Disconnected, state =>
-            {
-                stateChanges.Add(state);
-                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
-                {
-                    stateChanges.Add(state2);
-                    client.Connection.Once(ConnectionEvent.Failed, state3 =>
-                    {
-                        client.Connection.State.Should().Be(ConnectionState.Failed);
-                        client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3);
-                    });
-                });
-            });
-
-            await client.WaitForState(ConnectionState.Failed);
-            await client.ProcessCommands();
-            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
-                                                                            {
-                                                                                ConnectionState.Disconnected,
-                                                                                ConnectionState.Connecting,
-                                                                                ConnectionState.Failed
-                                                                            });
-
-            stateChanges[0].HasError.Should().BeTrue();
-            stateChanges[0].Reason.Code.Should().Be(40142);
-            stateChanges[1].HasError.Should().BeFalse();
-            stateChanges[2].HasError.Should().BeTrue();
-            stateChanges[2].Reason.Code.Should().Be(80019);
-            stateChanges[2].Reason.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        }
-
-        [Theory]
-        [ProtocolData]
         [Trait("spec", "RTN15g")]
         [Trait("spec", "RTN15g1")]
         // "RTN15g2" It can't implement that spec item because RTN23a is not even implemented
