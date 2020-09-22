@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -164,7 +165,7 @@ namespace IO.Ably.Tests
             var restClient = await GetRestClient(protocol);
             var token = await restClient.Auth.AuthorizeAsync(new TokenParams
             {
-                Ttl = TimeSpan.FromMilliseconds(1000)
+                Ttl = TimeSpan.FromMilliseconds(1000),
             });
 
             // this realtime client will have a key for the sandbox, thus a means to renew
@@ -198,6 +199,8 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4b")]
         public async Task RealTimeWithAuthCallback_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
+            Logger.LoggerSink = new OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
             // create a short lived token
             var authRestClient = await GetRestClient(protocol);
             var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
@@ -263,6 +266,70 @@ namespace IO.Ably.Tests
 
             var result = await awaiter.Task;
             result.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4b1")]
+        public async Task RealTimeWithAuthUrl_WhenTokenExpired_And_WithServerTime_ShouldRenewToken(Protocol protocol)
+        {
+            var authRestClient = await GetRestClient(protocol);
+            var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
+            {
+                Ttl = TimeSpan.FromMilliseconds(1000),
+            });
+
+            // this realtime client will have a key for the sandbox, thus a means to renew
+            var mainClient = await GetRestClient(protocol, options =>
+            {
+                options.QueryTime = true;
+                options.TokenDetails = token;
+            });
+            await Task.Delay(2000);
+            // This makes sure we get server time
+            ((AblyAuth)mainClient.Auth).CreateTokenRequest();
+
+            await mainClient.StatsAsync();
+            ((AblyAuth)mainClient.Auth).CurrentToken.Should().NotBeSameAs(token);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4b1")]
+        public async Task RealTimeWithAuthUrl_WhenTokenExpired_And_WithServerTime_And_NoWayToRenewToken_ShouldErrorBeforeCallingServer(Protocol protocol)
+        {
+            var authRestClient = await GetRestClient(protocol);
+            var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
+            {
+                Ttl = TimeSpan.FromMilliseconds(1000),
+            });
+
+            // this realtime client will have a key for the sandbox, thus a means to renew
+            var mainClient = await GetRestClient(protocol, options =>
+            {
+                options.Key = null;
+                options.QueryTime = true;
+                options.TokenDetails = token;
+            });
+
+            bool madeHttpCall = false;
+            var previousExecuteRequest = mainClient.ExecuteHttpRequest;
+            mainClient.ExecuteHttpRequest = request =>
+            {
+                if (request.Url != "/time")
+                {
+                    madeHttpCall = true;
+                }
+
+                return previousExecuteRequest(request);
+            };
+            await Task.Delay(2000);
+            // This makes sure we get server time
+            ((AblyAuth)mainClient.Auth).SetServerTime();
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => mainClient.StatsAsync());
+            ex.ErrorInfo.Should().BeSameAs(ErrorInfo.NonRenewableToken);
+            madeHttpCall.Should().BeFalse();
         }
 
         [Theory]
