@@ -21,13 +21,15 @@ namespace IO.Ably
             _rest = rest;
             Logger = options.Logger;
             ServerTime = () => _rest.TimeAsync();
-            ServerTimeOffset = () => null;
+            ServerNow = () => null;
             Initialise();
         }
 
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
-        protected Func<DateTimeOffset?> ServerTimeOffset { get; private set; }
+        private bool HasServerTime => ServerNow().HasValue;
+
+        protected Func<DateTimeOffset?> ServerNow { get; private set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -91,10 +93,23 @@ namespace IO.Ably
             LogCurrentAuthenticationMethod();
         }
 
-        private async Task SetServerTimeOffset()
+        internal async Task SetServerTime()
         {
-            TimeSpan diff = Now() - await ServerTime();
-            ServerTimeOffset = () => Now() - diff;
+            var serverTime = await ServerTime();
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Received server time: " + serverTime);
+            }
+
+            TimeSpan diff = Now() - serverTime;
+
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Server time differs from device Now by: " + diff);
+            }
+
+            // TODO: Save servertime and check if now has drastically changed
+            ServerNow = () => Now() - diff;
         }
 
         private AuthMethod CheckAndGetAuthMethod()
@@ -161,6 +176,11 @@ namespace IO.Ably
             }
             else
             {
+                if (HasServerTime == false && Options.QueryTime == true)
+                {
+                    await SetServerTime();
+                }
+
                 var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (currentValidToken == null)
                 {
@@ -178,7 +198,12 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            return await Task.FromResult(CurrentToken);
+            if (CurrentToken.IsValidToken(ServerNow()))
+            {
+                return CurrentToken;
+            }
+
+            return await RenewToken();
         }
 
         /// <summary>
@@ -188,12 +213,22 @@ namespace IO.Ably
         /// <exception cref="AblyException">Throws an exception if the new token is not valid.</exception>
         internal async Task<TokenDetails> RenewToken()
         {
-            if (!TokenRenewable) { throw new AblyException(ErrorInfo.NonRenewableToken); }
-            var token = await RequestTokenAsync();
+            if (TokenRenewable)
+            {
+                var token = await RequestTokenAsync();
 
-            await OnAuthUpdated(token, false);
-            CurrentToken = token;
-            return token;
+                await OnAuthUpdated(token, false);
+
+                if (token.IsValidToken(ServerNow()))
+                {
+                    CurrentToken = token;
+                    return token;
+                }
+
+                throw new AblyException("Token is invalid: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
+            }
+
+            throw new AblyException(ErrorInfo.NonRenewableToken);
         }
 
         /// <summary>
@@ -362,15 +397,15 @@ namespace IO.Ably
 
         private async Task SetTokenParamsTimestamp(AuthOptions authOptions, TokenParams tokenParams)
         {
-            if (authOptions.QueryTime.GetValueOrDefault(false)
-                && !ServerTimeOffset().HasValue)
+            // If the timestamp doesn't arrive from the server and we can request
+            if (authOptions.QueryTime == true && HasServerTime == false)
             {
-                await SetServerTimeOffset();
+                await SetServerTime();
             }
 
             if (!tokenParams.Timestamp.HasValue)
             {
-                tokenParams.Timestamp = ServerTimeOffset();
+                tokenParams.Timestamp = ServerNow();
             }
         }
 
@@ -507,11 +542,6 @@ namespace IO.Ably
             }
 
             await SetTokenParamsTimestamp(authOptions, tokenParams);
-
-            if (authOptions.QueryTime.GetValueOrDefault(false))
-            {
-                tokenParams.Timestamp = await _rest.TimeAsync();
-            }
 
             var apiKey = authOptions.ParseKey();
             var request = new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);

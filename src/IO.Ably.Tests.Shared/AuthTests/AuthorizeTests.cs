@@ -33,9 +33,9 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.Options.QueryTime = true;
             await testAblyAuth.AuthorizeAsync(tokenParams);
             serverTimeCalled.Should().BeTrue();
-            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), precision: 1000); // Allow 1s clock skew
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 1000); // Allow 1s clock skew
+            testAblyAuth.GetServerNow().Should().HaveValue();
+            testAblyAuth.GetServerNow()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), precision: 1000); // Allow 1s clock skew
+            testAblyAuth.GetServerNow()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 1000); // Allow 1s clock skew
         }
 
         [Fact]
@@ -59,9 +59,9 @@ namespace IO.Ably.Tests.AuthTests
             // get the current server time offset, pause for a short time,
             // then get it again.
             // The new value should represent a time after the first
-            var snapshot = testAblyAuth.GetServerTimeOffset();
+            var snapshot = testAblyAuth.GetServerNow();
             await Task.Delay(500);
-            testAblyAuth.GetServerTimeOffset()?.Should().BeAfter(snapshot.Value);
+            testAblyAuth.GetServerNow()?.Should().BeAfter(snapshot.Value);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace IO.Ably.Tests.AuthTests
             // get the current server time offset, pause for a short time,
             // then get it again.
             // The new value should represent a time after the first
-            testAblyAuth.GetServerTimeOffset();
+            testAblyAuth.GetServerNow();
 
             // reset flag, used to show ServerTime() is not called again
             serverTimeCalled = false;
@@ -187,9 +187,9 @@ namespace IO.Ably.Tests.AuthTests
             serverTimeCalled.Should().BeFalse();
 
             // and we should still be getting calculated offsets
-            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), 1000);
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), 1000);
+            testAblyAuth.GetServerNow().Should().HaveValue();
+            testAblyAuth.GetServerNow()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), 1000);
+            testAblyAuth.GetServerNow()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), 1000);
         }
 
         public ServerTimeTests(ITestOutputHelper output)

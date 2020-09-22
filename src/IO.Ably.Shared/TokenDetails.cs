@@ -58,15 +58,6 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="TokenDetails"/> class.
         /// </summary>
-        /// <param name="nowFunc">function returning the current time.</param>
-        public TokenDetails(Func<DateTimeOffset> nowFunc)
-        {
-            Now = nowFunc;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TokenDetails"/> class.
-        /// </summary>
         /// <param name="token">initialise TokenDetails from a token string.</param>
         public TokenDetails(string token)
         {
@@ -90,8 +81,19 @@ namespace IO.Ably
         /// </summary>
         public void Expire()
         {
-            Expires = Now().AddDays(-1);
+            Expire(Defaults.NowFunc()());
         }
+
+        /// <summary>
+        /// Expires the current token.
+        /// </summary>
+        /// <param name="now">Current date and time.</param>
+        public void Expire(DateTimeOffset now)
+        {
+            Expires = now.AddDays(-1);
+        }
+
+        internal bool CanBeUsedToCheckExpiry => Expires != DateTimeOffset.MinValue;
 
         /// <summary>
         /// Checks if a json object is a token. It does it by ensuring the existance of "issued" property.
@@ -155,21 +157,23 @@ namespace IO.Ably
         /// Checks whether the token is valid.
         /// </summary>
         /// <param name="token"><see cref="TokenDetails"/>.</param>
-        /// <param name="now">the correct instance of now to compare with the token.</param>
+        /// <param name="serverTime">the server time instance of now to compare with the token.</param>
         /// <returns>true / false.</returns>
-        public static bool IsValidToken(this TokenDetails token, DateTimeOffset now)
+        public static bool IsValidToken(this TokenDetails token, DateTimeOffset? serverTime)
         {
             if (token == null)
             {
                 return false;
             }
 
-            if (token.Expires == DateTimeOffset.MinValue)
+            // (RSA4b1) We can only check validity of the token if it is a full TokenDetails object
+            // and we already have the server time
+            if (serverTime is null || token.CanBeUsedToCheckExpiry == false)
             {
                 return true;
             }
 
-            return !token.IsExpired(now);
+            return token.IsExpired(serverTime.Value) == false;
         }
 
         /// <summary>
