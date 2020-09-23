@@ -199,13 +199,11 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4b")]
         public async Task RealTimeWithAuthCallback_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-            Logger.LogLevel = LogLevel.Debug;
             // create a short lived token
             var authRestClient = await GetRestClient(protocol);
             var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
             {
-                Ttl = TimeSpan.FromMilliseconds(1000)
+                Ttl = TimeSpan.FromMilliseconds(1000),
             });
 
             bool didRetry = false;
