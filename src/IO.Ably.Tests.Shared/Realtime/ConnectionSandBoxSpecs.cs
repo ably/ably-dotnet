@@ -1273,7 +1273,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(Protocol.Json, (options, _) =>
             {
-                options.SkipInternetCheck = false;
                 options.FallbackHosts = new string[] { };
             });
 
@@ -1301,7 +1300,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "437")]
         public async Task CanConnectToAbly_ShouldReturnTrue()
         {
-            var restClient = await GetRestClient(Protocol.Json, options => options.SkipInternetCheck = false);
+            var restClient = await GetRestClient(Protocol.Json);
 
             var result = await restClient.CanConnectToAbly();
             result.Should().BeTrue();
