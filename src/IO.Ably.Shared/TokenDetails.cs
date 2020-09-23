@@ -9,8 +9,6 @@ namespace IO.Ably
     /// </summary>
     public sealed class TokenDetails
     {
-        internal Func<DateTimeOffset> Now { get; set; }
-
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>.
         /// </summary>
@@ -52,7 +50,6 @@ namespace IO.Ably
         /// </summary>
         public TokenDetails()
         {
-            Now = Defaults.NowFunc();
         }
 
         /// <summary>
@@ -62,35 +59,6 @@ namespace IO.Ably
         public TokenDetails(string token)
         {
             Token = token;
-            Now = Defaults.NowFunc();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TokenDetails"/> class.
-        /// </summary>
-        /// <param name="token">token string.</param>
-        /// <param name="nowFunc">function returning the current time.</param>
-        public TokenDetails(string token, Func<DateTimeOffset> nowFunc)
-        {
-            Token = token;
-            Now = nowFunc;
-        }
-
-        /// <summary>
-        /// Expires the current token.
-        /// </summary>
-        public void Expire()
-        {
-            Expire(Defaults.NowFunc()());
-        }
-
-        /// <summary>
-        /// Expires the current token.
-        /// </summary>
-        /// <param name="now">Current date and time.</param>
-        public void Expire(DateTimeOffset now)
-        {
-            Expires = now.AddDays(-1);
         }
 
         internal bool CanBeUsedToCheckExpiry => Expires != DateTimeOffset.MinValue;

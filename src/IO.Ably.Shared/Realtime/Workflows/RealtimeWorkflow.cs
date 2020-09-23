@@ -514,7 +514,7 @@ namespace IO.Ably.Realtime.Workflow
 
         private void ClearTokenAndRecordRetry()
         {
-            Auth.ExpireCurrentToken();
+            Auth.CurrentToken = null;
             State.AttemptsInfo.RecordTokenRetry();
         }
 

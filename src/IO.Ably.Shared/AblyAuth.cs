@@ -58,11 +58,6 @@ namespace IO.Ably
 
         private bool HasApiKey => Options.Key.IsNotEmpty();
 
-        public void ExpireCurrentToken()
-        {
-            CurrentToken?.Expire();
-        }
-
         internal void Initialise()
         {
             AuthMethod = CheckAndGetAuthMethod();
@@ -87,7 +82,7 @@ namespace IO.Ably
             }
             else if (Options.Token.IsNotEmpty())
             {
-                CurrentToken = new TokenDetails(Options.Token, Options.NowFunc);
+                CurrentToken = new TokenDetails(Options.Token);
             }
 
             LogCurrentAuthenticationMethod();
@@ -322,7 +317,7 @@ namespace IO.Ably
                         // RSC8c:
                         // The token retrieved is assumed by the library to be a token string
                         // if the response has Content-Type "text/plain" or "application/jwt"
-                        return new TokenDetails(response.TextResponse, Now);
+                        return new TokenDetails(response.TextResponse);
                     }
 
                     responseText = response.TextResponse;
@@ -388,9 +383,6 @@ namespace IO.Ably
             {
                 throw new AblyException("Invalid token response returned", 80019);
             }
-
-            // TODO: Remove the Now function from the token
-            result.Now = Now;
 
             return result;
         }

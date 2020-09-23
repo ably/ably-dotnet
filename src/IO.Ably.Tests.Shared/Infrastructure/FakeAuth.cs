@@ -58,10 +58,5 @@ namespace IO.Ably.Tests
         {
             return Task.FromResult(CurrentToken);
         }
-
-        public void ExpireCurrentToken()
-        {
-            CurrentToken?.Expire();
-        }
     }
 }
