@@ -459,6 +459,8 @@ namespace IO.Ably.Tests.Realtime
             var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
             connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
 
+            await client.ProcessCommands();
+
             // channel should be attached and pending messages sent
             channel.State.Should().Be(ChannelState.Attached);
             client.State.PendingMessages.Should().HaveCount(0);
