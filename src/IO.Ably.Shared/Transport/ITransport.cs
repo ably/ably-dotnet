@@ -72,7 +72,8 @@ namespace IO.Ably.Transport
         /// Sends a message.
         /// </summary>
         /// <param name="data">Transport message. <see cref="RealtimeTransportData"/>.</param>
-        void Send(RealtimeTransportData data);
+        /// <returns>Result whether the operation succeeded or failed.</returns>
+        Result Send(RealtimeTransportData data);
     }
 
     /// <summary>

@@ -130,16 +130,18 @@ namespace IO.Ably.Tests.Infrastructure
             WrappedTransport.Close(suppressClosedEvent);
         }
 
-        public void Send(RealtimeTransportData data)
+        public Result Send(RealtimeTransportData data)
         {
             if (BlockSendActions.Contains(data.Original.Action))
             {
-                return;
+                return Result.Ok();
             }
 
             ProtocolMessagesSent.Add(data.Original);
             MessageSent(data.Original);
             WrappedTransport.Send(data);
+
+            return Result.Ok();
         }
 
         public void Dispose()

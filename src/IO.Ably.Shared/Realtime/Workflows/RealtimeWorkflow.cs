@@ -290,7 +290,15 @@ namespace IO.Ably.Realtime.Workflow
                 case SendMessageCommand cmd:
                     if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
-                        SendMessage(cmd.ProtocolMessage, cmd.Callback);
+                        var sendResult = SendMessage(cmd.ProtocolMessage, cmd.Callback);
+                        if (sendResult.IsFailure && State.Connection.CurrentStateObject.CanQueue)
+                        {
+                            Logger.Debug("Failed to send message. Queuing it.");
+                            State.PendingMessages.Add(new MessageAndCallback(
+                                cmd.ProtocolMessage,
+                                cmd.Callback,
+                                Logger));
+                        }
                     }
                     else if (State.Connection.CurrentStateObject.CanQueue)
                     {
@@ -518,7 +526,7 @@ namespace IO.Ably.Realtime.Workflow
             State.AttemptsInfo.RecordTokenRetry();
         }
 
-        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        private Result SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             if (message.AckRequired)
             {
@@ -526,7 +534,7 @@ namespace IO.Ably.Realtime.Workflow
                 State.AddAckMessage(message, callback);
             }
 
-            ConnectionManager.SendToTransport(message);
+            return ConnectionManager.SendToTransport(message);
         }
 
         private void SetRecoverKeyIfPresent(string recover)
@@ -913,7 +921,11 @@ namespace IO.Ably.Realtime.Workflow
 
             foreach (var pendingMessage in State.PendingMessages)
             {
-                SendMessage(pendingMessage.Message, pendingMessage.Callback);
+                var sendResult = SendMessage(pendingMessage.Message, pendingMessage.Callback);
+                if (sendResult.IsFailure)
+                {
+                    Logger.Warning($"Error sending pending message with ID: {pendingMessage.Message.Id}. Action: {pendingMessage.Message?.Action}");
+                }
             }
 
             State.PendingMessages.Clear();

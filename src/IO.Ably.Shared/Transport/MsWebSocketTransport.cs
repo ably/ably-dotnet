@@ -127,8 +127,13 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void Send(RealtimeTransportData data)
+        public Result Send(RealtimeTransportData data)
         {
+            if (_socket is null)
+            {
+                return Result.Fail($"Cannot send message. Socket instance is null. Transport state is: {State}");
+            }
+
             if (BinaryProtocol)
             {
                 _socket?.SendData(data.Data);
@@ -142,6 +147,8 @@ namespace IO.Ably.Transport
 
                 _socket?.SendText(data.Text);
             }
+
+            return Result.Ok();
         }
 
         private MsWebSocketConnection CreateSocket(Uri uri)
