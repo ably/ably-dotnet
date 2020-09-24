@@ -10,6 +10,5 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init --recursive
-      - run: chmod +x ./build.sh
       - run: ./build.sh
 
