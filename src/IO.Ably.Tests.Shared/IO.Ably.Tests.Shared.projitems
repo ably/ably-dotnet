@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EncryptionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorInfoTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyCollectionFixture.cs" />
