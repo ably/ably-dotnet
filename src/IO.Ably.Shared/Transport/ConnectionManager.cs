@@ -247,7 +247,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void SendToTransport(ProtocolMessage message)
+        public Result SendToTransport(ProtocolMessage message)
         {
             if (Logger.IsDebug)
             {
@@ -257,12 +257,13 @@ namespace IO.Ably.Transport
             var data = Handler.GetTransportData(message);
             try
             {
-                Transport.Send(data);
+                return Transport.Send(data);
             }
             catch (Exception e)
             {
                 Logger.Error("Error while sending to transport. Trying to reconnect.", e);
                 ((ITransportListener)this).OnTransportEvent(Transport.Id, TransportState.Closed, e);
+                return Result.Fail("Error while sending to transport.");
             }
         }
 
