@@ -5,10 +5,10 @@
 
 The release includes mainly fixes and improvements
 
-**Breaking changes**
+**Breaking change**
 
-- Update `ITransport.Send` method to have a return value so it can indicate to the library whether the send succeeded or failed immediately.
-  It helped improve a race condition where the transport was disconnected but the library had not processed the update yet. Now we handle queuing and resending messages much better
+- Update `ITransport.Send` return type from `void` to `Result` so it can indicate to the library whether the send succeeded or failed immediately.
+  It helped improve a race condition where the transport was disconnected but the library had not processed the update yet. Now we handle queuing and resending messages much better. 
 
 **Implemented enhancements:**
 
