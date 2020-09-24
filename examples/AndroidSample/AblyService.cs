@@ -17,7 +17,7 @@ namespace AndroidSample
         {
             _ably = new AblyRealtime(new ClientOptions("lNj80Q.iGyVcQ:2QKX7FFASfX-7H9H")
             {
-                LogHander = this,
+                LogHandler = this,
                 LogLevel = LogLevel.Debug, 
                 AutoConnect = false,
                 UseBinaryProtocol = false

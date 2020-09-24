@@ -13,7 +13,7 @@ namespace SimulateDisconnects
             var options = new ClientOptions("oFpaLg.mB7oiw:WP5kW-Mrk96MTaFq")
             {
                 LogLevel = LogLevel.Debug,
-                LogHander = new ConsoleLogger(),
+                LogHandler = new ConsoleLogger(),
                 DisconnectedRetryTimeout = TimeSpan.FromSeconds(3),
                 AuthCallback = async tokenParams => await authRestClient.Auth.RequestTokenAsync(new TokenParams { Ttl = TimeSpan.FromSeconds(2) }),
             };

@@ -105,7 +105,20 @@ namespace IO.Ably
         /// Default: null.
         /// </summary>
         [JsonIgnore]
-        public ILoggerSink LogHander { get; set; }
+        [Obsolete("LogHander will be removed in future versions, please use LogHandler instead.")]
+        public ILoggerSink LogHander
+        {
+            get => LogHandler;
+
+            set => LogHandler = value;
+        }
+
+        /// <summary>
+        /// Log handler: allows the client to intercept log messages and handle them in a client-specific way.
+        /// Default: null.
+        /// </summary>
+        [JsonIgnore]
+        public ILoggerSink LogHandler { get; set; }
 
         /// <summary>
         /// For development environments only. Allows a non default host for the rest service.
