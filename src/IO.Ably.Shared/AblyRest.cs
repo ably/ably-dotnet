@@ -367,7 +367,7 @@ namespace IO.Ably
                 // We don't want to retry the internet check url.
                 var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get) { SkipRetry = true };
                 var response = await ExecuteHttpRequest(request).TimeoutAfter(Defaults.MaxHttpOpenTimeout, AblyResponse.EmptyResponse);
-                var success = response.TextResponse == Defaults.InternetCheckOkMessage;
+                var success = response.TextResponse.SafeTrim().EqualsTo(Defaults.InternetCheckOkMessage);
                 if (success == false)
                 {
                     Logger.Warning("Cannot get a valid internet connection. Response: " + response.TextResponse);

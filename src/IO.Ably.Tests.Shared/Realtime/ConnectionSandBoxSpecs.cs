@@ -1216,6 +1216,45 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState(ConnectionState.Suspended, TimeSpan.FromSeconds(10));
         }
 
+        [Fact]
+        [Trait("issue", "437")]
+        public async Task WhenTimeoutMessageReceived_ShouldReconnectSuccessfully()
+        {
+            var client = await GetRealtimeClient(Protocol.Json, (options, _) =>
+            {
+                options.FallbackHosts = new string[] { };
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout },
+            });
+
+            var host = client.RestClient.HttpClient.PreferredHost;
+            await client.ProcessCommands();
+
+            await client.WaitForState(ConnectionState.Connected);
+            stopwatch.Stop();
+            stopwatch.Elapsed.Should().BeLessThan(Defaults.DisconnectedRetryTimeout, "If the internet check doesn't work it will wait for the full 15 seconds before it retries");
+
+            var newHost = client.RestClient.HttpClient.PreferredHost;
+            host.Should().Be(newHost);
+        }
+
+        [Fact]
+        [Trait("issue", "437")]
+        public async Task CanConnectToAbly_ShouldReturnTrue()
+        {
+            var restClient = await GetRestClient(Protocol.Json);
+
+            var result = await restClient.CanConnectToAbly();
+            result.Should().BeTrue();
+        }
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
         {

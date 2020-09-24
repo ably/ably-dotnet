@@ -29,6 +29,16 @@ namespace IO.Ably
                    || (input.StartsWith("[") && input.EndsWith("]"));
         }
 
+        public static string SafeTrim(this string input)
+        {
+            if (input.IsEmpty())
+            {
+                return input;
+            }
+
+            return input.Trim();
+        }
+
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
             if (input == null)
