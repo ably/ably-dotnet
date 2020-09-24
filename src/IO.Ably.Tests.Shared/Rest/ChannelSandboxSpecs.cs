@@ -202,10 +202,10 @@ namespace IO.Ably.Tests.Rest
             var suffix = string.Empty.AddRandomSuffix();
             var channelName = $"test{suffix}";
             var channel = client.Channels.Get(channelName);
-
+            var messageId = Guid.NewGuid().ToString();
             var messages = new[]
             {
-                new Message($"test1{suffix}", "test1")
+                new Message($"test1{suffix}", "test1") { Id = messageId },
             };
 
             // intercept the HTTP request overriding the RequestUri

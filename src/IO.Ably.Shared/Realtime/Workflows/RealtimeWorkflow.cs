@@ -266,7 +266,7 @@ namespace IO.Ably.Realtime.Workflow
                             SetDisconnectedStateCommand.Create (
                                 retryAuth.Error,
                                 skipAttach: State.Connection.State == ConnectionState.Connecting).TriggeredBy(command),
-                            SetConnectingStateCommand.Create().TriggeredBy(command));
+                            SetConnectingStateCommand.Create(retryAuth: true).TriggeredBy(command));
                     }
                     else
                     {
@@ -325,12 +325,16 @@ namespace IO.Ably.Realtime.Workflow
                                 ClearTokenAndRecordRetry();
                                 try
                                 {
+                                    await Auth.RenewToken();
                                     await AttemptANewConnection();
                                     return EmptyCommand.Instance;
                                 }
                                 catch (AblyException e)
                                 {
-                                    return HandleConnectingErrorCommand.Create(null, e);
+                                    return SetDisconnectedStateCommand.Create(
+                                            e.ErrorInfo,
+                                            clearConnectionKey: true)
+                                        .TriggeredBy(cmd);
                                 }
                             }
 
@@ -510,7 +514,7 @@ namespace IO.Ably.Realtime.Workflow
 
         private void ClearTokenAndRecordRetry()
         {
-            Auth.ExpireCurrentToken();
+            Auth.CurrentToken = null;
             State.AttemptsInfo.RecordTokenRetry();
         }
 
@@ -671,6 +675,18 @@ namespace IO.Ably.Realtime.Workflow
 
                             var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
                             SetState(connectingState);
+
+                            if (cmd.RetryAuth)
+                            {
+                                try
+                                {
+                                    await Auth.RenewToken();
+                                }
+                                catch (AblyException ablyException)
+                                {
+                                    return SetDisconnectedStateCommand.Create(ablyException.ErrorInfo).TriggeredBy(command);
+                                }
+                            }
 
                             await ConnectionManager.CreateTransport(connectingHost);
 

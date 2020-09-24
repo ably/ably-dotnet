@@ -33,13 +33,15 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             /* subscribe */
             await channel.AttachAsync();
 
-            await channel.PublishAsync(new Message() { Name = "test", Data = "test", Extras = new MessageExtras(JToken.FromObject(new { good = "walk", nice = "exercise" })) });
+            var result = await channel.PublishAsync(new Message() { Name = "test", Data = "test", Extras = new MessageExtras(JToken.Parse(@"{""headers"":{ ""good"": ""walk"", ""nice"": ""exercise"" }}")) });
 
-            await new ConditionalAwaiter(() => received != null);
+            result.IsSuccess.Should().BeTrue();
+
+            await new ConditionalAwaiter(() => received.Extras != null);
 
             var extras = received.Extras;
             var json = extras.ToJson();
-            ((string)json["good"]).Should().Be("walk");
+            ((string)json["headers"]["good"]).Should().Be("walk");
         }
 
         public ExtraSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)

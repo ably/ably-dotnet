@@ -228,8 +228,9 @@ namespace IO.Ably.Tests.Realtime
             await realtime.Auth.AuthorizeAsync(new TokenParams
             {
                 Capability = capability,
-                ClientId = clientId
+                ClientId = clientId,
             });
+
             realtime.Connection.State.Should().Be(ConnectionState.Connected);
             var barSuccessAwaiter = new TaskCompletionAwaiter(5000);
             barChannel.Attach((b2, info2) =>

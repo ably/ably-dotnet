@@ -176,7 +176,7 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 // Now = DateTimeOffset.Now;
-                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                var tokenDetails = new TokenDetails() { Token = "id", Expires = Now.AddHours(1) };
 
                 // Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
@@ -827,10 +827,19 @@ namespace IO.Ably.Tests
                     });
                 },
                 UseBinaryProtocol = false,
+                QueryTime = true,
                 NowFunc = TestHelpers.NowFunc()
             };
             var rest = new AblyRest(options);
-            rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
+            rest.ExecuteHttpRequest = request =>
+            {
+                if (request.Url == "/time")
+                {
+                    return ("[\"" + DateTimeOffset.Now.ToUnixTimeMilliseconds() + "\"]").ToAblyResponse();
+                }
+
+                return "[{}]".ToAblyResponse();
+            };
             rest.AblyAuth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             await rest.StatsAsync();

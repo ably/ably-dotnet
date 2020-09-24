@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.Realtime
         private bool _renewTokenCalled;
         private TokenDetails _validToken;
         private ErrorInfo _tokenErrorInfo;
-        private int _failedRenewalErorrCode = 1234;
+        private int _failedRenewalErrorCode = 1234;
 
         public Task<AblyRealtime> SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
@@ -46,7 +46,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (failRenewal)
                     {
-                        throw new AblyException(new ErrorInfo("Failed to renew token", _failedRenewalErorrCode));
+                        throw new AblyException(new ErrorInfo("Failed to renew token", _failedRenewalErrorCode));
                     }
 
                     _renewTokenCalled = true;
@@ -128,8 +128,8 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN15h")]
-        public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
+        [Trait("spec", "RTN15h2")]
+        public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToDisconnectedAndEmitError()
         {
             var client = await SetupConnectedClient(true);
 
@@ -147,7 +147,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                Error = _tokenErrorInfo
+                Error = _tokenErrorInfo,
             });
 
             await client.ProcessCommands();
@@ -157,12 +157,13 @@ namespace IO.Ably.Tests.Realtime
             {
                 ConnectionState.Disconnected,
                 ConnectionState.Connecting,
-                ConnectionState.Failed
+                ConnectionState.Disconnected,
             }, states);
 
             errors.Should().NotBeEmpty();
             errors.Should().HaveCount(2);
-            errors[1].Code.Should().Be(_failedRenewalErorrCode);
+            errors[0].Code.Should().Be(40140);
+            errors[1].Code.Should().Be(_failedRenewalErrorCode);
         }
 
         [Fact]

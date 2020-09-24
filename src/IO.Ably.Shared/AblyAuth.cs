@@ -21,13 +21,15 @@ namespace IO.Ably
             _rest = rest;
             Logger = options.Logger;
             ServerTime = () => _rest.TimeAsync();
-            ServerTimeOffset = () => null;
+            ServerNow = () => null;
             Initialise();
         }
 
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
-        protected Func<DateTimeOffset?> ServerTimeOffset { get; private set; }
+        private bool HasServerTime => ServerNow().HasValue;
+
+        protected Func<DateTimeOffset?> ServerNow { get; private set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -56,11 +58,6 @@ namespace IO.Ably
 
         private bool HasApiKey => Options.Key.IsNotEmpty();
 
-        public void ExpireCurrentToken()
-        {
-            CurrentToken?.Expire();
-        }
-
         internal void Initialise()
         {
             AuthMethod = CheckAndGetAuthMethod();
@@ -85,16 +82,29 @@ namespace IO.Ably
             }
             else if (Options.Token.IsNotEmpty())
             {
-                CurrentToken = new TokenDetails(Options.Token, Options.NowFunc);
+                CurrentToken = new TokenDetails(Options.Token);
             }
 
             LogCurrentAuthenticationMethod();
         }
 
-        private async Task SetServerTimeOffset()
+        internal async Task SetServerTime()
         {
-            TimeSpan diff = Now() - await ServerTime();
-            ServerTimeOffset = () => Now() - diff;
+            var serverTime = await ServerTime();
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Received server time: " + serverTime);
+            }
+
+            TimeSpan diff = Now() - serverTime;
+
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Server time differs from device Now by: " + diff);
+            }
+
+            // TODO: Save servertime and check if now has drastically changed
+            ServerNow = () => Now() - diff;
         }
 
         private AuthMethod CheckAndGetAuthMethod()
@@ -161,6 +171,11 @@ namespace IO.Ably
             }
             else
             {
+                if (HasServerTime == false && Options.QueryTime == true)
+                {
+                    await SetServerTime();
+                }
+
                 var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (currentValidToken == null)
                 {
@@ -178,7 +193,7 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken(ServerTimeOffset() ?? Now()))
+            if (CurrentToken.IsValidToken(ServerNow()))
             {
                 return CurrentToken;
             }
@@ -199,24 +214,16 @@ namespace IO.Ably
 
                 await OnAuthUpdated(token, false);
 
-                var now = ServerTimeOffset() ?? Now();
-                if (token.IsValidToken(now))
+                if (token.IsValidToken(ServerNow()))
                 {
                     CurrentToken = token;
                     return token;
                 }
 
-                if (token != null && token.IsExpired(now))
-                {
-                    throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
-                }
-            }
-            else
-            {
-                throw new AblyException(ErrorInfo.NonRenewableToken);
+                throw new AblyException("Token is invalid: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
             }
 
-            return null;
+            throw new AblyException(ErrorInfo.NonRenewableToken);
         }
 
         /// <summary>
@@ -310,7 +317,7 @@ namespace IO.Ably
                         // RSC8c:
                         // The token retrieved is assumed by the library to be a token string
                         // if the response has Content-Type "text/plain" or "application/jwt"
-                        return new TokenDetails(response.TextResponse, Now);
+                        return new TokenDetails(response.TextResponse);
                     }
 
                     responseText = response.TextResponse;
@@ -377,23 +384,20 @@ namespace IO.Ably
                 throw new AblyException("Invalid token response returned", 80019);
             }
 
-            // TODO: Remove the Now function from the token
-            result.Now = Now;
-
             return result;
         }
 
         private async Task SetTokenParamsTimestamp(AuthOptions authOptions, TokenParams tokenParams)
         {
-            if (authOptions.QueryTime.GetValueOrDefault(false)
-                && !ServerTimeOffset().HasValue)
+            // If the timestamp doesn't arrive from the server and we can request
+            if (authOptions.QueryTime == true && HasServerTime == false)
             {
-                await SetServerTimeOffset();
+                await SetServerTime();
             }
 
             if (!tokenParams.Timestamp.HasValue)
             {
-                tokenParams.Timestamp = ServerTimeOffset();
+                tokenParams.Timestamp = ServerNow();
             }
         }
 
@@ -530,11 +534,6 @@ namespace IO.Ably
             }
 
             await SetTokenParamsTimestamp(authOptions, tokenParams);
-
-            if (authOptions.QueryTime.GetValueOrDefault(false))
-            {
-                tokenParams.Timestamp = await _rest.TimeAsync();
-            }
 
             var apiKey = authOptions.ParseKey();
             var request = new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);

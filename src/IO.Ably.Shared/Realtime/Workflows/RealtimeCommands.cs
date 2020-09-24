@@ -172,14 +172,17 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetConnectingStateCommand : RealtimeCommand
     {
-        public bool ClearConnectionKey { get; } = false;
-
-        private SetConnectingStateCommand(bool clearConnectionKey)
+        private SetConnectingStateCommand(bool clearConnectionKey, bool retryAuth)
         {
             ClearConnectionKey = clearConnectionKey;
+            RetryAuth = retryAuth;
         }
 
-        public static SetConnectingStateCommand Create(bool clearConnectionKey = false) => new SetConnectingStateCommand(clearConnectionKey);
+        public bool ClearConnectionKey { get; } = false;
+
+        public bool RetryAuth { get; } = false;
+
+        public static SetConnectingStateCommand Create(bool clearConnectionKey = false, bool retryAuth = false) => new SetConnectingStateCommand(clearConnectionKey, retryAuth);
 
         protected override string ExplainData()
         {
