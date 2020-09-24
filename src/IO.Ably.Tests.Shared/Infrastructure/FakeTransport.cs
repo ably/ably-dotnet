@@ -69,10 +69,11 @@ namespace IO.Ably.Tests
             }
         }
 
-        public void Send(RealtimeTransportData data)
+        public Result Send(RealtimeTransportData data)
         {
             SendAction(data);
             SentMessages.Add(data);
+            return Result.Ok();
         }
 
         public void Abort(string reason)

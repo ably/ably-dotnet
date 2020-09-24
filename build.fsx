@@ -117,7 +117,9 @@ let nugetRestore solutionFile =
   |> Proc.run // start with the above configuration
 
 Target.create "Restore" (fun _ ->
-    nugetRestore "src/IO.Ably.sln" |> ignore
+    if Environment.isWindows then
+      nugetRestore "src/IO.Ably.sln" |> ignore
+  
     CreateProcess.fromRawCommand "dotnet" ["restore"; "src/IO.Ably.sln"] 
     |> Proc.run |> ignore
 )

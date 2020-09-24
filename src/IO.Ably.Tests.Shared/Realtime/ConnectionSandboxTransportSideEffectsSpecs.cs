@@ -26,30 +26,43 @@ namespace IO.Ably.Tests.Realtime
         {
             var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            var client = await GetRealtimeClient(protocol, (options, settings) =>
+
+            int attachMessageCount = 0;
+
+            AblyRealtime client = null;
+            client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                var optionsTransportFactory = new TestTransportFactory()
+                options.TransportFactory = new TestTransportFactory()
                 {
-                    OnMessageSent = sentMessages.Add,
+                    OnMessageSent = OnMessageSent,
                 };
-                options.TransportFactory = optionsTransportFactory;
             });
 
-            await client.WaitForState(ConnectionState.Connected);
-
-            var transport = client.GetTestTransport();
-
-            var channel = client.Channels.Get(channelName);
-            channel.Attach();
-            await channel.WaitForState(ChannelState.Attaching);
-            await client.ProcessCommands();
-            transport.Close(false);
+            void OnMessageSent(ProtocolMessage message)
+            {
+                sentMessages.Add(message);
+                if (message.Action == ProtocolMessage.MessageAction.Attach)
+                {
+                    if (attachMessageCount == 0)
+                    {
+                        attachMessageCount++;
+                        client.GetTestTransport().Close(suppressClosedEvent: false);
+                    }
+                }
+            }
 
             bool didDisconnect = false;
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
                 didDisconnect = true;
             });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+
+            await channel.WaitForState(ChannelState.Attaching);
 
             await client.WaitForState(ConnectionState.Disconnected);
             await client.WaitForState(ConnectionState.Connecting);

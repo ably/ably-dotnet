@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -394,13 +395,21 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.AutoConnect = false;
-                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(50);
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(10);
+            });
+
+            ErrorInfo disconnectedStateError = null;
+            client.Connection.On((change) =>
+            {
+                if (change.Current == ConnectionState.Disconnected && disconnectedStateError is null)
+                {
+                    disconnectedStateError = change.Reason;
+                }
             });
 
             client.Connect();
 
-            await WaitForState(client, ConnectionState.Disconnected);
-            client.Connection.ErrorReason.Should().NotBeNull();
+            await new ConditionalAwaiter(() => disconnectedStateError != null);
         }
 
         [Theory]
