@@ -1,5 +1,41 @@
 # Change Log
 
+## [1.2.2](https://github.com/ably/ably-dotnet/tree/1.2.2) (2020-09-24)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.1...1.2.2)
+
+The release includes mainly fixes and improvements
+
+**Breaking change**
+
+- Update `ITransport.Send` return type from `void` to `Result` so it can indicate to the library whether the send succeeded or failed immediately.
+  It helped improve a race condition where the transport was disconnected but the library had not processed the update yet. Now we handle queuing and resending messages much better. 
+
+**Implemented enhancements:**
+
+- Improve handling of clock skew [\#303](https://github.com/ably/ably-dotnet/issues/303)
+
+**Fixed bugs:**
+
+- Failing internet check [\#437](https://github.com/ably/ably-dotnet/issues/437)
+
+**Closed issues:**
+
+- \[CI\] Fix build and tests [\#435](https://github.com/ably/ably-dotnet/issues/435)
+- Typo in property name for log handler [\#427](https://github.com/ably/ably-dotnet/issues/427)
+- MessageExtras to comply with TM2i [\#422](https://github.com/ably/ably-dotnet/issues/422)
+
+**Merged pull requests:**
+
+- Issue/435 fix build and tests [\#443](https://github.com/ably/ably-dotnet/pull/443) ([marto83](https://github.com/marto83))
+- Issue/437 [\#440](https://github.com/ably/ably-dotnet/pull/440) ([marto83](https://github.com/marto83))
+- Fix auth token clock-skew [\#439](https://github.com/ably/ably-dotnet/pull/439) ([sacOO7](https://github.com/sacOO7))
+- Refactor MessageExtras [\#433](https://github.com/ably/ably-dotnet/pull/433) ([sacOO7](https://github.com/sacOO7))
+- Fix Property Typo [\#432](https://github.com/ably/ably-dotnet/pull/432) ([sacOO7](https://github.com/sacOO7))
+- Remove psake tool [\#431](https://github.com/ably/ably-dotnet/pull/431) ([sacOO7](https://github.com/sacOO7))
+- Rename master to main [\#430](https://github.com/ably/ably-dotnet/pull/430) ([QuintinWillison](https://github.com/QuintinWillison))
+- Feature/tm2i message extras [\#424](https://github.com/ably/ably-dotnet/pull/424) ([marto83](https://github.com/marto83))
+- Update build to copy all required dlls when packaging [\#420](https://github.com/ably/ably-dotnet/pull/420) ([marto83](https://github.com/marto83))
+
 ## [1.2.1](https://github.com/ably/ably-dotnet/tree/1.2.1) (2020-06-12)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.0...1.2.1)
 
