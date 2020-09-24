@@ -238,6 +238,11 @@ namespace IO.Ably.Tests.Rest
             await Task.Delay(1000);
 
             var history = await channel.HistoryAsync();
+            foreach (var item in history.Items)
+            {
+                Output.WriteLine("Message: " + item.ToJson());
+            }
+
             history.Items.Should().HaveCount(1);
             history.Items[0].Name.Should().Be($"test1{suffix}");
         }
