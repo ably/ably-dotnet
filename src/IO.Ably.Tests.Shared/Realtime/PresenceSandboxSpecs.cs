@@ -1435,8 +1435,6 @@ namespace IO.Ably.Tests.Realtime
                     transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).Should().BeTrue();
                     presence2.SyncComplete.Should().BeTrue();
                     presence2.Map.Members.Should().HaveCount(2);
-
-                    client1.Close();
                 }
 
                 [Theory]
@@ -1449,11 +1447,10 @@ namespace IO.Ably.Tests.Realtime
 
                     ErrorInfo errInfo = null;
 
-                    List<ConnectionState> states = new List<ConnectionState>();
-
                     List<int> queueCounts = new List<int>();
-                    client.Connection.On(change => states.Add(change.Current));
                     channel.State.Should().NotBe(ChannelState.Attached);
+
+                    await client.WaitForState(ConnectionState.Connected);
 
                     await WaitFor(done =>
                     {
@@ -1471,13 +1468,9 @@ namespace IO.Ably.Tests.Realtime
                     });
 
                     channel.State.Should().Be(ChannelState.Attached);
-                    states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
                     errInfo.Should().BeNull();
                     queueCounts[0].Should().Be(1);
                     queueCounts[1].Should().Be(0);
-
-                    // clean up
-                    client.Close();
                 }
 
                 [Theory]
