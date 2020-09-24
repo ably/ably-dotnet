@@ -3,13 +3,13 @@ jobs:
   build:
     working_directory: /ably-dotnet
     docker:
-      - image: microsoft/dotnet:2-sdk
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - checkout
       - run: git submodule update --init --recursive
-      - run: chmod +x build.sh
+      - run: chmod +x ./build.sh
       - run: ./build.sh
 
