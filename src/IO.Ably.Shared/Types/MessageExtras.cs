@@ -10,7 +10,7 @@ namespace IO.Ably.Types
     [JsonConverter(typeof(MessageExtrasConverter))]
     public class MessageExtras
     {
-        private const string DeltaProperty = "delta";
+        internal const string DeltaProperty = "delta";
 
         /// <summary>
         /// Data holds actual extra information associated with message.
@@ -29,8 +29,9 @@ namespace IO.Ably.Types
         /// </summary>
         /// <param name="data">the json object passed to Message extras.</param>
         public MessageExtras(JToken data = null)
-            : this(data, null)
         {
+            Data = data;
+            Delta = ParseDeltaExtras(data);
         }
 
         private MessageExtras(JToken data, DeltaExtras delta)
@@ -40,6 +41,11 @@ namespace IO.Ably.Types
         }
 
         internal static MessageExtras From(JToken data = null)
+        {
+            return new MessageExtras(data, ParseDeltaExtras(data));
+        }
+
+        private static DeltaExtras ParseDeltaExtras(JToken data)
         {
             DeltaExtras delta = null;
             if (data != null && data is JObject dataObject)
@@ -51,7 +57,7 @@ namespace IO.Ably.Types
                 }
             }
 
-            return new MessageExtras(data, delta);
+            return delta;
         }
 
         /// <summary>

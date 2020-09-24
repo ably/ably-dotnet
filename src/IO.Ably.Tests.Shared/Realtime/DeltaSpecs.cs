@@ -18,7 +18,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         private MessageExtras CreateExtrasWithDelta(DeltaExtras delta)
         {
             var jObject = new JObject();
-            jObject["delta"] = JObject.FromObject(delta);
+            jObject[MessageExtras.DeltaProperty] = JObject.FromObject(delta);
             return new MessageExtras(jObject);
         }
 
