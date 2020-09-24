@@ -428,8 +428,9 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Building and Packaging
 
-The build scripts are written partly using `fake' and partly in powershell using PSake and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
 
+    choco install fake
     choco install nuget.commandline
 
 Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests. 
