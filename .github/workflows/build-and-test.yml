@@ -23,13 +23,13 @@ jobs:
           - os: ubuntu-latest
             build-file: './build.sh'
 
-      steps:
-        - uses: actions/checkout@v2
-          with: 
-            submodules: 'recursive'
-        - uses: actions/setup-dotnet@v1
-          with:
-            dotnet-version: '3.1.x'
-        - run: dotnet tool install fake-cli --tool-path .
-        - run: ${{matrix.build-file}} Test.NetStandard
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - run: dotnet tool install fake-cli --tool-path .
+      - run: ${{matrix.build-file}} Test.NetStandard
           
