@@ -1,0 +1,35 @@
+name: Build and test
+on:
+  push:
+  pull_request: 
+    branches: [ "main" ]
+
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        include:
+          # includes a new variable of npm with a value of 2
+          # for the matrix leg matching the os and version
+          - os: windows-latest
+            build-file: './build.cmd'
+          - os: ubuntu-latest
+            build-file: './build.sh'
+
+      steps:
+        - uses: actions/checkout@v2
+          with: 
+            submodules: 'recursive'
+        - uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '3.1.x'
+        - run: dotnet tool install fake-cli --tool-path .
+        - run: ${{matrix.build-file}} Test.NetStandard
+          
