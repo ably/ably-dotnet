@@ -6,22 +6,15 @@ on:
 
 
 jobs:
-  build-and-test:
+  build-and-test-windows:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       DOTNET_NOLOGO: true
 
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]
-        include:
-          # includes a new variable of npm with a value of 2
-          # for the matrix leg matching the os and version
-          - os: windows-latest
-            build-file: './build.cmd'
-          - os: ubuntu-latest
-            build-file: './build.sh'
+        target: [ "Test.NetStandard", Test.NetFramework]
 
     steps:
       - uses: actions/checkout@v2
@@ -31,5 +24,5 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - run: dotnet tool install fake-cli --tool-path .
-      - run: ${{matrix.build-file}} Test.NetStandard
+      - run: ./build.cmd ${{target}}
           
