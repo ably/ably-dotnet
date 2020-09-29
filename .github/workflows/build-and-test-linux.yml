@@ -1,4 +1,4 @@
-name: Linux Build and test
+name: Linux - build and test
 on: [ "push" ]
 
 
@@ -12,9 +12,13 @@ jobs:
       - uses: actions/checkout@v2
         with: 
           submodules: 'recursive'
-      - uses: actions/setup-dotnet@v1
+      - name: Download framework and fake-cli
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
-      - run: dotnet tool install fake-cli --tool-path .
-      - run: ./build.sh Test.NetStandard
+        run: dotnet tool install fake-cli --tool-path .
+      - name: Unit tests
+        run: ./build.cmd Test.NetStandard.Unit
+      - name: Integration tests
+        run: ./build.cmd Test.NetStandard.Integration
           

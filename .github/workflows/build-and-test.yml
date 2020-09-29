@@ -1,4 +1,4 @@
-name: Build and test
+name: Windows - build and test
 on: [ "push" ]
 
 
@@ -16,9 +16,13 @@ jobs:
       - uses: actions/checkout@v2
         with: 
           submodules: 'recursive'
-      - uses: actions/setup-dotnet@v1
+      - name: Download framework and fake-cli
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
-      - run: dotnet tool install fake-cli --tool-path .
-      - run: ./build.cmd ${{ matrix.target }}
+        run: dotnet tool install fake-cli --tool-path .
+      - name: Unit tests
+        run: ./build.cmd ${{ matrix.target }}.Unit
+      - name: Integration tests
+        run: ./build.cmd ${{ matrix.target }}.Integration
           

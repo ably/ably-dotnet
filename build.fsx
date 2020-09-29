@@ -354,8 +354,12 @@ Target.create "Package - Create nuget" (fun _ ->
 Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
-Target.create "Test.NetFramework" ignore
-Target.create "Test.NetStandard" ignore
+Target.create "Test.NetFramework.All" ignore
+Target.create "Test.NetFramework.Unit" ignore
+Target.create "Test.NetFramework.Integration" ignore
+Target.create "Test.NetStandard.All" ignore
+Target.create "Test.NetStandard.Unit" ignore
+Target.create "Test.NetStandard.Integration" ignore
 
 Target.create "Package" ignore
 
@@ -380,17 +384,29 @@ Target.create "Package" ignore
 
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"
+  ==> "Test.NetStandard.Unit"
 
-"NetFramework - Unit Tests" 
+"Build.NetFramework" 
   ==> "NetFramework - Integration Tests"
-  ==> "Test.NetFramework"
+  ==> "Test.NetFramework.Integration"
+
+"Build.NetFramework" 
+  ==> "NetFramework - Unit Tests"
+  ==> "NetFramework - Integration Tests"
+  ==> "Test.NetFramework.All"
 
 "Build.NetStandard"
   ==> "NetStandard - Unit Tests"
+  ==> "Test.NetStandard.Unit"
 
-"NetStandard - Unit Tests"
+"Build.NetStandard"
+  ==> "NetStandard - Unit Tests"
   ==> "NetStandard - Integration Tests"
-  ==> "Test.NetStandard"
+  ==> "Test.NetStandard.All"
+
+"Build.NetStandard"
+  ==> "NetStandard - Integration Tests"
+  ==> "Test.NetStandard.Integration"
 
 
 Target.runOrDefaultWithArguments  "Test.NetFramework"
