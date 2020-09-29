@@ -4,7 +4,6 @@ on: [ "push" ]
 
 jobs:
   build-and-test-windows:
-
     runs-on: windows-latest
     env:
       DOTNET_NOLOGO: true
