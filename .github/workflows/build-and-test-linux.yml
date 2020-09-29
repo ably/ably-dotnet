@@ -19,7 +19,7 @@ jobs:
       - name: Download fake-cli
         run: dotnet tool install fake-cli --tool-path .
       - name: Unit tests
-        run: ./build.cmd Test.NetStandard.Unit
+        run: ./build.sh Test.NetStandard.Unit
       - name: Integration tests
-        run: ./build.cmd Test.NetStandard.Integration
+        run: ./build.sh Test.NetStandard.Integration
           
