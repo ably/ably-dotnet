@@ -1,0 +1,20 @@
+name: Linux Build and test
+on: [ "push" ]
+
+
+jobs:
+  build-and-test-windows:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - run: dotnet tool install fake-cli --tool-path .
+      - run: ./build.cmd Test.NetStandard
+          
