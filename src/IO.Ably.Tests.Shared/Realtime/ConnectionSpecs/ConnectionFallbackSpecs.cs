@@ -342,29 +342,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             realtimeHosts.Last().Should().Be("realtime.ably.io");
         }
 
-        [Fact]
-        [Trait("spec", "RTN17c")]
-        public async Task WithDefaultHostAndRecoverableError_WhenInternetDown_GoesStraightToFailed()
-        {
-            var client = await GetConnectedClient(null, request =>
-            {
-                if (request.Url == Defaults.InternetCheckUrl)
-                {
-                    return "no".ToAblyResponse();
-                }
-
-                return DefaultResponse.ToTask();
-            });
-            client.Options.SkipInternetCheck = false;
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
-            {
-                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
-            });
-
-            await client.WaitForState(ConnectionState.Failed);
-        }
-
         public ConnectionFallbackSpecs(ITestOutputHelper output)
             : base(output)
         {
