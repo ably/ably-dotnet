@@ -384,7 +384,7 @@ Target.create "Package" ignore
 
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"
-  ==> "Test.NetStandard.Unit"
+  ==> "Test.NetFramework.Unit"
 
 "Build.NetFramework" 
   ==> "NetFramework - Integration Tests"
