@@ -3,7 +3,7 @@ on: [ "push" ]
 
 
 jobs:
-  build-and-test-windows:
+  build-and-test-linux:
     runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: true
