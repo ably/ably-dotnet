@@ -395,14 +395,12 @@ Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
 
-Target.create "Test.NetFramework.All" ignore
 Target.create "Test.NetFramework.Unit" ignore
 Target.create "Test.NetFramework.Integration" ignore
 
-Target.create "Test.NetStandard.All" ignore
 Target.create "Test.NetStandard.Unit" ignore
 Target.create "Test.NetStandard.Unit.WithRetry" ignore
-Target.create "Test.NetStandard.All.WithRetry" ignore
+Target.create "Test.NetStandard.Integration.WithRetry" ignore
 Target.create "Test.NetStandard.Integration" ignore
 
 Target.create "Package" ignore
@@ -434,19 +432,9 @@ Target.create "Package" ignore
   ==> "NetFramework - Integration Tests"
   ==> "Test.NetFramework.Integration"
 
-"Build.NetFramework" 
-  ==> "NetFramework - Unit Tests"
-  ==> "NetFramework - Integration Tests"
-  ==> "Test.NetFramework.All"
-
 "Build.NetStandard"
   ==> "NetStandard - Unit Tests"
   ==> "Test.NetStandard.Unit"
-
-"Build.NetStandard"
-  ==> "NetStandard - Unit Tests"
-  ==> "NetStandard - Integration Tests"
-  ==> "Test.NetStandard.All"
 
 "Build.NetStandard"
   ==> "NetStandard - Integration Tests"
@@ -456,11 +444,4 @@ Target.create "Package" ignore
   ==> "NetStandard - Unit Tests with retry"
   ==> "Test.NetStandard.Unit.WithRetry"
   
-"Build.NetStandard"
-  ==> "NetStandard - Unit Tests with retry"
-  ==> "NetStandard - Integration Tests with retry"
-  ==> "Test.NetStandard.All.WithRetry"
-
-
-//Target.printDependencyGraph true "Test.NetStandard.All.WithRetry"
 Target.runOrDefaultWithArguments  "Test.NetFramework"
