@@ -153,19 +153,24 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithRealtimeHostConnectedToFallback_WhenMakingRestRequestThatFails_ShouldRetryUsingAFallback()
         {
             var requestCount = 0;
-            Func<HttpResponseMessage> getResponse = () =>
+            Func<HttpRequestMessage, HttpResponseMessage> getResponse = request =>
             {
                 try
                 {
+                    Output.WriteLine($"Response for request: {request.RequestUri}");
                     switch (requestCount)
                     {
                         case 0:
+                            Output.WriteLine("0: Returning BadGateway");
                             return new HttpResponseMessage(HttpStatusCode.BadGateway);
                         case 1:
+                            Output.WriteLine("1: Returning Ok");
                             return new HttpResponseMessage(HttpStatusCode.OK);
                         case 2:
+                            Output.WriteLine("2: Return BadGateway");
                             return new HttpResponseMessage(HttpStatusCode.BadGateway);
                         default:
+                            Output.WriteLine($"{requestCount}. Returning Ok");
                             return new HttpResponseMessage(HttpStatusCode.OK);
                     }
                 }
