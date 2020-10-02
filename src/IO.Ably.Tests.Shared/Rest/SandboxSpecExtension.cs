@@ -9,6 +9,11 @@ namespace IO.Ably.Tests
     {
         internal static Task<TimeSpan> WaitForState(this AblyRealtime realtime, ConnectionState awaitedState, TimeSpan? waitSpan = null)
         {
+            if (realtime.Connection.State == awaitedState)
+            {
+                return Task.FromResult(TimeSpan.Zero);
+            }
+
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
             {
