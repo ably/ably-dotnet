@@ -36,6 +36,19 @@ namespace IO.Ably.Tests
             return GetRealtimeClient(clientOptions);
         }
 
+        public IDisposable EnableDebugLogging()
+        {
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
+
+            return new ActionOnDispose(() =>
+            {
+                Logger.LoggerSink = new DefaultLoggerSink();
+                Logger.LogLevel = LogLevel.Warning;
+            });
+        }
+
+
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);

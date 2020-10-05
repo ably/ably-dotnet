@@ -625,7 +625,7 @@ namespace IO.Ably.Tests
                 var requestCount = 0;
 
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                Func<HttpResponseMessage> getResponse = () =>
+                Func<HttpRequestMessage, HttpResponseMessage> getResponse = _ =>
                 {
                     try
                     {
@@ -675,7 +675,7 @@ namespace IO.Ably.Tests
                 var requestCount = 0;
 
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                Func<HttpResponseMessage> getResponse = () =>
+                Func<HttpRequestMessage, HttpResponseMessage> getResponse = _ =>
                 {
                     try
                     {

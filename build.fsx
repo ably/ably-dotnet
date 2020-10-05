@@ -179,11 +179,11 @@ let findFailedDotnetTestTests (resultsPath:string) =
     |> Seq.map trimTestMethod  
     |> Seq.toList
 
-let runStandardTests testToRun = 
+let runStandardTestsWithOptions testToRun (failOnError:bool) = 
   Directory.ensure testResultsDir
   Trace.log " --- Testing net core version --- "
   let project = Path.combine currentDir "src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj"
-  
+
   match testToRun with
   | Method testMethodName -> 
                           let logsPath = findNextTrxTestPath(Path.combine testResultsDir "tests-netstandard.trx")
@@ -194,13 +194,22 @@ let runStandardTests testToRun =
                                       project
                           logsPath                             
   | UnitTests -> 
-                 let logsPath = Path.combine testResultsDir "tests-netstandard-unit.trx"
-                 DotNet.test (fun opts -> { opts with Configuration = configuration
-                                                      Filter = Some ("type!=integration")
-                                                      Logger = Some( "trx;logfilename=" + logsPath)
-                                         })
-                              project
-                 logsPath                              
+                  let logsPath = Path.combine testResultsDir "tests-netstandard-unit.trx"
+                  let mutable filters = [ "type!=integration" ]
+                  if Environment.isLinux then filters <- filters @ ["linux!=skip"]
+
+                  try
+                    DotNet.test (fun opts -> { opts with  Configuration = configuration
+                                                          Filter = Some (filters |> String.concat "&")
+                                                          Logger = Some( "trx;logfilename=" + logsPath)
+                                           })
+                                project
+                  with 
+                  | :? Fake.DotNet.MSBuildException -> 
+                      printfn "Not all unit tests passed. FailOnError is %b" failOnError |> ignore
+                      if failOnError then reraise()
+                  
+                  logsPath                              
   | IntegrationTests ->  
                          let logsPath = Path.combine testResultsDir "tests-netstandard-integration.trx"
                          try
@@ -211,21 +220,30 @@ let runStandardTests testToRun =
                                 project
                           with 
                           | :? Fake.DotNet.MSBuildException -> 
-                              printfn "Not all integration tests passed the first time"  
+                              printfn "Not all integration tests passed the first time"
+                              if failOnError then reraise()
+
 
                          logsPath    
 
-let runFrameworkTests testToRun = 
+let runStandardTests testToRun = 
+    runStandardTestsWithOptions testToRun true
+
+let runStandardTestsAllowRetry testToRun = 
+    runStandardTestsWithOptions testToRun false
+
+let runFrameworkTests testToRun errorLevel = 
   Directory.ensure testResultsDir
   let testDir = Path.combine currentDir "src/IO.Ably.Tests.NETFramework/bin/Release"
   let testDll = !! (Path.combine testDir "*.Tests.*.dll")
- 
+
   match testToRun with
   | Method testMethodName -> 
                           let logsPath = findNextTestPath(Path.combine testResultsDir "xunit-netframework.xml")
                           testDll 
                           |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (  logsPath)
                                                        Method = Some (trimTestMethod testMethodName)
+                                                       ErrorLevel = errorLevel
                                })
                           logsPath                             
   | UnitTests -> 
@@ -233,6 +251,7 @@ let runFrameworkTests testToRun =
                  testDll 
                  |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some logsPath
                                               ExcludeTraits = [ ("type", "integration")]
+                                              ErrorLevel = errorLevel
                                })  
                  logsPath                             
   | IntegrationTests ->  
@@ -242,7 +261,7 @@ let runFrameworkTests testToRun =
                                                       IncludeTraits = [ ("type", "integration")]
                                                       TimeOut = TimeSpan.FromMinutes(20.)
                                                       Parallel = ParallelMode.Collections
-                                                      ErrorLevel = TestRunnerErrorLevel.DontFailBuild // TODO: Make sure to retry the tests
+                                                      ErrorLevel = errorLevel
                                }) 
                          logsPath                                                                                
 
@@ -267,22 +286,22 @@ Target.create "NetFramework.Integration.Rerun" (fun _ ->
     let failedTestNames = findFailedXUnitTests logsPath
 
     for test in failedTestNames do
-        runFrameworkTests (Method test) |> ignore  
+        runFrameworkTests (Method test) TestRunnerErrorLevel.Error |> ignore  
 )
 
 Target.create "NetFramework - Unit Tests" (fun _ ->
     
-    runFrameworkTests UnitTests |> ignore
+    runFrameworkTests UnitTests TestRunnerErrorLevel.Error |> ignore
 )
 
 Target.create "NetFramework - Integration Tests" ( fun _ -> 
 
-    let logs = runFrameworkTests IntegrationTests
+    let logs = runFrameworkTests IntegrationTests TestRunnerErrorLevel.DontFailBuild
 
     let failedTestNames = findFailedXUnitTests logs
 
     for test in failedTestNames do
-        runFrameworkTests (Method test) |> ignore   
+        runFrameworkTests (Method test) TestRunnerErrorLevel.Error |> ignore   
 )
 
 Target.create "NetStandard - Build" (fun _ ->
@@ -295,9 +314,30 @@ Target.create "NetStandard - Unit Tests" (fun _ ->
     runStandardTests UnitTests |> ignore
 )
 
+Target.create "NetStandard - Unit Tests with retry" (fun _ ->
+    let logs = runStandardTestsAllowRetry UnitTests 
+
+    let failedTestNames = findFailedDotnetTestTests logs
+
+    for test in failedTestNames do
+        runStandardTests (Method test) |> ignore 
+)
+
 Target.create "NetStandard - Integration Tests" (fun _ ->
 
-    let logs = runStandardTests IntegrationTests
+    let logs = runStandardTestsAllowRetry IntegrationTests
+
+    let failedTestNames = findFailedDotnetTestTests logs
+
+    for test in failedTestNames do
+        runStandardTests (Method test) |> ignore 
+)
+
+// This is duplicated before of Fake's build dependency doesn't allow
+// This this target to be run independent of the unit tests
+Target.create "NetStandard - Integration Tests with retry" (fun _ ->
+
+    let logs = runStandardTestsAllowRetry IntegrationTests
 
     let failedTestNames = findFailedDotnetTestTests logs
 
@@ -354,8 +394,14 @@ Target.create "Package - Create nuget" (fun _ ->
 Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
-Target.create "Test.NetFramework" ignore
-Target.create "Test.NetStandard" ignore
+
+Target.create "Test.NetFramework.Unit" ignore
+Target.create "Test.NetFramework.Integration" ignore
+
+Target.create "Test.NetStandard.Unit" ignore
+Target.create "Test.NetStandard.Unit.WithRetry" ignore
+Target.create "Test.NetStandard.Integration.WithRetry" ignore
+Target.create "Test.NetStandard.Integration" ignore
 
 Target.create "Package" ignore
 
@@ -380,17 +426,22 @@ Target.create "Package" ignore
 
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"
+  ==> "Test.NetFramework.Unit"
 
-"NetFramework - Unit Tests" 
+"Build.NetFramework" 
   ==> "NetFramework - Integration Tests"
-  ==> "Test.NetFramework"
+  ==> "Test.NetFramework.Integration"
 
 "Build.NetStandard"
   ==> "NetStandard - Unit Tests"
+  ==> "Test.NetStandard.Unit"
 
-"NetStandard - Unit Tests"
+"Build.NetStandard"
   ==> "NetStandard - Integration Tests"
-  ==> "Test.NetStandard"
+  ==> "Test.NetStandard.Integration"
 
-
+"Build.NetStandard"
+  ==> "NetStandard - Unit Tests with retry"
+  ==> "Test.NetStandard.Unit.WithRetry"
+  
 Target.runOrDefaultWithArguments  "Test.NetFramework"

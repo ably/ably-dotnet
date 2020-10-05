@@ -132,9 +132,11 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
         [Fact]
         [Trait("spec", "RSL6f")]
+        [Trait("linux", "skip")]
         public async Task
             WhenMultipleMessagesWithAMixOfNormalAndDeltaMessages_ShouldDecodeCorrectly()
         {
+            using var logging = EnableDebugLogging();
             var (realtime, c) = await GetClientAndChannel();
             RealtimeChannel channel = (RealtimeChannel)c;
             channel.SetChannelState(ChannelState.Attached);

@@ -153,19 +153,24 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithRealtimeHostConnectedToFallback_WhenMakingRestRequestThatFails_ShouldRetryUsingAFallback()
         {
             var requestCount = 0;
-            Func<HttpResponseMessage> getResponse = () =>
+            Func<HttpRequestMessage, HttpResponseMessage> getResponse = request =>
             {
                 try
                 {
+                    Output.WriteLine($"Response for request: {request.RequestUri}");
                     switch (requestCount)
                     {
                         case 0:
+                            Output.WriteLine("0: Returning BadGateway");
                             return new HttpResponseMessage(HttpStatusCode.BadGateway);
                         case 1:
+                            Output.WriteLine("1: Returning Ok");
                             return new HttpResponseMessage(HttpStatusCode.OK);
                         case 2:
+                            Output.WriteLine("2: Return BadGateway");
                             return new HttpResponseMessage(HttpStatusCode.BadGateway);
                         default:
+                            Output.WriteLine($"{requestCount}. Returning Ok");
                             return new HttpResponseMessage(HttpStatusCode.OK);
                     }
                 }
@@ -340,29 +345,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             realtimeHosts.Should().HaveCount(2);
             realtimeHosts.First().Should().Match(x => client.State.Connection.FallbackHosts.Contains(x));
             realtimeHosts.Last().Should().Be("realtime.ably.io");
-        }
-
-        [Fact]
-        [Trait("spec", "RTN17c")]
-        public async Task WithDefaultHostAndRecoverableError_WhenInternetDown_GoesStraightToFailed()
-        {
-            var client = await GetConnectedClient(null, request =>
-            {
-                if (request.Url == Defaults.InternetCheckUrl)
-                {
-                    return "no".ToAblyResponse();
-                }
-
-                return DefaultResponse.ToTask();
-            });
-            client.Options.SkipInternetCheck = false;
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
-            {
-                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
-            });
-
-            await client.WaitForState(ConnectionState.Failed);
         }
 
         public ConnectionFallbackSpecs(ITestOutputHelper output)
