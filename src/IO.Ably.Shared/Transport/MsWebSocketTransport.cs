@@ -1,42 +1,110 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
-    internal class MsWebSocketTransport : ITransport
+    /// <summary>
+    /// Class encapsulating additional parameters for the websocket connection.
+    /// </summary>
+    public class MsWebSocketOptions
     {
+        /// <summary>
+        /// If populated it will specify a new value for the Send buffer used in the websocket
+        /// Default: 8192.
+        /// </summary>
+        public int? SendBufferInBytes { get; set; }
+
+        /// <summary>
+        /// If populated it will specify a new value for the Receive buffer used in the websocket
+        /// Default: 8192.
+        /// </summary>
+        public int? ReceiveBufferInBytes { get; set; }
+    }
+
+    /// <summary>
+    /// Websocket Transport implementation based on System.Net.Websocket.
+    /// </summary>
+    public class MsWebSocketTransport : ITransport
+    {
+        private readonly MsWebSocketOptions _socketOptions;
+
+        /// <inheritdoc />
+        public class TransportFactory : ITransportFactory
+        {
+            /// <summary>
+            /// Custom <see cref="MsWebSocketOptions"/> passed to the MsWebsocket transport and then
+            /// <see cref="MsWebSocketConnection"/>.
+            /// </summary>
+            public MsWebSocketOptions SocketOptions { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TransportFactory"/> class.
+            /// </summary>
+            public TransportFactory()
+            {
+                SocketOptions = new MsWebSocketOptions();
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TransportFactory"/> class.
+            /// </summary>
+            /// <param name="socketOptions">Additional Websocket options. <see cref="MsWebSocketOptions"/>.</param>
+            public TransportFactory(MsWebSocketOptions socketOptions)
+            {
+                SocketOptions = socketOptions;
+            }
+
+            /// <inheritdoc/>
+            public ITransport CreateTransport(TransportParams parameters)
+            {
+                return new MsWebSocketTransport(parameters, SocketOptions);
+            }
+        }
+
         private bool _disposed = false;
 
-        internal ILogger Logger { get; private set; }
+        private ILogger Logger { get; set; }
 
         internal MsWebSocketConnection _socket;
+        private CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
 
-        protected MsWebSocketTransport(TransportParams parameters)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MsWebSocketTransport"/> class.
+        /// </summary>
+        /// <param name="parameters">Transport parameters.</param>
+        /// <param name="socketOptions">Additional websocket options. See <see cref="MsWebSocketOptions"/>.</param>
+        protected MsWebSocketTransport(TransportParams parameters, MsWebSocketOptions socketOptions)
         {
             if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
             }
 
+            _socketOptions = socketOptions ?? new MsWebSocketOptions();
+
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
             Logger = parameters.Logger ?? DefaultLogger.LoggerInstance;
         }
 
+        /// <inheritdoc cref="ITransport" />
         public bool BinaryProtocol { get; }
 
+        /// <inheritdoc cref="ITransport" />
         public Uri WebSocketUri { get; }
 
+        /// <inheritdoc cref="ITransport" />
         public Guid Id { get; } = Guid.NewGuid();
 
+        /// <inheritdoc cref="ITransport" />
         public TransportState State { get; set; } = TransportState.Initialized;
 
+        /// <inheritdoc cref="ITransport" />
         public ITransportListener Listener { get; set; }
 
+        /// <inheritdoc cref="ITransport" />
         public void Connect()
         {
             if (_socket == null)
@@ -45,7 +113,12 @@ namespace IO.Ably.Transport
                 AttachEvents();
             }
 
-            Task.Run(ConnectAndStartListening).ConfigureAwait(false);
+            StartReaderBackgroundThread();
+        }
+
+        private void StartReaderBackgroundThread()
+        {
+            _ = Task.Factory.StartNew(_ => ConnectAndStartListening(), TaskCreationOptions.LongRunning, _readerThreadSource.Token).ConfigureAwait(false);
         }
 
         private async Task ConnectAndStartListening()
@@ -109,6 +182,7 @@ namespace IO.Ably.Transport
             }
         }
 
+        /// <inheritdoc/>
         public void Close(bool suppressClosedEvent = true)
         {
             if (Logger.IsDebug)
@@ -127,6 +201,7 @@ namespace IO.Ably.Transport
             }
         }
 
+        /// <inheritdoc/>
         public Result Send(RealtimeTransportData data)
         {
             if (_socket is null)
@@ -158,7 +233,7 @@ namespace IO.Ably.Transport
                 Logger.Debug("Connecting to web socket on url: " + uri);
             }
 
-            return new MsWebSocketConnection(uri, Logger);
+            return new MsWebSocketConnection(uri, _socketOptions) { Logger = Logger };
         }
 
         private void AttachEvents()
@@ -237,14 +312,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public class TransportFactory : ITransportFactory
-        {
-            public ITransport CreateTransport(TransportParams parameters)
-            {
-                return new MsWebSocketTransport(parameters);
-            }
-        }
-
+        /// <inheritdoc cref="ITransport" />
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -254,6 +322,8 @@ namespace IO.Ably.Transport
 
             if (disposing)
             {
+                _readerThreadSource.Cancel();
+                _readerThreadSource.Dispose();
                 DisposeSocketConnection();
                 Listener = null;
             }
@@ -261,6 +331,7 @@ namespace IO.Ably.Transport
             _disposed = true;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
@@ -273,6 +344,10 @@ namespace IO.Ably.Transport
             // and reduces memory bloat considerably
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="MsWebSocketTransport"/> class.
+        /// Calls Dispose(false)
+        /// </summary>
         ~MsWebSocketTransport()
         {
             Dispose(false);
