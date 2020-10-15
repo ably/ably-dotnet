@@ -1873,7 +1873,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("type", "integration")]
         public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
         {
-            private const int ExpectedEnterCount = 250;
+            private const int ExpectedEnterCount = 150;
 
             /*
              * Ensure a test exists that enters 250 members using Presence#enterClient on a single connection,
@@ -1886,16 +1886,15 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP4")]
             public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
             {
+                using var debugLogging = EnableDebugLogging();
+
                 var channelName = "presence".AddRandomSuffix();
 
                 var clientA = await GetRealtimeClient(protocol);
                 await clientA.WaitForState(ConnectionState.Connected);
-                clientA.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
 
                 var channelA = clientA.Channels.Get(channelName);
-                channelA.Attach();
-                await channelA.WaitForState(ChannelState.Attached);
-                channelA.State.ShouldBeEquivalentTo(ChannelState.Attached);
+                await channelA.AttachAsync();
 
                 // enters 250 members on a single connection A
                 for (int i = 0; i < ExpectedEnterCount; i++)
@@ -1906,12 +1905,8 @@ namespace IO.Ably.Tests.Realtime
 
                 var clientB = await GetRealtimeClient(protocol);
                 await clientB.WaitForState(ConnectionState.Connected);
-                clientB.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
 
                 var channelB = clientB.Channels.Get(channelName);
-                channelB.Attach();
-                await channelB.WaitForState(ChannelState.Attached);
-                channelB.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
                 // checks for PRESENT events to be emitted on another connection for each member
                 List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
@@ -1924,6 +1919,9 @@ namespace IO.Ably.Tests.Realtime
                         awaiter.SetCompleted();
                     }
                 });
+
+                await channelB.AttachAsync();
+
                 var received250MessagesBeforeTimeout = await awaiter.Task;
                 received250MessagesBeforeTimeout.ShouldBeEquivalentTo(true);
 
@@ -1933,7 +1931,7 @@ namespace IO.Ably.Tests.Realtime
                 messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
                 foreach (var m in messageList)
                 {
-                    presenceMessages.Select(x => x.ClientId == m.ClientId).Any().Should().BeTrue();
+                    presenceMessages.Any(x => x.ClientId == m.ClientId).Should().BeTrue();
                 }
 
                 clientA.Close();
