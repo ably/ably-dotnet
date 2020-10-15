@@ -297,6 +297,11 @@ namespace IO.Ably
         public bool IdempotentRestPublishing { get; set; } = Defaults.ProtocolVersionNumber >= 1.2;
 
         /// <summary>
+        /// Additional parameters to be sent in the querystring when initiating a realtime connection.
+        /// </summary>
+        public Dictionary<string, string> TransportParams { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
         /// The default has changed from `true` to `false`
         /// It will be removed in the next version of the library.

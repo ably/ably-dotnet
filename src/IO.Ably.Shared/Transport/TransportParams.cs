@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -72,6 +73,11 @@ namespace IO.Ably.Transport
         /// </summary>
         public bool EchoMessages { get; private set; }
 
+        /// <summary>
+        /// Additional parameters coming from ClientOptions.
+        /// </summary>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
+
         private TransportParams()
         {
         }
@@ -106,6 +112,7 @@ namespace IO.Ably.Transport
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
+            result.AdditionalParameters = options.TransportParams;
             return result;
         }
 
@@ -166,6 +173,11 @@ namespace IO.Ably.Transport
             if (ClientId.IsNotEmpty())
             {
                 result["clientId"] = ClientId;
+            }
+
+            if (AdditionalParameters?.Any() ?? false)
+            {
+                return AdditionalParameters.Merge(result);
             }
 
             return result;
