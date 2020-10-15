@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -135,6 +136,48 @@ namespace IO.Ably.Tests.Realtime
 
             // validate the 'lib' param
             Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
+        }
+
+        [Fact]
+        [Trait("spec", "RTC1f")]
+        public async Task WithNullTransportParamsInOptions_ShouldNotThrow()
+        {
+            var client = await GetConnectedClient(options => options.TransportParams = null);
+
+            var uri = LastCreatedTransport.Parameters.GetUri().ToString();
+            Assert.True(true);
+        }
+
+        [Fact]
+        [Trait("spec", "RTC1f")]
+        public async Task WithCustomTransportParamsInOptions_ShouldPassThemInQueryStringWhenCreatingTransport()
+        {
+            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, string>()
+            {
+                { "test", "best" },
+                { "best", "test" },
+            });
+
+            var uri = LastCreatedTransport.Parameters.GetUri().ToString();
+            uri.Should().Contain("test=best");
+            uri.Should().Contain("best=test");
+        }
+
+        [Fact]
+        [Trait("spec", "RTC1f1")]
+        public async Task WithCustomTransportParamsInOptions_WhichOverrideDefaultValues_ShouldPassTheCustomOneSpecifiedInOptions()
+        {
+            await GetConnectedClient(options => options.TransportParams = new Dictionary<string, string>()
+            {
+                { "v", "1000" },
+            });
+
+            var uri = LastCreatedTransport.Parameters.GetUri().ToString();
+            uri.Should().Contain("v=1000");
+
+            await GetConnectedClient();
+            var uri2 = LastCreatedTransport.Parameters.GetUri().ToString();
+            uri2.Should().Contain("v=" + Defaults.ProtocolVersion);
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output)
