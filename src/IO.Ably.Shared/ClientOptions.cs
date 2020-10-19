@@ -157,7 +157,7 @@ namespace IO.Ably
 
         internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
 
-        internal bool IsDefaultPort => Tls ? Port == 80 : TlsPort == 443;
+        internal bool IsDefaultPort => Tls ?  TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
         internal string FullRealtimeHost()
         {
@@ -193,7 +193,7 @@ namespace IO.Ably
         /// For development environments only; allows a non-default Ably port to be specified.
         /// Default: 80.
         /// </summary>
-        public int Port { get; set; } = 80;
+        public int Port { get; set; } = Defaults.Port;
 
         /// <summary>
         /// Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
@@ -206,7 +206,7 @@ namespace IO.Ably
         /// Allows non-default Tls port to be specified.
         /// Default: 443.
         /// </summary>
-        public int TlsPort { get; set; } = 443;
+        public int TlsPort { get; set; } = Defaults.TlsPort;
 
         /// <summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
