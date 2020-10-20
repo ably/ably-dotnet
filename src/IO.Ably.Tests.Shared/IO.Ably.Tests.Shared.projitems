@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EncryptionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorInfoTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensionsTests.cs" />
