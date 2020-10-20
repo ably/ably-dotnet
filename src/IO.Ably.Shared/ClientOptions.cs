@@ -157,7 +157,7 @@ namespace IO.Ably
 
         internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
 
-        internal bool IsDefaultPort => Tls ?  TlsPort == Defaults.TlsPort : Port == Defaults.Port;
+        internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
         internal string FullRealtimeHost()
         {
