@@ -145,8 +145,9 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetConnectedClient(options => options.TransportParams = null);
 
-            var uri = LastCreatedTransport.Parameters.GetUri().ToString();
-            Assert.True(true);
+            var ex = Record.Exception(() => LastCreatedTransport.Parameters.GetUri().ToString());
+
+            ex.Should().BeNull();
         }
 
         [Fact]
