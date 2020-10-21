@@ -299,7 +299,7 @@ namespace IO.Ably
         /// <summary>
         /// Additional parameters to be sent in the querystring when initiating a realtime connection.
         /// </summary>
-        public Dictionary<string, string> TransportParams { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters

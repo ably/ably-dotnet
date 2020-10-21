@@ -112,8 +112,39 @@ namespace IO.Ably.Transport
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
-            result.AdditionalParameters = options.TransportParams;
+            result.AdditionalParameters = StringifyParameters(options.TransportParams);
             return result;
+
+            Dictionary<string, string> StringifyParameters(Dictionary<string, object> originalParams)
+            {
+                if (originalParams is null)
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                return originalParams.ToDictionary(x => x.Key, x => ConvertValue(x.Key, x.Value));
+
+                string ConvertValue(string key, object value)
+                {
+                    switch (value)
+                    {
+                        case bool boolValue:
+                            return boolValue.ToString().ToLower();
+                        case null:
+                            return string.Empty;
+                        default:
+                            try
+                            {
+                                return value.ToString();
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+                                return string.Empty;
+                            }
+                    }
+                }
+            }
         }
 
         /// <summary>
