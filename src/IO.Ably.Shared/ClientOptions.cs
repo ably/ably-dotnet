@@ -148,14 +148,17 @@ namespace IO.Ably
         /// <summary>
         /// Gets or sets a value indicating whether to use default FallbackHosts even when overriding
         /// environment or restHost/realtimeHost.
+        /// It will be removed in the next version of the library.
+        /// Default: false.
         /// </summary>
+        [Obsolete("We will no longer support the FallbackHostsUseDefault in the library. This property will be removed in future versions")]
         public bool FallbackHostsUseDefault { get; set; }
 
-        internal bool IsLiveEnvironment => Environment.IsEmpty() || Environment == "live";
+        internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
+        internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsProductionEnvironment;
 
-        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
+        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsProductionEnvironment;
 
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
@@ -163,7 +166,7 @@ namespace IO.Ably
         {
             if (RealtimeHost.IsEmpty())
             {
-                if (IsLiveEnvironment)
+                if (IsProductionEnvironment)
                 {
                     return Defaults.RealtimeHost;
                 }
@@ -178,7 +181,7 @@ namespace IO.Ably
         {
             if (RestHost.IsEmpty())
             {
-                if (IsLiveEnvironment)
+                if (IsProductionEnvironment)
                 {
                     return Defaults.RestHost;
                 }
