@@ -195,8 +195,9 @@ namespace IO.Ably
                     else
                     {
                         Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
-                        return Defaults.FallbackHosts;
                     }
+
+                    return Defaults.FallbackHosts;
                 }
 
                 if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)

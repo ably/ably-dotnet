@@ -105,7 +105,7 @@ namespace IO.Ably.Tests.Shared
             Assert.Equal("sandbox-rest.ably.io", options.RestHost);
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.GetEnvironmentFallbackHosts("sandbox"), options.FallbackHosts);
+            Assert.Equal(Defaults.FallbackHosts, options.FallbackHosts);
             Assert.True(options.Tls);
         }
 
