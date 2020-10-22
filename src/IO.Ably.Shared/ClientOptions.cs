@@ -12,6 +12,8 @@ namespace IO.Ably
     public class ClientOptions : AuthOptions
     {
         private string _clientId;
+        private string _realtimeHost;
+        private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
         private bool _useBinaryProtocol = false;
         private string[] _fallbackHosts;
@@ -32,7 +34,7 @@ namespace IO.Ably
         /// </summary>
         public string ClientId
         {
-            get => _clientId;
+            get => _clientId.IsNotEmpty() ? _clientId : DefaultTokenParams?.ClientId;
 
             set
             {
@@ -53,6 +55,7 @@ namespace IO.Ably
         /// </summary>
         public TokenParams DefaultTokenParams { get; set; }
 
+        [Obsolete]
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
@@ -89,12 +92,6 @@ namespace IO.Ably
         public string Recover { get; set; }
 
         /// <summary>
-        /// For development environments only. Allows a non default host for the realtime service.
-        /// Default: null.
-        /// </summary>
-        public string RealtimeHost { get; set; }
-
-        /// <summary>
         /// Log level; controls the level of verbosity of log messages from the library.
         /// Default: null. Which means the log level is set to Warning.
         /// </summary>
@@ -124,7 +121,48 @@ namespace IO.Ably
         /// For development environments only. Allows a non default host for the rest service.
         /// Default: null.
         /// </summary>
-        public string RestHost { get; set; }
+        public string RestHost
+        {
+            get
+            {
+                if (_restHost.IsEmpty())
+                {
+                    return IsProductionEnvironment
+                        ? Defaults.RestHost
+                        : $"{Environment}-{Defaults.RestHost}";
+                }
+
+                return _restHost;
+            }
+            set => _restHost = value;
+        }
+
+        /// <summary>
+        /// For development environments only. Allows a non default host for the realtime service.
+        /// Default: null.
+        /// </summary>
+        public string RealtimeHost
+        {
+            get
+            {
+                if (_realtimeHost.IsEmpty())
+                {
+                    if (_restHost.IsNotEmpty())
+                    {
+                        Logger.Warning(
+                            $@"restHost is set to {_restHost} but realtimeHost is not set,
+                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
+                                     please set realtimeHost explicitly.");
+                        return _restHost;
+                    }
+
+                    return IsProductionEnvironment ? Defaults.RealtimeHost : $"{Environment}{'-'}{Defaults.RealtimeHost}";
+                }
+
+                return _realtimeHost;
+            }
+            set => _realtimeHost = value;
+        }
 
         /// <summary>
         /// Gets or sets an array of custom Fallback hosts to be (optionally) used in place of the defaults.
@@ -134,12 +172,41 @@ namespace IO.Ably
         {
             get
             {
-                if (_fallbackHosts is null)
+#pragma warning disable 618
+                if (FallbackHostsUseDefault)
+#pragma warning restore 618
                 {
-                    return Defaults.FallbackHosts;
+                    if (_fallbackHosts != null)
+                    {
+                        const string msg = "fallbackHosts and fallbackHostsUseDefault cannot both be set";
+                        throw new AblyException(new ErrorInfo(msg, 40000));
+                    }
+
+                    if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
+                    {
+                        const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
+                        throw new AblyException(new ErrorInfo(msg, 40000));
+                    }
+
+                    if (Environment.IsNotEmpty())
+                    {
+                        Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
+                    }
+                    else
+                    {
+                        Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
+                        return Defaults.FallbackHosts;
+                    }
                 }
 
-                return _fallbackHosts;
+                if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
+                {
+                    return IsProductionEnvironment
+                        ? Defaults.FallbackHosts
+                        : Defaults.GetEnvironmentFallbackHosts(Environment);
+                }
+
+                return _fallbackHosts ?? new string[] { };
             }
 
             set => _fallbackHosts = value;
@@ -156,12 +223,13 @@ namespace IO.Ably
 
         internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsProductionEnvironment;
+        internal bool IsDefaultRestHost => RestHost == Defaults.RestHost;
 
-        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsProductionEnvironment;
+        internal bool IsDefaultRealtimeHost => RealtimeHost == Defaults.RealtimeHost;
 
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
+        [Obsolete]
         internal string FullRealtimeHost()
         {
             if (RealtimeHost.IsEmpty())
@@ -177,6 +245,7 @@ namespace IO.Ably
             return RealtimeHost;
         }
 
+        [Obsolete]
         internal string FullRestHost()
         {
             if (RestHost.IsEmpty())
