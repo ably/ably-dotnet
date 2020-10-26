@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
             result.Host = host;
             result.Tls = options.Tls;
             result.Port = options.Tls ? options.TlsPort : options.Port;
-            result.ClientId = options.GetClientId();
+            result.ClientId = options.ClientId;
             result.AuthMethod = auth.AuthMethod;
             if (result.AuthMethod == AuthMethod.Basic)
             {

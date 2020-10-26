@@ -59,7 +59,7 @@ namespace IO.Ably
         {
             IsSecure = options.Tls;
             Port = options.Tls ? options.TlsPort : options.Port;
-            Host = options.FullRestHost();
+            Host = options.RestHost;
             IsDefaultHost = options.IsDefaultRestHost;
             DisconnectedRetryTimeout = options.DisconnectedRetryTimeout;
             SuspendedRetryTimeout = options.SuspendedRetryTimeout;

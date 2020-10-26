@@ -55,7 +55,7 @@ namespace IO.Ably
         /// </summary>
         public TokenParams DefaultTokenParams { get; set; }
 
-        [Obsolete]
+        [Obsolete("GetClientId is deprecated, use ClientId instead")]
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
@@ -230,7 +230,7 @@ namespace IO.Ably
 
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
-        [Obsolete]
+        [Obsolete("FullRealtimeHost is deprecated, use RealtimeHost instead")]
         internal string FullRealtimeHost()
         {
             if (RealtimeHost.IsEmpty())
@@ -246,7 +246,7 @@ namespace IO.Ably
             return RealtimeHost;
         }
 
-        [Obsolete]
+        [Obsolete("FullRestHost is deprecated, use RestHost instead")]
         internal string FullRestHost()
         {
             if (RestHost.IsEmpty())

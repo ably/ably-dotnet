@@ -64,9 +64,7 @@ namespace IO.Ably.Tests
         internal AblyHttpClient GetHttpClient(string environment = null)
         {
             var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
-#pragma warning disable 612
-            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
-#pragma warning restore 612
+            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).RestHost;
             return new AblyHttpClient(ablyHttpOptions);
         }
 
