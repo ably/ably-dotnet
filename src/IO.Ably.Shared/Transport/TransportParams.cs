@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -72,6 +73,11 @@ namespace IO.Ably.Transport
         /// </summary>
         public bool EchoMessages { get; private set; }
 
+        /// <summary>
+        /// Additional parameters coming from ClientOptions.
+        /// </summary>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
+
         private TransportParams()
         {
         }
@@ -106,7 +112,39 @@ namespace IO.Ably.Transport
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
+            result.AdditionalParameters = StringifyParameters(options.TransportParams);
             return result;
+
+            Dictionary<string, string> StringifyParameters(Dictionary<string, object> originalParams)
+            {
+                if (originalParams is null)
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                return originalParams.ToDictionary(x => x.Key, x => ConvertValue(x.Key, x.Value));
+
+                string ConvertValue(string key, object value)
+                {
+                    switch (value)
+                    {
+                        case bool boolValue:
+                            return boolValue.ToString().ToLower();
+                        case null:
+                            return string.Empty;
+                        default:
+                            try
+                            {
+                                return value.ToString();
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+                                return string.Empty;
+                            }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -166,6 +204,11 @@ namespace IO.Ably.Transport
             if (ClientId.IsNotEmpty())
             {
                 result["clientId"] = ClientId;
+            }
+
+            if (AdditionalParameters?.Any() ?? false)
+            {
+                return AdditionalParameters.Merge(result);
             }
 
             return result;
