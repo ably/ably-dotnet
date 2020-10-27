@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.AuthTests
         // Exposes the protected property ServerTimeOffset
         public DateTimeOffset? GetServerNow()
         {
-            return ServerNow();
+            return ServerNow;
         }
     }
 }
