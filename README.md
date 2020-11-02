@@ -406,6 +406,19 @@ var nextStatsPage = await stats.NextAsync();
 DateTimeOffset time = await client.TimeAsync();
 ```
 
+### Increase Transport send and receive buffers
+
+In .Net Framework projects, we discovered issues with the .Net implementation of web socket protocol during times of high load with large payloads (over 50kb). This is better described in https://github.com/ably/ably-dotnet/issues/446
+To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it. 
+
+```csharp
+var maxBufferSize = 64 * 1024;
+var options = new ClientOptions();
+var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
+options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
+var realtime = new AblyRealtime(options);
+```
+
 ## Dependencies
 
 This library has dependencies that can differ depending on the target platform.

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.Tests.GithubSamples
@@ -198,6 +199,16 @@ namespace IO.Ably.Tests.GithubSamples
             var nextStatsPage = await stats.NextAsync();
 
             var time = await client.TimeAsync();
+        }
+
+        [Fact(Skip = "Making sure the samples compile")]
+        public async Task TransportSamples()
+        {
+            var maxBufferSize = 64 * 1024;
+            var options = new ClientOptions();
+            var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
+            options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
+            var realtime = new AblyRealtime(options);
         }
     }
 }
