@@ -189,6 +189,33 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSL1k3")]
+        public async Task IdempotentPublishing_MultipleMessagesWithSameId(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var messages = new[]
+            {
+                new Message("test1", "test1"),
+                new Message("test2", "test2"),
+                new Message("test3", "test3"),
+            };
+
+            messages[0].Id = "RSL1k3:0";
+            messages[1].Id = "RSL1k3:0";
+            messages[2].Id = "RSL1k3:0";
+
+            var ex = await Record.ExceptionAsync(async () => await channel.PublishAsync(messages));
+            Assert.NotNull(ex);
+            Assert.IsType<AblyException>(ex);
+            Assert.Equal(
+                40031,
+                ((AblyException)ex).ErrorInfo.Code); // Invalid publish request (invalid client-specified id), see https://github.com/ably/ably-common/pull/30
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
         {
