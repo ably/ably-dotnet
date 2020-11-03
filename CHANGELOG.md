@@ -1,5 +1,28 @@
 # Change Log
 
+## [1.2.3](https://github.com/ably/ably-dotnet/tree/1.2.2) (2020-11-03)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.2...1.2.3)
+
+**Implemented enhancements:**
+
+- Custom transport params [\#453](https://github.com/ably/ably-dotnet/pull/453)
+
+**Fixed bugs:**
+
+- Websocket failures during high load [\#446](https://github.com/ably/ably-dotnet/issues/446)
+
+**Closed issues:**
+
+- Migrate CI to Github actions [\#442](https://github.com/ably/ably-dotnet/issues/442)
+- \[Cleanup\] Remove unused/unnecessary tools and files [\#434](https://github.com/ably/ably-dotnet/issues/434)
+
+**Merged pull requests:**
+
+- Feature/452 transport params [\#453](https://github.com/ably/ably-dotnet/pull/453) ([marto83](https://github.com/marto83))
+- Issue/446 websocket trouble [\#451](https://github.com/ably/ably-dotnet/pull/451) ([marto83](https://github.com/marto83))
+- Issue/434 cleanup [\#450](https://github.com/ably/ably-dotnet/pull/450) ([marto83](https://github.com/marto83))
+- Github workflow [\#445](https://github.com/ably/ably-dotnet/pull/445) ([marto83](https://github.com/marto83))
+
 ## [1.2.2](https://github.com/ably/ably-dotnet/tree/1.2.2) (2020-09-24)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.1...1.2.2)
 
