@@ -5,7 +5,7 @@
 
 **Implemented enhancements:**
 
-- Custom transport params [\#453](https://github.com/ably/ably-dotnet/pull/453)
+- Custom transport params [\#452](https://github.com/ably/ably-dotnet/issues/452)
 
 **Fixed bugs:**
 
