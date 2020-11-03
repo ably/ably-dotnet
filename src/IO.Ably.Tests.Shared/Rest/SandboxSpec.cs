@@ -182,5 +182,17 @@ namespace IO.Ably.Tests
 
             ResetEvent?.Dispose();
         }
+
+        public IDisposable EnableDebugLogging()
+        {
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
+
+            return new ActionOnDispose(() =>
+            {
+                Logger.LoggerSink = new DefaultLoggerSink();
+                Logger.LogLevel = LogLevel.Warning;
+            });
+        }
     }
 }
