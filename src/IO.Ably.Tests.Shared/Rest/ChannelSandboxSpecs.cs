@@ -146,6 +146,9 @@ namespace IO.Ably.Tests.Rest
                 var m = messages[i];
                 AssertMessage(m, i);
             }
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(4);
         }
 
         [Theory]
