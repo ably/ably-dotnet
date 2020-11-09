@@ -445,7 +445,7 @@ namespace IO.Ably.Tests
         {
             async Task Test403BecomesFailed(string context, int expectedCode, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
 
                 realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
