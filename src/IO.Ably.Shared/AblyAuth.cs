@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
+using IO.Ably.Transport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -24,6 +26,8 @@ namespace IO.Ably
             ServerNow = () => null;
             Initialise();
         }
+
+        internal IConnectionContext ConnectionContext { get; set; }
 
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
@@ -485,12 +489,20 @@ namespace IO.Ably
             tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
             SetCurrentTokenParams(tokenParams);
 
-            CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
+            try
+            {
+                CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
+            }
+            catch (AblyException ex)
+            {
+                ConnectionContext?.ExecuteCommand(HandleConnectingErrorCommand.Create(null, ex));
+                throw;
+            }
+
             AuthMethod = AuthMethod.Token;
 
             // RTC8a3 - wait for reconnect if it's the Realtime client
             await OnAuthUpdated(CurrentToken, true);
-
             return CurrentToken;
         }
 

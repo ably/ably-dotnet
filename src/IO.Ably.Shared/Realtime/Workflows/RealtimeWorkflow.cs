@@ -35,7 +35,15 @@ namespace IO.Ably.Realtime.Workflow
 
         private AblyRealtime Client { get; }
 
-        private AblyAuth Auth => Client.RestClient.AblyAuth;
+        private AblyAuth Auth
+        {
+            get
+            {
+                var ablyAuth = Client.RestClient.AblyAuth;
+                ablyAuth.ConnectionContext = Connection.ConnectionManager;
+                return ablyAuth;
+            }
+        }
 
         public Connection Connection { get; }
 

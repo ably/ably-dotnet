@@ -485,6 +485,52 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSA4d")]
+        [Trait("spec", "RSA4d1")]
+        public async Task Auth_WithRealtimeClient_WhenExplicitAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
+        {
+            var ttl = TimeSpan.FromSeconds(30 * 60);
+            var capability = new Capability();
+            capability.AddResource("foo").AllowPublish();
+
+            var ably = await GetRestClient(protocol);
+            var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability, ttl), null);
+
+            void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.TokenDetails = token;
+                options.UseTokenAuth = true;
+                options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
+            }
+
+            var realtimeClient = await GetRealtimeClient(protocol, AuthUrlOptions);
+            realtimeClient.Connection.Connect();
+            var connectionAwaiter = new ConnectionAwaiter(realtimeClient.Connection, ConnectionState.Connected);
+            await connectionAwaiter.Wait();
+            Assert.Equal(ConnectionState.Connected, realtimeClient.Connection.State);
+            async Task Test403BecomesFailed(string context, int expectedCode)
+            {
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
+                realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
+                {
+                    change.Previous.Should().Be(ConnectionState.Connected);
+                    change.Reason.Code.Should().Be(expectedCode);
+                    realtimeClient.Connection.ErrorReason.Code.Should().Be(expectedCode);
+                    realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
+                    tca.SetCompleted();
+                });
+                (await tca.Task).Should().BeTrue(context);
+            }
+
+            realtimeClient.Options.UseTokenAuth = false;
+            var ex = await Record.ExceptionAsync(async () => await realtimeClient.Auth.AuthorizeAsync(null, realtimeClient.Options));
+            Assert.IsType<AblyException>(ex);
+            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSA8a")]
         public async Task ShouldReturnTheRequestedToken(Protocol protocol)
         {
