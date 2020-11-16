@@ -53,11 +53,11 @@ namespace IO.Ably.Tests.Shared
         public void DefaultOptions()
         {
             var options = new ClientOptions();
-            Assert.Equal("realtime.ably.io", options.RealtimeHost);
-            Assert.Equal("rest.ably.io", options.RestHost);
+            Assert.Equal("realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("rest.ably.io", options.FullRestHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.FallbackHosts, options.FallbackHosts);
+            Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -68,11 +68,11 @@ namespace IO.Ably.Tests.Shared
             {
                 Environment = "production"
             };
-            Assert.Equal("realtime.ably.io", options.RealtimeHost);
-            Assert.Equal("rest.ably.io", options.RestHost);
+            Assert.Equal("realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("rest.ably.io", options.FullRestHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.FallbackHosts, options.FallbackHosts);
+            Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -83,11 +83,11 @@ namespace IO.Ably.Tests.Shared
             {
                 Environment = "sandbox"
             };
-            Assert.Equal("sandbox-realtime.ably.io", options.RealtimeHost);
-            Assert.Equal("sandbox-rest.ably.io", options.RestHost);
+            Assert.Equal("sandbox-realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("sandbox-rest.ably.io", options.FullRestHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.GetEnvironmentFallbackHosts("sandbox"), options.FallbackHosts);
+            Assert.Equal(Defaults.GetEnvironmentFallbackHosts("sandbox"), options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -101,11 +101,11 @@ namespace IO.Ably.Tests.Shared
                 FallbackHostsUseDefault = true
             };
 
-            Assert.Equal("sandbox-realtime.ably.io", options.RealtimeHost);
-            Assert.Equal("sandbox-rest.ably.io", options.RestHost);
+            Assert.Equal("sandbox-realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("sandbox-rest.ably.io", options.FullRestHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.FallbackHosts, options.FallbackHosts);
+            Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -119,11 +119,11 @@ namespace IO.Ably.Tests.Shared
                 TlsPort = 8081
             };
 
-            Assert.Equal("local-realtime.ably.io", options.RealtimeHost);
-            Assert.Equal("local-rest.ably.io", options.RestHost);
+            Assert.Equal("local-realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("local-rest.ably.io", options.FullRestHost());
             Assert.Equal(8080, options.Port);
             Assert.Equal(8081, options.TlsPort);
-            Assert.Empty(options.FallbackHosts);
+            Assert.Empty(options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -135,11 +135,11 @@ namespace IO.Ably.Tests.Shared
                 RestHost = "test.org"
             };
 
-            Assert.Equal("test.org", options.RestHost);
-            Assert.Equal("test.org", options.RealtimeHost);
+            Assert.Equal("test.org", options.FullRestHost());
+            Assert.Equal("test.org", options.FullRealtimeHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Empty(options.FallbackHosts);
+            Assert.Empty(options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -152,11 +152,11 @@ namespace IO.Ably.Tests.Shared
                 RealtimeHost = "ws.test.org"
             };
 
-            Assert.Equal("test.org", options.RestHost);
-            Assert.Equal("ws.test.org", options.RealtimeHost);
+            Assert.Equal("test.org", options.FullRestHost());
+            Assert.Equal("ws.test.org", options.FullRealtimeHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Empty(options.FallbackHosts);
+            Assert.Empty(options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -171,11 +171,11 @@ namespace IO.Ably.Tests.Shared
                 FallbackHostsUseDefault = true
             };
 
-            Assert.Equal("test.org", options.RestHost);
-            Assert.Equal("ws.test.org", options.RealtimeHost);
+            Assert.Equal("test.org", options.FullRestHost());
+            Assert.Equal("ws.test.org", options.FullRealtimeHost());
             Assert.Equal(80, options.Port);
             Assert.Equal(443, options.TlsPort);
-            Assert.Equal(Defaults.FallbackHosts, options.FallbackHosts);
+            Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
             Assert.True(options.Tls);
         }
 
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests.Shared
                 FallbackHostsUseDefault = true
             };
 
-            var ex = Assert.Throws<AblyException>(() => { var unused = options.FallbackHosts; });
+            var ex = Assert.Throws<AblyException>(() => { var unused = options.GetFallbackHosts(); });
             Assert.Equal("fallbackHosts and fallbackHostsUseDefault cannot both be set", ex.ErrorInfo.Message);
         }
 
@@ -205,7 +205,7 @@ namespace IO.Ably.Tests.Shared
 
             var ex = Assert.Throws<AblyException>(() =>
             {
-                var unused = options.FallbackHosts;
+                var unused = options.GetFallbackHosts();
             });
             Assert.Equal("fallbackHostsUseDefault cannot be set when port or tlsPort are set", ex.ErrorInfo.Message);
 
@@ -217,7 +217,7 @@ namespace IO.Ably.Tests.Shared
 
             ex = Assert.Throws<AblyException>(() =>
             {
-                var unused = options.FallbackHosts;
+                var unused = options.GetFallbackHosts();
             });
             Assert.Equal("fallbackHostsUseDefault cannot be set when port or tlsPort are set", ex.ErrorInfo.Message);
         }

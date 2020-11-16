@@ -238,7 +238,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.TimeAsync();
             var lastRequestUri = handler.Requests.Last().RequestUri.ToString();
-            var wasLastRequestAFallback = client.Options.FallbackHosts.Any(x => lastRequestUri.Contains(x));
+            var wasLastRequestAFallback = client.Options.GetFallbackHosts().Any(x => lastRequestUri.Contains(x));
             wasLastRequestAFallback.Should().BeFalse();
 
             lastRequestUri.Should().Contain(Defaults.RestHost);

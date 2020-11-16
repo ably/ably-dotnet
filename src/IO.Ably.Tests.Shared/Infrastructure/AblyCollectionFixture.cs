@@ -64,7 +64,7 @@ namespace IO.Ably.Tests
         internal AblyHttpClient GetHttpClient(string environment = null)
         {
             var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
-            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).RestHost;
+            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }
 

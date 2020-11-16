@@ -123,17 +123,6 @@ namespace IO.Ably
         /// </summary>
         public string RestHost
         {
-            get
-            {
-                if (_restHost.IsEmpty())
-                {
-                    return IsProductionEnvironment
-                        ? Defaults.RestHost
-                        : $"{Environment}-{Defaults.RestHost}";
-                }
-
-                return _restHost;
-            }
             set => _restHost = value;
         }
 
@@ -143,24 +132,6 @@ namespace IO.Ably
         /// </summary>
         public string RealtimeHost
         {
-            get
-            {
-                if (_realtimeHost.IsEmpty())
-                {
-                    if (_restHost.IsNotEmpty())
-                    {
-                        Logger.Warning(
-                            $@"restHost is set to {_restHost} but realtimeHost is not set,
-                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
-                                     please set realtimeHost explicitly.");
-                        return _restHost;
-                    }
-
-                    return IsProductionEnvironment ? Defaults.RealtimeHost : $"{Environment}{'-'}{Defaults.RealtimeHost}";
-                }
-
-                return _realtimeHost;
-            }
             set => _realtimeHost = value;
         }
 
@@ -170,46 +141,6 @@ namespace IO.Ably
         /// </summary>
         public string[] FallbackHosts
         {
-            get
-            {
-#pragma warning disable 618
-                if (FallbackHostsUseDefault)
-#pragma warning restore 618
-                {
-                    if (_fallbackHosts != null)
-                    {
-                        const string msg = "fallbackHosts and fallbackHostsUseDefault cannot both be set";
-                        throw new AblyException(new ErrorInfo(msg, 40000));
-                    }
-
-                    if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
-                    {
-                        const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
-                        throw new AblyException(new ErrorInfo(msg, 40000));
-                    }
-
-                    if (Environment.IsNotEmpty())
-                    {
-                        Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
-                    }
-                    else
-                    {
-                        Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
-                    }
-
-                    return Defaults.FallbackHosts;
-                }
-
-                if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
-                {
-                    return IsProductionEnvironment
-                        ? Defaults.FallbackHosts
-                        : Defaults.GetEnvironmentFallbackHosts(Environment);
-                }
-
-                return _fallbackHosts ?? new string[] { };
-            }
-
             set => _fallbackHosts = value;
         }
 
@@ -224,42 +155,93 @@ namespace IO.Ably
 
         internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => RestHost == Defaults.RestHost;
+        internal bool IsDefaultRestHost => FullRestHost() == Defaults.RestHost;
 
-        internal bool IsDefaultRealtimeHost => RealtimeHost == Defaults.RealtimeHost;
+        internal bool IsDefaultRealtimeHost => FullRealtimeHost() == Defaults.RealtimeHost;
 
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
-        [Obsolete("FullRealtimeHost is deprecated, use RealtimeHost instead")]
-        internal string FullRealtimeHost()
+        /// <summary>
+        /// Used for getting default/provided RestHost.
+        /// </summary>
+        /// <returns>RestHost.</returns>
+        public string FullRestHost()
         {
-            if (RealtimeHost.IsEmpty())
+            if (_restHost.IsEmpty())
             {
-                if (IsProductionEnvironment)
-                {
-                    return Defaults.RealtimeHost;
-                }
-
-                return Environment.ToString().ToLower() + "-" + Defaults.RealtimeHost;
+                return IsProductionEnvironment
+                    ? Defaults.RestHost
+                    : $"{Environment}-{Defaults.RestHost}";
             }
 
-            return RealtimeHost;
+            return _restHost;
         }
 
-        [Obsolete("FullRestHost is deprecated, use RestHost instead")]
-        internal string FullRestHost()
+        /// <summary>
+        /// Used for getting default/provided RealtimeHost.
+        /// </summary>
+        /// <returns>RealtimeHost.</returns>
+        public string FullRealtimeHost()
         {
-            if (RestHost.IsEmpty())
+            if (_realtimeHost.IsEmpty())
             {
-                if (IsProductionEnvironment)
+                if (_restHost.IsNotEmpty())
                 {
-                    return Defaults.RestHost;
+                    Logger.Warning(
+                        $@"restHost is set to {_restHost} but realtimeHost is not set,
+                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
+                                     please set realtimeHost explicitly.");
+                    return _restHost;
                 }
 
-                return Environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                return IsProductionEnvironment ? Defaults.RealtimeHost : $"{Environment}{'-'}{Defaults.RealtimeHost}";
             }
 
-            return RestHost;
+            return _realtimeHost;
+        }
+
+        /// <summary>
+        /// Used for getting default/provided FallbackHosts.
+        /// </summary>
+        /// <returns>FallbackHosts.</returns>
+        public string[] GetFallbackHosts()
+        {
+#pragma warning disable 618
+            if (FallbackHostsUseDefault)
+#pragma warning restore 618
+            {
+                if (_fallbackHosts != null)
+                {
+                    const string msg = "fallbackHosts and fallbackHostsUseDefault cannot both be set";
+                    throw new AblyException(new ErrorInfo(msg, 40000));
+                }
+
+                if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
+                {
+                    const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
+                    throw new AblyException(new ErrorInfo(msg, 40000));
+                }
+
+                if (Environment.IsNotEmpty())
+                {
+                    Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
+                }
+                else
+                {
+                    Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
+                }
+
+                return Defaults.FallbackHosts;
+            }
+
+            if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
+            {
+                return IsProductionEnvironment
+                    ? Defaults.FallbackHosts
+                    : Defaults.GetEnvironmentFallbackHosts(Environment);
+            }
+
+            return _fallbackHosts ?? new string[] { };
         }
 
         /// <summary>
