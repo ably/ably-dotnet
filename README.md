@@ -419,6 +419,51 @@ options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOp
 var realtime = new AblyRealtime(options);
 ```
 
+### Examples
+- More Examples can be found under ```examples``` directory.
+- While working with console app, make sure to put explicit await for async methods.</br>
+*Sample .net core implementation*
+```C#
+using System;
+using IO.Ably;
+namespace testing_ably_console
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+            var realtime = new AblyRealtime("<api key>");
+            var channel = realtime.Channels.Get("test");
+            await channel.PublishAsync("greeting", "Hello World!");
+            Console.WriteLine("Farewell World!");
+        }
+    }
+}
+```
+</br>*Sample .net framework implementation (when you don't have async main method)*
+```C#
+using System;
+using IO.Ably;
+namespace testing_ably_console
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            MainAsync(args).GetAwaiter().GetResult();
+        }
+
+        static async Task MainAsync(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+            var realtime = new AblyRealtime("<api key>");
+            var channel = realtime.Channels.Get("test");
+            await channel.PublishAsync("greeting", "Hello World!");
+        }
+    }
+}
+```
 ## Dependencies
 
 This library has dependencies that can differ depending on the target platform.
@@ -481,3 +526,4 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
 * Run `package.cmd` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
+ 
