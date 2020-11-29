@@ -50,7 +50,7 @@ namespace IO.Ably
         public string ClientId => ConnectionClientId
             ?? CurrentToken?.ClientId
             ?? CurrentTokenParams?.ClientId
-            ?? Options.ClientId;
+            ?? Options.GetClientId();
 
         public bool TokenRenewable => TokenCreatedExternally || HasApiKey;
 
@@ -66,7 +66,7 @@ namespace IO.Ably
             CurrentTokenParams = Options.DefaultTokenParams;
             if (CurrentTokenParams != null)
             {
-                CurrentTokenParams.ClientId = Options.ClientId; // Ensure the correct ClientId is set in AblyAuth
+                CurrentTokenParams.ClientId = Options.GetClientId(); // Ensure the correct ClientId is set in AblyAuth
             }
 
             if (AuthMethod == AuthMethod.Basic)

@@ -57,7 +57,7 @@ namespace IO.Ably.Realtime
             if (!Channels.TryGetValue(name, out var result))
             {
                 // create a new instance using the passed in option
-                var channel = new RealtimeChannel(name, _realtimeClient.Options.ClientId, _realtimeClient, options);
+                var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options);
                 result = Channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)

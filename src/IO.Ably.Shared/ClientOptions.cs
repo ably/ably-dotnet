@@ -34,7 +34,7 @@ namespace IO.Ably
         /// </summary>
         public string ClientId
         {
-            get => _clientId.IsNotEmpty() ? _clientId : DefaultTokenParams?.ClientId;
+            get => _clientId;
 
             set
             {
@@ -55,7 +55,10 @@ namespace IO.Ably
         /// </summary>
         public TokenParams DefaultTokenParams { get; set; }
 
-        [Obsolete("GetClientId is deprecated, use ClientId instead")]
+        /// <summary>
+        /// Used internally for getting clientId from options or DefaultTokenParams
+        /// </summary>
+        /// <returns>clientId</returns>
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
