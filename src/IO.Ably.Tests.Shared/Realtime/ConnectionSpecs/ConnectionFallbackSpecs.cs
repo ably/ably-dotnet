@@ -23,14 +23,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithCustomHostAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
             var client = GetRealtimeClient(opts => opts.RealtimeHost = "test.com");
-            client.WaitForState(ConnectionState.Connecting);
+            await client.WaitForState(ConnectionState.Connecting);
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            await client.WaitForState(ConnectionState.Failed);
+            await client.WaitForState(ConnectionState.Failed, TimeSpan.FromSeconds(60));
         }
 
         [Fact]
@@ -202,9 +202,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.ConnectClient();
 
-            MakeRestRequestRequest(); // Will make 2 requests 1 to the RealtimeFallbackHost and one to another fallback host
-            MakeRestRequestRequest(); // Will make 2 requests 1 to the saved fallback host but no the same as RealtimeFallbackHost and 1 to RealtimeFallbackHost
-            MakeRestRequestRequest(); // Will make 1 request to the RealtimeFallback host
+            await MakeRestRequestRequest(); // Will make 2 requests 1 to the RealtimeFallbackHost and one to another fallback host
+            await MakeRestRequestRequest(); // Will make 2 requests 1 to the saved fallback host but no the same as RealtimeFallbackHost and 1 to RealtimeFallbackHost
+            await MakeRestRequestRequest(); // Will make 1 request to the RealtimeFallback host
 
             handler.Requests.Count.Should().Be(5); // First attempt is with rest.ably.io
             var attemptedHosts = handler.Requests.Select(x => x.RequestUri.Host).ToList();
