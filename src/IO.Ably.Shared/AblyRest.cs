@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Foundation;
 using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
@@ -119,7 +120,15 @@ namespace IO.Ably
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
-            Logger.Debug("Sending {0} request to {1}", request.Method, request.Url);
+            string requestId = null;
+            if (Options.AddRequestIds)
+            {
+                requestId = Guid.NewGuid().ToByteArray().ToBase64();
+                var dict = new Dictionary<string, string> { { "request_id", requestId } };
+                request.AddHeaders(dict);
+            }
+
+            Logger.Debug(WrapWithRequestId($"Sending {request.Method} request to {request.Url}"));
 
             if (request.SkipAuthentication == false)
             {
@@ -135,7 +144,7 @@ namespace IO.Ably
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
                 }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
@@ -148,7 +157,7 @@ namespace IO.Ably
 
                     if (Logger.IsDebug)
                     {
-                        Logger.Debug("Handling UnAuthorized Error, attempting to Re-authorize and repeat request.");
+                        Logger.Debug(WrapWithRequestId("Handling UnAuthorized Error, attempting to Re-authorize and repeat request."));
                     }
 
                     try
@@ -169,10 +178,19 @@ namespace IO.Ably
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
                 }
 
                 throw new AblyException(ex);
+            }
+
+            string WrapWithRequestId(string message)
+            {
+                if (requestId != null)
+                {
+                    message = $"RequestId {requestId} : {message}";
+                }
+                return message;
             }
         }
 
