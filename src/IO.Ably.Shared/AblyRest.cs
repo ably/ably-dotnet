@@ -180,15 +180,7 @@ namespace IO.Ably
                 throw new AblyException(ex);
             }
 
-            string WrapWithRequestId(string message)
-            {
-                if (requestId != null)
-                {
-                    message = $"RequestId {requestId} : {message}";
-                }
-
-                return message;
-            }
+            string WrapWithRequestId(string message) => requestId != null ? $"RequestId {requestId} : {message}" : message;
         }
 
         internal async Task<T> ExecuteRequest<T>(AblyRequest request)

@@ -334,15 +334,7 @@ namespace IO.Ably
                 }
             }
 
-            string WrapWithRequestId(string message)
-            {
-                if (requestId != null)
-                {
-                    message = $"RequestId {requestId} : {message}";
-                }
-
-                return message;
-            }
+            string WrapWithRequestId(string message) => requestId != null ? $"RequestId {requestId} : {message}" : message;
         }
 
         private void LogResponse(AblyResponse ablyResponse, string url)
