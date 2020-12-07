@@ -134,14 +134,14 @@ namespace IO.Ably
             var numberOfRetries = Options.HttpMaxRetryCount; // One for the first request
             var host = GetHost();
 
+            var requestId = request.Headers.GetValueOrDefault("request_id", null);
             do
             {
                 EnsureMaxRetryDurationNotExceeded();
-
-                Logger.Debug(
-                    $"Executing request. Host: {host}. Request: {request.Url}. {(currentTry > 0 ? $"try {currentTry}" : string.Empty)}");
-
-                try
+                Logger.Debug(WrapWithRequestId(
+                        $"Executing request. Host: {host}. Request: {request.Url}. {(currentTry > 0 ? $"try {currentTry}" : string.Empty)}"));
+                
+            try
                 {
                     var response = await MakeRequest(host);
 
@@ -159,11 +159,11 @@ namespace IO.Ably
                     {
                         currentTry++;
 
-                        Logger.Warning("Failed response. " + response.GetFailedMessage() + ". Retrying...");
+                        Logger.Warning(WrapWithRequestId("Failed response. " + response.GetFailedMessage() + ". Retrying..."));
                         var (success, newHost) = HandleHostChangeForRetryableFailure();
                         if (success)
                         {
-                            Logger.Debug($"Retrying using host: {newHost}");
+                            Logger.Debug(WrapWithRequestId($"Retrying using host: {newHost}"));
 
                             host = newHost;
                             continue;
@@ -187,12 +187,12 @@ namespace IO.Ably
                 catch (Exception ex)
                 {
                     // TODO: Sentry logging here
-                    throw new AblyException(new ErrorInfo("Error executing request. " + ex.Message, 50000), ex);
+                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request. " + ex.Message), 50000), ex);
                 }
             }
             while (currentTry < numberOfRetries);
 
-            throw new AblyException(new ErrorInfo("Error executing request", 50000));
+            throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), 50000));
 
             List<string> GetFallbackHosts()
             {
@@ -284,11 +284,11 @@ namespace IO.Ably
                     if (ex.CancellationToken.IsCancellationRequested == false)
                     {
                         throw new AblyException(
-                            new ErrorInfo("Error executing request. Request timed out.", 50000),
+                            new ErrorInfo(WrapWithRequestId("Error executing request. Request timed out."), 50000),
                             ex);
                     }
 
-                    throw new AblyException(new ErrorInfo("Error executing request", 50000), ex);
+                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), 50000), ex);
                 }
             }
 
@@ -296,7 +296,7 @@ namespace IO.Ably
             {
                 if (fallbackHosts.Count == 0)
                 {
-                    Logger.Debug("No more hosts left to retry. Cannot assign a new fallback host.");
+                    Logger.Debug(WrapWithRequestId("No more hosts left to retry. Cannot assign a new fallback host."));
                     return (false, null);
                 }
 
@@ -329,10 +329,19 @@ namespace IO.Ably
             {
                 if ((Now() - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
                 {
-                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Options.HttpMaxRetryDuration.TotalSeconds);
+                    Logger.Error(WrapWithRequestId("Cumulative retry timeout of {0}s was exceeded"), Options.HttpMaxRetryDuration.TotalSeconds);
                     throw new AblyException(
-                        new ErrorInfo($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded. The value is controlled by `ClientOptions.HttpMaxRetryDuration`.", 50000, null));
+                        new ErrorInfo(WrapWithRequestId($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded. The value is controlled by `ClientOptions.HttpMaxRetryDuration`."), 50000, null));
                 }
+            }
+
+            string WrapWithRequestId(string message)
+            {
+                if (requestId != null)
+                {
+                    message = $"RequestId {requestId} : {message}";
+                }
+                return message;
             }
         }
 
