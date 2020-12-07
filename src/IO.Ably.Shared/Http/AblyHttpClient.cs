@@ -134,14 +134,13 @@ namespace IO.Ably
             var numberOfRetries = Options.HttpMaxRetryCount; // One for the first request
             var host = GetHost();
 
-            var requestId = request.Headers.GetValueOrDefault("request_id", null);
+            request.Headers.TryGetValue("request_id", out var requestId);
             do
             {
                 EnsureMaxRetryDurationNotExceeded();
                 Logger.Debug(WrapWithRequestId(
                         $"Executing request. Host: {host}. Request: {request.Url}. {(currentTry > 0 ? $"try {currentTry}" : string.Empty)}"));
-                
-            try
+                try
                 {
                     var response = await MakeRequest(host);
 
@@ -341,6 +340,7 @@ namespace IO.Ably
                 {
                     message = $"RequestId {requestId} : {message}";
                 }
+
                 return message;
             }
         }
