@@ -436,6 +436,24 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
+    internal class HandleAblyAuthorizeErrorCommand : RealtimeCommand
+    {
+        public AblyException Exception { get; }
+
+        private HandleAblyAuthorizeErrorCommand(AblyException ex)
+        {
+            Exception = ex;
+        }
+
+        public static HandleAblyAuthorizeErrorCommand Create(AblyException ex = null) =>
+            new HandleAblyAuthorizeErrorCommand(ex);
+
+        protected override string ExplainData()
+        {
+            return $" Exception: {Exception?.Message} ";
+        }
+    }
+
     internal class HandleConnectingErrorCommand : RealtimeCommand
     {
         public ErrorInfo Error { get; }

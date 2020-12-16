@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Transport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -27,7 +26,7 @@ namespace IO.Ably
             Initialise();
         }
 
-        internal IConnectionContext ConnectionContext { get; set; }
+        internal Action<RealtimeCommand> ExecuteCommand { get; set; } = (cmd) => { };
 
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
@@ -495,7 +494,7 @@ namespace IO.Ably
             }
             catch (AblyException ex)
             {
-                ConnectionContext?.ExecuteCommand(HandleConnectingErrorCommand.Create(null, ex));
+                ExecuteCommand(HandleAblyAuthorizeErrorCommand.Create(ex));
                 throw;
             }
 
