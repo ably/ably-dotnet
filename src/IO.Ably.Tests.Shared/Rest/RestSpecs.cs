@@ -475,7 +475,6 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC7c")]
             public async Task WithRequestIdSet_RequestIdShouldRemainSameIfRetriedToFallbackHost()
             {
-
                 var client = CreateClient(options =>
                 {
                     options.FallbackHosts = null;
