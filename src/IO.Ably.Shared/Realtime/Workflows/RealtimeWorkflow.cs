@@ -35,15 +35,7 @@ namespace IO.Ably.Realtime.Workflow
 
         private AblyRealtime Client { get; }
 
-        private AblyAuth Auth
-        {
-            get
-            {
-                var ablyAuth = Client.RestClient.AblyAuth;
-                ablyAuth.ConnectionContext = Connection.ConnectionManager;
-                return ablyAuth;
-            }
-        }
+        private AblyAuth Auth => Client.RestClient.AblyAuth;
 
         public Connection Connection { get; }
 
@@ -73,6 +65,7 @@ namespace IO.Ably.Realtime.Workflow
         public RealtimeWorkflow(AblyRealtime client, ILogger logger)
         {
             Client = client;
+            Client.RestClient.AblyAuth.ExecuteCommand = cmd => QueueCommand(cmd);
             Connection = client.Connection;
             Channels = client.Channels;
             Logger = logger;
@@ -461,6 +454,8 @@ namespace IO.Ably.Realtime.Workflow
                     }
 
                     return EmptyCommand.Instance;
+                case HandleAblyAuthorizeErrorCommand cmd:
+                    return HandleConnectingErrorCommand.Create(null, cmd.Exception).TriggeredBy(cmd);
                 default:
                     throw new AblyException("No handler found for - " + command.Explain());
             }

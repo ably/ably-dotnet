@@ -524,7 +524,7 @@ namespace IO.Ably.Tests
             }
 
             realtimeClient.Options.UseTokenAuth = false;
-            var ex = await Record.ExceptionAsync(async () => await realtimeClient.Auth.AuthorizeAsync(null, realtimeClient.Options));
+            var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync(null, realtimeClient.Options));
             Assert.IsType<AblyException>(ex);
             await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019);
         }
