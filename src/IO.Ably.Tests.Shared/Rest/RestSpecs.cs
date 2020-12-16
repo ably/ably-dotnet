@@ -283,16 +283,24 @@ namespace IO.Ably.Tests
                 var client = CreateClient(options => options.AddRequestIds = true);
                 await MakeAnyRequest(client);
                 Assert.Equal(1, _handler.NumberOfRequests);
-                var requestIdHeader = _handler.LastRequest.Headers.GetValues("request_id").First();
-                Assert.NotNull(requestIdHeader);
-                requestIdHeader.Length.Should().BeGreaterOrEqualTo(9);
+                var requestId1 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                Assert.NotNull(requestId1);
+                requestId1.Length.Should().BeGreaterOrEqualTo(9);
+
+                // with request id and new request
+                await MakeAnyRequest(client);
+                Assert.Equal(2, _handler.NumberOfRequests);
+                var requestId2 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                Assert.NotNull(requestId2);
+                requestId2.Length.Should().BeGreaterOrEqualTo(9);
+                Assert.NotEqual(requestId1, requestId2);
 
                 // Without request id
                 client = CreateClient(_ => { });
                 await MakeAnyRequest(client);
-                Assert.Equal(2, _handler.NumberOfRequests);
-                _handler.LastRequest.Headers.TryGetValues("request_id", out var headers);
-                Assert.Null(headers);
+                Assert.Equal(3, _handler.NumberOfRequests);
+                _handler.LastRequest.Headers.TryGetValues("request_id", out var requestIdHeaders);
+                Assert.Null(requestIdHeaders);
             }
 
             [Fact]
@@ -461,6 +469,35 @@ namespace IO.Ably.Tests
                 var client = new AblyRest(options);
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
                 return client;
+            }
+
+            [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_RequestIdShouldRemainSameIfRetriedToFallbackHost()
+            {
+
+                var client = CreateClient(options =>
+                {
+                    options.FallbackHosts = null;
+                    options.AddRequestIds = true;
+                    options.HttpMaxRetryCount = 5;
+                });
+
+                var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                handler.NumberOfRequests.Should().Be(5);
+                var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
+                Assert.Contains(uniqueRequestId, ex.Message);
+                Assert.Contains(uniqueRequestId, ex.ErrorInfo.Message);
+                handler.Requests.ForEach(request =>
+                {
+                    var requestId = request.Headers.GetValues("request_id").First();
+                    Assert.NotNull(requestId);
+                    requestId.Length.Should().BeGreaterOrEqualTo(9);
+                    Assert.Equal(uniqueRequestId, requestId);
+                });
             }
 
             [Fact]
