@@ -276,6 +276,26 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_ShouldUseRequestIdInParam()
+            {
+                // With request id
+                var client = CreateClient(options => options.AddRequestIds = true);
+                await MakeAnyRequest(client);
+                Assert.Equal(1, _handler.NumberOfRequests);
+                var requestIdHeader = _handler.LastRequest.Headers.GetValues("request_id").First();
+                Assert.NotNull(requestIdHeader);
+                requestIdHeader.Length.Should().BeGreaterOrEqualTo(9);
+
+                // Without request id
+                client = CreateClient(_ => { });
+                await MakeAnyRequest(client);
+                Assert.Equal(2, _handler.NumberOfRequests);
+                _handler.LastRequest.Headers.TryGetValues("request_id", out var headers);
+                Assert.Null(headers);
+            }
+
+            [Fact]
             [Trait("spec", "RSC12")]
             public async Task WithHostSpecifiedInOption_ShouldUseCustomHost()
             {
