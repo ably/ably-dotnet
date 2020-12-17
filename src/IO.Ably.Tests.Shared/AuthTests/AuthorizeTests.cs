@@ -240,8 +240,8 @@ namespace IO.Ably.Tests.AuthTests
             tokenRequest.Capability.Should().Be(cap);
             fakeApiKey.Should().StartWith(tokenRequest.KeyName);
 
-            rest.AblyAuth.CurrentAuthOptions.ShouldBeEquivalentTo(authOptions);
-            rest.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+            rest.AblyAuth.CurrentAuthOptions.Should().BeEquivalentTo(authOptions);
+            rest.AblyAuth.CurrentTokenParams.Should().BeEquivalentTo(tokenParams);
         }
 
         [Fact]
@@ -254,7 +254,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.AuthorizeAsync(tokenParams);
             await client.Auth.AuthorizeAsync();
             var data = LastRequest.PostData as TokenRequest;
-            client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+            client.AblyAuth.CurrentTokenParams.Should().BeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
 
@@ -272,7 +272,7 @@ namespace IO.Ably.Tests.AuthTests
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
             expectedTokenParams.Timestamp = null;
-            testAblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(expectedTokenParams);
+            testAblyAuth.CurrentTokenParams.Should().BeEquivalentTo(expectedTokenParams);
 
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
             testAblyAuth.CurrentTokenParams.Timestamp.Should().Be(null);
@@ -297,7 +297,7 @@ namespace IO.Ably.Tests.AuthTests
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
             expectedTokenParams.Timestamp = null;
-            testAblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(expectedTokenParams);
+            testAblyAuth.CurrentTokenParams.Should().BeEquivalentTo(expectedTokenParams);
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
         }
 

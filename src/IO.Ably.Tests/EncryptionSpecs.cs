@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
             {
                 var key = keyBase64.FromBase64();
                 var result = Crypto.GetDefaultParams(key);
-                result.Key.ShouldBeEquivalentTo(key);
+                result.Key.Should().BeEquivalentTo(key);
                 result.KeyLength.Should().Be(128);
             }
 
@@ -61,7 +61,7 @@ namespace IO.Ably.Tests
             public void WithStringKey_ShouldConvertItFromBase64AndReturnParamsWithThatKey()
             {
                 var result = Crypto.GetDefaultParams(keyBase64);
-                result.Key.ShouldBeEquivalentTo(keyBase64.FromBase64());
+                result.Key.Should().BeEquivalentTo(keyBase64.FromBase64());
                 result.KeyLength.Should().Be(128);
             }
 
@@ -70,7 +70,7 @@ namespace IO.Ably.Tests
             public void WithBase64UrlKey_ShouldConvertCorrectly()
             {
                 var result = Crypto.GetDefaultParams(keyBase64url);
-                result.Key.ShouldBeEquivalentTo(keyBase64url.FromBase64());
+                result.Key.Should().BeEquivalentTo(keyBase64url.FromBase64());
                 result.KeyLength.Should().Be(128);
             }
 

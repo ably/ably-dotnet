@@ -240,7 +240,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.State.Should().Be(ConnectionState.Suspended);
 
             stateChanges.Select(x => x.Current).Distinct()
-                .ShouldBeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Disconnected, ConnectionState.Suspended, });
+                .Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Disconnected, ConnectionState.Suspended, });
             int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
             stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }

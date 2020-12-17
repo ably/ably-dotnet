@@ -78,7 +78,7 @@ namespace IO.Ably.Tests
             // Assert
             result.Should().BeTrue();
             var targetState = _context.StateShouldBe<ConnectionFailedState>();
-            targetState.Error.ShouldBeEquivalentTo(targetError);
+            targetState.Error.Should().BeEquivalentTo(targetError);
         }
 
         [Fact]

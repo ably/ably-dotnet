@@ -32,8 +32,8 @@ namespace IO.Ably.Tests.Realtime
             IRealtimeChannel target = client.Channels.Get("test");
 
             // Assert
-            target.Name.ShouldBeEquivalentTo("test");
-            target.State.ShouldBeEquivalentTo(ChannelState.Initialized);
+            target.Name.Should().BeEquivalentTo("test");
+            target.State.Should().BeEquivalentTo(ChannelState.Initialized);
         }
 
         [Theory]
@@ -56,16 +56,16 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             signal.WaitOne(10000);
-            stateChanges.Count.ShouldBeEquivalentTo(1);
-            stateChanges[0].Current.ShouldBeEquivalentTo(ChannelState.Attaching);
-            stateChanges[0].Error.ShouldBeEquivalentTo(null);
-            target.State.ShouldBeEquivalentTo(ChannelState.Attaching);
+            stateChanges.Count.Should().Be(1);
+            stateChanges[0].Current.Should().BeEquivalentTo(ChannelState.Attaching);
+            stateChanges[0].Error.Should().BeNull();
+            target.State.Should().BeEquivalentTo(ChannelState.Attaching);
 
             signal.WaitOne(10000);
-            stateChanges.Count.ShouldBeEquivalentTo(2);
-            stateChanges[1].Current.ShouldBeEquivalentTo(ChannelState.Attached);
-            stateChanges[1].Error.ShouldBeEquivalentTo(null);
-            target.State.ShouldBeEquivalentTo(ChannelState.Attached);
+            stateChanges.Count.Should().Be(2);
+            stateChanges[1].Current.Should().BeEquivalentTo(ChannelState.Attached);
+            stateChanges[1].Error.Should().BeNull();
+            target.State.Should().BeEquivalentTo(ChannelState.Attached);
         }
 
         [Theory]
@@ -90,9 +90,9 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
-            messagesReceived.Count.ShouldBeEquivalentTo(1);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
+            messagesReceived.Count.Should().Be(1);
+            messagesReceived[0].Name.Should().BeEquivalentTo("test");
+            messagesReceived[0].Data.Should().BeEquivalentTo("test data");
         }
 
         // TODO: RTL1 Spec about presence and sync messages
@@ -266,12 +266,12 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             messagesReceived.Should().HaveCount(3);
             var messages = messagesReceived.ToList();
-            messages[0].Name.ShouldBeEquivalentTo("test1");
-            messages[0].Data.ShouldBeEquivalentTo("test 12");
-            messages[1].Name.ShouldBeEquivalentTo("test2");
-            messages[1].Data.ShouldBeEquivalentTo("test 123");
-            messages[2].Name.ShouldBeEquivalentTo("test3");
-            messages[2].Data.ShouldBeEquivalentTo("test 321");
+            messages[0].Name.Should().BeEquivalentTo("test1");
+            messages[0].Data.Should().BeEquivalentTo("test 12");
+            messages[1].Name.Should().BeEquivalentTo("test2");
+            messages[1].Data.Should().BeEquivalentTo("test 123");
+            messages[2].Name.Should().BeEquivalentTo("test3");
+            messages[2].Data.Should().BeEquivalentTo("test 321");
         }
 
         [Theory]
@@ -1074,7 +1074,7 @@ namespace IO.Ably.Tests.Realtime
                 client.GetTestTransport().FakeReceivedMessage(msg);
             });
 
-            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            stateChange.Error.Should().BeEquivalentTo(msg.Error);
             channel.ErrorReason.Should().BeNull();
             await client.ProcessCommands();
             client.GetTestTransport().ProtocolMessagesSent
@@ -1112,7 +1112,7 @@ namespace IO.Ably.Tests.Realtime
                 client.GetTestTransport().FakeReceivedMessage(msg);
             });
 
-            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            stateChange.Error.Should().BeEquivalentTo(msg.Error);
             channel.ErrorReason.Should().BeNull();
 
             client.GetTestTransport().ProtocolMessagesSent
@@ -1180,7 +1180,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // the first error should be from the detached message
-            stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
+            stateChange.Error.Should().BeEquivalentTo(detachedMessage.Error);
 
             // the second should be a timeout error
             stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
@@ -1300,7 +1300,7 @@ namespace IO.Ably.Tests.Realtime
             });
             client1.Connect();
             var didConnect = await tsc.Task;
-            didConnect.ShouldBeEquivalentTo(true, "this indicates that the connection event was handled.");
+            didConnect.Should().Be(true, "this indicates that the connection event was handled.");
         }
 
         [Theory]

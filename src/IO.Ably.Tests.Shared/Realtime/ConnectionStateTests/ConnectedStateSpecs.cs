@@ -79,7 +79,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.Should().BeEquivalentTo(targetError));
         }
 
         [Fact]

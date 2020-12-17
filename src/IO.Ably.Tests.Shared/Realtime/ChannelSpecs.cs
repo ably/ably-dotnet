@@ -1118,7 +1118,7 @@ namespace IO.Ably.Tests.Realtime
                     var protocolMessage = LastCreatedTransport.LastMessageSend;
                     protocolMessage.Action.Should().Be(ProtocolMessage.MessageAction.Attach);
                     protocolMessage.Params.Should().NotBeNull();
-                    protocolMessage.Params.ShouldBeEquivalentTo(channelParams);
+                    protocolMessage.Params.Should().BeEquivalentTo(channelParams);
                 }
 
                 [Fact]

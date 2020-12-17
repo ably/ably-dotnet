@@ -53,7 +53,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.AuthoriseAsync(tokenParams, null);
             await client.Auth.AuthoriseAsync(null, new AuthOptions() { Force = true});
             var data = LastRequest.PostData as TokenRequest;
-            client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+            client.AblyAuth.CurrentTokenParams.Should().BeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
 
@@ -121,7 +121,7 @@ namespace IO.Ably.Tests.AuthTests
             await testAblyAuth.AuthoriseAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
             expectedTokenParams.Timestamp = null;
-            testAblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(expectedTokenParams);
+            testAblyAuth.CurrentTokenParams.Should().BeEquivalentTo(expectedTokenParams);
 
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
             testAblyAuth.CurrentTokenParams.Timestamp.Should().Be(null);
@@ -142,7 +142,7 @@ namespace IO.Ably.Tests.AuthTests
             await testAblyAuth.AuthoriseAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
             expectedTokenParams.Timestamp = null;
-            testAblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(expectedTokenParams);
+            testAblyAuth.CurrentTokenParams.Should().BeEquivalentTo(expectedTokenParams);
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
             testAblyAuth.CurrentAuthOptions.Force.Should().BeFalse();
         }

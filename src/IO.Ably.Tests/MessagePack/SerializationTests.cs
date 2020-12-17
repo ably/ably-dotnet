@@ -68,9 +68,9 @@ namespace IO.Ably.Tests.MessagePack
 
             var packed = MsgPackHelper.Serialise(details);
             var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
-            unpacked.ShouldBeEquivalentTo(details);
+            unpacked.Should().BeEquivalentTo(details);
             var unpackedFromRaw = MsgPackHelper.Deserialise(bytes, typeof(TokenDetails));
-            unpackedFromRaw.ShouldBeEquivalentTo(details);
+            unpackedFromRaw.Should().BeEquivalentTo(details);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace IO.Ably.Tests.MessagePack
 
             var unpacked = (List<Stats>) MsgPackHelper.Deserialise(bytes, typeof(List<Stats>));
 
-            unpacked.ShouldBeEquivalentTo(expected);
+            unpacked.Should().BeEquivalentTo(expected);
 
         }
 
@@ -101,7 +101,7 @@ namespace IO.Ably.Tests.MessagePack
 
             var packed = MsgPackHelper.Serialise(details);
             var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
-            unpacked.ShouldBeEquivalentTo(details);
+            unpacked.Should().BeEquivalentTo(details);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace IO.Ably.Tests.MessagePack
             var connectionDetails = new ConnectionDetails() { ClientId = "123", ConnectionStateTtl = TimeSpan.FromSeconds(60)};
             var serialized = MsgPackHelper.Serialise(connectionDetails);
             var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ConnectionDetails));
-            deserialized.ShouldBeEquivalentTo(connectionDetails);
+            deserialized.Should().BeEquivalentTo(connectionDetails);
         }
     }
 

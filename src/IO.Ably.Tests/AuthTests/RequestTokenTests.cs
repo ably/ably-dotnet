@@ -386,7 +386,7 @@ namespace IO.Ably.Tests.AuthTests
 
             requests.Count.Should().Be(2);
             var last = requests.Last().PostData as TokenRequest;
-            last.ShouldBeEquivalentTo(requestdata);
+            last.Should().BeEquivalentTo(requestdata);
         }
 
         [Fact]

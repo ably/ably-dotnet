@@ -291,8 +291,8 @@ namespace IO.Ably.Tests.AuthTests
             fakeApiKey.Should().StartWith(tokenRequest.KeyName);
 
             // should not replace any previously configured TokenParams and AuthOptions on instance
-            rest.AblyAuth.CurrentAuthOptions.ShouldBeEquivalentTo(authOptions);
-            rest.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+            rest.AblyAuth.CurrentAuthOptions.Should().BeEquivalentTo(authOptions);
+            rest.AblyAuth.CurrentTokenParams.Should().BeEquivalentTo(tokenParams);
         }
 
         [Fact]
@@ -479,7 +479,7 @@ namespace IO.Ably.Tests.AuthTests
 
             requests.Count.Should().Be(2);
             var last = requests.Last().PostData as TokenRequest;
-            last.ShouldBeEquivalentTo(requestdata);
+            last.Should().BeEquivalentTo(requestdata);
         }
 
         [Fact]

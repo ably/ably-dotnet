@@ -115,7 +115,7 @@ namespace IO.Ably.AcceptanceTests
                 // Assert
                 var payload = GetPayload();
                 byte[] data = (payload.Data as string).FromBase64();
-                data.ShouldBeEquivalentTo(bytes);
+                data.Should().BeEquivalentTo(bytes);
                 payload.Encoding.Should().Be("base64");
             }
 
