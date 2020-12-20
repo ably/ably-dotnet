@@ -56,9 +56,9 @@ namespace IO.Ably
         public TokenParams DefaultTokenParams { get; set; }
 
         /// <summary>
-        /// Used internally for getting clientId from options or DefaultTokenParams
+        /// Used internally for getting clientId from options or DefaultTokenParams.
         /// </summary>
-        /// <returns>clientId</returns>
+        /// <returns>clientId.</returns>
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
