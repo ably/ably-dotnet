@@ -22,15 +22,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17b")]
         public async Task WithCustomHostAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            var client = GetRealtimeClient(opts => opts.RealtimeHost = "test.com");
-            await client.WaitForState(ConnectionState.Connecting);
+            var client = await GetConnectedClient(opts => opts.RealtimeHost = "test.com");
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            await client.WaitForState(ConnectionState.Failed, TimeSpan.FromSeconds(60));
+            await client.WaitForState(ConnectionState.Failed);
         }
 
         [Fact]
