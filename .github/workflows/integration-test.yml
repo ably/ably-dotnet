@@ -37,5 +37,5 @@ jobs:
       - name: Download fake-cli
         run: dotnet tool install fake-cli --tool-path .
       - name: Integration tests
-        run: ${{ matrix.command }} ${{ matrix.target }}.Unit
+        run: ${{ matrix.command }} ${{ matrix.target }}.Integration
           
