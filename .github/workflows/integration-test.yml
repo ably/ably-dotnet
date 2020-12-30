@@ -1,16 +1,22 @@
-name: Windows - build and test
+name: Cross platform integration tests
 on: [ "push" ]
 
 
 jobs:
-  build-and-test-windows:
-    runs-on: windows-latest
+  integration-test:
+    runs-on: ${{ matrix.os }}
     env:
       DOTNET_NOLOGO: true
 
     strategy:
       matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
         target: [ "Test.NetStandard", "Test.NetFramework" ]
+        exclude:
+          - os: macos-latest
+            target: Test.NetFramework
+          - os: ubuntu-latest
+            target: Test.NetFramework
 
     steps:
       - uses: actions/checkout@v2
@@ -22,8 +28,6 @@ jobs:
           dotnet-version: '3.1.x'
       - name: Download fake-cli
         run: dotnet tool install fake-cli --tool-path .
-      - name: Unit tests
-        run: ./build.cmd ${{ matrix.target }}.Unit
       - name: Integration tests
         run: ./build.cmd ${{ matrix.target }}.Integration
           
