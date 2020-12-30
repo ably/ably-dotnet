@@ -12,6 +12,13 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         target: [ "Test.NetStandard", "Test.NetFramework" ]
+        include:
+          - os: macos-latest
+            command: build.sh
+          - os: ubuntu-latest
+            command: build.sh
+          - os: windows-latest
+            command: build.cmd
         exclude:
           - os: macos-latest
             target: Test.NetFramework
@@ -29,5 +36,5 @@ jobs:
       - name: Download fake-cli
         run: dotnet tool install fake-cli --tool-path .
       - name: Integration tests
-        run: ./build.cmd ${{ matrix.target }}.Integration
+        run: ${{ matrix.command }} ${{ matrix.target }}.Unit
           
