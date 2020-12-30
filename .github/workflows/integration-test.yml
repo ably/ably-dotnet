@@ -1,9 +1,9 @@
-name: Cross platform integration tests
+name: Integration tests
 on: [ "push" ]
 
 
 jobs:
-  integration-test:
+  test:
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_NOLOGO: true

@@ -1,9 +1,9 @@
-name: Cross platform unit test
+name: Unit tests
 on: [ "push" ]
 
 
 jobs:
-  unit-test:
+  test:
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_NOLOGO: true
