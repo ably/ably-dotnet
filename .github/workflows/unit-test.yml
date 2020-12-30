@@ -14,11 +14,11 @@ jobs:
         target: [ "Test.NetStandard", "Test.NetFramework" ]
         include:
           - os: macos-latest
-            command: build.sh
+            command: ./build.sh
           - os: ubuntu-latest
-            command: build.sh
+            command: ./build.sh
           - os: windows-latest
-            command: build.cmd
+            command: ./build.cmd
         exclude:
           - os: macos-latest
             target: Test.NetFramework
