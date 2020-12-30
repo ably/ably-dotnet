@@ -294,6 +294,16 @@ Target.create "NetFramework - Unit Tests" (fun _ ->
     runFrameworkTests UnitTests TestRunnerErrorLevel.Error |> ignore
 )
 
+Target.create "NetFramework - Unit Tests with retry" ( fun _ -> 
+
+    let logs = runFrameworkTests UnitTests TestRunnerErrorLevel.DontFailBuild
+
+    let failedTestNames = findFailedXUnitTests logs
+
+    for test in failedTestNames do
+        runFrameworkTests (Method test) TestRunnerErrorLevel.Error |> ignore   
+)
+
 Target.create "NetFramework - Integration Tests" ( fun _ -> 
 
     let logs = runFrameworkTests IntegrationTests TestRunnerErrorLevel.DontFailBuild
@@ -396,6 +406,7 @@ Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
 
 Target.create "Test.NetFramework.Unit" ignore
+Target.create "Test.NetFramework.Unit.WithRetry" ignore
 Target.create "Test.NetFramework.Integration" ignore
 
 Target.create "Test.NetStandard.Unit" ignore
@@ -431,6 +442,10 @@ Target.create "Package" ignore
 "Build.NetFramework" 
   ==> "NetFramework - Integration Tests"
   ==> "Test.NetFramework.Integration"
+
+"Build.NetFramework" 
+  ==> "NetFramework - Unit Tests with retry"
+  ==> "Test.NetFramework.Unit.WithRetry"
 
 "Build.NetStandard"
   ==> "NetStandard - Unit Tests"
