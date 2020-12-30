@@ -1,9 +1,9 @@
-name: Integration tests
+name: Integration
 on: [ "push" ]
 
 
 jobs:
-  test:
+  Run integration tests:
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_NOLOGO: true
@@ -11,18 +11,18 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         target: [ "Test.NetStandard", "Test.NetFramework" ]
         include:
-#          - os: macos-latest
-#            command: ./build.sh
+          - os: macos-latest
+            command: ./build.sh
           - os: ubuntu-latest
             command: ./build.sh
           - os: windows-latest
             command: ./build.cmd
         exclude:
-#          - os: macos-latest
-#            target: Test.NetFramework
+          - os: macos-latest
+            target: Test.NetFramework
           - os: ubuntu-latest
             target: Test.NetFramework
 
