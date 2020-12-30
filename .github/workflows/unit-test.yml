@@ -9,6 +9,7 @@ jobs:
       DOTNET_NOLOGO: true
 
     strategy:
+      max-parallel: 1
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         target: [ "Test.NetStandard", "Test.NetFramework" ]
