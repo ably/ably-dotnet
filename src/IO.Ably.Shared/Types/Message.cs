@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Shared.CustomSerialisers;
 using IO.Ably.Types;
 using Newtonsoft.Json;
 
@@ -61,6 +62,7 @@ namespace IO.Ably
 
         /// <summary>The message payload. Supported data types are objects, byte[] and strings.</summary>
         [JsonProperty("data")]
+        [JsonConverter(typeof(MessageDataConverter))]
         public object Data { get; set; }
 
         /// <summary>
