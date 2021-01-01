@@ -10,9 +10,10 @@ namespace IO.Ably.Shared.CustomSerialisers
         /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
+            var appDefaultNullValueHandling = serializer.NullValueHandling;
             serializer.NullValueHandling = NullValueHandling.Include;
             serializer.Serialize(writer, value);
-            serializer.NullValueHandling = NullValueHandling.Ignore;
+            serializer.NullValueHandling = appDefaultNullValueHandling;
         }
 
         /// <inheritdoc/>
