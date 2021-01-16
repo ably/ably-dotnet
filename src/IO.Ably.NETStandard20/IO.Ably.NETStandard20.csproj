@@ -20,11 +20,13 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>MSGPACK</DefineConstants>
     <DocumentationFile>bin\Debug\IO.Ably.NETStandard20.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>MSGPACK</DefineConstants>
     <DocumentationFile>bin\Release\IO.Ably.NETStandard20.xml</DocumentationFile>
   </PropertyGroup>
 
