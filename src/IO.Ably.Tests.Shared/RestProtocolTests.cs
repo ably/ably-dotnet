@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenProtocolIsNotDefined_AndMsgPackEnabled_DefaultsToMsgPack()
         {
-            var rest = new AblyRest(new ClientOptions());
+            var rest = new AblyRest(new ClientOptions() { Key = "best.test:key" });
             rest.Protocol.Should().Be(Protocol.MsgPack);
             Defaults.Protocol.Should().Be(Protocol.MsgPack);
         }
@@ -17,7 +17,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
         {
-            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = true});
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = true, Key = "best.test:key" });
             rest.Protocol.Should().Be(Defaults.Protocol);
         }
 #else

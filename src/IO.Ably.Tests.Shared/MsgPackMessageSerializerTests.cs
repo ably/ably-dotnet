@@ -1,4 +1,12 @@
-﻿namespace IO.Ably.Tests
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using IO.Ably.Types;
+using MsgPack.Serialization;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace IO.Ably.Tests
 {
 #if MSGPACK
     public class GenerateMsgPackSerializers
@@ -13,17 +21,15 @@
                     Namespace = "IO.Ably.CustomSerialisers",
                     OutputDirectory = "../../../IO.Ably/CustomSerialisers/GeneratedSerializers",
                     EnumSerializationMethod = EnumSerializationMethod.ByName, // You can tweak it to use ByUnderlyingValue as you like.
-                IsRecursive = true, // Set depenendent serializers are also generated.
-                PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
-                SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
-            },
+                    IsRecursive = true, // Set depenendent serializers are also generated.
+                    PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
+                    SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
+                },
                 applicationLibraryAssembly.GetTypes().Where(type =>
-                    type == typeof(TokenRequest)
-                    //type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
-                    //type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
-                    ///* ...you can filter types to be serialized by their namespace, custom attributes, etc... */
-                )
-            );
+                    type == typeof(TokenRequest)));
+            // type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
+            // type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
+            // * ...you can filter types to be serialized by their namespace, custom attributes, etc... */
         }
     }
 
@@ -113,6 +119,7 @@
                 expectedMessage.AddRange(SerializeString("channel"));
                 expectedMessage.AddRange(SerializeString(channel));
             }
+
             expectedMessage.AddRange(SerializeString("msgSerial"));
             expectedMessage.Add(0);
 
@@ -161,7 +168,7 @@
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            
+
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -349,7 +356,7 @@
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal(connectionKey, target.ConnectionKey);
+            Assert.Equal(connectionKey, target.ConnectionId);
         }
 
         [Theory]
@@ -400,7 +407,7 @@
         public void DeserializesMessageCorrectly_Count(int count)
         {
             // Arrange
-            byte[] expectedMessage = MsgPackHelper.Serialise(new ProtocolMessage() {Count = count}) as byte[];
+            byte[] expectedMessage = MsgPackHelper.Serialise(new ProtocolMessage() { Count = count }) as byte[];
 
             // Act
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage);
@@ -437,7 +444,7 @@
         public void DeserializesMessageCorrectly_Flags(int flags)
         {
             // Arrange
-            
+
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("flags"));
@@ -484,7 +491,8 @@
             return bytes.ToArray();
         }
 
-        public MsgPackMessageSerializerTests(ITestOutputHelper output) : base(output)
+        public MsgPackMessageSerializerTests(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

@@ -25,16 +25,15 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2a")]
         public void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
         {
-            if (!Defaults.MsgPackEnabled)
+            if (Defaults.MsgPackEnabled)
             {
-                return;
-            }
-
 #pragma warning disable 162
-            var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
-            LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should().Be(format);
+                var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
+                LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
+                LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should()
+                    .Be(format);
 #pragma warning restore 162
+            }
         }
 
         [Theory]

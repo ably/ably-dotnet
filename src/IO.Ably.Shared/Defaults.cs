@@ -74,7 +74,7 @@ namespace IO.Ably
         }
 
 #if MSGPACK
-        internal const Protocol DefaultProtocol = IO.Ably.Protocol.MsgPack;
+        internal const Protocol Protocol = IO.Ably.Protocol.MsgPack;
         internal const bool MsgPackEnabled = true;
 #else
         internal const Protocol Protocol = IO.Ably.Protocol.Json;

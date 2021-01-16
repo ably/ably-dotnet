@@ -225,58 +225,52 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Act
+                    _client.Channels.Get("Test").PublishAsync("test", "test");
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Data.Should().Be("test");
+                    payload.Encoding.Should().BeNull();
                 }
-
-                // Act
-                _client.Channels.Get("Test").PublishAsync("test", "test");
-
-                // Assert
-                var payload = GetPayload();
-                payload.Data.Should().Be("test");
-                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Act
+                    var bytes = new byte[] { 10, 111, 128 };
+                    _client.Channels.Get("Test").PublishAsync("test", bytes);
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Data.ToString().ToByteArray().Should().BeEquivalentTo(bytes);
+                    payload.Encoding.Should().BeNull();
                 }
-
-                // Act
-                var bytes = new byte[] { 10, 111, 128 };
-                _client.Channels.Get("Test").PublishAsync("test", bytes);
-
-                // Assert
-                var payload = GetPayload();
-                (payload.Data as byte[]).Should().BeEquivalentTo(bytes);
-                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Arrange
+                    var obj = new { Test = "test", name = "name" };
+
+                    // Act
+                    _client.Channels.Get("test").PublishAsync("test", obj);
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Data.Should().Be(JsonHelper.Serialize(obj));
+                    payload.Encoding.Should().Be("json");
                 }
-
-                // Arrange
-                var obj = new { Test = "test", name = "name" };
-
-                // Act
-                _client.Channels.Get("test").PublishAsync("test", obj);
-
-                // Assert
-                var payload = GetPayload();
-                payload.Data.Should().Be(JsonHelper.Serialize(obj));
-                payload.Encoding.Should().Be("json");
             }
         }
 
@@ -305,60 +299,55 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Arrange
+                    var bytes = new byte[] { 1, 2, 3 };
+
+                    // Act
+                    _client.Channels.Get("test", _options).PublishAsync("test", bytes);
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Encoding.Should().Be("cipher+aes-256-cbc");
+                    var encryptedBytes = payload.Data as byte[];
+                    Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
                 }
-
-                // Arrange
-                var bytes = new byte[] { 1, 2, 3 };
-
-                // Act
-                _client.Channels.Get("test", _options).PublishAsync("test", bytes);
-
-                // Assert
-                var payload = GetPayload();
-                payload.Encoding.Should().Be("cipher+aes-256-cbc");
-                var encryptedBytes = payload.Data as byte[];
-                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
             [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Act
+                    _client.Channels.Get("test", _options).PublishAsync("test", "test");
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
+                    var encryptedBytes = payload.Data as byte[];
+                    Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText().Should()
+                        .BeEquivalentTo("test");
                 }
-
-                // Act
-                _client.Channels.Get("test", _options).PublishAsync("test", "test");
-
-                // Assert
-                var payload = GetPayload();
-                payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = payload.Data as byte[];
-                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
+                    // Act
+                    var obj = new { Test = "test", Name = "name" };
+                    _client.Channels.Get("test", _options).PublishAsync("test", obj);
+
+                    // Assert
+                    var payload = GetPayload();
+                    payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
+                    var encryptedBytes = payload.Data as byte[];
+                    var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
+                    decryptedString.Should().Be(JsonHelper.Serialize(obj));
                 }
-
-                // Act
-                var obj = new { Test = "test", Name = "name" };
-                _client.Channels.Get("test", _options).PublishAsync("test", obj);
-
-                // Assert
-                var payload = GetPayload();
-                payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = payload.Data as byte[];
-                var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
-                decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }
 

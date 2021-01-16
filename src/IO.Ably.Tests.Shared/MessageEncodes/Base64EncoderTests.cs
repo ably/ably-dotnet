@@ -65,19 +65,17 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryData_LeavesDataAndEncodingIntact()
             {
-                if (!Defaults.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
                 {
-                    return;
-                }
-
 #pragma warning disable 162
-                IPayload payload = new Message() { Data = _binaryData };
+                    IPayload payload = new Message() { Data = _binaryData };
 
-                payload = _encoder.Encode(payload, new DecodingContext()).Value;
+                    payload = _encoder.Encode(payload, new DecodingContext()).Value;
 
-                payload.Data.Should().Be(_binaryData);
-                payload.Encoding.Should().BeNull();
+                    payload.Data.Should().Be(_binaryData);
+                    payload.Encoding.Should().BeNull();
 #pragma warning restore 162
+                }
             }
         }
 
