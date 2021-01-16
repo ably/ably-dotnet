@@ -343,27 +343,6 @@ namespace IO.Ably.Tests
         [InlineData("123.456")]
         [InlineData("123^&456")]
         [InlineData("absder#^&456")]
-        public void DeserializesMessageCorrectly_ConnectionKey(string connectionKey)
-        {
-            // Arrange
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x81);
-            expectedMessage.AddRange(SerializeString("connectionKey"));
-            expectedMessage.AddRange(SerializeString(connectionKey));
-
-            // Act
-            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
-
-            // Assert
-            Assert.NotNull(target);
-            Assert.Equal(connectionKey, target.ConnectionId);
-        }
-
-        [Theory]
-        [InlineData("123")]
-        [InlineData("123.456")]
-        [InlineData("123^&456")]
-        [InlineData("absder#^&456")]
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange
