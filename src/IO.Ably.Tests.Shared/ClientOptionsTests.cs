@@ -50,6 +50,8 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15e")]
+        [Trait("spec", "RSC15g3")]
         public void DefaultOptions()
         {
             var options = new ClientOptions();
@@ -62,6 +64,7 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15h")]
         public void Options_WithProductionEnvironment()
         {
             var options = new ClientOptions()
@@ -77,6 +80,8 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15g2")]
+        [Trait("spec", "RTC1e")]
         public void Options_WithCustomEnvironment()
         {
             var options = new ClientOptions()
@@ -92,8 +97,10 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15g4")]
+        [Trait("spec", "RTC1e")]
         [Obsolete]
-        public void Options_WithCustomEnvironment_And_DefaultFallbacks()
+        public void Options_WithCustomEnvironment_And_FallbackHostUseDefault()
         {
             var options = new ClientOptions()
             {
@@ -110,6 +117,9 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC11b")]
+        [Trait("spec", "RTN17b")]
+        [Trait("spec", "RTC1e")]
         public void Options_WithCustomEnvironment_And_NonDefaultPorts()
         {
             var options = new ClientOptions()
@@ -128,7 +138,8 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
-        public void Options_WithCustomHost()
+        [Trait("spec", "RSC11")]
+        public void Options_WithCustomRestHost()
         {
             var options = new ClientOptions()
             {
@@ -144,6 +155,7 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC11")]
         public void Options_WithCustomRestHost_And_RealtimeHost()
         {
             var options = new ClientOptions()
@@ -162,7 +174,8 @@ namespace IO.Ably.Tests.Shared
 
         [Fact]
         [Obsolete]
-        public void Options_WithCustomRestHost_And_RealtimeHost_And_DefaultFallbacks()
+        [Trait("spec", "RSC15b")]
+        public void Options_WithCustomRestHost_And_RealtimeHost_And_FallbackHostsUseDefault()
         {
             var options = new ClientOptions()
             {
@@ -180,6 +193,24 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15g1")]
+        [Obsolete]
+        public void Options_With_FallbackHosts()
+        {
+            var options = new ClientOptions()
+            {
+                FallbackHosts = new[] { "a.example.com", "b.example.com" },
+            };
+            Assert.Equal("realtime.ably.io", options.FullRealtimeHost());
+            Assert.Equal("rest.ably.io", options.FullRestHost());
+            Assert.Equal(80, options.Port);
+            Assert.Equal(443, options.TlsPort);
+            Assert.Equal(new[] { "a.example.com", "b.example.com" }, options.GetFallbackHosts());
+            Assert.True(options.Tls);
+        }
+
+        [Fact]
+        [Trait("spec", "RSC15b")]
         [Obsolete]
         public void Options_With_FallbackHosts_And_FallbackHostsUseDefault()
         {
@@ -194,6 +225,7 @@ namespace IO.Ably.Tests.Shared
         }
 
         [Fact]
+        [Trait("spec", "RSC15b")]
         [Obsolete]
         public void Options_With_And_FallbackHostsUseDefault_And_Port_Or_TlsPort()
         {
