@@ -170,14 +170,20 @@ namespace IO.Ably
         /// <returns>RestHost.</returns>
         public string FullRestHost()
         {
-            if (_restHost.IsEmpty())
+            var restHost = _restHost;
+            if (restHost.IsEmpty())
             {
-                return IsProductionEnvironment
-                    ? Defaults.RestHost
-                    : $"{Environment}-{Defaults.RestHost}";
+                restHost = Defaults.RestHost;
             }
 
-            return _restHost;
+            if (restHost == Defaults.RestHost)
+            {
+                return IsProductionEnvironment
+                    ? restHost
+                    : $"{Environment}-{restHost}";
+            }
+
+            return restHost;
         }
 
         /// <summary>
@@ -186,7 +192,8 @@ namespace IO.Ably
         /// <returns>RealtimeHost.</returns>
         public string FullRealtimeHost()
         {
-            if (_realtimeHost.IsEmpty())
+            var realtimeHost = _realtimeHost;
+            if (realtimeHost.IsEmpty())
             {
                 if (_restHost.IsNotEmpty())
                 {
@@ -197,10 +204,15 @@ namespace IO.Ably
                     return _restHost;
                 }
 
-                return IsProductionEnvironment ? Defaults.RealtimeHost : $"{Environment}{'-'}{Defaults.RealtimeHost}";
+                realtimeHost = Defaults.RealtimeHost;
             }
 
-            return _realtimeHost;
+            if (realtimeHost == Defaults.RealtimeHost)
+            {
+                return IsProductionEnvironment ? realtimeHost : $"{Environment}{'-'}{realtimeHost}";
+            }
+
+            return realtimeHost;
         }
 
         /// <summary>
