@@ -1,6 +1,13 @@
 # Change Log
 
-## [1.2.3](https://github.com/ably/ably-dotnet/tree/1.2.2) (2020-11-03)
+## [1.2.4](https://github.com/ably/ably-dotnet/tree/1.2.4) (2021-4-19)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.3...1.2.4)
+
+**Merged pull requests:**
+
+- fix/499 add connectionKey prop [\#499](https://github.com/ably/ably-dotnet/pull/499) ([jasonmsmith](https://github.com/jasonmsmith))
+
+## [1.2.3](https://github.com/ably/ably-dotnet/tree/1.2.3) (2020-11-03)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.2...1.2.3)
 
 **Implemented enhancements:**
