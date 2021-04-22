@@ -108,7 +108,7 @@ namespace IO.Ably.Transport
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
             result.EchoMessages = options.EchoMessages;
-            result.FallbackHosts = options.FallbackHosts;
+            result.FallbackHosts = options.GetFallbackHosts();
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
