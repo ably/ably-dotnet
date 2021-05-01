@@ -71,12 +71,6 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Serial.Should().Be(initialSerial);
         }
 
-        [Fact(Skip = "Need to get back to it")]
-        [Trait("spec", "RTN10b")]
-        public void WhenFirstAckMessageReceived_ShouldSetSerialToZero()
-        {
-        }
-
         public ConnectionSerialSpecs(ITestOutputHelper output)
             : base(output)
         {
