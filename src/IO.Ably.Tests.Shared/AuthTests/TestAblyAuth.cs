@@ -29,16 +29,16 @@ namespace IO.Ably.Tests.AuthTests
             }
         }
 
-        // Exposes the protected property ServerTime
+        // Fetch and returns current Ably server time.
         public async Task<DateTimeOffset> GetServerTime()
         {
             return await ServerTime();
         }
 
-        // Exposes the protected property ServerTimeOffset
+        // Returns current server time w.r.t local clock. (By adding/subtracting clock offset).
         public DateTimeOffset? GetServerNow()
         {
-            return ServerNow();
+            return ServerNow;
         }
     }
 }
