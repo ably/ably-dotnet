@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.2.4](https://github.com/ably/ably-dotnet/tree/1.2.4) (2021-5-05)
+## [1.2.4](https://github.com/ably/ably-dotnet/tree/1.2.4) (2021-05-05)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.3...1.2.4)
 
 **Implemented enhancements:**
