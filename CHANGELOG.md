@@ -1,6 +1,42 @@
 # Change Log
 
-## [1.2.3](https://github.com/ably/ably-dotnet/tree/1.2.2) (2020-11-03)
+## [1.2.4](https://github.com/ably/ably-dotnet/tree/1.2.4) (2021-05-05)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.3...1.2.4)
+
+**Implemented enhancements:**
+​
+- Defaults: Generate environment fallbacks [\#438](https://github.com/ably/ably-dotnet/issues/438)
+- Add idempotent REST publishing [\#237](https://github.com/ably/ably-dotnet/issues/237)
+​
+**Fixed bugs:**
+​
+- Potentially insecure usage of the NSURLSession API [\#487](https://github.com/ably/ably-dotnet/issues/487)
+- Common crash related to websocket failing with error [\#486](https://github.com/ably/ably-dotnet/issues/486)
+- Enterprise customer seeing crashes on iOS, Ably version 1.2.1 [\#485](https://github.com/ably/ably-dotnet/issues/485)
+- Incorrect import reference? [\#484](https://github.com/ably/ably-dotnet/issues/484)
+- SDK has no documented way to block on initialisation. [\#455](https://github.com/ably/ably-dotnet/issues/455)
+​
+**Closed issues:**
+​
+- Allow custom Transport Params \(RTC1f\) and \(RTC1f1\) [\#452](https://github.com/ably/ably-dotnet/issues/452)
+- Deprecate history methods taking untilAttach parameter [\#449](https://github.com/ably/ably-dotnet/issues/449)
+​
+**Merged pull requests:**
+​
+- Bump System.Net.Http from 4.3.2 to 4.3.4 in /examples/AndroidSample [\#504](https://github.com/ably/ably-dotnet/pull/504) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump System.Net.Http from 4.3.2 to 4.3.4 in /src/IO.Ably.Tests [\#503](https://github.com/ably/ably-dotnet/pull/503) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump System.Net.Http from 4.3.3 to 4.3.4 in /src/IO.Ably.Tests.DotNetCore20 [\#502](https://github.com/ably/ably-dotnet/pull/502) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump System.Net.Security from 4.3.0 to 4.3.1 in /src/IO.Ably.Android [\#497](https://github.com/ably/ably-dotnet/pull/497) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Add ConnectionKey property to messages [\#500](https://github.com/ably/ably-dotnet/pull/500) ([jasonmsmith](https://github.com/jasonmsmith))
+- Conform license and copyright [\#496](https://github.com/ably/ably-dotnet/pull/496) ([QuintinWillison](https://github.com/QuintinWillison))
+- Add maintainers file [\#495](https://github.com/ably/ably-dotnet/pull/495) ([niksilver](https://github.com/niksilver))
+- Deprecate Presence history methods [\#488](https://github.com/ably/ably-dotnet/pull/488) ([sacOO7](https://github.com/sacOO7))
+- Console app documentation [\#461](https://github.com/ably/ably-dotnet/pull/461) ([sacOO7](https://github.com/sacOO7))
+- Idempotent Rest Publish [\#457](https://github.com/ably/ably-dotnet/pull/457) ([sacOO7](https://github.com/sacOO7))
+- Fix client time drift [\#456](https://github.com/ably/ably-dotnet/pull/456) ([sacOO7](https://github.com/sacOO7))
+- Generate environment fallbacks [\#454](https://github.com/ably/ably-dotnet/pull/454) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.3](https://github.com/ably/ably-dotnet/tree/1.2.3) (2020-11-03)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.2...1.2.3)
 
 **Implemented enhancements:**
