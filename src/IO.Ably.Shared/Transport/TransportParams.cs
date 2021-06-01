@@ -211,6 +211,8 @@ namespace IO.Ably.Transport
                 return AdditionalParameters.Merge(result);
             }
 
+            result["heartbeats"] = "true";
+
             return result;
         }
     }
