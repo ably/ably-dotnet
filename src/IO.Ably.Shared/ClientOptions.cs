@@ -398,6 +398,13 @@ namespace IO.Ably
         /// </summary>
         public bool AutomaticNetworkStateMonitoring { get; set; } = true;
 
+        /// <summary>
+        /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server
+        /// connection has been lost.
+        /// Defaults: 1000.
+        /// </summary>
+        public int HeartbeatMonitorDelay { get; set; } = 1000;
+
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
         {

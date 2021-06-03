@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
@@ -17,6 +18,8 @@ namespace IO.Ably
     public class AblyRealtime : IRealtimeClient, IDisposable
     {
         private SynchronizationContext _synchronizationContext;
+        private CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
+        private bool _heartbeatMonitorDisconnectRequested = false;
 
         internal ILogger Logger { get; private set; }
 
@@ -42,10 +45,36 @@ namespace IO.Ably
         {
         }
 
+        private async Task HeartbeatMonitor(int millisecondDelay)
+        {
+            while (true)
+            {
+                if (Connection.ConfirmedAliveAt.HasValue)
+                {
+                    TimeSpan delta = DateTimeOffset.Now - Connection.ConfirmedAliveAt.Value;
+                    if (delta > Connection.ConnectionStateTtl && !_heartbeatMonitorDisconnectRequested)
+                    {
+                        Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
+                        _heartbeatMonitorDisconnectRequested = true;
+                    }
+                    else
+                    {
+                        if (_heartbeatMonitorDisconnectRequested)
+                        {
+                            _heartbeatMonitorDisconnectRequested = false;
+                        }
+                    }
+                }
+
+                await Task.Delay(millisecondDelay, _heartbeatMonitorCancellationTokenSource.Token);
+            }
+        }
+
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
+            _heartbeatMonitorCancellationTokenSource = new CancellationTokenSource();
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
@@ -63,6 +92,10 @@ namespace IO.Ably
 
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
+
+            _ = Task.Run(
+                async () => { HeartbeatMonitor(options.HeartbeatMonitorDelay); },
+                _heartbeatMonitorCancellationTokenSource.Token);
 
             if (options.AutoConnect)
             {
@@ -212,6 +245,7 @@ namespace IO.Ably
             {
                 try
                 {
+                    _heartbeatMonitorCancellationTokenSource.Cancel();
                     Connection?.RemoveAllListeners();
                     Channels?.CleanupChannels();
                 }
@@ -224,6 +258,18 @@ namespace IO.Ably
             Workflow.QueueCommand(DisposeCommand.Create().TriggeredBy($"AblyRealtime.Dispose({disposing}"));
 
             Disposed = true;
+        }
+
+        private static async Task StartTimer(Action action, int millisecondsDelay, CancellationToken cancellationToken)
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    action();
+                    await Task.Delay(millisecondsDelay, cancellationToken);
+                }
+            });
         }
     }
 }
