@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
@@ -52,10 +51,13 @@ namespace IO.Ably
                 if (Connection.ConfirmedAliveAt.HasValue)
                 {
                     TimeSpan delta = DateTimeOffset.Now - Connection.ConfirmedAliveAt.Value;
-                    if (delta > Connection.ConnectionStateTtl && !_heartbeatMonitorDisconnectRequested)
+                    if (delta > Connection.ConnectionStateTtl)
                     {
-                        Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
-                        _heartbeatMonitorDisconnectRequested = true;
+                        if (!_heartbeatMonitorDisconnectRequested)
+                        {
+                            _heartbeatMonitorDisconnectRequested = true;
+                            Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
+                        }
                     }
                     else
                     {
@@ -258,18 +260,6 @@ namespace IO.Ably
             Workflow.QueueCommand(DisposeCommand.Create().TriggeredBy($"AblyRealtime.Dispose({disposing}"));
 
             Disposed = true;
-        }
-
-        private static async Task StartTimer(Action action, int millisecondsDelay, CancellationToken cancellationToken)
-        {
-            await Task.Run(async () =>
-            {
-                while (true)
-                {
-                    action();
-                    await Task.Delay(millisecondsDelay, cancellationToken);
-                }
-            });
         }
     }
 }
