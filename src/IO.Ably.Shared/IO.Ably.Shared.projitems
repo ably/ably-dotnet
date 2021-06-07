@@ -60,7 +60,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AsyncHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityJsonConverter.cs" />
