@@ -139,7 +139,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ChannelModes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ChannelParams.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorCodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpPaginatedResponse.cs" />
