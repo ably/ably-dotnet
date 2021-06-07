@@ -325,7 +325,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var typedResult = result as PaginatedResult<Message>;
                 var context = request.ChannelOptions.ToDecodingContext();
-                typedResult.Items.AddRange(ParseMessagesResponse(response, context));
+                typedResult?.Items.AddRange(ParseMessagesResponse(response, context));
             }
 
             if (typeof(T) == typeof(Stats))
@@ -338,7 +338,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var typedResult = result as PaginatedResult<PresenceMessage>;
                 var context = request.ChannelOptions.ToDecodingContext();
-                typedResult.Items.AddRange(ParsePresenceMessages(response, context));
+                typedResult?.Items.AddRange(ParsePresenceMessages(response, context));
             }
 
             return result;
