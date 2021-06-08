@@ -21,9 +21,8 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - name: Download fake-cli
-        run: dotnet tool install fake-cli --tool-path .
+        run: dotnet tool install fake-cli --version 5.20.4 --tool-path .
       - name: Unit tests
         run: ./build.cmd ${{ matrix.target }}.Unit
       - name: Integration tests
         run: ./build.cmd ${{ matrix.target }}.Integration
-          
