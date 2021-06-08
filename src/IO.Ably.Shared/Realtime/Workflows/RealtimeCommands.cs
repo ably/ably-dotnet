@@ -2,6 +2,7 @@ using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -481,6 +482,27 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData()
         {
             return $"Transport Id: {TransportId}. TrasportState: {TransportState}. Exception: {Exception?.Message}";
+        }
+    }
+
+    internal class HeartbeatMonitorCommand : RealtimeCommand
+    {
+        private HeartbeatMonitorCommand(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl)
+        {
+            ConfirmedAliveAt = confirmedAliveAt;
+            ConnectionStateTtl = connectionStateTtl;
+        }
+
+        public DateTimeOffset? ConfirmedAliveAt { get; }
+
+        public TimeSpan ConnectionStateTtl { get; }
+
+        public static HeartbeatMonitorCommand Create(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl) =>
+            new HeartbeatMonitorCommand(confirmedAliveAt, connectionStateTtl);
+
+        protected override string ExplainData()
+        {
+            return $"ConfirmedAliveAt: {ConfirmedAliveAt}. ConnectionStateTtl {ConnectionStateTtl}";
         }
     }
 }
