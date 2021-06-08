@@ -17,8 +17,6 @@ namespace IO.Ably
     public class AblyRealtime : IRealtimeClient, IDisposable
     {
         private SynchronizationContext _synchronizationContext;
-        private CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
-        private bool _heartbeatMonitorDisconnectRequested = false;
 
         internal ILogger Logger { get; private set; }
 
@@ -44,39 +42,10 @@ namespace IO.Ably
         {
         }
 
-        private async Task HeartbeatMonitor(int millisecondDelay)
-        {
-            while (true)
-            {
-                if (Connection.ConfirmedAliveAt.HasValue)
-                {
-                    TimeSpan delta = DateTimeOffset.Now - Connection.ConfirmedAliveAt.Value;
-                    if (delta > Connection.ConnectionStateTtl)
-                    {
-                        if (!_heartbeatMonitorDisconnectRequested)
-                        {
-                            _heartbeatMonitorDisconnectRequested = true;
-                            Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
-                        }
-                    }
-                    else
-                    {
-                        if (_heartbeatMonitorDisconnectRequested)
-                        {
-                            _heartbeatMonitorDisconnectRequested = false;
-                        }
-                    }
-                }
-
-                await Task.Delay(millisecondDelay, _heartbeatMonitorCancellationTokenSource.Token);
-            }
-        }
-
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
-            _heartbeatMonitorCancellationTokenSource = new CancellationTokenSource();
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
@@ -94,10 +63,6 @@ namespace IO.Ably
 
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
-
-            _ = Task.Run(
-                async () => { HeartbeatMonitor(options.HeartbeatMonitorDelay); },
-                _heartbeatMonitorCancellationTokenSource.Token);
 
             if (options.AutoConnect)
             {
@@ -247,7 +212,6 @@ namespace IO.Ably
             {
                 try
                 {
-                    _heartbeatMonitorCancellationTokenSource.Cancel();
                     Connection?.RemoveAllListeners();
                     Channels?.CleanupChannels();
                 }
