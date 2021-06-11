@@ -172,7 +172,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTC8a1")]
         public async Task WithConnectedClient_WhenUpgradingCapabilities_ConnectionShouldNotBeImpaired(Protocol protocol)

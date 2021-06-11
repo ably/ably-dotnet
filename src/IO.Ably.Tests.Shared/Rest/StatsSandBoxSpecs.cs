@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
             return result.Items;
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "G3")]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)

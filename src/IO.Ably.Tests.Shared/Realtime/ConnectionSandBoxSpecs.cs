@@ -685,7 +685,7 @@ namespace IO.Ably.Tests.Realtime
             err.Reason.Should().Be(channel.ErrorReason);
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTN15c4")]
         public async Task ResumeRequest_WithFatalErrorInConnection_ClientAndChannelsShouldBecomeFailed(Protocol protocol)

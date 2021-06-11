@@ -130,7 +130,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             lastMessageSend.ChannelSerial.Should().Be("testSerial");
         }
 
-        [Fact]
+        [Fact(Skip = "Intermittently fails")]
         [Trait("spec", "RSL6f")]
         [Trait("linux", "skip")]
         public async Task
