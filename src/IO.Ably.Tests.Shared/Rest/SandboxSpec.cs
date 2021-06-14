@@ -46,6 +46,19 @@ namespace IO.Ably.Tests
             return new AblyRest(defaultOptions);
         }
 
+        public IDisposable EnableDebugLogging()
+        {
+            Logger.LoggerSink = new OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
+
+            return new ActionOnDispose(() =>
+            {
+                Logger.LoggerSink = new DefaultLoggerSink();
+                Logger.LogLevel = LogLevel.Warning;
+            });
+        }
+
+
         protected async Task<AblyRealtime> GetRealtimeClient(
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
