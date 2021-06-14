@@ -1,3 +1,3 @@
 @echo off
 cls
-if "%~1"=="" (fake -v run build.fsx) else (fake -v run build.fsx -t %*)
+if "%~1"=="" (fake run build.fsx) else (fake run build.fsx -t %*)
