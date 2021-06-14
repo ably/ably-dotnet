@@ -494,6 +494,7 @@ namespace IO.Ably
             }
             catch (AblyException ex)
             {
+                // ExecuteCommand is only initialised when AblyAuth is initialised as part of a Realtime Client
                 ExecuteCommand(HandleAblyAuthorizeErrorCommand.Create(ex));
                 throw;
             }
