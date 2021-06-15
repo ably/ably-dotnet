@@ -330,7 +330,7 @@ namespace IO.Ably
 
         /// <summary>
         /// If enabled, every REST request to Ably includes a `request_id` query string parameter.
-        /// This request ID remain the same if a request is retried to a fallback host.
+        /// This request ID remains the same if a request is retried to a fallback host.
         /// </summary>
         public bool AddRequestIds { get; set; } = false;
 
