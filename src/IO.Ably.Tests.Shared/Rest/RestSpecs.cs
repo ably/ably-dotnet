@@ -282,25 +282,23 @@ namespace IO.Ably.Tests
                 // With request id
                 var client = CreateClient(options => options.AddRequestIds = true);
                 await MakeAnyRequest(client);
-                Assert.Equal(1, _handler.NumberOfRequests);
+                _handler.NumberOfRequests.Should().Be(1);
                 var requestId1 = _handler.LastRequest.Headers.GetValues("request_id").First();
-                Assert.NotNull(requestId1);
                 requestId1.Length.Should().BeGreaterOrEqualTo(9);
 
                 // with request id and new request
                 await MakeAnyRequest(client);
-                Assert.Equal(2, _handler.NumberOfRequests);
+                _handler.NumberOfRequests.Should().Be(2);
                 var requestId2 = _handler.LastRequest.Headers.GetValues("request_id").First();
-                Assert.NotNull(requestId2);
                 requestId2.Length.Should().BeGreaterOrEqualTo(9);
-                Assert.NotEqual(requestId1, requestId2);
+                requestId1.Should().NotBe(requestId2);
 
                 // Without request id
                 client = CreateClient(_ => { });
                 await MakeAnyRequest(client);
-                Assert.Equal(3, _handler.NumberOfRequests);
+                _handler.NumberOfRequests.Should().Be(3);
                 _handler.LastRequest.Headers.TryGetValues("request_id", out var requestIdHeaders);
-                Assert.Null(requestIdHeaders);
+                requestIdHeaders.Should().BeNull();
             }
 
             [Fact]
@@ -488,14 +486,13 @@ namespace IO.Ably.Tests
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 handler.NumberOfRequests.Should().Be(5);
                 var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
-                Assert.Contains(uniqueRequestId, ex.Message);
-                Assert.Contains(uniqueRequestId, ex.ErrorInfo.Message);
+                ex.Message.Should().Contain(uniqueRequestId);
+                ex.ErrorInfo.Message.Should().Contain(uniqueRequestId);
                 handler.Requests.ForEach(request =>
                 {
                     var requestId = request.Headers.GetValues("request_id").First();
-                    Assert.NotNull(requestId);
                     requestId.Length.Should().BeGreaterOrEqualTo(9);
-                    Assert.Equal(uniqueRequestId, requestId);
+                    requestId.Should().Be(uniqueRequestId);
                 });
             }
 
