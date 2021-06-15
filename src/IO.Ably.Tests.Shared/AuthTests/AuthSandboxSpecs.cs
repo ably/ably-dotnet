@@ -404,33 +404,20 @@ namespace IO.Ably.Tests
                     options.TokenDetails = token;
                 }
 
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(1000);
                 var realtimeClient = await GetRealtimeClient(protocol, Options);
-
                 realtimeClient.Connect();
                 await realtimeClient.WaitForState(ConnectionState.Connected);
+                bool stateChanged = false;
                 realtimeClient.Connection.On(change =>
                 {
                     // this callback should not be called
-                    change.Previous.Should().Be(ConnectionState.Connected);
-                    change.Reason.Code.Should().Be(80019);
-                    tca.SetCompleted();
+                    stateChanged = true;
                 });
 
-                bool didThrowAblyException = false;
-                try
-                {
-                    await realtimeClient.Auth.AuthorizeAsync();
-                    Assert.True(false, "An exception should be raised before this line is reached.");
-                }
-                catch (AblyException)
-                {
-                    didThrowAblyException = true;
-                }
+                var _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
 
-                didThrowAblyException.Should().BeTrue();
                 realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
-                (await tca.Task).Should().BeFalse(context);
+                stateChanged.Should().BeFalse();
             }
 
             await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
