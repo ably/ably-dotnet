@@ -455,7 +455,14 @@ namespace IO.Ably.Realtime.Workflow
 
                     return EmptyCommand.Instance;
                 case HandleAblyAuthorizeErrorCommand cmd:
-                    return HandleConnectingErrorCommand.Create(null, cmd.Exception).TriggeredBy(cmd);
+                    var exception = cmd.Exception;
+                    if (exception?.ErrorInfo?.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        Logger.Debug("Triggering Connection Error due to 403 Authorize error");
+                        return HandleConnectingErrorCommand.Create(null, cmd.Exception).TriggeredBy(cmd);
+                    }
+
+                    return EmptyCommand.Instance;
                 default:
                     throw new AblyException("No handler found for - " + command.Explain());
             }
