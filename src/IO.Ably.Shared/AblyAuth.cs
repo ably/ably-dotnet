@@ -22,7 +22,6 @@ namespace IO.Ably
             _rest = rest;
             Logger = options.Logger;
             ServerTime = () => _rest.TimeAsync();
-            ServerNow = () => null;
             Initialise();
         }
 
@@ -30,9 +29,15 @@ namespace IO.Ably
 
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
-        private bool HasServerTime => ServerNow().HasValue;
+        private TimeSpan? _serverTimeDiff;
 
-        protected Func<DateTimeOffset?> ServerNow { get; private set; }
+        private bool HasServerTime => ServerNow.HasValue;
+
+        protected DateTimeOffset? ServerNow
+        {
+            get => _serverTimeDiff != null ? Now() - _serverTimeDiff : null;
+            set => _serverTimeDiff = Now() - value;
+        }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -93,21 +98,11 @@ namespace IO.Ably
 
         internal async Task SetServerTime()
         {
-            var serverTime = await ServerTime();
+            ServerNow = await ServerTime();
             if (Logger.IsDebug)
             {
-                Logger.Debug("Received server time: " + serverTime);
+                Logger.Debug("Server time differs from device time by: " + _serverTimeDiff);
             }
-
-            TimeSpan diff = Now() - serverTime;
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Server time differs from device Now by: " + diff);
-            }
-
-            // TODO: Save servertime and check if now has drastically changed
-            ServerNow = () => Now() - diff;
         }
 
         private AuthMethod CheckAndGetAuthMethod()
@@ -196,7 +191,7 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken(ServerNow()))
+            if (CurrentToken.IsValidToken(ServerNow))
             {
                 return CurrentToken;
             }
@@ -217,7 +212,7 @@ namespace IO.Ably
 
                 await OnAuthUpdated(token, false);
 
-                if (token.IsValidToken(ServerNow()))
+                if (token.IsValidToken(ServerNow))
                 {
                     CurrentToken = token;
                     return token;
@@ -400,7 +395,7 @@ namespace IO.Ably
 
             if (!tokenParams.Timestamp.HasValue)
             {
-                tokenParams.Timestamp = ServerNow();
+                tokenParams.Timestamp = ServerNow;
             }
         }
 

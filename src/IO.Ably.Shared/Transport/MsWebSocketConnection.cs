@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using IO.Ably;
@@ -10,44 +12,116 @@ using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
-    internal class MsWebSocketConnection : IDisposable
+    internal struct MessageToSend
     {
+        public ArraySegment<byte> Message { get; }
+
+        public WebSocketMessageType Type { get; }
+
+        public MessageToSend(byte[] message, WebSocketMessageType type)
+        {
+            Message = new ArraySegment<byte>(message);
+            Type = type;
+        }
+    }
+
+    /// <summary>
+    /// Wrapper around Websocket which handles state changes.
+    /// </summary>
+    public class MsWebSocketConnection : IDisposable
+    {
+        private const int MaxAllowedBufferSize = 65536;
+
+        /// <summary>
+        /// Websocket connection possible states.
+        /// </summary>
         public enum ConnectionState
         {
+            /// <summary>
+            /// Connecting.
+            /// </summary>
             Connecting,
+
+            /// <summary>
+            /// Connected.
+            /// </summary>
             Connected,
+
+            /// <summary>
+            /// Error.
+            /// </summary>
             Error,
+
+            /// <summary>
+            /// Closing.
+            /// </summary>
             Closing,
+
+            /// <summary>
+            /// Closed.
+            /// </summary>
             Closed
         }
 
         private bool _disposed = false;
 
-        internal ILogger Logger { get; private set; }
+        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
 
-        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue =
-            new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
-
-        public string ConnectionId { get; set; }
+        private readonly Channel<MessageToSend> _sendChannel = Channel.CreateUnbounded<MessageToSend>(
+            new UnboundedChannelOptions()
+            {
+                SingleReader = true,
+                SingleWriter = true,
+            });
 
         internal ClientWebSocket ClientWebSocket { get; set; }
 
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        public MsWebSocketConnection(Uri uri, ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MsWebSocketConnection"/> class.
+        /// </summary>
+        /// <param name="uri">Uri used for the websocket connection.</param>
+        /// <param name="socketOptions">additional socket options.</param>
+        public MsWebSocketConnection(Uri uri, MsWebSocketOptions socketOptions)
         {
-            Logger = logger;
             _uri = uri;
             ClientWebSocket = new ClientWebSocket();
+
+            if (socketOptions.SendBufferInBytes.HasValue || socketOptions.ReceiveBufferInBytes.HasValue)
+            {
+                var receiveBuffer = socketOptions.ReceiveBufferInBytes ?? (8 * 1024);
+                var sendBuffer = socketOptions.SendBufferInBytes ?? (8 * 1024);
+                receiveBuffer = Math.Min(receiveBuffer, MaxAllowedBufferSize);
+                sendBuffer = Math.Min(sendBuffer, MaxAllowedBufferSize);
+
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Setting socket buffers to: Receive: {receiveBuffer}. Send: {sendBuffer}");
+                }
+
+                ClientWebSocket.Options.SetBuffer(receiveBuffer, sendBuffer);
+            }
         }
 
+        /// <summary>
+        /// Uses the passed handler to notify about events.
+        /// </summary>
+        /// <param name="handler">Handler used for the notifications.</param>
         public void SubscribeToEvents(Action<ConnectionState, Exception> handler) => _handler = handler;
 
+        /// <summary>
+        /// Clears the currently saved notification handler.
+        /// </summary>
         public void ClearStateHandler() => _handler = null;
 
+        /// <summary>
+        /// Start the websocket connection and the background thread used for sending messages.
+        /// </summary>
+        /// <returns>return a Task.</returns>
         public async Task StartConnectionAsync()
         {
             _tokenSource = new CancellationTokenSource();
@@ -55,7 +129,7 @@ namespace IO.Ably.Transport
             try
             {
                 await ClientWebSocket.ConnectAsync(_uri, CancellationToken.None).ConfigureAwait(false);
-                StartSenderQueueConsumer();
+                StartSenderBackgroundThread();
                 _handler?.Invoke(ConnectionState.Connected, null);
             }
             catch (Exception ex)
@@ -67,44 +141,59 @@ namespace IO.Ably.Transport
 
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
+
+            void StartSenderBackgroundThread()
+            {
+                _ = Task.Factory.StartNew(_ => ProcessSenderQueue(), TaskCreationOptions.LongRunning, _tokenSource.Token);
+            }
         }
 
-        private void StartSenderQueueConsumer()
+        private async Task ProcessSenderQueue()
         {
             if (_disposed)
             {
                 throw new AblyException($"Attempting to start sender queue consumer when {typeof(MsWebSocketConnection)} has been disposed is not allowed.");
             }
 
-            Task.Run(
-                async () =>
+            try
+            {
+                while (await _sendChannel.Reader.WaitToReadAsync())
+                {
+                    while (_sendChannel.Reader.TryRead(out var message))
                     {
-                        try
-                        {
-                            if (_sendQueue != null)
-                            {
-                                foreach (var tuple in _sendQueue?.GetConsumingEnumerable(_tokenSource.Token))
-                                {
-                                    await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
-                                }
-                            }
-                        }
-                        catch (OperationCanceledException e)
-                        {
-                            if (Logger != null && Logger.IsDebug)
-                            {
-                                Logger.Debug(
-                                    _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed, WebSocket send operation cancelled." : "WebSocket Send operation cancelled.",
-                                    e);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger?.Error("Error Sending to WebSocket", e);
-                        }
-                    }, _tokenSource.Token).ConfigureAwait(false);
+                        await Send(message.Message, message.Type, _tokenSource.Token).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (ObjectDisposedException e)
+            {
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug(
+                        _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed." : "WebSocket Send operation cancelled.",
+                        e);
+                }
+            }
+            catch (OperationCanceledException e)
+            {
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug(
+                        _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed, WebSocket send operation cancelled." : "WebSocket Send operation cancelled.",
+                        e);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger?.Error("Error Sending to WebSocket", e);
+                _handler?.Invoke(ConnectionState.Error, e);
+            }
         }
 
+        /// <summary>
+        /// Closes the websocket connection.
+        /// </summary>
+        /// <returns>returns a Task.</returns>
         public async Task StopConnectionAsync()
         {
             _handler?.Invoke(ConnectionState.Closing, null);
@@ -152,22 +241,33 @@ namespace IO.Ably.Transport
             }
         }
 
+        /// <summary>
+        /// Sends a text message over the websocket connection.
+        /// </summary>
+        /// <param name="message">The text message sent over the websocket.</param>
         public void SendText(string message)
         {
-            EnqueueForSending(message.GetBytes(), WebSocketMessageType.Binary);
+            EnqueueForSending(new MessageToSend(message.GetBytes(), WebSocketMessageType.Text));
         }
 
+        /// <summary>
+        /// Sends a binary message over the websocket connection.
+        /// </summary>
+        /// <param name="data">The data to be sent over the websocket.</param>
         public void SendData(byte[] data)
         {
-            EnqueueForSending(data, WebSocketMessageType.Binary);
+            EnqueueForSending(new MessageToSend(data, WebSocketMessageType.Binary));
         }
 
-        private void EnqueueForSending(byte[] data, WebSocketMessageType msgType)
+        private void EnqueueForSending(MessageToSend message)
         {
-            var bytes = new ArraySegment<byte>(data);
             try
             {
-                _sendQueue.TryAdd(Tuple.Create(bytes, msgType), 1000, _tokenSource.Token);
+                var writeResult = _sendChannel.Writer.TryWrite(message);
+                if (writeResult == false)
+                {
+                    Logger.Warning("Failed to enqueue message to WebSocket connection. The connection is being disposed.");
+                }
             }
             catch (Exception e)
             {
@@ -182,22 +282,21 @@ namespace IO.Ably.Transport
 
         private async Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
         {
-            try
+            if (ClientWebSocket.State != WebSocketState.Open)
             {
-                if (ClientWebSocket.State != WebSocketState.Open)
-                {
-                    Logger?.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
-                    return;
-                }
+                Logger?.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
+                return;
+            }
 
-                await ClientWebSocket.SendAsync(data, type, true, token).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _handler?.Invoke(ConnectionState.Error, ex);
-            }
+            await ClientWebSocket.SendAsync(data, type, true, token).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// The Receive methods starts the receiving loop. It's run on a separate thread and it waits for data to become
+        /// available on the websocket.
+        /// </summary>
+        /// <param name="handleMessage">The handle which is notified when a message is received.</param>
+        /// <returns>return a Task.</returns>
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
         {
             while (ClientWebSocket?.State == WebSocketState.Open)
@@ -248,6 +347,10 @@ namespace IO.Ably.Transport
             }
         }
 
+        /// <summary>
+        /// Dispose method. Stops the send thread and disposes the websocket.
+        /// </summary>
+        /// <param name="disposing">Whether it should do some disposing.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -259,13 +362,16 @@ namespace IO.Ably.Transport
             {
                 _tokenSource.Cancel();
                 _tokenSource.Dispose();
-                _sendQueue.CompleteAdding();
+                _sendChannel?.Writer.Complete();
                 ClientWebSocket?.Dispose();
             }
 
             _disposed = true;
         }
 
+        /// <summary>
+        /// Cleans up resources and disconnects the websocket.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -278,6 +384,36 @@ namespace IO.Ably.Transport
             // and reduces memory bloat considerably
         }
 
+        /// <summary>
+        /// Attempt to query the backlog length of the queue.
+        /// </summary>
+        /// <param name="count">The (approximate) count of items in the Channel.</param>
+        /// <returns>true if it managed to get count.</returns>
+        public bool TryGetCount(out int count)
+        {
+            // get this using the reflection
+            try
+            {
+                var prop = _sendChannel.GetType()
+                    .GetProperty("ItemsCountForDebugger", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (prop != null)
+                {
+                    count = (int)prop.GetValue(_sendChannel);
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            count = default(int);
+            return false;
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="MsWebSocketConnection"/> class.
+        /// </summary>
         ~MsWebSocketConnection()
         {
             Dispose(false);

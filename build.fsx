@@ -444,4 +444,4 @@ Target.create "Package" ignore
   ==> "NetStandard - Unit Tests with retry"
   ==> "Test.NetStandard.Unit.WithRetry"
   
-Target.runOrDefaultWithArguments  "Test.NetFramework"
+Target.runOrDefaultWithArguments  "Build.NetFramework"

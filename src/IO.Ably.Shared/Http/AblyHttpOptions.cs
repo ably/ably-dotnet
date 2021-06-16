@@ -68,7 +68,7 @@ namespace IO.Ably
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
             FallbackRetryTimeOut = options.FallbackRetryTimeout;
-            FallbackHosts = options.FallbackHosts;
+            FallbackHosts = options.GetFallbackHosts();
             FallbackHostsUseDefault = options.FallbackHostsUseDefault;
 
             NowFunc = options.NowFunc;
