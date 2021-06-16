@@ -58,7 +58,6 @@ namespace IO.Ably.Tests
             });
         }
 
-
         protected async Task<AblyRealtime> GetRealtimeClient(
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)

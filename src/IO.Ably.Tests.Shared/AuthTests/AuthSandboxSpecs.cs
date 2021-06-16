@@ -414,7 +414,7 @@ namespace IO.Ably.Tests
                     stateChanged = true;
                 });
 
-                var _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
+                _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
 
                 realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
                 stateChanged.Should().BeFalse();
