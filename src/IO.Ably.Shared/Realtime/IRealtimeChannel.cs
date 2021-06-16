@@ -168,10 +168,24 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Returns past message of this channel.
         /// </summary>
+        /// <returns><see cref="PaginatedResult{T}"/> of past Messages.</returns>
+        Task<PaginatedResult<Message>> HistoryAsync();
+
+        /// <summary>
+        /// Returns past message of this channel.
+        /// </summary>
         /// <param name="untilAttach">indicates whether it should pass the latest attach serial to 'fromSerial' parameter.</param>
         /// <returns><see cref="PaginatedResult{T}"/> of past Messages.</returns>
         /// <exception cref="AblyException">Throws an error if untilAttach is true and the channel is not currently attached.</exception>
-        Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false);
+        [Obsolete("No need for untilAttach param since presence sync happens on attach, use HistoryAsync() instead")]
+        Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach);
+
+        /// <summary>
+        /// Returns past message of this channel.
+        /// </summary>
+        /// <param name="query"><see cref="PaginatedRequestParams"/> query.</param>
+        /// <returns><see cref="PaginatedResult{T}"/> of past Messages.</returns>
+        Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query);
 
         /// <summary>
         /// Returns past message of this channel.
@@ -180,7 +194,8 @@ namespace IO.Ably.Realtime
         /// <param name="untilAttach">indicates whether it should pass the latest attach serial to 'fromSerial' parameter.</param>
         /// <returns><see cref="PaginatedResult{T}"/> of past Messages.</returns>
         /// <exception cref="AblyException">Throws an error if untilAttach is true and the channel is not currently attached.</exception>
-        Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false);
+        [Obsolete("No need for untilAttach param since presence sync happens on attach, use HistoryAsync(PaginatedRequestParams query) instead")]
+        Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach);
 
         /// <summary>
         /// Updates the options for a channel. If the ChannelModes or ChannelParams differ and the channel is Attaching or Attached

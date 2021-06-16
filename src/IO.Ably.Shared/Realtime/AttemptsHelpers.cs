@@ -36,7 +36,7 @@ namespace IO.Ably.Realtime
             return (now() - firstAttempt.Value) >= state.Connection.ConnectionStateTtl;
         }
 
-        public static string GetHost(RealtimeState state, Func<string> getRealtimeHost)
+        public static string GetHost(RealtimeState state, string realtimeHost)
         {
             var lastFailedState = state.AttemptsInfo.Attempts.SelectMany(x => x.FailedStates).LastOrDefault(x => x.ShouldUseFallback());
             string customHost = string.Empty;
@@ -49,7 +49,7 @@ namespace IO.Ably.Realtime
                 // we need to first try again on the default host before starting to check fallback hosts
                 if (state.Connection.Host.IsNotEmpty() && state.Connection.IsFallbackHost)
                 {
-                    return getRealtimeHost();
+                    return realtimeHost;
                 }
 
                 if (lastFailedState.State == ConnectionState.Disconnected)
@@ -69,7 +69,7 @@ namespace IO.Ably.Realtime
                 }
             }
 
-            return getRealtimeHost();
+            return realtimeHost;
 
             string GetFallbackHost(int failedRequestCount)
             {

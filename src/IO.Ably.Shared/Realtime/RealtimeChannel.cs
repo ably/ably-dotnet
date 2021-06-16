@@ -490,7 +490,13 @@ namespace IO.Ably.Realtime
             return await tw.Task.TimeoutAfter(RealtimeClient.Options.RealtimeRequestTimeout, failResult);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false)
+        public Task<PaginatedResult<Message>> HistoryAsync()
+        {
+            var query = new PaginatedRequestParams();
+            return RestChannel.HistoryAsync(query);
+        }
+
+        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach)
         {
             var query = new PaginatedRequestParams();
             if (untilAttach)
@@ -501,7 +507,13 @@ namespace IO.Ably.Realtime
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query)
+        {
+            query = query ?? new PaginatedRequestParams();
+            return RestChannel.HistoryAsync(query);
+        }
+
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach)
         {
             query = query ?? new PaginatedRequestParams();
             if (untilAttach)

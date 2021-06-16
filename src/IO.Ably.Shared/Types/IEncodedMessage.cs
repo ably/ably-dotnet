@@ -19,6 +19,8 @@ namespace IO.Ably
 
         string ConnectionId { get; set; }
 
+        string ConnectionKey { get; set; }
+
         object Data { get; set; }
 
         string ClientId { get; set; }

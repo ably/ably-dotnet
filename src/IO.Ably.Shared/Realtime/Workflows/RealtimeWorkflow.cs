@@ -360,7 +360,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     async Task AttemptANewConnection()
                     {
-                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
+                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                         SetNewHostInState(host);
 
                         await ConnectionManager.CreateTransport(host);
@@ -678,7 +678,7 @@ namespace IO.Ably.Realtime.Workflow
                                 State.Connection.ClearKeyAndId();
                             }
 
-                            var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
+                            var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                             SetNewHostInState(connectingHost);
 
                             var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);

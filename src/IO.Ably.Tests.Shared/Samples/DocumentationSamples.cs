@@ -151,7 +151,9 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
+#pragma warning disable 618
             var history = await channel.HistoryAsync(true);
+#pragma warning restore 618
             Console.WriteLine($"{history.Items.Count} messages received in the first page");
             if (history.HasNext)
             {
@@ -244,7 +246,9 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             await channel.AttachAsync();
+#pragma warning disable 618
             PaginatedResult<Message> resultPage = await channel.HistoryAsync(true);
+#pragma warning restore 618
             Message lastMessage = resultPage.Items[0];
             Console.WriteLine("Last message before attach: " + lastMessage.Data);
 
