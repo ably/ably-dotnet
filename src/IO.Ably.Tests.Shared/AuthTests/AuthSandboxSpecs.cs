@@ -404,33 +404,20 @@ namespace IO.Ably.Tests
                     options.TokenDetails = token;
                 }
 
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(1000);
                 var realtimeClient = await GetRealtimeClient(protocol, Options);
-
                 realtimeClient.Connect();
                 await realtimeClient.WaitForState(ConnectionState.Connected);
+                bool stateChanged = false;
                 realtimeClient.Connection.On(change =>
                 {
                     // this callback should not be called
-                    change.Previous.Should().Be(ConnectionState.Connected);
-                    change.Reason.Code.Should().Be(80019);
-                    tca.SetCompleted();
+                    stateChanged = true;
                 });
 
-                bool didThrowAblyException = false;
-                try
-                {
-                    await realtimeClient.Auth.AuthorizeAsync();
-                    Assert.True(false, "An exception should be raised before this line is reached.");
-                }
-                catch (AblyException)
-                {
-                    didThrowAblyException = true;
-                }
+                _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
 
-                didThrowAblyException.Should().BeTrue();
                 realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
-                (await tca.Task).Should().BeFalse(context);
+                stateChanged.Should().BeFalse();
             }
 
             await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
@@ -445,7 +432,7 @@ namespace IO.Ably.Tests
         {
             async Task Test403BecomesFailed(string context, int expectedCode, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
 
                 realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
@@ -457,7 +444,7 @@ namespace IO.Ably.Tests
                     tca.SetCompleted();
                 });
 
-                realtimeClient.Connection.Connect();
+                realtimeClient.Connect();
                 (await tca.Task).Should().BeTrue(context);
             }
 
@@ -481,6 +468,63 @@ namespace IO.Ably.Tests
 
             await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019, optionsAction: AuthUrlOptions);
             await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: 80019, optionsAction: AuthCallbackOptions);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4d")]
+        [Trait("spec", "RSA4d1")]
+        public async Task Auth_WithRealtimeClient_WhenExplicitAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
+        {
+            var realtimeClient = await GetRealtimeClient(protocol);
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            TaskCompletionAwaiter failedAwaiter = new TaskCompletionAwaiter();
+            realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
+            {
+                change.Previous.Should().Be(ConnectionState.Connected);
+                change.Reason.Code.Should().Be(80019);
+                realtimeClient.Connection.ErrorReason.Code.Should().Be(80019);
+                realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
+                failedAwaiter.SetCompleted();
+            });
+
+            var authOptionsWhichFail = new AuthOptions()
+            {
+                UseTokenAuth = true,
+                AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
+            };
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync(null, authOptionsWhichFail));
+
+            Assert.IsType<AblyException>(ex);
+
+            (await failedAwaiter.Task).Should().BeTrue("With 403 response connection should become Failed");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4d1")]
+        public async Task Auth_WithConnectedRealtimeClient_WhenExplicitRequestTokenFailsWith403_ShouldNotAffectConnectionState(Protocol protocol)
+        {
+            var realtimeClient = await GetRealtimeClient(protocol);
+            realtimeClient.Connection.Connect();
+
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            var authOptions = new AuthOptions()
+            {
+                UseTokenAuth = true,
+                AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
+            };
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.RequestTokenAsync(null, authOptions));
+            Assert.IsType<AblyException>(ex);
+            ex.ErrorInfo.Code.Should().Be(80019);
+            ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            await Task.Delay(1000);
+
+            realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         [Theory]

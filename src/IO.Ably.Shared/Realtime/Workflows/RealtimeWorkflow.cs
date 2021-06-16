@@ -65,6 +65,7 @@ namespace IO.Ably.Realtime.Workflow
         public RealtimeWorkflow(AblyRealtime client, ILogger logger)
         {
             Client = client;
+            Client.RestClient.AblyAuth.ExecuteCommand = cmd => QueueCommand(cmd);
             Connection = client.Connection;
             Channels = client.Channels;
             Logger = logger;
@@ -450,6 +451,15 @@ namespace IO.Ably.Realtime.Workflow
                             default:
                                 break;
                         }
+                    }
+
+                    return EmptyCommand.Instance;
+                case HandleAblyAuthorizeErrorCommand cmd:
+                    var exception = cmd.Exception;
+                    if (exception?.ErrorInfo?.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        Logger.Debug("Triggering Connection Error due to 403 Authorize error");
+                        return HandleConnectingErrorCommand.Create(null, cmd.Exception).TriggeredBy(cmd);
                     }
 
                     return EmptyCommand.Instance;
