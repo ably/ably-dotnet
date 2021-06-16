@@ -21,7 +21,7 @@ namespace IO.Ably.Tests.Realtime
         public void EmittedEventTypesShouldBe()
         {
             var states = Enum.GetNames(typeof(ConnectionEvent));
-            states.ShouldBeEquivalentTo(new[]
+            states.Should().BeEquivalentTo(new[]
             {
                 "Initialized",
                 "Connecting",

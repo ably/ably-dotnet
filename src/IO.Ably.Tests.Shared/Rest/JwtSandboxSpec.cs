@@ -45,7 +45,7 @@ namespace IO.Ably.Tests.Rest
             stats.Should().NotBeNull();
 
             // show that the token was not renewed
-            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+            client.AblyAuth.CurrentToken.Should().BeEquivalentTo(jwt);
         }
 
         [Theory]
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Rest
             stats.Should().NotBeNull();
 
             // show that the token was not renewed
-            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+            client.AblyAuth.CurrentToken.Should().BeEquivalentTo(jwt);
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace IO.Ably.Tests.Rest
             stats.Should().NotBeNull();
 
             // show that the token was not renewed
-            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+            client.AblyAuth.CurrentToken.Should().BeEquivalentTo(jwt);
         }
 
         [Theory]
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.Rest
             }
 
             didError.Should().BeTrue();
-            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+            client.AblyAuth.CurrentToken.Should().BeEquivalentTo(jwt);
         }
 
         [Theory]
@@ -159,7 +159,7 @@ namespace IO.Ably.Tests.Rest
             var stats = await client.StatsAsync();
             stats.Should().NotBeNull();
 
-            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+            client.AblyAuth.CurrentToken.Should().BeEquivalentTo(jwt);
         }
 
         private async Task<TokenDetails> GetJwtTokenAsync(

@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Rest
             var fromEncoded = Message.FromEncoded(msg, new ChannelOptions(cipherParams));
 
             fromEncoded.Name.Should().Be("name");
-            fromEncoded.Data.ShouldBeEquivalentTo(payload);
+            fromEncoded.Data.Should().BeEquivalentTo(payload);
             fromEncoded.Encoding.Should().BeNullOrEmpty();
         }
 
@@ -146,7 +146,7 @@ namespace IO.Ably.Tests.Rest
                 var fromEncoded = Message.FromEncoded(msgJson, new ChannelOptions(cipherParams));
 
                 fromEncoded.Name.Should().Be("name");
-                fromEncoded.Data.ShouldBeEquivalentTo(payload);
+                fromEncoded.Data.Should().BeEquivalentTo(payload);
                 fromEncoded.Encoding.Should().BeNullOrEmpty();
             }
 

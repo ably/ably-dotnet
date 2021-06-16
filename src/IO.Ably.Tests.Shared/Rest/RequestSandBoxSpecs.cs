@@ -221,9 +221,9 @@ namespace IO.Ably.Tests
             var paginatedResult = client.Channels.Get(_channelName).History(new PaginatedRequestParams { Limit = 3 });
             paginatedResult.Should().NotBeNull();
             paginatedResult.Items.Should().HaveCount(3);
-            paginatedResult.Items[2].Data.ShouldBeEquivalentTo("from-json-string");
-            paginatedResult.Items[1].Data.ShouldBeEquivalentTo("from-message");
-            paginatedResult.Items[0].Data.ShouldBeEquivalentTo("from-publish");
+            paginatedResult.Items[2].Data.Should().BeEquivalentTo("from-json-string");
+            paginatedResult.Items[1].Data.Should().BeEquivalentTo("from-message");
+            paginatedResult.Items[0].Data.Should().BeEquivalentTo("from-publish");
         }
 
         [Trait("spec", "RSC19e")]
