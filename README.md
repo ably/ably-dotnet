@@ -17,7 +17,7 @@ Until we resolve the issue you can either use version 1.1.13 or update to using 
 Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
 Here is a list of the significant changes. You can find a full list in the release notes.
 
-1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged recourses and there was no need to expose the Dispose function. 
+1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged resources and there was no need to expose the Dispose function. 
 2. [Breaking]ITransport has acquired an Id Property and ITransportListener.OnTransportEvent has an Id parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated. 
 3. `ClientOptions.CaptureCurrentSynchronizationContext` has been deprecated and defaulted to `false`. It will be removed in future versions. You need to make sure that you don't directly update UI elements if you are building a WPF or Xamarin.Forms application from Ably handlers. If you still require the functionality please set it back to `true` and open an Ably Support ticket that you need the functionality. The main reason to disable this feature is that the library should not assume on which thread updates should be posted and that needs to be handled by the developer.
 4. IRealtimeClient implements IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
@@ -34,11 +34,11 @@ Here is a list of the significant changes. You can find a full list in the relea
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
-&ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/main/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
+&ast; To target Windows 7 (with .NET 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/main/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implemented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
-&ast;&ast; We regression-test the library against .NET Core 2 and .Net Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+&ast;&ast; We regression-test the library against .NET Core 3.1 and .NET Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 ### Partial platform support
 
@@ -51,7 +51,7 @@ Unity support is currently in beta. See below for details on why it's considered
 Shortcomings & considerations:
 
 * This library is only tested manually on Unity for Windows. We do not yet have automated tests running on the Unity platform.
-* Installation requires developers to import a custom unity packages that includes all of Ably's dependencies.
+* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
 
 Unity Requirements:
 
@@ -60,7 +60,7 @@ Unity Requirements:
   - Scripting Runtime Version should be '.NET 4.x Equivalent'
   - Api Compatibility Level should be '.NET Standard 2.0'
 
-Please download the latest unity package from the [github releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a unity package as well.
+Please download the latest Unity package from the [github releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a Unity package as well.
 
 Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the SynchronizationContext and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following Client option `CaptureCurrentSynchronizationContext`. Even thought the setting is deprecated it will not be removed.
 
@@ -113,16 +113,16 @@ If you do not have an API key, [sign up for a free API key now](https://www.ably
 
 ### Connection
 
-Connecting and observing connection state changes. By default the library automatically initialises a connection. 
+Connecting and observing connection state changes. By default the library automatically initializes a connection. 
 
 ```csharp
 realtime.Connection.On(ConnectionState.Connected, args =>
 {
-    //Do stuff  
+    // Do stuff  
 });
 
 ```
-To disable the default automatic connect behaviour of the library, set `AutoConnect=false` when initialising the client.
+To disable the default automatic connect behavior of the library, set `AutoConnect=false` when initializing the client.
 
 ```csharp
 var realtime = new AblyRealtime(new ClientOptions("<api key>") {AutoConnect = false});
@@ -135,7 +135,7 @@ Subscribing to connection state changes and observing errors:
 ```csharp
 realtime.Connection.On(args =>
 {
-    var currentState = args.Current; //Current state the connection transitioned to
+    var currentState = args.Current; // Current state the connection transitioned to
     var previousState = args.Previous; // Previous state
     var error = args.Reason; // If the connection errored the Reason object will be populated.
 });
@@ -174,11 +174,11 @@ Observing channel state changes and errors:
 ```csharp
 channel.On(args =>
 {
-    var state = args.NewState; //Current channel State
-    var error = args.Error; // If the channel errored it will be refrected here
+    var state = args.NewState; // Current channel State
+    var error = args.Error; // If the channel errored it will be reflected here
 });
 
-//or
+// or
 
 channel.On(ChannelState.Attached, args =>
 {
@@ -217,8 +217,8 @@ with a callback:
 ```csharp
 channel.Publish("greeting", "Hello World!", (success, error) =>
 {
-    //if publish succeeded `success` is true
-    //if publish failed `success` is false and error will contain the specific error
+    // if publish succeeded `success` is `true`
+    // if publish failed `success` is `false` and error will contain the specific error
 });
 ```
 
@@ -226,7 +226,7 @@ and the async version which if you `await` it will complete when the message has
 
 ```csharp
 var result = await channel.PublishAsync("greeting", "Hello World!");
-//You can check if the message failed
+// You can check if the message failed
 if (result.IsFailure)
 {
     var error = result.Error; // The error reason can be accessed as well
@@ -239,12 +239,12 @@ Calling history returns a paginated list of message. The object is of type `Pagi
 
 ```csharp
 var history = await channel.HistoryAsync();
-//loop through current history page
+// loop through current history page
 foreach (var message in history.Items)
 {
-    //Do something with message
+    // Do something with message
 }
-//Get next page.
+// Get next page.
 var nextPage = await history.NextAsync();
 ```
 
@@ -254,10 +254,10 @@ Getting presence history is similar to how message history works. You get back `
 
 ```csharp
 var presenceHistory = await channel.Presence.HistoryAsync();
-//loop through the presence messages
+// loop through the presence messages
 foreach (var presence in presenceHistory.Items)
 {
-    //Do something with the messages
+    // Do something with the messages
 }
 
 var presenceNextPage = await presenceHistory.NextAsync();
@@ -317,9 +317,9 @@ catch(AblyException ablyError)
 var historyPage = await channel.HistoryAsync();
 foreach (var message in historyPage.Items)
 {
-    //Do something with each message
+    // Do something with each message
 }
-//get next page
+// get next page
 var nextHistoryPage = await historyPage.NextAsync();
 ```
 
@@ -328,11 +328,11 @@ var nextHistoryPage = await historyPage.NextAsync();
 ```csharp
 var presence = await channel.Presence.GetAsync();
 var first = presence.Items.FirstOrDefault();
-var clientId = first.clientId; //clientId of the first member present
+var clientId = first.clientId; // clientId of the first member present
 var nextPresencePage = await presence.NextAsync();
 foreach (var presenceMessage in nextPresencePage.Items)
 {
-    //do stuff with next page presence messages
+    // do stuff with next page presence messages
 }
 ```
 
@@ -387,7 +387,7 @@ When a 128 bit or 256 bit key is provided to the library, all payloads are encry
 ```csharp
 var secret = Crypto.GetRandomKey();
 var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
-await encryptedChannel.PublishAsync("name", "sensitive data"); //Data will be encrypted before publish
+await encryptedChannel.PublishAsync("name", "sensitive data"); // Data will be encrypted before publish
 var history = await encryptedChannel.HistoryAsync();
 var data = history.First().data; // "sensitive data" the message will be automatically decrypted once received
 ```
@@ -408,7 +408,7 @@ DateTimeOffset time = await client.TimeAsync();
 
 ### Increase Transport send and receive buffers
 
-In .Net Framework projects, we discovered issues with the .Net implementation of web socket protocol during times of high load with large payloads (over 50kb). This is better described in https://github.com/ably/ably-dotnet/issues/446
+In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in https://github.com/ably/ably-dotnet/issues/446
 To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it. 
 
 ```csharp
@@ -421,9 +421,11 @@ var realtime = new AblyRealtime(options);
 
 ### Examples
 - More Examples can be found under ```examples``` directory.
-- While working with console app, make sure to put explicit await for async methods.</br>
-*Sample .net core implementation*
-```C#
+- While working with console app, make sure to put explicit await for async methods.
+
+</br>*Sample .NET Core implementation*
+
+```csharp
 using System;
 using IO.Ably;
 namespace testing_ably_console
@@ -441,8 +443,10 @@ namespace testing_ably_console
     }
 }
 ```
-</br>*Sample .net framework implementation (when you don't have async main method)*
-```C#
+
+</br>*Sample .NET Framework implementation (when you don't have async main method)*
+
+```csharp
 using System;
 using IO.Ably;
 namespace testing_ably_console
@@ -464,6 +468,7 @@ namespace testing_ably_console
     }
 }
 ```
+
 ## Dependencies
 
 This library has dependencies that can differ depending on the target platform.
@@ -496,14 +501,14 @@ To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 
-If you want to incorporate ably-dotnet into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the pricipal should transfer to other IDEs
+If you want to incorporate ably-dotnet into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the principal should transfer to other IDEs
 
-1. Clone this repository to your local system
+1. Clone this repository to your local system (`git clone --recurse-submodules https://github.com/ably/ably-dotnet.git`)
 2. Open the solution you want to reference ably-dotnet from
 3. In Solution Explorer right click the root note (it will be labled Solution 'YourSolutionName')
 4. Select Add > Existing Project from the context menu
 5. Browse to the ably-dotnet repository and add ably-dotnet\src\IO.Ably.Shared\IO.Ably.Shared.shproj
-6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targetting .Net Framework (AKA Classic .Net) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
+6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targetting .NET Framework (AKA Classic .NET) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
 7. In any project that you want to use ably-dotnet you need to add a project reference, to do so:
     1. Find your project in Solution Explorer and expand the tree so that the Dependencies node is visible
     2. Right click Dependencies and select Add Reference
@@ -511,11 +516,10 @@ If you want to incorporate ably-dotnet into your project from source (perhaps to
 
 ## Spec
 
-The dotnet library follows the Ably [`Client Library development guide`](https://docs.ably.io/client-lib-development-guide/features/). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convertion is to add `[Trait("spec", "spec tag")]` to unit tests. 
+The dotnet library follows the Ably [`Client Library development guide`](https://docs.ably.io/client-lib-development-guide/features/). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convention is to add `[Trait("spec", "spec tag")]` to unit tests. 
 
 To get a list of all spec items that appear in the tests you can run a script located in the tools directory. 
-You need to have .net core 3.0 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.
-
+You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.
 
 ## Release process
 
