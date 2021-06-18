@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Xunit;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Rest

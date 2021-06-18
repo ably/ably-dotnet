@@ -1,6 +1,6 @@
-﻿using IO.Ably.Transport;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {

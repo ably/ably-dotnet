@@ -1,17 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Xunit;
-    using Xunit.Abstractions;
-
     [Collection("UnitTests")]
     public class AuthorizationTests : MockHttpRestSpecs
     {

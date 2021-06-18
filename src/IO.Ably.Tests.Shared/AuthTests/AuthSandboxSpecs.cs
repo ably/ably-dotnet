@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Tests.Realtime;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,6 +1,4 @@
-﻿using IO.Ably.Rest;
-
-namespace IO.Ably.MessageEncoders
+﻿namespace IO.Ably.MessageEncoders
 {
     internal class Utf8Encoder : MessageEncoder
     {

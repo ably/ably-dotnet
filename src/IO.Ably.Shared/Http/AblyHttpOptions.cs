@@ -1,5 +1,4 @@
 ﻿using System;
-using IO.Ably;
 
 namespace IO.Ably
 {

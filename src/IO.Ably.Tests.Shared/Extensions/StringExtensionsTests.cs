@@ -1,6 +1,5 @@
-using Xunit;
-using IO.Ably;
 using FluentAssertions;
+using Xunit;
 
 namespace IO.Ably.Tests.DotNetCore20.Extensions
 {

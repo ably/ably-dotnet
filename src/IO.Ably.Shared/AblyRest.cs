@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
-
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably

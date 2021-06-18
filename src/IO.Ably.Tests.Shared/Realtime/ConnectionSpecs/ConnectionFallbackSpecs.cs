@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
-using Task = System.Threading.Tasks.Task;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {

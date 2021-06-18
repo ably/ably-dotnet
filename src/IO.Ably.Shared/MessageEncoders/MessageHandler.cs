@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using System.Xml.XPath;
-using IO.Ably;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
-using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.MessageEncoders
 {

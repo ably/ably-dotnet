@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 

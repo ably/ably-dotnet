@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using IO.Ably.AcceptanceTests;
-using Microsoft.Build.Logging;
 using Xunit;
 
 namespace IO.Ably.Tests.Shared

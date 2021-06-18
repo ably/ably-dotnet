@@ -1,6 +1,3 @@
-using System;
-using IO.Ably.Transport;
-
 namespace IO.Ably.MessageEncoders
 {
     /// <summary>

@@ -1,10 +1,5 @@
 ﻿using System;
 
-using IO.Ably;
-using IO.Ably.Rest;
-
-using Newtonsoft.Json;
-
 namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using IO.Ably.Rest;
 
 namespace IO.Ably.MessageEncoders
 {
