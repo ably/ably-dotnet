@@ -276,6 +276,32 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_ShouldUseRequestIdInParam()
+            {
+                // With request id
+                var client = CreateClient(options => options.AddRequestIds = true);
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(1);
+                var requestId1 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                requestId1.Length.Should().BeGreaterOrEqualTo(9);
+
+                // with request id and new request
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(2);
+                var requestId2 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                requestId2.Length.Should().BeGreaterOrEqualTo(9);
+                requestId1.Should().NotBe(requestId2);
+
+                // Without request id
+                client = CreateClient(_ => { });
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(3);
+                _handler.LastRequest.Headers.TryGetValues("request_id", out var requestIdHeaders);
+                requestIdHeaders.Should().BeNull();
+            }
+
+            [Fact]
             [Trait("spec", "RSC12")]
             public async Task WithHostSpecifiedInOption_ShouldUseCustomHost()
             {
@@ -441,6 +467,33 @@ namespace IO.Ably.Tests
                 var client = new AblyRest(options);
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
                 return client;
+            }
+
+            [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_RequestIdShouldRemainSameIfRetriedToFallbackHost()
+            {
+                var client = CreateClient(options =>
+                {
+                    options.FallbackHosts = null;
+                    options.AddRequestIds = true;
+                    options.HttpMaxRetryCount = 5;
+                });
+
+                var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                handler.NumberOfRequests.Should().Be(5);
+                var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
+                ex.Message.Should().Contain(uniqueRequestId);
+                ex.ErrorInfo.Message.Should().Contain(uniqueRequestId);
+                handler.Requests.ForEach(request =>
+                {
+                    var requestId = request.Headers.GetValues("request_id").First();
+                    requestId.Length.Should().BeGreaterOrEqualTo(9);
+                    requestId.Should().Be(uniqueRequestId);
+                });
             }
 
             [Fact]
