@@ -18,7 +18,7 @@ namespace IO.Ably
             {
                 var name = new AssemblyName("IO.Ably");
                 var asm = Assembly.Load(name);
-                var type = Assembly.Load(name).GetType("IO.Ably.Platform");
+                var type = asm.GetType("IO.Ably.Platform");
                 if (type != null)
                 {
                     var obj = Activator.CreateInstance(type);
