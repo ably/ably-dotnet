@@ -126,11 +126,18 @@ Target.create "Restore" (fun _ ->
 )
 
 Target.create "Restore Xamarin" (fun _ ->
-    if Environment.isWindows then
-      nugetRestore XamarinSolution|> ignore
-  
-    CreateProcess.fromRawCommand "dotnet" ["restore"; XamarinSolution] 
-    |> Proc.run |> ignore
+
+    let setParams (defaults:MSBuildParams) =
+          { defaults with
+              Verbosity = Some(Quiet)
+              Targets = ["Restore"]
+              Properties =
+                  [
+                      "Configuration", buildMode
+                      "RestorePackages", "True"
+                  ]
+           }
+    MSBuild.build setParams NetFrameworkSolution
 )
 
 Target.create "NetFramework - Build" (fun _ ->
