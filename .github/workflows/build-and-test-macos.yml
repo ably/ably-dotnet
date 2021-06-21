@@ -3,7 +3,7 @@ on: [ "push" ]
 
 
 jobs:
-  build-and-test-linux:
+  build-and-test-macos:
     runs-on: macos-latest
     env:
       DOTNET_NOLOGO: true
