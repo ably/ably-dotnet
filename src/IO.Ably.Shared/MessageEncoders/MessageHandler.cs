@@ -78,7 +78,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
+        private static void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
             DecodePayloads(context, payloads as IEnumerable<IMessage>);
@@ -141,7 +141,7 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Serialize(payloads).GetBytes();
         }
 
-        internal Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
+        internal static Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
@@ -383,7 +383,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
+        private static IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
         {
             var body = response.TextResponse;
 #if MSGPACK

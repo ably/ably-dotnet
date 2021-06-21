@@ -1280,7 +1280,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
-                new MessageHandler(Logger, Protocol.Json).EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
 
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
@@ -1303,7 +1303,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Subscribe(msg => { receivedMessage = msg; });
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
-                new MessageHandler(Logger, Protocol.Json).EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
 
                 var testSink = new TestLoggerSink();
                 using (DefaultLogger.SetTempDestination(testSink))

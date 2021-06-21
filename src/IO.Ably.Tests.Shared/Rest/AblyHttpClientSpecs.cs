@@ -108,7 +108,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void IsRetryableError_WithTaskCancellationException_ShouldBeTrue()
             {
-                _client.IsRetryableError(new TaskCanceledException()).Should().BeTrue();
+                AblyHttpClient.IsRetryableError(new TaskCanceledException()).Should().BeTrue();
             }
 
             [Theory]
@@ -119,7 +119,7 @@ namespace IO.Ably.Tests
             public void IsRetyableError_WithHttpMessageExecption_ShouldBeTrue(WebExceptionStatus status)
             {
                 var exception = new HttpRequestException("Error", new WebException("boo", status));
-                _client.IsRetryableError(exception).Should().BeTrue();
+                AblyHttpClient.IsRetryableError(exception).Should().BeTrue();
             }
 
             [Theory]
@@ -137,7 +137,7 @@ namespace IO.Ably.Tests
                 bool expected)
             {
                 var response = new HttpResponseMessage(statusCode);
-                _client.IsRetryableResponse(response).Should().Be(expected);
+                AblyHttpClient.IsRetryableResponse(response).Should().Be(expected);
             }
         }
     }

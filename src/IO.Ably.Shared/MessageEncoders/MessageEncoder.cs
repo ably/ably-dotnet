@@ -13,7 +13,7 @@ namespace IO.Ably.MessageEncoders
 
         public abstract Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context);
 
-        public bool IsEmpty(object data)
+        public static bool IsEmpty(object data)
         {
             return data == null || (data is string s && s.IsEmpty());
         }

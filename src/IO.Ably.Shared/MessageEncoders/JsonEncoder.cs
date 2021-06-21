@@ -53,7 +53,7 @@ namespace IO.Ably.MessageEncoders
             return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public bool NeedsJsonEncoding(IPayload payload)
+        public static bool NeedsJsonEncoding(IPayload payload)
         {
             return payload.Data is string == false && payload.Data is byte[] == false;
         }
