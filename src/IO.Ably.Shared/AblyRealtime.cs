@@ -93,8 +93,7 @@ namespace IO.Ably
         /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
 
-        /// <inheritdoc/>
-        public PushRest Push => RestClient.Push;
+        internal PushRest Push => RestClient.Push;
 
         /// <inheritdoc/>
         public string ClientId => Auth.ClientId;

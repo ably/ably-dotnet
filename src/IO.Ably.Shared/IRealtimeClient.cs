@@ -29,10 +29,10 @@ namespace IO.Ably
         /// <summary>A reference to the connection object for this library instance.</summary>
         Connection Connection { get; }
 
-        /// <summary>
-        /// Methods for managing Push notifications subscriptions and device registrations.
-        /// </summary>
-        PushRest Push { get; }
+        // /// <summary>
+        // /// Methods for managing Push notifications subscriptions and device registrations.
+        // /// </summary>
+        // PushRest Push { get; }
 
         /// <summary>
         /// Current client id.

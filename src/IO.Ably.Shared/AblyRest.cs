@@ -75,7 +75,7 @@ namespace IO.Ably
         public IAblyAuth Auth => AblyAuth;
 
         /// <inheritdoc/>
-        public PushRest Push { get; private set; }
+        internal PushRest Push { get; private set; }
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
 
