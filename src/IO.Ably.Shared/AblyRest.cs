@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using IO.Ably.Rest;
 using Newtonsoft.Json.Linq;
 
@@ -73,6 +74,9 @@ namespace IO.Ably
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
 
+        /// <inheritdoc/>
+        public PushRest Push { get; private set; }
+
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
 
         internal ClientOptions Options { get; }
@@ -111,6 +115,7 @@ namespace IO.Ably
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
             Channels = new RestChannels(this);
+            Push = new PushRest(this, Logger);
         }
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
