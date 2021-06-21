@@ -23,6 +23,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcdiffErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\DeviceDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdmin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\AttemptsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\LastMessageIds.cs" />
