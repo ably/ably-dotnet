@@ -1,5 +1,4 @@
-﻿using System;
-using IO.Ably.Encryption;
+﻿using IO.Ably.Encryption;
 using Xunit;
 
 namespace IO.Ably.Tests

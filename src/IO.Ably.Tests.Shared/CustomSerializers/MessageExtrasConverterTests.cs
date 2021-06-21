@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using IO.Ably.CustomSerialisers;
 using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Xunit;
 using Xunit.Abstractions;
 

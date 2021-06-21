@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
-using Xunit;
 using Xunit.Sdk;
 
 namespace IO.Ably.Tests

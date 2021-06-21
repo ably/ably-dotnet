@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
-
     internal class ConnectionConnectingState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;

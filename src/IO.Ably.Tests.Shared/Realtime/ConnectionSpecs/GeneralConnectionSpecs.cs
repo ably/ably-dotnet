@@ -1,9 +1,6 @@
-using System.Diagnostics;
-using System.IO.Pipes;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;

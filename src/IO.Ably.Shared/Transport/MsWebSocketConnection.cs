@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport

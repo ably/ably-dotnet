@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Shared.Helpers

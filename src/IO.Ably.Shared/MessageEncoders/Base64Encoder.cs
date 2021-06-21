@@ -1,7 +1,4 @@
-﻿using System;
-using IO.Ably.Rest;
-
-namespace IO.Ably.MessageEncoders
+﻿namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {

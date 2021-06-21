@@ -1,7 +1,7 @@
 using System;
-using Xunit;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
+using Xunit;
 
 namespace IO.Ably.Tests
 {

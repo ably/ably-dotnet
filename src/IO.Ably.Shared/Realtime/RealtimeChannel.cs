@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using IO.Ably.Utils;
 using Newtonsoft.Json.Linq;
-using IO.Ably.MessageEncoders;
 
 namespace IO.Ably.Realtime
 {

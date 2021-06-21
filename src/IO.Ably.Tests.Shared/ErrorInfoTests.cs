@@ -1,10 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
-    using System;
-
     public class ErrorInfoTests
     {
         [Fact]

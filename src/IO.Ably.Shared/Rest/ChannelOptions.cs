@@ -1,7 +1,3 @@
-using System;
-using System.ComponentModel.Design;
-using System.Threading.Channels;
-using IO.Ably;
 using IO.Ably.Encryption;
 
 namespace IO.Ably

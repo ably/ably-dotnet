@@ -1,11 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    using System.IO;
-
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     internal static class IoC
     {

@@ -2,19 +2,19 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using IO.Ably.AcceptanceTests;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
-using System.Threading;
-using IO.Ably.AcceptanceTests;
-using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Tests.Realtime
 {

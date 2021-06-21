@@ -1,18 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Types;
-using IO.Ably.Utils;
 using Xunit;
 using Xunit.Abstractions;
 

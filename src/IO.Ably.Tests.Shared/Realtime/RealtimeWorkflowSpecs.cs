@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -10,7 +9,6 @@ using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
-using static IO.Ably.Tests.SandboxSpecs;
 
 namespace IO.Ably.Tests.NETFramework.Realtime
 {

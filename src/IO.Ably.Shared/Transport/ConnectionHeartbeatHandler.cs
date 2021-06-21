@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably;
-using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IO.Ably.Tests
