@@ -36,6 +36,7 @@ let xUnit2 = XUnit2.run
 
 let NetStandardSolution = "src/IO.Ably.NetStandard.sln"
 let NetFrameworkSolution = "src/IO.Ably.NetFramework.sln"
+let XamarinSolution = "src/IO.Ably.Xamarin.sln"
 let buildDir = Path.combine currentDir "build"
 let srcDir = Path.combine currentDir "src"
 let testResultsDir = Path.combine buildDir "tests"
@@ -137,6 +138,21 @@ Target.create "NetFramework - Build" (fun _ ->
                 ]
          }
   MSBuild.build setParams NetFrameworkSolution
+)
+
+Target.create "Xamarin - Build" (fun _ ->
+  let setParams (defaults:MSBuildParams) =
+        { defaults with
+            Verbosity = Some(Quiet)
+            Targets = ["Build"]
+            Properties =
+                [
+                    "Optimize", "True"
+                    "DebugSymbols", "True"
+                    "Configuration", buildMode
+                ]
+         }
+  MSBuild.build setParams XamarinSolution
 )
 
 type TestRun =
@@ -394,6 +410,7 @@ Target.create "Package - Create nuget" (fun _ ->
 Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
+Target.create "Build.Xamarin" ignore
 
 Target.create "Test.NetFramework.Unit" ignore
 Target.create "Test.NetFramework.Integration" ignore
@@ -412,6 +429,10 @@ Target.create "Package" ignore
 "Prepare" 
   ==> "NetFramework - Build"
   ==> "Build.NetFramework"
+
+"Prepare" 
+  ==> "Xamarin - Build"
+  ==> "Build.Xamarin"
 
 "Prepare"
   ==> "NetStandard - Build"
