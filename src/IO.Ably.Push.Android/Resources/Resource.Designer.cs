@@ -8,9 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("IO.Ably.Resource", IsApplication=false)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("IO.Ably.Push.Android.Resource", IsApplication=false)]
 
-namespace IO.Ably
+namespace IO.Ably.Push.Android
 {
 	
 	
@@ -32,6 +32,25 @@ namespace IO.Ably
 			}
 			
 			private Attribute()
+			{
+			}
+		}
+		
+		public partial class String
+		{
+			
+			// aapt resource value: 0x7F010000
+			public static int app_name = 2130771968;
+			
+			// aapt resource value: 0x7F010001
+			public static int hello = 2130771969;
+			
+			static String()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private String()
 			{
 			}
 		}
