@@ -22,6 +22,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\DecodingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcdiffErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ChannelSubscription.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\DeviceDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IDeviceRegistrations.cs" />
