@@ -16,7 +16,7 @@ namespace IO.Ably
     public class CipherParams
     {
         /// <summary>
-        /// Algorythm.
+        /// Algorithm.
         /// </summary>
         public string Algorithm { get; }
 
@@ -60,7 +60,7 @@ namespace IO.Ably
         /// Initializes a new instance of the <see cref="CipherParams"/> class by passing all
         /// parameters, algorithm, key, mode and iv.
         /// </summary>
-        /// <param name="algorithm">ercyption algorithm.</param>
+        /// <param name="algorithm">encryption algorithm.</param>
         /// <param name="key">key.</param>
         /// <param name="mode">mode.</param>
         /// <param name="iv">iv.</param>

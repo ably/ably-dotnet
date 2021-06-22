@@ -6,7 +6,7 @@
     public class ChannelProperties
     {
         /// <summary>
-        /// contains the last channelSerial received in an ATTACHED ProtocolMesage for the channel, see RTL15a.
+        /// contains the last channelSerial received in an ATTACHED ProtocolMessage for the channel, see RTL15a.
         /// </summary>
         public string AttachSerial { get; internal set; } = null;
     }

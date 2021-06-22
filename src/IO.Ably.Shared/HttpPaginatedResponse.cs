@@ -119,7 +119,7 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// If there is a first result it will make a call to retrieve it. Othewise it will return an empty response.
+        /// If there is a first result it will make a call to retrieve it. Otherwise it will return an empty response.
         /// </summary>
         /// <returns>returns the first response in the sequence.</returns>
         public new Task<HttpPaginatedResponse> FirstAsync()

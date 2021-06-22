@@ -24,7 +24,7 @@
         Disconnected = 3,
 
         /// <summary>
-        /// The connection was suspended. Usually follewed by retry.
+        /// The connection was suspended. Usually followed by retry.
         /// </summary>
         Suspended = 4,
 

@@ -92,7 +92,7 @@ namespace IO.Ably.Realtime
         ///     However, if the channel is in or moves to the FAILED.
         ///     state before the operation succeeds, it will result in an error.
         /// </summary>
-        /// <param name="options">Options for the Getasync. For details <see cref="GetParams"/>.</param>
+        /// <param name="options">Options for the GetAsync. For details <see cref="GetParams"/>.</param>
         /// <returns>a list of PresenceMessages.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
         {

@@ -66,7 +66,7 @@ namespace IO.Ably.Realtime
         /// <remarks>
         /// In the failed state, no reconnection attempts are made automatically by the library, and clients
         /// may not publish messages. A new connection attempt can be triggered by an explicit call to
-        /// onnect() on the connection object.
+        /// Connect() on the connection object.
         /// </remarks>
         Failed = 7
     }
