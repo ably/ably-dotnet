@@ -73,7 +73,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class EmptyCommand : RealtimeCommand
     {
-        public static EmptyCommand Instance = new EmptyCommand();
+        public static readonly EmptyCommand Instance = new EmptyCommand();
 
         private EmptyCommand()
         {

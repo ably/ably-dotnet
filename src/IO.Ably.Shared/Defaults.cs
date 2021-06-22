@@ -8,7 +8,7 @@ namespace IO.Ably
 {
     internal static class Defaults
     {
-        internal static float ProtocolVersionNumber = 1.2F;
+        internal static readonly float ProtocolVersionNumber = 1.2F;
 
         internal static readonly string AssemblyVersion = GetVersion();
 

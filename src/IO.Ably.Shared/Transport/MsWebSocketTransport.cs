@@ -68,7 +68,7 @@ namespace IO.Ably.Transport
         private ILogger Logger { get; set; }
 
         internal MsWebSocketConnection _socket;
-        private CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MsWebSocketTransport"/> class.

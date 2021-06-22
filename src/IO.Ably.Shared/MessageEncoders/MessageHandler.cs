@@ -12,7 +12,7 @@ namespace IO.Ably.MessageEncoders
     {
         internal ILogger Logger { get; }
 
-        internal static Base64Encoder Base64Encoder = new Base64Encoder();
+        internal static readonly Base64Encoder Base64Encoder = new Base64Encoder();
 
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {

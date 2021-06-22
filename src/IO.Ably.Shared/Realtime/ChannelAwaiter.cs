@@ -19,8 +19,8 @@ namespace IO.Ably.Realtime
 
         private readonly CountdownTimer _timer;
         private readonly string _name;
-        private object _lock = new object();
-        private Action _onTimeout;
+        private readonly object _lock = new object();
+        private readonly Action _onTimeout;
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger = null, Action onTimeout = null)
         {

@@ -52,7 +52,7 @@ namespace IO.Ably.Realtime.Workflow
 
         internal ChannelMessageProcessor ChannelMessageProcessor { get; }
 
-        internal List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> ProtocolMessageProcessors;
+        internal readonly List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> ProtocolMessageProcessors;
 
         internal readonly Channel<RealtimeCommand> CommandChannel = Channel.CreateUnbounded<RealtimeCommand>(
             new UnboundedChannelOptions()

@@ -10,7 +10,7 @@ namespace IO.Ably.Realtime
     {
         internal ILogger Logger { get; private set; }
 
-        private IChannels<IRealtimeChannel> _channels;
+        private readonly IChannels<IRealtimeChannel> _channels;
         private readonly MessageHandler _messageHandler;
 
         public ChannelMessageProcessor(IChannels<IRealtimeChannel> channels, MessageHandler messageHandler, ILogger logger)

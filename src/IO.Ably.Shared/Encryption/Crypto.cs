@@ -201,7 +201,7 @@ namespace IO.Ably.Encryption
             return AesCipher.GenerateKey(mode, keyLength);
         }
 
-        private static RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
+        private static readonly RNGCryptoServiceProvider _secureRandom = new RNGCryptoServiceProvider();
 
         /// <summary>
         /// Generates a cryptographically random message id.
@@ -210,7 +210,7 @@ namespace IO.Ably.Encryption
         public static string GetRandomMessageId()
         {
             byte[] bytes = new byte[IdempotentGeneratedIdLength];
-            secureRandom.GetBytes(bytes);
+            _secureRandom.GetBytes(bytes);
             return bytes.ToBase64();
         }
     }

@@ -49,7 +49,7 @@ namespace IO.Ably
                 => new HttpResponseWrapper { Success = true, AblyResponse = response };
         }
 
-        private Random _random = new Random();
+        private readonly Random _random = new Random();
 
         internal Func<HttpRequestMessage, Task<HttpResponseMessage>> SendAsync { get; set; }
 
