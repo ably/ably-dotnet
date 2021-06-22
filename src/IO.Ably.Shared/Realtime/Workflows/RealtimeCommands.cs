@@ -497,7 +497,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return $"Transport Id: {TransportId}. TrasportState: {TransportState}. Exception: {Exception?.Message}";
+            return $"Transport Id: {TransportId}. TransportState: {TransportState}. Exception: {Exception?.Message}";
         }
     }
 }

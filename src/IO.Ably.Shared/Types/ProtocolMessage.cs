@@ -274,7 +274,7 @@ namespace IO.Ably.Types
                 .AppendFormat("action={0}", Action);
             if (Messages != null && Messages.Length > 0)
             {
-                text.Append(", mesasages=[ ");
+                text.Append(", messages=[ ");
                 foreach (var message in Messages)
                 {
                     text.AppendFormat("{{ name=\"{0}\"", message.Name);
