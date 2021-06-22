@@ -88,7 +88,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Http\AblyHttpOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Http\AblyRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Http\AblyResponse.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Http\MimeTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAblyHttpClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAuthCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCipher.cs" />
