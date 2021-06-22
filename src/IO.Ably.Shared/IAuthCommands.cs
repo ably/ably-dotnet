@@ -61,7 +61,7 @@ namespace IO.Ably
 
         /// <summary>
         /// Sync version for <see cref="RequestTokenAsync(TokenParams, AuthOptions)"/>.
-        /// Prefere the Async version where possible.
+        /// Prefer the Async version where possible.
         /// </summary>
         /// <param name="tokenParams">The <see cref="TokenRequest"/> data used for the token.</param>
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token.</param>

@@ -234,7 +234,7 @@ namespace IO.Ably.Types
         }
 
         /// <summary>
-        /// Convenience method to check if the current message contians a flag.
+        /// Convenience method to check if the current message contains a flag.
         /// </summary>
         /// <param name="flag">Flag we are looking for.</param>
         /// <returns>true / false.</returns>

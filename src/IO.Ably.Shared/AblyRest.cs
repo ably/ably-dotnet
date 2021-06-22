@@ -327,7 +327,7 @@ namespace IO.Ably
         /// <example>
         /// var client = new AblyRest("validkey");
         /// var stats = client..StatsAsync();
-        /// var nextPage = cliest..StatsAsync(stats.NextQuery);.
+        /// var nextPage = client..StatsAsync(stats.NextQuery);.
         /// </example>
         /// <param name="query"><see cref="PaginatedRequestParams"/> and <see cref="StatsRequestParams"/>.</param>
         /// <returns>returns a PaginatedResult of Stats.</returns>

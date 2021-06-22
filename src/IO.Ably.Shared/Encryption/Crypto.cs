@@ -186,7 +186,7 @@ namespace IO.Ably.Encryption
         }
 
         /// <summary>
-        /// Given a keylength and Cipher mode, generates a random key.
+        /// Given a keyLength and Cipher mode, generates a random key.
         /// </summary>
         /// <param name="keyLength">128 or 256 bit keys are supporter.</param>
         /// <param name="mode">optional Cipher mode.</param>

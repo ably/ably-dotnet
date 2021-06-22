@@ -15,7 +15,7 @@ namespace AblyPlatform.Cryptography
     {
         private readonly CipherParams _params;
 
-        /// <summary>Create a new instance of AesCipther.</summary>
+        /// <summary>Create a new instance of AesCipher.</summary>
         /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm.</param>
         public AesCipher(CipherParams @params)
         {

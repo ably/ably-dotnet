@@ -107,7 +107,7 @@ namespace IO.Ably.Rest
         /// <param name="limit">Maximum number of members to retrieve up to 1,000, defaults to 100.</param>
         /// <param name="clientId">optional clientId filter for the member.</param>
         /// <param name="connectionId">optional connectionId filter for the member.</param>
-        /// <returns><see cref="PaginatedResult{T}"/> of the PresenseMessages.</returns>
+        /// <returns><see cref="PaginatedResult{T}"/> of the PresenceMessages.</returns>
         Task<PaginatedResult<PresenceMessage>> GetAsync(int? limit = null, string clientId = null, string connectionId = null);
 
         /// <summary>

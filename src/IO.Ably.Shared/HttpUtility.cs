@@ -180,7 +180,7 @@ namespace IO.Ably
         /// For internal testing only.
         /// This method does not URL encode and should be considered unsafe for general use.
         /// </summary>
-        /// <returns>returs query string value based on the contents of the object.</returns>
+        /// <returns>returns query string value based on the contents of the object.</returns>
         internal string ToQueryString()
         {
             var n = _data.Count;
