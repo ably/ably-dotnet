@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
@@ -91,6 +92,8 @@ namespace IO.Ably
 
         /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
+
+        internal PushRest Push => RestClient.Push;
 
         /// <inheritdoc/>
         public string ClientId => Auth.ClientId;
