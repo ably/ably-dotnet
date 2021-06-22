@@ -402,12 +402,12 @@ namespace IO.Ably
             return Options.FallbackHosts.Contains(host);
         }
 
-        internal bool IsRetryableResponse(HttpResponseMessage response)
+        internal static bool IsRetryableResponse(HttpResponseMessage response)
         {
             return ErrorInfo.IsRetryableStatusCode(response.StatusCode);
         }
 
-        internal bool IsRetryableError(Exception ex)
+        internal static bool IsRetryableError(Exception ex)
         {
             if (ex is TaskCanceledException)
             {
@@ -509,7 +509,7 @@ namespace IO.Ably
             return new Uri($"{protocol}{host}{(Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty)}{request.Url}{GetQuery(request)}");
         }
 
-        private string GetQuery(AblyRequest request)
+        private static string GetQuery(AblyRequest request)
         {
             var query = request.QueryParameters.ToQueryString();
             if (query.IsNotEmpty())

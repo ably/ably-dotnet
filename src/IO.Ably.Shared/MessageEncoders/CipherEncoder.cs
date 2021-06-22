@@ -52,7 +52,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private string GetCipherType(string currentEncoding)
+        private static string GetCipherType(string currentEncoding)
         {
             var parts = currentEncoding.Split('+');
             if (parts.Length == 2)

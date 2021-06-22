@@ -146,7 +146,7 @@ namespace IO.Ably
             return new JArray(resource.AllowedOperations.ToArray());
         }
 
-        private string CleanUpWhiteSpace(string jsonString)
+        private static string CleanUpWhiteSpace(string jsonString)
         {
             return Regex.Replace(jsonString, @"\s+", string.Empty, RegexOptions.Singleline);
         }

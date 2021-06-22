@@ -224,7 +224,7 @@ namespace IO.Ably
             }
 
             /// <summary>Produce long multiline string with the details about the exception, including inner exceptions, if any.</summary>
-            private string GetExceptionDetails(Exception ex)
+            private static string GetExceptionDetails(Exception ex)
             {
                 try
                 {
