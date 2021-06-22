@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 using IO.Ably.Encryption;
 
 namespace IO.Ably.Push
@@ -9,6 +11,7 @@ namespace IO.Ably.Push
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
+
         public string ClientId { get; }
 
         private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
@@ -28,9 +31,39 @@ namespace IO.Ably.Push
             SendErrorIntent("PUSH_DEACTIVATE", reason); // TODO: Put intent names in consts
         }
 
-        private void ValidateRegistration()
+        private async Task ValidateRegistration()
         {
-            throw new System.NotImplementedException();
+            // TODO: See if I need to get Ably from some kind of context
+            var presentClientId = _restClient.Auth.ClientId;
+            if (presentClientId.IsNotEmpty() && presentClientId.EqualsTo(LocalDevice.ClientId) == false)
+            {
+                var error = new ErrorInfo(
+                    "Activation failed: present clientId is not compatible with existing device registration",
+                    ErrorCodes.ActivationFailedClientIdMismatch,
+                    HttpStatusCode.BadRequest);
+
+                // When calling Handle event we don't want to await the operation.
+                // I'm sure there is a better way to do it.
+                _ = HandleEvent(new SyncRegistrationFailed(error));
+            }
+
+            try
+            {
+                await _restClient.Push.Admin.DeviceRegistrations.SaveAsync(LocalDevice);
+
+                // TODO: SetClientId from returned devices in case it has been set differently
+                _ = HandleEvent(new RegistrationSynced());
+            }
+            catch (AblyException e)
+            {
+                // TODO: Log
+                _ = HandleEvent(new SyncRegistrationFailed(e.ErrorInfo));
+            }
+        }
+
+        private async Task HandleEvent(Event @event)
+        {
+            throw new NotImplementedException();
         }
 
         private void AddToEventQueue(Event @event)
@@ -40,6 +73,7 @@ namespace IO.Ably.Push
 
         private void GetRegistrationToken()
         {
+            // TODO: Will be it's own PR.
             throw new System.NotImplementedException();
         }
 
