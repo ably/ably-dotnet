@@ -103,5 +103,8 @@ namespace IO.Ably
         public const int UnableToLeavePresenceChannelThatIsNotEntered = 91002;
         public const int UnableToEnterPresenceChannelMaxMemberLimitExceeded = 91003;
         public const int MemberImplicitlyLeftPresenceChannel = 91100;
+
+        // Activation State machine
+        public const int ActivationFailedClientIdMismatch = 61002;
     }
 }
