@@ -213,5 +213,19 @@ namespace IO.Ably.Encryption
             _secureRandom.GetBytes(bytes);
             return bytes.ToBase64();
         }
+
+        /// <summary>
+        /// Generates a random SHA256 hash and return a Base64 encoded string.
+        /// </summary>
+        /// <returns>Returns a random string.</returns>
+        internal static string GenerateSecret()
+        {
+            byte[] entropy = new byte[64];
+            RandomNumberGenerator.Fill(entropy);
+
+            var hasher = SHA256.Create();
+            var hash = hasher.ComputeHash(entropy);
+            return Convert.ToBase64String(hash);
+        }
     }
 }
