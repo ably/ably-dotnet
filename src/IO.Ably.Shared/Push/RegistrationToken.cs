@@ -3,7 +3,7 @@
     internal class RegistrationToken
     {
         /// <summary>
-        /// FGM or GCM for Google
+        /// FGM or GCM for Google.
         /// </summary>
         public string Type { get; set; }
 

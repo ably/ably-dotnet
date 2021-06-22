@@ -48,7 +48,8 @@ namespace IO.Ably.Push
         {
             var properties = new Dictionary<string, object>();
             properties.Add("hasError", errorInfo != null);
-            if (errorInfo != null) {
+            if (errorInfo != null)
+            {
                 properties.Add("error.message", errorInfo.Message);
                 properties.Add("error.statusCode", (int?)errorInfo.StatusCode);
                 properties.Add("error.code", errorInfo.Code);
