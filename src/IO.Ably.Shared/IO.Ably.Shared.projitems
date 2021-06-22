@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Push\IMobileDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IPushChannelSubscriptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\LocalDevice.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PersistKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdmin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\RegistrationToken.cs" />

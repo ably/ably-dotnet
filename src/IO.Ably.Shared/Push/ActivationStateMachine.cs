@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using IO.Ably.Encryption;
 
 namespace IO.Ably.Push
 {
@@ -7,17 +9,19 @@ namespace IO.Ably.Push
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
+        public string ClientId { get; }
 
         private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
         internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
         {
             _restClient = restClient;
+            ClientId = _restClient.Auth.ClientId;
             _mobileDevice = mobileDevice;
             _logger = logger;
         }
 
-        public LocalDevice LocalDevice { get; set; }
+        public LocalDevice LocalDevice { get; set; } = new LocalDevice();
 
         private void CallDeactivatedCallback(ErrorInfo reason)
         {
@@ -39,9 +43,11 @@ namespace IO.Ably.Push
             throw new System.NotImplementedException();
         }
 
-        private void CreateLocalDevice()
+        private void PersistLocalDevice(LocalDevice localDevice)
         {
-            throw new System.NotImplementedException();
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_ID, localDevice.Id, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.CLIENT_ID, localDevice.ClientId, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
         }
 
         private void SendErrorIntent(string name, ErrorInfo errorInfo)
