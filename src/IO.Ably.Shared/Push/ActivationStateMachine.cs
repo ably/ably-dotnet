@@ -144,8 +144,41 @@ namespace IO.Ably.Push
 
         private void GetRegistrationToken()
         {
-            // TODO: Will be it's own PR.
-            throw new System.NotImplementedException();
+            _mobileDevice.RequestRegistrationToken(result =>
+            {
+                if (result.IsSuccess)
+                {
+                    var token = result.Value;
+                    var previous = LocalDevice.RegistrationToken;
+                    if (previous != null)
+                    {
+                        if (previous.Token.EqualsTo(token))
+                        {
+                            return;
+                        }
+                    }
+
+                    // TODO: Log
+                    var registrationToken = new RegistrationToken(RegistrationToken.Fcm, token);
+                    LocalDevice.RegistrationToken = registrationToken;
+
+                    // TODO: What happens if this errors
+                    PersistRegistrationToken(registrationToken);
+
+                    _ = HandleEvent(new GotPushDeviceDetails());
+                }
+                else
+                {
+                    // Todo: Log
+                    _ = HandleEvent(new GettingPushDeviceDetailsFailed(result.Error));
+                }
+            });
+        }
+
+        private void PersistRegistrationToken(RegistrationToken token)
+        {
+            _mobileDevice.SetPreference(PersistKeys.Device.TOKEN_TYPE, token.Type, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.TOKEN, token.Token, PersistKeys.Device.SharedName);
         }
 
         private void PersistLocalDevice(LocalDevice localDevice)

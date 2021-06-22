@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace IO.Ably.Push
 {
@@ -41,5 +42,11 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="groupName">Group name.</param>
         void ClearPreferences(string groupName);
+
+        /// <summary>
+        /// Requests a registration token. So far used only by Android.
+        /// </summary>
+        /// <param name="callback">Action which is executed when the operation completes.</param>
+        void RequestRegistrationToken(Action<Result<string>> callback);
     }
 }
