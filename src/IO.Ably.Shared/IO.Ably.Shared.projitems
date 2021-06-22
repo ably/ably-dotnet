@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Push\ChannelSubscription.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\DeviceDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IDeviceRegistrations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\IMobileDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IPushChannelSubscriptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\LocalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdmin.cs" />
