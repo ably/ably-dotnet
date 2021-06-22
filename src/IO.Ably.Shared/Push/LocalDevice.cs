@@ -34,7 +34,7 @@ namespace IO.Ably.Push
         /// Create a new instance of localDevice with a random Id and secret.
         /// </summary>
         /// <param name="clientId">The clientId which is set on the device. Can be null.</param>
-        /// <returns>Instance of LocalDevice</returns>
+        /// <returns>Instance of LocalDevice.</returns>
         public static LocalDevice Create(string clientId)
         {
             return new LocalDevice

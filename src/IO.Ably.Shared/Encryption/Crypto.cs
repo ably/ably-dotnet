@@ -221,7 +221,8 @@ namespace IO.Ably.Encryption
         internal static string GenerateSecret()
         {
             byte[] entropy = new byte[64];
-            RandomNumberGenerator.Fill(entropy);
+            var rnd = RandomNumberGenerator.Create();
+            rnd.GetNonZeroBytes(entropy);
 
             var hasher = SHA256.Create();
             var hash = hasher.ComputeHash(entropy);
