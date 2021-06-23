@@ -171,7 +171,7 @@ namespace IO.Ably
             {
                 try
                 {
-                    var timeStamp = GetLogMessagePreifx();
+                    var timeStamp = GetLogMessagePrefix();
                     ILoggerSink loggerSink = LoggerSink;
                     if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
                     {
@@ -193,7 +193,7 @@ namespace IO.Ably
                 }
             }
 
-            public string GetLogMessagePreifx()
+            public string GetLogMessagePrefix()
             {
                 var timeStamp = Now().ToString("hh:mm:ss.fff");
                 return $"{timeStamp}";
