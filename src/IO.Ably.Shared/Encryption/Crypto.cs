@@ -215,7 +215,7 @@ namespace IO.Ably.Encryption
         }
 
         /// <summary>
-        /// Generates a random SHA256 hash and return a Base64 encoded string.
+        /// Generates a random SHA256 hash and returns a Base64 encoded string.
         /// </summary>
         /// <returns>Returns a random string.</returns>
         internal static string GenerateSecret()

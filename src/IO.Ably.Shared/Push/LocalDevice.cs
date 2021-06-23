@@ -1,5 +1,6 @@
 ﻿using System;
 using IO.Ably.Encryption;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Push
 {
@@ -17,17 +18,31 @@ namespace IO.Ably.Push
 
         internal bool IsCreated => Id.IsNotEmpty();
 
-        internal RegistrationToken GetRegistrationToken()
+        internal RegistrationToken RegistrationToken
         {
-            var recipient = Push?.Recipient;
-            if (recipient != null)
+            get
             {
-                return new RegistrationToken(
-                    (string)recipient.GetValue("transportType"),
-                    (string)recipient.GetValue("registrationToken"));
+                var recipient = Push?.Recipient;
+                if (recipient != null)
+                {
+                    return new RegistrationToken(
+                        (string)recipient.GetValue("transportType"),
+                        (string)recipient.GetValue("registrationToken"));
+                }
+
+                return null;
             }
 
-            return null;
+            set
+            {
+                if (value != null)
+                {
+                    JObject obj = new JObject();
+                    obj.Add("transportType", value.Type);
+                    obj.Add("registrationToken", value.Token);
+                    Push.Recipient = obj;
+                }
+            }
         }
 
         /// <summary>

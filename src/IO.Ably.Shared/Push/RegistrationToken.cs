@@ -2,6 +2,8 @@
 {
     internal class RegistrationToken
     {
+        public const string Fcm = "fcm";
+
         /// <summary>
         /// FGM or GCM for Google.
         /// </summary>

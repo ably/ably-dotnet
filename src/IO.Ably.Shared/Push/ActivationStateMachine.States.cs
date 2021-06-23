@@ -45,7 +45,7 @@ namespace IO.Ably.Push
                             return new WaitingForRegistrationSync(Machine, @event);
                         }
 
-                        if (device.GetRegistrationToken() != null)
+                        if (device.RegistrationToken != null)
                         {
                             Machine.AddToEventQueue(new GotPushDeviceDetails());
                         }
