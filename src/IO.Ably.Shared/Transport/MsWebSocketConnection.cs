@@ -9,7 +9,7 @@ using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
-    internal struct MessageToSend
+    internal readonly struct MessageToSend
     {
         public ArraySegment<byte> Message { get; }
 
