@@ -35,7 +35,8 @@ namespace IO.Ably.Push
         /// Deletes a preference from the mobile device if it exists.
         /// </summary>
         /// <param name="key">Preference key.</param>
-        void RemovePreference(string key);
+        /// <param name="groupName"></param>
+        void RemovePreference(string key, string groupName);
 
         /// <summary>
         /// Remove a whole group of preferences.

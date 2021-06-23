@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Android.Gms.Tasks;
 using Firebase.Messaging;
+using Xamarin.Essentials;
 
 namespace IO.Ably.Push.Android
 {
@@ -15,22 +16,22 @@ namespace IO.Ably.Push.Android
 
         public void SetPreference(string key, string value, string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Set(key, value, groupName);
         }
 
         public string GetPreference(string key, string groupName)
         {
-            throw new System.NotImplementedException();
+            return Preferences.Get(key, groupName);
         }
 
-        public void RemovePreference(string key)
+        public void RemovePreference(string key, string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Remove(key, groupName);
         }
 
         public void ClearPreferences(string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Clear(groupName);
         }
 
         public void RequestRegistrationToken(Action<Result<string>> callback)
