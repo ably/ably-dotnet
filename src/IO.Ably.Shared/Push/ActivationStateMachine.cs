@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Encryption;
@@ -8,11 +9,17 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
+        private bool _handlingEvent = false;
+        private object _handleEventsLock = new object();
+        private Queue<Event> _pendingEvents = new Queue<Event>();
+
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
 
         public string ClientId { get; }
+
+        public State CurrentState { get; private set; }
 
         private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
@@ -61,9 +68,73 @@ namespace IO.Ably.Push
             }
         }
 
-        private async Task HandleEvent(Event @event)
+        public async Task HandleEvent(Event @event)
         {
-            throw new NotImplementedException();
+            lock (_handleEventsLock)
+            {
+                if (_handlingEvent)
+                {
+                    // TODO: Log and queue
+                    _pendingEvents.Enqueue(@event);
+                    return;
+                }
+
+                _handlingEvent = true;
+            }
+
+            try
+            {
+                // Log.d(TAG, String.format("handling event %s from %s", event.getClass().getSimpleName(), current.getClass().getSimpleName()));
+                State maybeNext = await CurrentState.Transition(@event);
+                if (maybeNext == null)
+                {
+                    _pendingEvents.Enqueue(@event);
+                    PersistState();
+                    return;
+                }
+
+                CurrentState = maybeNext;
+
+                while (true)
+                {
+                    var pending = _pendingEvents.Peek();
+                    if (pending == null)
+                    {
+                        break;
+                    }
+
+                    // TODO: Log
+                    var nextState = await CurrentState.Transition(pending);
+                    if (nextState == null)
+                    {
+                        break;
+                    }
+
+                    _ = _pendingEvents.Dequeue(); // Remove the message from the queue
+                    CurrentState = nextState;
+                }
+
+                PersistState();
+            }
+            finally
+            {
+                _handlingEvent = false;
+            }
+        }
+
+        private void PersistState()
+        {
+            if (CurrentState != null && CurrentState.Persist)
+            {
+                _mobileDevice.SetPreference(PersistKeys.StateMachine.CURRENT_STATE, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
+            }
+
+            var events = _pendingEvents.ToList();
+
+            _mobileDevice.SetPreference(PersistKeys.StateMachine.PENDING_EVENTS_LENGTH, events.Count.ToString(), PersistKeys.StateMachine.SharedName);
+
+            // Saves pending events as a pipe separated list.
+            _mobileDevice.SetPreference(PersistKeys.StateMachine.PENDING_EVENTS, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
         }
 
         private void AddToEventQueue(Event @event)
