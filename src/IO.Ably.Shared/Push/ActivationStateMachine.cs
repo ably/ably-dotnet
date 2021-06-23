@@ -217,5 +217,87 @@ namespace IO.Ably.Push
         {
             SendErrorIntent("PUSH_ACTIVATE", reason);
         }
+
+        /// <summary>
+        /// De-registers the current device.
+        /// </summary>
+        private async Task Deregister()
+        {
+            // Make sure the call is not completed synchronously
+            Task.Yield();
+
+            try
+            {
+                await _restClient.Push.Admin.DeviceRegistrations.RemoveAsync(LocalDevice.Id);
+                _ = HandleEvent(new Deregistered());
+            }
+            catch (AblyException e)
+            {
+                // Log
+                _ = HandleEvent(new DeregistrationFailed(e.ErrorInfo));
+            }
+        }
+
+        private async Task UpdateRegistration(DeviceDetails details)
+        {
+            try
+            {
+                await _restClient.Push.Admin.PatchDeviceRecipient(details);
+                _ = HandleEvent(new RegistrationSynced());
+            }
+            catch (AblyException ex)
+            {
+                _ = HandleEvent(new SyncRegistrationFailed(ex.ErrorInfo));
+            }
+        }
+
+        private LocalDevice LoadPersistedLocalDevice()
+        {
+            string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
+
+            var localDevice = new LocalDevice();
+            string id = GetDeviceSetting(PersistKeys.Device.DEVICE_ID);
+
+            localDevice.Id = id;
+            if (id.IsNotEmpty())
+            {
+                // Log.v(TAG, "loadPersisted(): existing deviceId found; id: " + id);
+                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DEVICE_SECRET);
+            }
+            else
+            {
+                // Log.v(TAG, "loadPersisted(): existing deviceId not found.");
+            }
+
+            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.CLIENT_ID);
+            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DEVICE_TOKEN);
+
+            var tokenType = GetDeviceSetting(PersistKeys.Device.TOKEN_TYPE);
+
+            // Log.d(TAG, "loadPersisted(): token type = " + type);
+            if (tokenType.IsNotEmpty())
+            {
+                string tokenString = GetDeviceSetting(PersistKeys.Device.TOKEN);
+
+                // Log.d(TAG, "loadPersisted(): token string = " + tokenString);
+                if (tokenString.IsNotEmpty())
+                {
+                    var token = new RegistrationToken(tokenType, tokenString);
+                    localDevice.RegistrationToken = token;
+                }
+            }
+
+            return localDevice;
+        }
+
+        private LocalDevice EnsureLocalDeviceIsLoaded()
+        {
+            if (LocalDevice.IsCreated == false)
+            {
+                LocalDevice = LoadPersistedLocalDevice();
+            }
+
+            return LocalDevice;
+        }
     }
 }
