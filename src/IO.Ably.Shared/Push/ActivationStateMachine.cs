@@ -206,5 +206,16 @@ namespace IO.Ably.Push
         {
             _mobileDevice.SendIntent(name, new Dictionary<string, object>());
         }
+
+        private void SetDeviceIdentityToken(string deviceIdentityToken)
+        {
+            LocalDevice.DeviceIdentityToken = deviceIdentityToken;
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, deviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        private void CallActivatedCallback(ErrorInfo reason)
+        {
+            SendErrorIntent("PUSH_ACTIVATE", reason);
+        }
     }
 }

@@ -153,6 +153,34 @@ namespace IO.Ably.Push
 
             public override async Task<State> Transition(Event @event)
             {
+                switch (@event)
+                {
+                    case CalledActivate _:
+                        return this;
+                    case GotDeviceRegistration registrationEvent:
+                        Machine.SetDeviceIdentityToken(registrationEvent.DeviceIdentityToken);
+                        Machine.CallActivatedCallback(null);
+                        return new WaitingForNewPushDeviceDetails(Machine);
+                    case GettingDeviceRegistrationFailed failedEvent:
+                        Machine.CallActivatedCallback(failedEvent.Reason);
+                        return new NotActivated(Machine);
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public sealed class WaitingForNewPushDeviceDetails : State
+        {
+            public override bool Persist => true;
+
+            public WaitingForNewPushDeviceDetails(ActivationStateMachine machine)
+                : base(machine)
+            {
+            }
+
+            public override async Task<State> Transition(Event @event)
+            {
                 throw new NotImplementedException();
             }
         }
