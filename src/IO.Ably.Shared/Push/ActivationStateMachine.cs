@@ -299,5 +299,11 @@ namespace IO.Ably.Push
 
             return LocalDevice;
         }
+
+        private void ResetDevice()
+        {
+            _mobileDevice.ClearPreferences(PersistKeys.Device.SharedName);
+            LocalDevice = new LocalDevice();
+        }
     }
 }

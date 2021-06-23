@@ -219,7 +219,21 @@ namespace IO.Ably.Push
 
             public override async Task<State> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledDeactivate _:
+                        return this;
+                    case Deregistered _:
+
+                        Machine.ResetDevice();
+                        Machine.CallDeactivatedCallback(null);
+                        return new NotActivated(Machine);
+                    case DeregistrationFailed failed:
+                        Machine.CallDeactivatedCallback(failed.Reason);
+                        return _previousState;
+                    default:
+                        return null;
+                }
             }
         }
 
