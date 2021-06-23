@@ -181,6 +181,44 @@ namespace IO.Ably.Push
 
             public override async Task<State> Transition(Event @event)
             {
+                switch (@event)
+                {
+                    case CalledActivate _:
+                        Machine.CallActivatedCallback(null);
+                        return this;
+                    case CalledDeactivate _:
+                        // We don't want to wait for the call to complete
+                        // which is why I'm not awaiting it.
+                        _ = Machine.Deregister();
+
+                        return new WaitingForDeregistration(Machine, this);
+                    case GotPushDeviceDetails _:
+                        // Note: I don't fully understand why we do this.
+                        var device = Machine.EnsureLocalDeviceIsLoaded();
+
+                        _ = Machine.UpdateRegistration(device);
+
+                        return new WaitingForRegistrationSync(Machine, @event);
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public sealed class WaitingForDeregistration : State
+        {
+            public override bool Persist => false;
+
+            private State _previousState;
+
+            public WaitingForDeregistration(ActivationStateMachine machine, State previousState)
+                : base(machine)
+            {
+                _previousState = previousState;
+            }
+
+            public override async Task<State> Transition(Event @event)
+            {
                 throw new NotImplementedException();
             }
         }
