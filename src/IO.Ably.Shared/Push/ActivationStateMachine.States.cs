@@ -99,7 +99,6 @@ namespace IO.Ably.Push
 
                         var ably = Machine._restClient; // TODO: Check if there is an instance when Ably is not set. In which case Java set queues GettingDeviceRegistrationFailed
 
-                        // TODO: Make async
                         try
                         {
                             var registeredDevice = await ably.Push.Admin.RegisterDevice(device);
