@@ -305,5 +305,10 @@ namespace IO.Ably.Push
             _mobileDevice.ClearPreferences(PersistKeys.Device.SharedName);
             LocalDevice = new LocalDevice();
         }
+
+        private void CallSyncRegistrationFailedCallback(ErrorInfo reason)
+        {
+            SendErrorIntent("PUSH_UPDATE_FAILED", reason);
+        }
     }
 }

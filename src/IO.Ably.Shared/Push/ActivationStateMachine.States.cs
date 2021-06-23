@@ -242,12 +242,63 @@ namespace IO.Ably.Push
         {
             public override bool Persist => false;
 
-            private ActivationStateMachine.Event _fromEvent;
+            private Event _fromEvent;
 
             public WaitingForRegistrationSync(ActivationStateMachine machine, Event fromEvent)
                 : base(machine)
             {
                 _fromEvent = fromEvent;
+            }
+
+            public override async Task<State> Transition(Event @event)
+            {
+                switch (@event)
+                {
+                    case CalledActivate _ when _fromEvent is CalledActivate:
+                        // Don't handle; there's a CalledActivate ongoing already, so this one should
+                        // be enqueued for when that one finishes.
+                        return null;
+
+                    case CalledActivate _:
+                        Machine.CallActivatedCallback(null);
+                        return this;
+
+                    case RegistrationSynced _:
+                        if (_fromEvent is CalledActivate)
+                        {
+                            Machine.CallActivatedCallback(null);
+                        }
+
+                        return new WaitingForNewPushDeviceDetails(Machine);
+
+                    case SyncRegistrationFailed failed:
+                        // TODO: Here we could try to recover ourselves if the error is e. g.
+                        // a networking error. Just notify the user for now.
+                        ErrorInfo reason = failed.Reason;
+                        if (_fromEvent is CalledActivate)
+                        {
+                            Machine.CallActivatedCallback(reason);
+                        }
+                        else
+                        {
+                            Machine.CallSyncRegistrationFailedCallback(reason);
+                        }
+
+                        return new AfterRegistrationSyncFailed(Machine);
+
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public sealed class AfterRegistrationSyncFailed : State
+        {
+            public override bool Persist => true;
+
+            public AfterRegistrationSyncFailed(ActivationStateMachine machine)
+                : base(machine)
+            {
             }
 
             public override async Task<State> Transition(Event @event)
