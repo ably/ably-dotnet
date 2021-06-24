@@ -31,6 +31,7 @@ namespace IO.Ably.Push
         public IDeviceRegistrations DeviceRegistrations => this;
 
         /// <summary>
+        /// Register a new device
         /// The public api doesn't expose this method but it's much easier to put it here than to manually call it when needed.
         /// </summary>
         /// <param name="details">Device details needed for registration.</param>
@@ -49,6 +50,26 @@ namespace IO.Ably.Push
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Update device recipient information
+        /// The public api doesn't expose this method but it's much easier to put it here than to manually call it when needed.
+        /// </summary>
+        /// <param name="details">Device details which contain the update.</param>
+        /// <returns>Updated device.</returns>
+        internal async Task PatchDeviceRecipient(DeviceDetails details)
+        {
+            var body = JObject.FromObject(new
+            {
+                push = new { recipient = details.Push.Recipient },
+            });
+
+            var request = _restClient.CreateRequest($"/push/deviceRegistrations/{details.Id}", new HttpMethod("PATCH"));
+            request.PostData = body;
+            var result = await _restClient.ExecuteRequest(request);
+
+            // TODO: Throw if result if failed
         }
 
         /// <summary>
