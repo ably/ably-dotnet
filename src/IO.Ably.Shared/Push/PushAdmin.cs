@@ -31,6 +31,27 @@ namespace IO.Ably.Push
         public IDeviceRegistrations DeviceRegistrations => this;
 
         /// <summary>
+        /// The public api doesn't expose this method but it's much easier to put it here than to manually call it when needed.
+        /// </summary>
+        /// <param name="details">Device details needed for registration.</param>
+        /// <returns>Updated device.</returns>
+        internal async Task<LocalDevice> RegisterDevice(DeviceDetails details)
+        {
+            // TODO: Add validation.
+            // TODO: Add fullwait parameter.
+            var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
+            request.PostData = details;
+            var result = await _restClient.ExecuteRequest<LocalDevice>(request);
+
+            if (result == null)
+            {
+                throw new AblyException("Failed to register device", 40000);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Publish a push notification message.
         /// </summary>
         /// <param name="recipient">Recipient. TODO: When format is know, update to strongly typed object.</param>
