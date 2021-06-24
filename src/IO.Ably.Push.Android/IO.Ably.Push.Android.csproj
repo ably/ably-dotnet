@@ -235,6 +235,10 @@
           <HintPath>..\packages\Xamarin.AndroidX.ViewPager.1.0.0.1\lib\monoandroid90\Xamarin.AndroidX.ViewPager.dll</HintPath>
           <Private>True</Private>
         </Reference>
+        <Reference Include="Xamarin.Essentials, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\packages\Xamarin.Essentials.1.6.1\lib\monoandroid90\Xamarin.Essentials.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
         <Reference Include="Xamarin.Firebase.Annotations, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\packages\Xamarin.Firebase.Annotations.116.0.0\lib\monoandroid90\Xamarin.Firebase.Annotations.dll</HintPath>
           <Private>True</Private>

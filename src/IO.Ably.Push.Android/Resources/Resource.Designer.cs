@@ -39,46 +39,73 @@ namespace IO.Ably.Push.Android
 			public static int colorScheme = 2130771971;
 			
 			// aapt resource value: 0x7F010004
-			public static int font = 2130771972;
+			public static int coordinatorLayoutStyle = 2130771972;
 			
 			// aapt resource value: 0x7F010005
-			public static int fontProviderAuthority = 2130771973;
+			public static int font = 2130771973;
 			
 			// aapt resource value: 0x7F010006
-			public static int fontProviderCerts = 2130771974;
+			public static int fontProviderAuthority = 2130771974;
 			
 			// aapt resource value: 0x7F010007
-			public static int fontProviderFetchStrategy = 2130771975;
+			public static int fontProviderCerts = 2130771975;
 			
 			// aapt resource value: 0x7F010008
-			public static int fontProviderFetchTimeout = 2130771976;
+			public static int fontProviderFetchStrategy = 2130771976;
 			
 			// aapt resource value: 0x7F010009
-			public static int fontProviderPackage = 2130771977;
+			public static int fontProviderFetchTimeout = 2130771977;
 			
 			// aapt resource value: 0x7F01000A
-			public static int fontProviderQuery = 2130771978;
+			public static int fontProviderPackage = 2130771978;
 			
 			// aapt resource value: 0x7F01000B
-			public static int fontStyle = 2130771979;
+			public static int fontProviderQuery = 2130771979;
 			
 			// aapt resource value: 0x7F01000C
-			public static int fontVariationSettings = 2130771980;
+			public static int fontStyle = 2130771980;
 			
 			// aapt resource value: 0x7F01000D
-			public static int fontWeight = 2130771981;
+			public static int fontVariationSettings = 2130771981;
 			
 			// aapt resource value: 0x7F01000E
-			public static int imageAspectRatio = 2130771982;
+			public static int fontWeight = 2130771982;
 			
 			// aapt resource value: 0x7F01000F
-			public static int imageAspectRatioAdjust = 2130771983;
+			public static int imageAspectRatio = 2130771983;
 			
 			// aapt resource value: 0x7F010010
-			public static int scopeUris = 2130771984;
+			public static int imageAspectRatioAdjust = 2130771984;
 			
 			// aapt resource value: 0x7F010011
-			public static int ttcIndex = 2130771985;
+			public static int keylines = 2130771985;
+			
+			// aapt resource value: 0x7F010012
+			public static int layout_anchor = 2130771986;
+			
+			// aapt resource value: 0x7F010013
+			public static int layout_anchorGravity = 2130771987;
+			
+			// aapt resource value: 0x7F010014
+			public static int layout_behavior = 2130771988;
+			
+			// aapt resource value: 0x7F010015
+			public static int layout_dodgeInsetEdges = 2130771989;
+			
+			// aapt resource value: 0x7F010016
+			public static int layout_insetEdge = 2130771990;
+			
+			// aapt resource value: 0x7F010017
+			public static int layout_keyline = 2130771991;
+			
+			// aapt resource value: 0x7F010018
+			public static int scopeUris = 2130771992;
+			
+			// aapt resource value: 0x7F010019
+			public static int statusBarBackground = 2130771993;
+			
+			// aapt resource value: 0x7F01001A
+			public static int ttcIndex = 2130771994;
 			
 			static Attribute()
 			{
@@ -100,43 +127,61 @@ namespace IO.Ably.Push.Android
 			public static int androidx_core_secondary_text_default_material_light = 2130837505;
 			
 			// aapt resource value: 0x7F020002
-			public static int common_google_signin_btn_text_dark = 2130837506;
+			public static int browser_actions_bg_grey = 2130837506;
 			
 			// aapt resource value: 0x7F020003
-			public static int common_google_signin_btn_text_dark_default = 2130837507;
+			public static int browser_actions_divider_color = 2130837507;
 			
 			// aapt resource value: 0x7F020004
-			public static int common_google_signin_btn_text_dark_disabled = 2130837508;
+			public static int browser_actions_text_color = 2130837508;
 			
 			// aapt resource value: 0x7F020005
-			public static int common_google_signin_btn_text_dark_focused = 2130837509;
+			public static int browser_actions_title_color = 2130837509;
 			
 			// aapt resource value: 0x7F020006
-			public static int common_google_signin_btn_text_dark_pressed = 2130837510;
+			public static int common_google_signin_btn_text_dark = 2130837510;
 			
 			// aapt resource value: 0x7F020007
-			public static int common_google_signin_btn_text_light = 2130837511;
+			public static int common_google_signin_btn_text_dark_default = 2130837511;
 			
 			// aapt resource value: 0x7F020008
-			public static int common_google_signin_btn_text_light_default = 2130837512;
+			public static int common_google_signin_btn_text_dark_disabled = 2130837512;
 			
 			// aapt resource value: 0x7F020009
-			public static int common_google_signin_btn_text_light_disabled = 2130837513;
+			public static int common_google_signin_btn_text_dark_focused = 2130837513;
 			
 			// aapt resource value: 0x7F02000A
-			public static int common_google_signin_btn_text_light_focused = 2130837514;
+			public static int common_google_signin_btn_text_dark_pressed = 2130837514;
 			
 			// aapt resource value: 0x7F02000B
-			public static int common_google_signin_btn_text_light_pressed = 2130837515;
+			public static int common_google_signin_btn_text_light = 2130837515;
 			
 			// aapt resource value: 0x7F02000C
-			public static int common_google_signin_btn_tint = 2130837516;
+			public static int common_google_signin_btn_text_light_default = 2130837516;
 			
 			// aapt resource value: 0x7F02000D
-			public static int notification_action_color_filter = 2130837517;
+			public static int common_google_signin_btn_text_light_disabled = 2130837517;
 			
 			// aapt resource value: 0x7F02000E
-			public static int notification_icon_bg_color = 2130837518;
+			public static int common_google_signin_btn_text_light_focused = 2130837518;
+			
+			// aapt resource value: 0x7F02000F
+			public static int common_google_signin_btn_text_light_pressed = 2130837519;
+			
+			// aapt resource value: 0x7F020010
+			public static int common_google_signin_btn_tint = 2130837520;
+			
+			// aapt resource value: 0x7F020011
+			public static int notification_action_color_filter = 2130837521;
+			
+			// aapt resource value: 0x7F020012
+			public static int notification_icon_bg_color = 2130837522;
+			
+			// aapt resource value: 0x7F020013
+			public static int ripple_material_light = 2130837523;
+			
+			// aapt resource value: 0x7F020014
+			public static int secondary_text_default_material_light = 2130837524;
 			
 			static Color()
 			{
@@ -152,70 +197,76 @@ namespace IO.Ably.Push.Android
 		{
 			
 			// aapt resource value: 0x7F030000
-			public static int compat_button_inset_horizontal_material = 2130903040;
+			public static int browser_actions_context_menu_max_width = 2130903040;
 			
 			// aapt resource value: 0x7F030001
-			public static int compat_button_inset_vertical_material = 2130903041;
+			public static int browser_actions_context_menu_min_padding = 2130903041;
 			
 			// aapt resource value: 0x7F030002
-			public static int compat_button_padding_horizontal_material = 2130903042;
+			public static int compat_button_inset_horizontal_material = 2130903042;
 			
 			// aapt resource value: 0x7F030003
-			public static int compat_button_padding_vertical_material = 2130903043;
+			public static int compat_button_inset_vertical_material = 2130903043;
 			
 			// aapt resource value: 0x7F030004
-			public static int compat_control_corner_material = 2130903044;
+			public static int compat_button_padding_horizontal_material = 2130903044;
 			
 			// aapt resource value: 0x7F030005
-			public static int compat_notification_large_icon_max_height = 2130903045;
+			public static int compat_button_padding_vertical_material = 2130903045;
 			
 			// aapt resource value: 0x7F030006
-			public static int compat_notification_large_icon_max_width = 2130903046;
+			public static int compat_control_corner_material = 2130903046;
 			
 			// aapt resource value: 0x7F030007
-			public static int notification_action_icon_size = 2130903047;
+			public static int compat_notification_large_icon_max_height = 2130903047;
 			
 			// aapt resource value: 0x7F030008
-			public static int notification_action_text_size = 2130903048;
+			public static int compat_notification_large_icon_max_width = 2130903048;
 			
 			// aapt resource value: 0x7F030009
-			public static int notification_big_circle_margin = 2130903049;
+			public static int notification_action_icon_size = 2130903049;
 			
 			// aapt resource value: 0x7F03000A
-			public static int notification_content_margin_start = 2130903050;
+			public static int notification_action_text_size = 2130903050;
 			
 			// aapt resource value: 0x7F03000B
-			public static int notification_large_icon_height = 2130903051;
+			public static int notification_big_circle_margin = 2130903051;
 			
 			// aapt resource value: 0x7F03000C
-			public static int notification_large_icon_width = 2130903052;
+			public static int notification_content_margin_start = 2130903052;
 			
 			// aapt resource value: 0x7F03000D
-			public static int notification_main_column_padding_top = 2130903053;
+			public static int notification_large_icon_height = 2130903053;
 			
 			// aapt resource value: 0x7F03000E
-			public static int notification_media_narrow_margin = 2130903054;
+			public static int notification_large_icon_width = 2130903054;
 			
 			// aapt resource value: 0x7F03000F
-			public static int notification_right_icon_size = 2130903055;
+			public static int notification_main_column_padding_top = 2130903055;
 			
 			// aapt resource value: 0x7F030010
-			public static int notification_right_side_padding_top = 2130903056;
+			public static int notification_media_narrow_margin = 2130903056;
 			
 			// aapt resource value: 0x7F030011
-			public static int notification_small_icon_background_padding = 2130903057;
+			public static int notification_right_icon_size = 2130903057;
 			
 			// aapt resource value: 0x7F030012
-			public static int notification_small_icon_size_as_large = 2130903058;
+			public static int notification_right_side_padding_top = 2130903058;
 			
 			// aapt resource value: 0x7F030013
-			public static int notification_subtext_size = 2130903059;
+			public static int notification_small_icon_background_padding = 2130903059;
 			
 			// aapt resource value: 0x7F030014
-			public static int notification_top_pad = 2130903060;
+			public static int notification_small_icon_size_as_large = 2130903060;
 			
 			// aapt resource value: 0x7F030015
-			public static int notification_top_pad_large_text = 2130903061;
+			public static int notification_subtext_size = 2130903061;
+			
+			// aapt resource value: 0x7F030016
+			public static int notification_top_pad = 2130903062;
+			
+			// aapt resource value: 0x7F030017
+			public static int notification_top_pad_large_text = 2130903063;
 			
 			static Dimension()
 			{
@@ -463,118 +514,178 @@ namespace IO.Ably.Push.Android
 			public static int adjust_width = 2131034151;
 			
 			// aapt resource value: 0x7F050028
-			public static int async = 2131034152;
+			public static int all = 2131034152;
 			
 			// aapt resource value: 0x7F050029
-			public static int auto = 2131034153;
+			public static int async = 2131034153;
 			
 			// aapt resource value: 0x7F05002A
-			public static int blocking = 2131034154;
+			public static int auto = 2131034154;
 			
 			// aapt resource value: 0x7F05002B
-			public static int chronometer = 2131034155;
+			public static int blocking = 2131034155;
 			
 			// aapt resource value: 0x7F05002C
-			public static int dark = 2131034156;
+			public static int bottom = 2131034156;
 			
 			// aapt resource value: 0x7F05002D
-			public static int dialog_button = 2131034157;
-			
-			// aapt resource value: 0x7F05002E
-			public static int forever = 2131034158;
-			
-			// aapt resource value: 0x7F05002F
-			public static int icon = 2131034159;
+			public static int browser_actions_header_text = 2131034157;
 			
 			// aapt resource value: 0x7F050030
-			public static int icon_group = 2131034160;
+			public static int browser_actions_menu_items = 2131034160;
+			
+			// aapt resource value: 0x7F05002E
+			public static int browser_actions_menu_item_icon = 2131034158;
+			
+			// aapt resource value: 0x7F05002F
+			public static int browser_actions_menu_item_text = 2131034159;
 			
 			// aapt resource value: 0x7F050031
-			public static int icon_only = 2131034161;
+			public static int browser_actions_menu_view = 2131034161;
 			
 			// aapt resource value: 0x7F050032
-			public static int info = 2131034162;
+			public static int center = 2131034162;
 			
 			// aapt resource value: 0x7F050033
-			public static int italic = 2131034163;
+			public static int center_horizontal = 2131034163;
 			
 			// aapt resource value: 0x7F050034
-			public static int light = 2131034164;
+			public static int center_vertical = 2131034164;
 			
 			// aapt resource value: 0x7F050035
-			public static int line1 = 2131034165;
+			public static int chronometer = 2131034165;
 			
 			// aapt resource value: 0x7F050036
-			public static int line3 = 2131034166;
+			public static int clip_horizontal = 2131034166;
 			
 			// aapt resource value: 0x7F050037
-			public static int none = 2131034167;
+			public static int clip_vertical = 2131034167;
 			
 			// aapt resource value: 0x7F050038
-			public static int normal = 2131034168;
+			public static int dark = 2131034168;
 			
 			// aapt resource value: 0x7F050039
-			public static int notification_background = 2131034169;
+			public static int dialog_button = 2131034169;
 			
 			// aapt resource value: 0x7F05003A
-			public static int notification_main_column = 2131034170;
+			public static int end = 2131034170;
 			
 			// aapt resource value: 0x7F05003B
-			public static int notification_main_column_container = 2131034171;
+			public static int fill = 2131034171;
 			
 			// aapt resource value: 0x7F05003C
-			public static int right_icon = 2131034172;
+			public static int fill_horizontal = 2131034172;
 			
 			// aapt resource value: 0x7F05003D
-			public static int right_side = 2131034173;
+			public static int fill_vertical = 2131034173;
 			
 			// aapt resource value: 0x7F05003E
-			public static int standard = 2131034174;
+			public static int forever = 2131034174;
 			
 			// aapt resource value: 0x7F05003F
-			public static int tag_accessibility_actions = 2131034175;
+			public static int icon = 2131034175;
 			
 			// aapt resource value: 0x7F050040
-			public static int tag_accessibility_clickable_spans = 2131034176;
+			public static int icon_group = 2131034176;
 			
 			// aapt resource value: 0x7F050041
-			public static int tag_accessibility_heading = 2131034177;
+			public static int icon_only = 2131034177;
 			
 			// aapt resource value: 0x7F050042
-			public static int tag_accessibility_pane_title = 2131034178;
+			public static int info = 2131034178;
 			
 			// aapt resource value: 0x7F050043
-			public static int tag_screen_reader_focusable = 2131034179;
+			public static int italic = 2131034179;
 			
 			// aapt resource value: 0x7F050044
-			public static int tag_transition_group = 2131034180;
+			public static int left = 2131034180;
 			
 			// aapt resource value: 0x7F050045
-			public static int tag_unhandled_key_event_manager = 2131034181;
+			public static int light = 2131034181;
 			
 			// aapt resource value: 0x7F050046
-			public static int tag_unhandled_key_listeners = 2131034182;
+			public static int line1 = 2131034182;
 			
 			// aapt resource value: 0x7F050047
-			public static int text = 2131034183;
+			public static int line3 = 2131034183;
 			
 			// aapt resource value: 0x7F050048
-			public static int text2 = 2131034184;
+			public static int none = 2131034184;
 			
 			// aapt resource value: 0x7F050049
-			public static int time = 2131034185;
+			public static int normal = 2131034185;
 			
 			// aapt resource value: 0x7F05004A
-			public static int title = 2131034186;
+			public static int notification_background = 2131034186;
 			
 			// aapt resource value: 0x7F05004B
-			public static int view_tree_lifecycle_owner = 2131034187;
+			public static int notification_main_column = 2131034187;
 			
 			// aapt resource value: 0x7F05004C
-			public static int view_tree_view_model_store_owner = 2131034188;
+			public static int notification_main_column_container = 2131034188;
 			
 			// aapt resource value: 0x7F05004D
-			public static int wide = 2131034189;
+			public static int right = 2131034189;
+			
+			// aapt resource value: 0x7F05004E
+			public static int right_icon = 2131034190;
+			
+			// aapt resource value: 0x7F05004F
+			public static int right_side = 2131034191;
+			
+			// aapt resource value: 0x7F050050
+			public static int standard = 2131034192;
+			
+			// aapt resource value: 0x7F050051
+			public static int start = 2131034193;
+			
+			// aapt resource value: 0x7F050052
+			public static int tag_accessibility_actions = 2131034194;
+			
+			// aapt resource value: 0x7F050053
+			public static int tag_accessibility_clickable_spans = 2131034195;
+			
+			// aapt resource value: 0x7F050054
+			public static int tag_accessibility_heading = 2131034196;
+			
+			// aapt resource value: 0x7F050055
+			public static int tag_accessibility_pane_title = 2131034197;
+			
+			// aapt resource value: 0x7F050056
+			public static int tag_screen_reader_focusable = 2131034198;
+			
+			// aapt resource value: 0x7F050057
+			public static int tag_transition_group = 2131034199;
+			
+			// aapt resource value: 0x7F050058
+			public static int tag_unhandled_key_event_manager = 2131034200;
+			
+			// aapt resource value: 0x7F050059
+			public static int tag_unhandled_key_listeners = 2131034201;
+			
+			// aapt resource value: 0x7F05005A
+			public static int text = 2131034202;
+			
+			// aapt resource value: 0x7F05005B
+			public static int text2 = 2131034203;
+			
+			// aapt resource value: 0x7F05005C
+			public static int time = 2131034204;
+			
+			// aapt resource value: 0x7F05005D
+			public static int title = 2131034205;
+			
+			// aapt resource value: 0x7F05005E
+			public static int top = 2131034206;
+			
+			// aapt resource value: 0x7F05005F
+			public static int view_tree_lifecycle_owner = 2131034207;
+			
+			// aapt resource value: 0x7F050060
+			public static int view_tree_view_model_store_owner = 2131034208;
+			
+			// aapt resource value: 0x7F050061
+			public static int wide = 2131034209;
 			
 			static Id()
 			{
@@ -609,25 +720,31 @@ namespace IO.Ably.Push.Android
 		{
 			
 			// aapt resource value: 0x7F070000
-			public static int custom_dialog = 2131165184;
+			public static int browser_actions_context_menu_page = 2131165184;
 			
 			// aapt resource value: 0x7F070001
-			public static int notification_action = 2131165185;
+			public static int browser_actions_context_menu_row = 2131165185;
 			
 			// aapt resource value: 0x7F070002
-			public static int notification_action_tombstone = 2131165186;
+			public static int custom_dialog = 2131165186;
 			
 			// aapt resource value: 0x7F070003
-			public static int notification_template_custom_big = 2131165187;
+			public static int notification_action = 2131165187;
 			
 			// aapt resource value: 0x7F070004
-			public static int notification_template_icon_group = 2131165188;
+			public static int notification_action_tombstone = 2131165188;
 			
 			// aapt resource value: 0x7F070005
-			public static int notification_template_part_chronometer = 2131165189;
+			public static int notification_template_custom_big = 2131165189;
 			
 			// aapt resource value: 0x7F070006
-			public static int notification_template_part_time = 2131165190;
+			public static int notification_template_icon_group = 2131165190;
+			
+			// aapt resource value: 0x7F070007
+			public static int notification_template_part_chronometer = 2131165191;
+			
+			// aapt resource value: 0x7F070008
+			public static int notification_template_part_time = 2131165192;
 			
 			static Layout()
 			{
@@ -742,6 +859,9 @@ namespace IO.Ably.Push.Android
 			// aapt resource value: 0x7F090006
 			public static int Widget_Compat_NotificationActionText = 2131296262;
 			
+			// aapt resource value: 0x7F090007
+			public static int Widget_Support_CoordinatorLayout = 2131296263;
+			
 			static Style()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -770,27 +890,69 @@ namespace IO.Ably.Push.Android
 			// aapt resource value: 0
 			public static int ColorStateListItem_android_color = 0;
 			
-			// aapt resource value: { 0x7F010005,0x7F010006,0x7F010007,0x7F010008,0x7F010009,0x7F01000A }
+			// aapt resource value: { 0x7F010011,0x7F010019 }
+			public static int[] CoordinatorLayout = new int[] {
+					2130771985,
+					2130771993};
+			
+			// aapt resource value: 0
+			public static int CoordinatorLayout_keylines = 0;
+			
+			// aapt resource value: { 0x10100B3,0x7F010012,0x7F010013,0x7F010014,0x7F010015,0x7F010016,0x7F010017 }
+			public static int[] CoordinatorLayout_Layout = new int[] {
+					16842931,
+					2130771986,
+					2130771987,
+					2130771988,
+					2130771989,
+					2130771990,
+					2130771991};
+			
+			// aapt resource value: 0
+			public static int CoordinatorLayout_Layout_android_layout_gravity = 0;
+			
+			// aapt resource value: 1
+			public static int CoordinatorLayout_Layout_layout_anchor = 1;
+			
+			// aapt resource value: 2
+			public static int CoordinatorLayout_Layout_layout_anchorGravity = 2;
+			
+			// aapt resource value: 3
+			public static int CoordinatorLayout_Layout_layout_behavior = 3;
+			
+			// aapt resource value: 4
+			public static int CoordinatorLayout_Layout_layout_dodgeInsetEdges = 4;
+			
+			// aapt resource value: 5
+			public static int CoordinatorLayout_Layout_layout_insetEdge = 5;
+			
+			// aapt resource value: 6
+			public static int CoordinatorLayout_Layout_layout_keyline = 6;
+			
+			// aapt resource value: 1
+			public static int CoordinatorLayout_statusBarBackground = 1;
+			
+			// aapt resource value: { 0x7F010006,0x7F010007,0x7F010008,0x7F010009,0x7F01000A,0x7F01000B }
 			public static int[] FontFamily = new int[] {
-					2130771973,
 					2130771974,
 					2130771975,
 					2130771976,
 					2130771977,
-					2130771978};
+					2130771978,
+					2130771979};
 			
-			// aapt resource value: { 0x1010532,0x1010533,0x101053F,0x101056F,0x1010570,0x7F010004,0x7F01000B,0x7F01000C,0x7F01000D,0x7F010011 }
+			// aapt resource value: { 0x1010532,0x1010533,0x101053F,0x101056F,0x1010570,0x7F010005,0x7F01000C,0x7F01000D,0x7F01000E,0x7F01001A }
 			public static int[] FontFamilyFont = new int[] {
 					16844082,
 					16844083,
 					16844095,
 					16844143,
 					16844144,
-					2130771972,
-					2130771979,
+					2130771973,
 					2130771980,
 					2130771981,
-					2130771985};
+					2130771982,
+					2130771994};
 			
 			// aapt resource value: 0
 			public static int FontFamilyFont_android_font = 0;
@@ -902,11 +1064,11 @@ namespace IO.Ably.Push.Android
 			// aapt resource value: 2
 			public static int GradientColor_android_type = 2;
 			
-			// aapt resource value: { 0x7F010002,0x7F01000E,0x7F01000F }
+			// aapt resource value: { 0x7F010002,0x7F01000F,0x7F010010 }
 			public static int[] LoadingImageView = new int[] {
 					2130771970,
-					2130771982,
-					2130771983};
+					2130771983,
+					2130771984};
 			
 			// aapt resource value: 0
 			public static int LoadingImageView_circleCrop = 0;
@@ -917,11 +1079,11 @@ namespace IO.Ably.Push.Android
 			// aapt resource value: 2
 			public static int LoadingImageView_imageAspectRatioAdjust = 2;
 			
-			// aapt resource value: { 0x7F010001,0x7F010003,0x7F010010 }
+			// aapt resource value: { 0x7F010001,0x7F010003,0x7F010018 }
 			public static int[] SignInButton = new int[] {
 					2130771969,
 					2130771971,
-					2130771984};
+					2130771992};
 			
 			// aapt resource value: 0
 			public static int SignInButton_buttonSize = 0;
@@ -938,6 +1100,22 @@ namespace IO.Ably.Push.Android
 			}
 			
 			private Styleable()
+			{
+			}
+		}
+		
+		public partial class Xml
+		{
+			
+			// aapt resource value: 0x7F0B0000
+			public static int xamarin_essentials_fileprovider_file_paths = 2131427328;
+			
+			static Xml()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Xml()
 			{
 			}
 		}
