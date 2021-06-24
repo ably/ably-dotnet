@@ -31,6 +31,8 @@ namespace IO.Ably.Realtime.Workflow
         // This is used for the tests so we can have a good
         // way of figuring out when processing has finished
         private volatile bool _processingCommand = false;
+        private bool _heartbeatMonitorDisconnectRequested = false;
+        private CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
 
         private AblyRealtime Client { get; }
 
@@ -63,6 +65,8 @@ namespace IO.Ably.Realtime.Workflow
 
         public RealtimeWorkflow(AblyRealtime client, ILogger logger)
         {
+            _heartbeatMonitorCancellationTokenSource = new CancellationTokenSource();
+
             Client = client;
             Client.RestClient.AblyAuth.ExecuteCommand = cmd => QueueCommand(cmd);
             Connection = client.Connection;
@@ -97,6 +101,17 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     _ = ((RealtimeWorkflow)state).Consume();
                 }, this);
+
+            _ = Task.Run(
+                async () =>
+                {
+                    while (true)
+                    {
+                        QueueCommand(HeartbeatMonitorCommand.Create(Connection.ConfirmedAliveAt, Connection.ConnectionStateTtl).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
+                        await Task.Delay(Client.Options.HeartbeatMonitorDelay, _heartbeatMonitorCancellationTokenSource.Token);
+                    }
+                },
+                _heartbeatMonitorCancellationTokenSource.Token);
         }
 
         public void QueueCommand(params RealtimeCommand[] commands)
@@ -211,11 +226,14 @@ namespace IO.Ably.Realtime.Workflow
 
                         break;
                     case CompleteWorkflowCommand _:
+                        _heartbeatMonitorCancellationTokenSource.Cancel();
                         Channels.ReleaseAll();
                         ConnectionManager.Transport?.Dispose();
                         CommandChannel.Writer.TryComplete();
                         State.Connection.CurrentStateObject?.AbortTimer();
                         return Enumerable.Empty<RealtimeCommand>();
+                    case HeartbeatMonitorCommand cmd:
+                        return await HandleHeartbeatMonitorCommand(cmd);
                     default:
                         var next = await ProcessCommandInner(command);
                         return new[]
@@ -231,6 +249,31 @@ namespace IO.Ably.Realtime.Workflow
                     Logger.Debug($"End - {command.Name}|{command.Id}");
                 }
             }
+        }
+
+        internal async Task<IEnumerable<RealtimeCommand>> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
+        {
+            if (command.ConfirmedAliveAt.HasValue)
+            {
+                TimeSpan delta = DateTimeOffset.Now - command.ConfirmedAliveAt.Value;
+                if (delta > command.ConnectionStateTtl)
+                {
+                    if (!_heartbeatMonitorDisconnectRequested)
+                    {
+                        _heartbeatMonitorDisconnectRequested = true;
+                        return new RealtimeCommand[] { SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy(command) };
+                    }
+                }
+                else
+                {
+                    if (_heartbeatMonitorDisconnectRequested)
+                    {
+                        _heartbeatMonitorDisconnectRequested = false;
+                    }
+                }
+            }
+
+            return Enumerable.Empty<RealtimeCommand>();
         }
 
         /// <summary>
