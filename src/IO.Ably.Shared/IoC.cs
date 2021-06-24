@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using IO.Ably.Push;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -39,5 +40,19 @@ namespace IO.Ably
         public static void RegisterOsNetworkStateChanged() => Platform.RegisterOsNetworkStateChanged();
 
         public static string PlatformId => Platform?.PlatformId ?? string.Empty;
+
+        public static IMobileDevice MobileDevice
+        {
+            get
+            {
+                if (Platform?.MobileDevice is null)
+                {
+                    throw new AblyException("Mobile device is not set."); // TODO: Add information about prerequisites and setup with link to guide.
+                }
+
+                return Platform.MobileDevice;
+            }
+            set => Platform.MobileDevice = value;
+        }
     }
 }
