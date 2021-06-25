@@ -27,6 +27,7 @@ namespace IO.Ably.Push
             ClientId = _restClient.Auth.ClientId;
             _mobileDevice = mobileDevice;
             _logger = logger;
+            CurrentState = new NotActivated(this);
         }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
