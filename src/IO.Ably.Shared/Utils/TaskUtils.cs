@@ -29,7 +29,7 @@ namespace IO.Ably
                         {
                             res.TrySetCanceled();
                         }
-                        else if (t.IsFaulted)
+                        else if (t.IsFaulted && t.Exception != null)
                         {
                             res.TrySetException(t.Exception);
                         }
