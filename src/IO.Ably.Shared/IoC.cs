@@ -43,15 +43,7 @@ namespace IO.Ably
 
         public static IMobileDevice MobileDevice
         {
-            get
-            {
-                if (Platform?.MobileDevice is null)
-                {
-                    throw new AblyException("Mobile device is not set."); // TODO: Add information about prerequisites and setup with link to guide.
-                }
-
-                return Platform.MobileDevice;
-            }
+            get => Platform.MobileDevice;
             set => Platform.MobileDevice = value;
         }
     }
