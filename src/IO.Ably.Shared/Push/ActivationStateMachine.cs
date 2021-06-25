@@ -262,17 +262,20 @@ namespace IO.Ably.Push
         {
             try
             {
+                Debug($"Updating device registration {details.ToJson()}");
                 await _restClient.Push.Admin.PatchDeviceRecipient(details);
                 _ = HandleEvent(new RegistrationSynced());
             }
             catch (AblyException ex)
             {
+                Error($"Error updating Registration. DeviceDetails: {details.ToJson()}", ex);
                 _ = HandleEvent(new SyncRegistrationFailed(ex.ErrorInfo));
             }
         }
 
         private LocalDevice LoadPersistedLocalDevice()
         {
+            Debug("Loading Local Device persisted state.");
             string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
 
             var localDevice = new LocalDevice();
@@ -281,12 +284,7 @@ namespace IO.Ably.Push
             localDevice.Id = id;
             if (id.IsNotEmpty())
             {
-                // Log.v(TAG, "loadPersisted(): existing deviceId found; id: " + id);
                 localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DEVICE_SECRET);
-            }
-            else
-            {
-                // Log.v(TAG, "loadPersisted(): existing deviceId not found.");
             }
 
             localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.CLIENT_ID);
@@ -294,18 +292,18 @@ namespace IO.Ably.Push
 
             var tokenType = GetDeviceSetting(PersistKeys.Device.TOKEN_TYPE);
 
-            // Log.d(TAG, "loadPersisted(): token type = " + type);
             if (tokenType.IsNotEmpty())
             {
                 string tokenString = GetDeviceSetting(PersistKeys.Device.TOKEN);
 
-                // Log.d(TAG, "loadPersisted(): token string = " + tokenString);
                 if (tokenString.IsNotEmpty())
                 {
                     var token = new RegistrationToken(tokenType, tokenString);
                     localDevice.RegistrationToken = token;
                 }
             }
+
+            Debug($"LocalDevice loaded: {localDevice.ToJson()}");
 
             return localDevice;
         }
@@ -333,6 +331,8 @@ namespace IO.Ably.Push
 
         public void LoadPersistedState()
         {
+            Debug("Loading persisted state.");
+
             var canEnter = _handleEventsLock.Wait(1000); // Arbitrary number = 1 second
 
             if (canEnter == false)
@@ -342,6 +342,8 @@ namespace IO.Ably.Push
 
             CurrentState = LoadState();
             _pendingEvents = LoadPersistedEvents();
+
+            Debug($"State loaded. CurrentState: '{CurrentState.GetType().Name}', PendingEvents: '{_pendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}'.");
 
             Queue<Event> LoadPersistedEvents()
             {
