@@ -13,7 +13,7 @@
             _restClient = restClient;
             if (IoC.MobileDevice == null)
             {
-                _stateMachine = new ActivationStateMachine(restClient, IoC.MobileDevice, logger);
+                _stateMachine = ActivationStateMachine.CreateAndLoadState(restClient, IoC.MobileDevice, logger);
             }
         }
 

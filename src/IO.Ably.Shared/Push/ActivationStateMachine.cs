@@ -21,6 +21,8 @@ namespace IO.Ably.Push
 
         private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
+        public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+
         internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
         {
             _restClient = restClient;
@@ -30,7 +32,14 @@ namespace IO.Ably.Push
             CurrentState = new NotActivated(this);
         }
 
-        public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+        public static ActivationStateMachine CreateAndLoadState(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
+        {
+            var stateMachine = new ActivationStateMachine(restClient, mobileDevice, logger);
+            stateMachine.LoadPersistedState();
+            stateMachine.EnsureLocalDeviceIsLoaded();
+
+            return stateMachine;
+        }
 
         private void CallDeactivatedCallback(ErrorInfo reason)
         {
@@ -311,6 +320,56 @@ namespace IO.Ably.Push
         private void CallSyncRegistrationFailedCallback(ErrorInfo reason)
         {
             SendErrorIntent("PUSH_UPDATE_FAILED", reason);
+        }
+
+        public void LoadPersistedState()
+        {
+            CurrentState = LoadState();
+            _pendingEvents = LoadPersistedEvents();
+
+            Queue<Event> LoadPersistedEvents()
+            {
+                var persistedEvents = _mobileDevice.GetPreference(PersistKeys.StateMachine.PENDING_EVENTS, PersistKeys.StateMachine.SharedName);
+                var eventNames = persistedEvents.Split('|');
+
+                return new Queue<Event>(eventNames.Select(ParseEvent).Where(x => x != null));
+            }
+
+            Event ParseEvent(string eventName)
+            {
+                switch (eventName)
+                {
+                    case nameof(CalledActivate):
+                        return new CalledActivate();
+                    case nameof(CalledDeactivate):
+                        return new CalledDeactivate();
+                    case nameof(GotPushDeviceDetails):
+                        return new GotPushDeviceDetails();
+                    case nameof(RegistrationSynced):
+                        return new RegistrationSynced();
+                    case nameof(Deregistered):
+                        return new Deregistered();
+                    default: return null;
+                }
+            }
+
+            State LoadState()
+            {
+                var currentState = _mobileDevice.GetPreference(PersistKeys.StateMachine.CURRENT_STATE, PersistKeys.StateMachine.SharedName);
+                switch (currentState)
+                {
+                    case nameof(NotActivated):
+                        return new NotActivated(this);
+                    case nameof(WaitingForPushDeviceDetails):
+                        return new WaitingForPushDeviceDetails(this);
+                    case nameof(WaitingForNewPushDeviceDetails):
+                        return new WaitingForNewPushDeviceDetails(this);
+                    case nameof(AfterRegistrationSyncFailed):
+                        return new AfterRegistrationSyncFailed(this);
+                    default:
+                        return new NotActivated(this);
+                }
+            }
         }
     }
 }
