@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
-        private bool _handlingEvent = false;
-        private object _handleEventsLock = new object();
+        private SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
         private Queue<Event> _pendingEvents = new Queue<Event>();
 
         private readonly AblyRest _restClient;
@@ -89,56 +89,56 @@ namespace IO.Ably.Push
 
         public async Task HandleEvent(Event @event)
         {
+            Debug($"Handling event ({@event.GetType().Name}.");
+
             await Task.Yield();
-            lock (_handleEventsLock)
-            {
-                if (_handlingEvent)
-                {
-                    // TODO: Log and queue
-                    _pendingEvents.Enqueue(@event);
-                    return;
-                }
 
-                _handlingEvent = true;
-            }
-
-            try
+            var canEnter = await _handleEventsLock.WaitAsync(1000); // Arbitrary number = 1 second
+            if (canEnter)
             {
-                // Log.d(TAG, String.format("handling event %s from %s", event.getClass().getSimpleName(), current.getClass().getSimpleName()));
-                State maybeNext = await CurrentState.Transition(@event);
-                if (maybeNext == null)
+                try
                 {
-                    _pendingEvents.Enqueue(@event);
+                    // Log.d(TAG, String.format("handling event %s from %s", event.getClass().getSimpleName(), current.getClass().getSimpleName()));
+                    State maybeNext = await CurrentState.Transition(@event);
+                    if (maybeNext == null)
+                    {
+                        _pendingEvents.Enqueue(@event);
+                        PersistState();
+                        return;
+                    }
+
+                    CurrentState = maybeNext;
+
+                    while (true)
+                    {
+                        var pending = _pendingEvents.Peek();
+                        if (pending == null)
+                        {
+                            break;
+                        }
+
+                        // TODO: Log
+                        var nextState = await CurrentState.Transition(pending);
+                        if (nextState == null)
+                        {
+                            break;
+                        }
+
+                        _ = _pendingEvents.Dequeue(); // Remove the message from the queue
+                        CurrentState = nextState;
+                    }
+
                     PersistState();
-                    return;
                 }
-
-                CurrentState = maybeNext;
-
-                while (true)
+                finally
                 {
-                    var pending = _pendingEvents.Peek();
-                    if (pending == null)
-                    {
-                        break;
-                    }
-
-                    // TODO: Log
-                    var nextState = await CurrentState.Transition(pending);
-                    if (nextState == null)
-                    {
-                        break;
-                    }
-
-                    _ = _pendingEvents.Dequeue(); // Remove the message from the queue
-                    CurrentState = nextState;
+                    _handleEventsLock.Release();
                 }
-
-                PersistState();
             }
-            finally
+            else
             {
-                _handlingEvent = false;
+                _pendingEvents.Enqueue(@event);
+                return;
             }
         }
 
@@ -333,6 +333,13 @@ namespace IO.Ably.Push
 
         public void LoadPersistedState()
         {
+            var canEnter = _handleEventsLock.Wait(1000); // Arbitrary number = 1 second
+
+            if (canEnter == false)
+            {
+                throw new AblyException("Failed to get ActivationStateMachine state lock.");
+            }
+
             CurrentState = LoadState();
             _pendingEvents = LoadPersistedEvents();
 
