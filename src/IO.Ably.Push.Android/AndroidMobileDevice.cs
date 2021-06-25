@@ -13,6 +13,16 @@ namespace IO.Ably.Push.Android
 {
     public class AndroidMobileDevice : IMobileDevice
     {
+        public static void Initialise()
+        {
+            IoC.MobileDevice = new AndroidMobileDevice(null);
+        }
+
+        public static void OnNewRegistrationToken(string token)
+        {
+            //Get Ably and the ActivationStateMachine
+        }
+
         private readonly ILogger _logger;
 
         internal AndroidMobileDevice(ILogger logger)
@@ -21,6 +31,38 @@ namespace IO.Ably.Push.Android
         }
 
         private Context Context => Application.Context;
+
+        public string DevicePlatform => "android";
+
+        public string FormFactor
+        {
+            get
+            {
+                var idiom = DeviceInfo.Idiom;
+                if(idiom == DeviceIdiom.Watch)
+                {
+                    return DeviceFormFactor.Watch;
+                }
+                if(idiom == DeviceIdiom.TV)
+                {
+                    return DeviceFormFactor.Tv;
+                }
+                if(idiom == DeviceIdiom.Tablet)
+                {
+                    return DeviceFormFactor.Tablet;
+                }
+                if(idiom == DeviceIdiom.Phone)
+                {
+                    return DeviceFormFactor.Phone;
+                }
+                if(idiom == DeviceIdiom.Desktop)
+                {
+                    return DeviceFormFactor.Desktop;
+                }
+
+                return DeviceFormFactor.Other;
+            }
+        }
 
         public void SendIntent(string name, Dictionary<string, object> extraParameters)
         {

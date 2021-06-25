@@ -49,5 +49,15 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="callback">Action which is executed when the operation completes.</param>
         void RequestRegistrationToken(Action<Result<string>> callback);
+
+        /// <summary>
+        /// Device platform i.e. Android.
+        /// </summary>
+        string DevicePlatform { get; }
+
+        /// <summary>
+        /// Device form factor.
+        /// </summary>
+        string FormFactor { get; }
     }
 }
