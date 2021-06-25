@@ -23,6 +23,10 @@ namespace IO.Ably.Push
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
 
+        private void Debug(string message) => _logger.Debug($"ActivationStateMachine: {message}");
+
+        private void Error(string message, Exception ex) => _logger.Error($"ActivationStateMachine: {message}", ex);
+
         internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
         {
             _restClient = restClient;
@@ -48,6 +52,8 @@ namespace IO.Ably.Push
 
         private async Task ValidateRegistration()
         {
+            Debug("Validating Registration");
+
             // Make sure the call is not completed synchronously
             await Task.Yield();
 
@@ -55,6 +61,9 @@ namespace IO.Ably.Push
             var presentClientId = _restClient.Auth.ClientId;
             if (presentClientId.IsNotEmpty() && presentClientId.EqualsTo(LocalDevice.ClientId) == false)
             {
+                Debug(
+                    $"Activation failed. Auth clientId '{presentClientId}' is not equal to Device clientId '{LocalDevice.ClientId}'");
+
                 var error = new ErrorInfo(
                     "Activation failed: present clientId is not compatible with existing device registration",
                     ErrorCodes.ActivationFailedClientIdMismatch,
