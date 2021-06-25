@@ -56,7 +56,11 @@ namespace IO.Ably.Push
             {
                 Id = Guid.NewGuid().ToString("D"),
                 DeviceSecret = Crypto.GenerateSecret(),
-                ClientId = clientId
+                ClientId = clientId,
+
+                // TODO: Pass mobile device in constructor instead of using static dependencies.
+                Platform = IoC.MobileDevice.DevicePlatform,
+                FormFactor = IoC.MobileDevice.FormFactor
             };
         }
     }

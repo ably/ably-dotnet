@@ -7,7 +7,7 @@ using IO.Ably.Transport;
 namespace IO.Ably
 {
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
-    internal static class IoC
+    public static class IoC
     {
         private static readonly IPlatform Platform;
 
@@ -35,12 +35,24 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// TODO.
+        /// </summary>
         public static ITransportFactory TransportFactory => Platform?.TransportFactory ?? new MsWebSocketTransport.TransportFactory();
 
+        /// <summary>
+        /// TODO.
+        /// </summary>
         public static void RegisterOsNetworkStateChanged() => Platform.RegisterOsNetworkStateChanged();
 
+        /// <summary>
+        /// TODO.
+        /// </summary>
         public static string PlatformId => Platform?.PlatformId ?? string.Empty;
 
+        /// <summary>
+        /// TODO.
+        /// </summary>
         public static IMobileDevice MobileDevice
         {
             get => Platform.MobileDevice;
