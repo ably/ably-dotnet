@@ -71,7 +71,7 @@ namespace IO.Ably
             else
             {
                 task.ContinueWith(
-                    t => handler(t.Exception.GetBaseException()),
+                    t => handler(t.Exception?.GetBaseException()),
                     TaskContinuationOptions.ExecuteSynchronously |
                     TaskContinuationOptions.OnlyOnFaulted);
             }
