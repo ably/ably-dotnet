@@ -10,8 +10,10 @@ namespace DotnetPush.ViewModels
         public AboutViewModel()
         {
             Title = "About";
-            ActivatePush = new Command(() => Ably.Push.Activate());
-            DeactivatePush = new Command(() => Ably.Push.Deactivate());
+            var pushRealtime = Ably.GetPushRealtime();
+
+            ActivatePush = new Command(() => pushRealtime.Activate());
+            DeactivatePush = new Command(() => pushRealtime.Deactivate());
         }
 
         public ICommand ActivatePush { get; }
