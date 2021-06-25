@@ -49,7 +49,7 @@ namespace IO.Ably.Push
         private async Task ValidateRegistration()
         {
             // Make sure the call is not completed synchronously
-            Task.Yield();
+            await Task.Yield();
 
             // TODO: See if I need to get Ably from some kind of context
             var presentClientId = _restClient.Auth.ClientId;
@@ -80,6 +80,7 @@ namespace IO.Ably.Push
 
         public async Task HandleEvent(Event @event)
         {
+            await Task.Yield();
             lock (_handleEventsLock)
             {
                 if (_handlingEvent)
@@ -234,7 +235,7 @@ namespace IO.Ably.Push
         private async Task Deregister()
         {
             // Make sure the call is not completed synchronously
-            Task.Yield();
+            await Task.Yield();
 
             try
             {
