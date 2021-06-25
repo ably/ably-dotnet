@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using IO.Ably.Push;
 using IO.Ably.Realtime;
 
 namespace IO.Ably

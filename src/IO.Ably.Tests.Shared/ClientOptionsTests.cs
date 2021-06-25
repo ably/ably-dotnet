@@ -1,6 +1,4 @@
-﻿using System;
-using IO.Ably.AcceptanceTests;
-using Xunit;
+﻿using Xunit;
 
 namespace IO.Ably.Tests.Shared
 {
