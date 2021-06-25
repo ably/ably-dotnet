@@ -60,9 +60,8 @@ namespace IO.Ably.Push
                     ErrorCodes.ActivationFailedClientIdMismatch,
                     HttpStatusCode.BadRequest);
 
-                // When calling Handle event we don't want to await the operation.
-                // I'm sure there is a better way to do it.
                 _ = HandleEvent(new SyncRegistrationFailed(error));
+                return;
             }
 
             try
