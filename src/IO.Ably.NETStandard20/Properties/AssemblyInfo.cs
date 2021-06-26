@@ -9,5 +9,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 #if !PACKAGE
+[assembly: InternalsVisibleTo("IO.Ably.Push.Android")]
+[assembly: InternalsVisibleTo("IO.Ably.Push.iOS")]
 [assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
 #endif

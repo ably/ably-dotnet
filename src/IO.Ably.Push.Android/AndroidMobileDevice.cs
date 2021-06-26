@@ -1,36 +1,74 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using Android.App;
+using Android.Content;
 using Android.Gms.Tasks;
+using Android.Support.V4.Content;
 using Firebase.Messaging;
+using Xamarin.Essentials;
 
 namespace IO.Ably.Push.Android
 {
     public class AndroidMobileDevice : IMobileDevice
     {
+        private readonly ILogger _logger;
+
+        internal AndroidMobileDevice(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        private Context Context => Application.Context;
+
         public void SendIntent(string name, Dictionary<string, object> extraParameters)
         {
-            throw new System.NotImplementedException();
+            if (name.IsNotEmpty())
+            {
+                throw new ArgumentException("Please provide name when sending intent.", nameof(name));
+            }
+
+            var action = "io.ably.broadcast." + name.ToLower();
+            try
+            {
+                Intent intent = new Intent(action);
+                if (extraParameters.Any())
+                {
+                    foreach (var pair in extraParameters)
+                    {
+                        intent.PutExtra(pair.Key, pair.Value.ToString());
+                    }
+                }
+
+                LocalBroadcastManager.GetInstance(Context).SendBroadcast(intent);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error sending intent {action}", e);
+                // Log
+                throw new AblyException(e);
+            }
         }
 
         public void SetPreference(string key, string value, string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Set(key, value, groupName);
         }
 
         public string GetPreference(string key, string groupName)
         {
-            throw new System.NotImplementedException();
+            return Preferences.Get(key, groupName);
         }
 
-        public void RemovePreference(string key)
+        public void RemovePreference(string key, string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Remove(key, groupName);
         }
 
         public void ClearPreferences(string groupName)
         {
-            throw new System.NotImplementedException();
+            Preferences.Clear(groupName);
         }
 
         public void RequestRegistrationToken(Action<Result<string>> callback)
@@ -45,7 +83,8 @@ namespace IO.Ably.Push.Android
             catch (Exception e)
             {
                 // TODO: Log
-                var errorInfo = new ErrorInfo($"Failed to request AndroidToken. Error: {e?.Message}.", 50000, HttpStatusCode.InternalServerError, e);
+                var errorInfo = new ErrorInfo($"Failed to request AndroidToken. Error: {e?.Message}.", 50000,
+                    HttpStatusCode.InternalServerError, e);
                 callback(Result.Fail<string>(errorInfo));
             }
         }
@@ -70,12 +109,11 @@ namespace IO.Ably.Push.Android
                 {
                     // TODO: Log
                     var exception = task.Exception;
-                    var errorInfo = new ErrorInfo($"Failed to return valid AndroidToken. Error: {exception?.Message}.", 50000, HttpStatusCode.InternalServerError, exception);
+                    var errorInfo = new ErrorInfo($"Failed to return valid AndroidToken. Error: {exception?.Message}.",
+                        50000, HttpStatusCode.InternalServerError, exception);
                     _callback(Result.Fail<string>(errorInfo));
                 }
             }
-
         }
-
     }
 }
