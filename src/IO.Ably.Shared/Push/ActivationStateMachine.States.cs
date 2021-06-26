@@ -10,7 +10,7 @@ namespace IO.Ably.Push
         {
             protected ActivationStateMachine Machine { get; }
 
-            public State(ActivationStateMachine machine)
+            protected State(ActivationStateMachine machine)
             {
                 Machine = machine;
             }
