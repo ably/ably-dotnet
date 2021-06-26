@@ -303,7 +303,18 @@ namespace IO.Ably.Push
 
             public override async Task<State> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledActivate _:
+                    case GotPushDeviceDetails _:
+                        _ = Machine.ValidateRegistration();
+                        return new WaitingForRegistrationSync(Machine, @event);
+                    case CalledDeactivate _:
+                        _ = Machine.Deregister();
+                        return new WaitingForDeregistration(Machine, this);
+                    default:
+                        return null;
+                }
             }
         }
     }

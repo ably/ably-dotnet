@@ -38,6 +38,9 @@ namespace IO.Ably.Push
 
         private async Task ValidateRegistration()
         {
+            // Make sure the call is not completed synchronously
+            Task.Yield();
+
             // TODO: See if I need to get Ably from some kind of context
             var presentClientId = _restClient.Auth.ClientId;
             if (presentClientId.IsNotEmpty() && presentClientId.EqualsTo(LocalDevice.ClientId) == false)
