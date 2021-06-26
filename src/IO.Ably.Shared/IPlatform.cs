@@ -1,4 +1,5 @@
-﻿using IO.Ably.Transport;
+﻿using IO.Ably.Push;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -17,6 +18,8 @@ namespace IO.Ably
         string PlatformId { get; }
 
         ITransportFactory TransportFactory { get; }
+
+        IMobileDevice MobileDevice { get; set; }
 
         /// <summary>
         /// This method when implemented in each Platform class includes logic to subscribe to

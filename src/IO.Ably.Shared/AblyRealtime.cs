@@ -48,6 +48,7 @@ namespace IO.Ably
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
+            Push = new PushRealtime(RestClient, Logger);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
@@ -93,7 +94,7 @@ namespace IO.Ably
         /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
 
-        internal PushRest Push => RestClient.Push;
+        internal PushRealtime Push { get; }
 
         /// <inheritdoc/>
         public string ClientId => Auth.ClientId;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using IO.Ably.Push;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -39,5 +40,11 @@ namespace IO.Ably
         public static void RegisterOsNetworkStateChanged() => Platform.RegisterOsNetworkStateChanged();
 
         public static string PlatformId => Platform?.PlatformId ?? string.Empty;
+
+        public static IMobileDevice MobileDevice
+        {
+            get => Platform.MobileDevice;
+            set => Platform.MobileDevice = value;
+        }
     }
 }

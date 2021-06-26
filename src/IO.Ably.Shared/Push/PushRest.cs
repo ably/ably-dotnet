@@ -1,7 +1,7 @@
 ﻿namespace IO.Ably.Push
 {
     /// <summary>
-    /// Push Apis for Rest and Realtime clients.
+    /// Push Apis for Rest clients.
     /// </summary>
     public class PushRest
     {
