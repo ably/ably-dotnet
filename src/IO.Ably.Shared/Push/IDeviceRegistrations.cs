@@ -29,7 +29,7 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="clientId">Optional filter by clientId. DeviceId and ClientId cannot be combined.</param>
         /// <param name="deviceId">Optional filter by deviceId. DeviceId and ClientId cannot be combined.</param>
-        /// <param name="limit">Number of restults returned. Max allowed value: 1000.</param>
+        /// <param name="limit">Number of results returned. Max allowed value: 1000.</param>
         /// <returns>A paginated list of DeviceDetails.</returns>
         Task<PaginatedResult<DeviceDetails>> List(string clientId = null, string deviceId = null, int? limit = null);
 
