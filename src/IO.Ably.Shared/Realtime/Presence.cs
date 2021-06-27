@@ -134,7 +134,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync)
         {
-            return await GetAsync(new GetParams() { WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { WaitForSync = waitForSync });
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync)
         {
-            return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { ClientId = clientId, WaitForSync = waitForSync });
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId = null, string connectionId = null, bool waitForSync = true)
         {
-            return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
 
         private async Task<bool> WaitForSyncAsync()

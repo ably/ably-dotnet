@@ -68,7 +68,7 @@ namespace IO.Ably.Transport
         private Action<ConnectionState, Exception> _handler;
 
         private readonly Channel<MessageToSend> _sendChannel = Channel.CreateUnbounded<MessageToSend>(
-            new UnboundedChannelOptions()
+            new UnboundedChannelOptions
             {
                 SingleReader = true,
                 SingleWriter = true,

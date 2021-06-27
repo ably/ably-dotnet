@@ -18,7 +18,7 @@ namespace IO.Ably
         private static JsonSerializerSettings GetJsonSettings()
         {
             JsonSerializerSettings res = new JsonSerializerSettings();
-            res.Converters = new List<JsonConverter>()
+            res.Converters = new List<JsonConverter>
             {
                 new DateTimeOffsetJsonConverter(),
                 new CapabilityJsonConverter(),

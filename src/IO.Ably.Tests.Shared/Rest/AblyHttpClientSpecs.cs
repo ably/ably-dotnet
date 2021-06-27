@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost()
         {
-            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = true });
+            var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = true });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureFalse_CreatesNonSecureRestUrlsWithDefaultRestHost()
         {
-            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = false });
+            var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = false });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions() { AddRequestIds = true }, handler);
+            var client = new AblyHttpClient(new AblyHttpOptions { AddRequestIds = true }, handler);
             var ablyRequest = new AblyRequest("/test", HttpMethod.Get);
             ablyRequest.AddHeaders(new Dictionary<string, string> { { "request_id", "custom_request_id" } });
             await client.Execute(ablyRequest);
@@ -88,7 +88,7 @@ namespace IO.Ably.Tests
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
             var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
-            ablyRequest.PostParameters = new Dictionary<string, string>() { { "test", "test" }, { "best", "best" } };
+            ablyRequest.PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } };
 
             await client.Execute(ablyRequest);
             var content = handler.LastRequest.Content;

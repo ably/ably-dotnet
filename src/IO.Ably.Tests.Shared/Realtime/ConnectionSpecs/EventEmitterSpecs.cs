@@ -575,7 +575,7 @@ namespace IO.Ably.Tests.Realtime
 
             public void DoDummyEmit(int state, string message)
             {
-                Emit(state, new TestEventEmitterArgs() { Message = message });
+                Emit(state, new TestEventEmitterArgs { Message = message });
             }
         }
     }

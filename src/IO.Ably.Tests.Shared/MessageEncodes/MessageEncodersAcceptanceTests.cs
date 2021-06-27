@@ -36,7 +36,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     yield return new object[] { new Message("string", "string"), null };
                     yield return new object[] { new Message("string", new byte[] { 1, 2, 4 }), "base64" };
-                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
+                    yield return new object[] { new Message("object", new TestObject { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
                 }
             }
 

@@ -1107,7 +1107,7 @@ namespace IO.Ably.Tests.Realtime
                 public async Task SendsChannelParamsWithAttachMessage()
                 {
                     var client = await GetConnectedClient();
-                    var channelParams = new ChannelParams() { { "test", "blah" }, { "test2", "value" } };
+                    var channelParams = new ChannelParams { { "test", "blah" }, { "test2", "value" } };
                     var channelOptions = new ChannelOptions(channelParams: channelParams);
                     var channel = await GetTestChannel(client, channelOptions: channelOptions);
                     channel.Attach();
@@ -1453,8 +1453,8 @@ namespace IO.Ably.Tests.Realtime
             public async Task SetOptions_WithSameModesAndParams_ShouldIndicateSuccessImmediately()
             {
                 var client = await GetConnectedClient(_switchBinaryOff);
-                var options = new ChannelOptions(channelParams: new ChannelParams() { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
-                var newOptions = new ChannelOptions(true, channelParams: new ChannelParams() { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
+                var options = new ChannelOptions(channelParams: new ChannelParams { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
+                var newOptions = new ChannelOptions(true, channelParams: new ChannelParams { { "test", "test" } }, modes: new ChannelModes(ChannelMode.Presence));
                 var channel = client.Channels.Get("test", options);
                 ((RealtimeChannel)channel).SetChannelState(ChannelState.Attached);
 

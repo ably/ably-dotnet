@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.Realtime
             AblyRealtime client = null;
             client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                options.TransportFactory = new TestTransportFactory()
+                options.TransportFactory = new TestTransportFactory
                 {
                     OnMessageSent = OnMessageSent,
                 };
@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.Realtime
 
             client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                options.TransportFactory = new TestTransportFactory()
+                options.TransportFactory = new TestTransportFactory
                 {
                     OnMessageSent = OnMessageSent,
                 };
