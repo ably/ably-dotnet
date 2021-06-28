@@ -245,7 +245,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             [Fact]
             [Trait("spec", "RTN7c")]
             [Trait("sandboxTest", "needed")]
-            public async Task ShouldDestroyTrasport()
+            public async Task ShouldDestroyTransport()
             {
                 var client = await GetConnectedClient();
 

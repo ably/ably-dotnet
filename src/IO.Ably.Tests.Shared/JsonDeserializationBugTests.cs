@@ -8,7 +8,7 @@ namespace Ably.Tests
     public class JsonDeserializationBugTests
     {
         [Fact(Skip = "Needs some more investigation before I can fix this.")]
-        public void ShouldPreserveTimezoneInforamtion()
+        public void ShouldPreserveTimezoneInformation()
         {
             var data = new TestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
             var convertedData = JsonHelper.Serialize(data);

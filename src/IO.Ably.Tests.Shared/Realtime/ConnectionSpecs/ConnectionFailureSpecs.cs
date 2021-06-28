@@ -198,7 +198,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14d")]
         [Trait("spec", "RTN14e")]
         [Trait("sandboxneeded", "true")]
-        public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
+        public async Task WhenTransportFails_ShouldGoFromConnectingToDisconnectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
 
@@ -237,8 +237,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             stateChanges.Select(x => x.Current).Distinct()
                 .Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Disconnected, ConnectionState.Suspended, });
-            int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
-            stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
+            int numberOfAttempts = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
+            stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttempts);
         }
 
         [Fact]

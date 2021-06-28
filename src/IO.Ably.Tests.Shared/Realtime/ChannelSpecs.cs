@@ -318,7 +318,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Attached)]
             [InlineData(ChannelState.Attaching)]
             [Trait("spec", "RTL3a")]
-            public async Task WhenConnectionFails_AttachingOrAttachedChannelsShouldTrasitionToFailedWithSameError(
+            public async Task WhenConnectionFails_AttachingOrAttachedChannelsShouldTransitionToFailedWithSameError(
                 ChannelState state)
             {
                 var (client, channel) = await GetClientAndChannel();
@@ -338,7 +338,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Attached)]
             [InlineData(ChannelState.Attaching)]
             [Trait("spec", "RTL3b")]
-            public async Task WhenConnectionIsClosed_AttachingOrAttachedChannelsShouldTrasitionToDetached(
+            public async Task WhenConnectionIsClosed_AttachingOrAttachedChannelsShouldTransitionToDetached(
                 ChannelState state)
             {
                 var (client, channel) = await GetClientAndChannel();
@@ -394,7 +394,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Attached)]
             [InlineData(ChannelState.Attaching)]
             [Trait("spec", "RTL3c")]
-            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToSuspended(
+            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTransitionToSuspended(
                 ChannelState state)
             {
                 var (client, channel) = await GetClientAndChannel();
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL5d")]
-            public async Task ShouldSendDetachMessageAndOnceDetachedReceviedShouldMigrateToDetached()
+            public async Task ShouldSendDetachMessageAndOnceDetachedReceivedShouldMigrateToDetached()
             {
                 var (client, channel) = await GetClientAndChannel();
 
@@ -798,14 +798,15 @@ namespace IO.Ably.Tests.Realtime
                     tsc.SetResult(true);
                 });
 
-                // timeout the tsc incase the detached event never happens
-                async Task Timeoutfn()
+                // timeout the tsc in case the detached event never happens
+                async Task TimeoutFn()
                 {
                     await Task.Delay(1000);
                     tsc.TrySetCanceled();
                 }
+
 #pragma warning disable 4014
-                Timeoutfn();
+                TimeoutFn();
 #pragma warning restore 4014
                 await tsc.Task;
 
@@ -1326,7 +1327,7 @@ namespace IO.Ably.Tests.Realtime
                 List<Message> receivedMessages = new List<Message>();
                 channel.Subscribe(msg => { receivedMessages.Add(msg); });
 
-                var protocolMessage = SetupTestProtocolmessage();
+                var protocolMessage = SetupTestProtocolMessage();
                 client.FakeProtocolMessageReceived(protocolMessage);
 
                 await client.ProcessCommands();
@@ -1346,7 +1347,7 @@ namespace IO.Ably.Tests.Realtime
                 List<Message> receivedMessages = new List<Message>();
                 channel.Subscribe(msg => { receivedMessages.Add(msg); });
 
-                var protocolMessage = SetupTestProtocolmessage(messages: new[]
+                var protocolMessage = SetupTestProtocolMessage(messages: new[]
                 {
                     new Message("message1", "data") { Id = "1" },
                     new Message("message2", "data") { Id = "2" },
@@ -1378,7 +1379,7 @@ namespace IO.Ably.Tests.Realtime
                 Message receivedMessage = null;
                 channel.Subscribe(msg => { receivedMessage = msg; });
 
-                var protocolMessage = SetupTestProtocolmessage(protocolMessageConId, messages: new[]
+                var protocolMessage = SetupTestProtocolMessage(protocolMessageConId, messages: new[]
                 {
                     new Message("message1", "data") { Id = "1", ConnectionId = messageConId },
                 });
@@ -1401,7 +1402,7 @@ namespace IO.Ably.Tests.Realtime
                 List<Message> receivedMessages = new List<Message>();
                 channel.Subscribe(msg => { receivedMessages.Add(msg); });
 
-                var protocolMessage = SetupTestProtocolmessage(
+                var protocolMessage = SetupTestProtocolMessage(
                     timestamp: timeStamp,
                     messages: new[]
                     {
@@ -1500,7 +1501,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            private ProtocolMessage SetupTestProtocolmessage(
+            private ProtocolMessage SetupTestProtocolMessage(
                 string connectionId = null,
                 DateTimeOffset? timestamp = null,
                 Message[] messages = null)

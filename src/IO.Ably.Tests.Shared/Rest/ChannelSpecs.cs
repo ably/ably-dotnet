@@ -57,7 +57,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "RSN3a")]
-            public void WhenChannelDoesntExist_ShouldCreateANewOne()
+            public void WhenChannelDoesNotExist_ShouldCreateANewOne()
             {
                 var channel = _client.Channels.Get("new");
                 channel.Should().NotBeNull();
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "RSN3a")]
-            public void WhenChannelAlreadyexists_ShouldReturnExistingChannel()
+            public void WhenChannelAlreadyExists_ShouldReturnExistingChannel()
             {
                 var channel = _client.Channels.Get("new");
                 var secondTime = _client.Channels.Get("new");
@@ -84,7 +84,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "RSN3c")]
-            public void WhenAccesingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
+            public void WhenAccessingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
             {
                 var channel = _client.Channels.Get("test");
                 var initialOptions = (channel as RestChannel).Options;

@@ -5,7 +5,7 @@ using Xunit.Sdk;
 
 namespace IO.Ably.Tests.Infrastructure
 {
-    public class InteropabilityMessagePayloadDataAttribute : DataAttribute
+    public class InteroperabilityMessagePayloadDataAttribute : DataAttribute
     {
         public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {

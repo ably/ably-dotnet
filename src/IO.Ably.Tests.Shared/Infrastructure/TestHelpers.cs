@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
             var success = await tsc.Task;
             if (!success)
             {
-                var msg = $"Timeout of {timeoutMs}ms exceeed.";
+                var msg = $"Timeout of {timeoutMs}ms exceeded.";
                 if (taskCount > 1)
                 {
                     msg += $" Completed {taskCount - tsc.TaskCount} of {taskCount} tasks.";

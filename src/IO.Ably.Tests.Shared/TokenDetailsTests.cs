@@ -47,9 +47,9 @@ namespace IO.Ably.Tests
 
             var json = JsonHelper.Serialize(details);
 
-            var jobject = JObject.Parse(json);
-            ((string)jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
-            ((string)jobject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
+            var jObject = JObject.Parse(json);
+            ((string)jObject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
+            ((string)jObject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]

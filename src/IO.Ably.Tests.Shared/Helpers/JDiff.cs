@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Shared
                     // array of object?
                     else if (first is JArray && first.Children().All(c => !(c is JValue)))
                     {
-                        var difrences = new JArray();
+                        var differences = new JArray();
                         // var mode = second == null ? '-' : '*';
                         var maximum = Math.Max(first?.Count() ?? 0, second?.Count() ?? 0);
 
@@ -52,13 +52,13 @@ namespace IO.Ably.Tests.Shared
 
                             if (diff != null)
                             {
-                                difrences.Add(diff);
+                                differences.Add(diff);
                             }
                         }
 
-                        if (difrences.HasValues)
+                        if (differences.HasValues)
                         {
-                            difference/*[$"{mode}{property}"] */ = difrences;
+                            difference/*[$"{mode}{property}"] */ = differences;
                         }
                     }
                     else
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.Shared
 
                 if (first?[property] is JArray)
                 {
-                    var difrences = new JArray();
+                    var differences = new JArray();
                     var mode = second?[property] == null ? '-' : '*';
                     var maximum = Math.Max(first?[property]?.Count() ?? 0, second?[property]?.Count() ?? 0);
 
@@ -128,13 +128,13 @@ namespace IO.Ably.Tests.Shared
 
                         if (diff != null)
                         {
-                            difrences.Add(diff);
+                            differences.Add(diff);
                         }
                     }
 
-                    if (difrences.HasValues)
+                    if (differences.HasValues)
                     {
-                        difference[$"{mode}{property}"] = difrences;
+                        difference[$"{mode}{property}"] = differences;
                     }
 
                     continue;

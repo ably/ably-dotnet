@@ -276,7 +276,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.WaitForState(ChannelState.Failed, TimeSpan.FromSeconds(6));
             await failedAwaiter.Task;
 
-            stateChange.Should().NotBeNull("channel should have failde");
+            stateChange.Should().NotBeNull("channel should have failed");
             stateChange.Error.Code.Should().Be(40160);
             stateChange.Error.Message.Should().Contain("Channel denied access");
 

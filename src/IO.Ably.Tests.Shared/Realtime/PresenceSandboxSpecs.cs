@@ -272,7 +272,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var channelName = "RTP17e".AddRandomSuffix();
 
-                async Task<(AblyRealtime, IRestClient, TestTransportWrapper)> InitiliseRealtimeAndConnect()
+                async Task<(AblyRealtime, IRestClient, TestTransportWrapper)> InitializeRealtimeAndConnect()
                 {
                     var capability = new Capability();
                     capability.AddResource(channelName).AllowAll();
@@ -337,7 +337,7 @@ namespace IO.Ably.Tests.Realtime
                 }
 
                 // arrange
-                var (realtimeClient, restClient, testTransport) = await InitiliseRealtimeAndConnect();
+                var (realtimeClient, restClient, testTransport) = await InitializeRealtimeAndConnect();
                 var (realtimeChannel, restChannel) = await GetChannelsAndEnsurePresenceSynced(realtimeClient, restClient);
 
                 // Check the presence of the realtime lib is there
@@ -1010,7 +1010,7 @@ namespace IO.Ably.Tests.Realtime
                     channel.Presence.Subscribe(PresenceAction.Leave, leaveMsg =>
                     {
                         leaveMsg.ClientId.Should().StartWith("local");
-                        leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action shold be leave");
+                        leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action should be leave");
                         leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time");
                         leaveMsg.Id.Should().BeNull("Id should be null");
                         leaveCount++;

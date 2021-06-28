@@ -96,7 +96,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RTN14e")]
-        public async Task ShouldRetyConnection()
+        public async Task ShouldRetryConnection()
         {
             _context.Transport = new FakeTransport(TransportState.Initialized);
 

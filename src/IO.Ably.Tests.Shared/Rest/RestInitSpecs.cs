@@ -69,7 +69,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
-            public void WithouthKey_ShouldUseTokenAuth()
+            public void WithoutKey_ShouldUseTokenAuth()
             {
                 var client = new AblyRest(opts =>
                 {

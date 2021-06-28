@@ -10,13 +10,13 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class DisconectedStateSpecs : AblySpecs
+    public class DisconnectedStateSpecs : AblySpecs
     {
         private FakeConnectionContext _context;
         private ConnectionDisconnectedState _state;
         private FakeTimer _timer;
 
-        public DisconectedStateSpecs(ITestOutputHelper output)
+        public DisconnectedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
             _context = new FakeConnectionContext();

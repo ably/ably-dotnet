@@ -538,7 +538,7 @@ namespace IO.Ably.Tests.Rest
         }
 
         [Theory]
-        [InteropabilityMessagePayloadData]
+        [InteroperabilityMessagePayloadData]
         [Trait("spec", "RSL6a1")]
         public async Task WithTestMessagePayloadsWhenDecoding_ShouldDecodeMessagesAsPerSpec(
             Protocol protocol,
@@ -579,7 +579,7 @@ namespace IO.Ably.Tests.Rest
         }
 
         [Theory]
-        [InteropabilityMessagePayloadData]
+        [InteroperabilityMessagePayloadData]
         [Trait("spec", "RSL6a1")]
         public async Task WithTestMessagePayloadsWhenDecoding_ShouldEncodeMessagesAsPerSpec(
             Protocol protocol,

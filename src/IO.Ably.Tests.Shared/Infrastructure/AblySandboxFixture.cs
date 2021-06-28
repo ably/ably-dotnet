@@ -60,14 +60,14 @@ namespace IO.Ably.Tests
             string appId = settings.AppId = (string)json["appId"];
             foreach (var key in json["keys"])
             {
-                var testkey = new Key
+                var testKey = new Key
                 {
                     KeyName = appId + "." + (string)key["keyName"],
                     KeySecret = (string)key["keySecret"],
                     KeyStr = (string)key["keyStr"],
                     Capability = (string)key["capability"]
                 };
-                settings.Keys.Add(testkey);
+                settings.Keys.Add(testKey);
             }
 
             // await SetupSampleStats(settings);

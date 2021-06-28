@@ -5,7 +5,7 @@ namespace IO.Ably.Tests
 {
     public class ProtocolMessageSpecs
     {
-        public class WithMsgPackEnconding
+        public class WithMsgPackEncoding
         {
             [Fact]
             public void CanSerialiseAndDeserializeProtocolMessage()

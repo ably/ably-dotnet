@@ -48,7 +48,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithJsonPayloadBeforeOtherPayload_ConvertsDataToJObjecAndStrinpsEncoding()
+            public void WithJsonPayloadBeforeOtherPayload_ConvertsDataToJObjectAndStripsEncoding()
             {
                 var payload = DecodePayload(_jsonData, "utf-8/json");
 

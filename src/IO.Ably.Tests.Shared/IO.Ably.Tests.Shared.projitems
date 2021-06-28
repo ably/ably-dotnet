@@ -45,7 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTimer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransportFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteroperabilityMessagePayloadDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\MiscUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ProtocolData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ResourceHelper.cs" />
@@ -91,7 +91,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ClosingStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ConnectedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ConnectingStateSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\DisconectedStateSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\DisconnectedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
