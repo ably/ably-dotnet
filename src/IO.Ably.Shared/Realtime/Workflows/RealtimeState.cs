@@ -136,7 +136,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public List<MessageAndCallback> PendingMessages { get; }
 
-        public List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
+        public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
         public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         => WaitingForAck.Add(new MessageAndCallback(message, callback));
