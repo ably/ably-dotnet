@@ -1963,7 +1963,6 @@ namespace IO.Ably.Tests.Realtime
         {
             private IRealtimeChannel _channel;
             private TaskCompletionAwaiter _tsc;
-            private int _count = 0;
 
             public PresenceAwaiter(IRealtimeChannel channel)
             {
@@ -1976,7 +1975,6 @@ namespace IO.Ably.Tests.Realtime
 
             public async Task<bool> WaitFor(int count)
             {
-                _count = count;
                 _tsc = new TaskCompletionAwaiter(10000, count);
                 return await _tsc.Task;
             }
