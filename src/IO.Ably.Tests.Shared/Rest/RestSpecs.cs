@@ -315,7 +315,7 @@ namespace IO.Ably.Tests
             {
                 var client = CreateClient(options => { options.Environment = environment; });
                 await MakeAnyRequest(client);
-                var expected = environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                var expected = environment.ToLower() + "-" + Defaults.RestHost;
                 _handler.LastRequest.RequestUri.Host.Should().Be(expected);
             }
 
