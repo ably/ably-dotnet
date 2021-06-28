@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.Realtime
         {
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             await client.WaitForState(ConnectionState.Disconnected);
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
                 ConnectionId = "1",
                 ConnectionSerial = 100
             });

@@ -291,7 +291,7 @@ namespace IO.Ably.Tests.Realtime
             SetNowFunc(() => DateTimeOffset.UtcNow);
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
-            _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
+            _tokenErrorInfo = new ErrorInfo { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
         }
     }
 }

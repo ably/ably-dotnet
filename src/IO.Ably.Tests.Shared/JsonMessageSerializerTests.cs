@@ -50,9 +50,9 @@ namespace IO.Ably.Tests
                 yield return new object[] { "[]", new PresenceMessage[] { } };
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test") } };
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } };
-                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
-                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
+                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage { ConnectionId = "test" } } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage { Data = "test" } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage { Timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
             }
         }
 
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
+            ProtocolMessage message = new ProtocolMessage { Channel = channel };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0");
             if (!string.IsNullOrEmpty(channel))
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_MsgSerial(long msgSerial)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage { MsgSerial = msgSerial };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0")
                 .AppendFormat(",\"msgSerial\":{0}", msgSerial)
@@ -129,7 +129,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_NoMessages_DoesNotThrowException()
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Messages = null };
+            ProtocolMessage message = new ProtocolMessage { Messages = null };
 
             // Act & Assert
             Serialize(message).Should().Be("{\"action\":0,\"msgSerial\":0}");
@@ -140,7 +140,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
+            ProtocolMessage message = new ProtocolMessage { Messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
             if (validMessages.Any())
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void SerializesMessageParamsCorrectly()
         {
-            ChannelParams channelParams = new ChannelParams() { { "rewind", "1" }, { "delta", "delta" } };
+            ChannelParams channelParams = new ChannelParams { { "rewind", "1" }, { "delta", "delta" } };
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach) { Params = channelParams };
             var serialized = Serialize(message);
             var deserialized = Deserialize(serialized);
@@ -177,7 +177,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            ProtocolMessage message = new ProtocolMessage { Presence = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             expectedMessage.Append(",\"presence\":[");
             foreach (PresenceMessage msg in messages)

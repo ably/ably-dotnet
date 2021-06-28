@@ -25,7 +25,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
              {
                  ConnectionId = "1",
                  ConnectionSerial = 100,
-                 ConnectionDetails = new ConnectionDetails()
+                 ConnectionDetails = new ConnectionDetails
                  {
                      ClientId = "client1",
                      ConnectionKey = "validKey"
@@ -205,7 +205,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 var client = await GetConnectedClient();
 
                 // Arrange
-                client.ConnectionManager.Transport = new FakeTransport() { State = transportState };
+                client.ConnectionManager.Transport = new FakeTransport { State = transportState };
 
                 // Act
                 client.ExecuteCommand(SetClosingStateCommand.Create());

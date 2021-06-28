@@ -58,7 +58,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            var connectionDetailsMessage = new ConnectionDetails()
+            var connectionDetailsMessage = new ConnectionDetails
             {
                 ClientId = "123",
                 ConnectionKey = "boo"

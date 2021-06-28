@@ -26,7 +26,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBase64EncodingBeforeOtherEncodings_SavesDecodedDataToTheContext()
             {
-                var payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
+                var payload = new Message { Data = _base64Data, Encoding = "utf-8/base64" };
 
                 var context = new DecodingContext();
                 MessageHandler.DecodePayload(payload, context);
@@ -54,7 +54,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 var initialEncoding = "utf-8/cipher+aes-128-cbc";
                 var encryptedValue = "test";
-                var payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
+                var payload = new Message { Data = encryptedValue, Encoding = initialEncoding };
 
                 var channelOptions =
                     new ChannelOptions(true, new CipherParams(

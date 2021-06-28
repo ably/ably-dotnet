@@ -127,7 +127,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             var receivedMessages = new List<ProtocolMessage>();
             var realtime = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                var optionsTransportFactory = new TestTransportFactory()
+                var optionsTransportFactory = new TestTransportFactory
                 {
                     BeforeDataProcessed = receivedMessages.Add,
                 };
@@ -233,7 +233,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             using (((DefaultLogger.InternalLogger)Logger).SetTempDestination(testSink))
             {
                 var realtime = await GetRealtimeClient(protocol);
-                var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams() { { "delta", "vcdiff" } }));
+                var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams { { "delta", "vcdiff" } }));
 
                 var received = new List<Message>();
                 channel.Subscribe(message =>
@@ -262,7 +262,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channelName,
                     Messages = new[]
                     {
-                        new Message()
+                        new Message
                         {
                             Id = "badMessage", Encoding = "vcdiff", Data = new byte[0]
                         },

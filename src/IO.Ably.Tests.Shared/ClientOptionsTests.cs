@@ -22,7 +22,7 @@ namespace IO.Ably.Tests.Shared
         [Trait("spec", "RSC15h")]
         public void Options_WithProductionEnvironment()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions
             {
                 Environment = "production"
             };
@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Shared
         [Trait("spec", "RTC1e")]
         public void Options_WithCustomEnvironment()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions
             {
                 Environment = "sandbox"
             };
@@ -57,7 +57,7 @@ namespace IO.Ably.Tests.Shared
         [Trait("spec", "RTC1e")]
         public void Options_WithCustomEnvironment_And_NonDefaultPorts()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions
             {
                 Environment = "local",
                 Port = 8080,
@@ -76,7 +76,7 @@ namespace IO.Ably.Tests.Shared
         [Trait("spec", "RSC11")]
         public void Options_WithCustomRestHost()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions
             {
                 RestHost = "test.org"
             };
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests.Shared
         [Trait("spec", "RSC11")]
         public void Options_WithCustomRestHost_And_RealtimeHost()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions
             {
                 RestHost = "test.org",
                 RealtimeHost = "ws.test.org"

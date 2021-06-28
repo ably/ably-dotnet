@@ -62,7 +62,7 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient(string environment = null)
         {
-            var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
+            var ablyHttpOptions = new AblyHttpOptions { IsSecure = Tls };
             ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }
@@ -75,7 +75,7 @@ namespace IO.Ably.Tests
                 ? System.Environment.GetEnvironmentVariable("ABLY_ENV").Trim()
                 : environment;
 
-            return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
+            return new ClientOptions { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
         }
     }
 }

@@ -39,7 +39,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldSerializeDatesInMilliseconds()
         {
-            var details = new TokenDetails()
+            var details = new TokenDetails
             {
                 Expires = DateTimeOffset.UtcNow,
                 Issued = DateTimeOffset.UtcNow.AddSeconds(1),

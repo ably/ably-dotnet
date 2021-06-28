@@ -35,7 +35,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 new ProtocolMessage(ProtocolMessage.MessageAction.Message)
                 {
                     Channel = channel.Name,
-                    Messages = new[] { new Message() { Id = "goodMessage", Data = "test" }, },
+                    Messages = new[] { new Message { Id = "goodMessage", Data = "test" }, },
                 }));
 
             realtime.ExecuteCommand(ProcessMessageCommand.Create(
@@ -44,7 +44,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channel.Name,
                     Messages = new[]
                     {
-                        new Message() { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
+                        new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
                     },
                 }));
 
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channel.Name,
                     Messages = new[]
                     {
-                        new Message() { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
+                        new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) },
                     },
                 }));
 
@@ -187,14 +187,14 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             {
                 if (isDelta)
                 {
-                    return new Message()
+                    return new Message
                     {
                         Data = ResourceHelper.GetBinaryResource(filename).ToBase64(),
                         Encoding = "vcdiff/base64",
                     };
                 }
 
-                return new Message()
+                return new Message
                 {
                     Data = ResourceHelper.GetResource(filename),
                     Encoding = string.Empty,

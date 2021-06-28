@@ -235,7 +235,7 @@ namespace IO.Ably.Tests.Realtime
                 channel2.State.Should().BeEquivalentTo(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
-                ProtocolMessage syncMessage = new ProtocolMessage()
+                ProtocolMessage syncMessage = new ProtocolMessage
                 {
                     Channel = channel2Name,
                     Action = ProtocolMessage.MessageAction.Sync,
@@ -741,7 +741,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 });
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -749,7 +749,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence1(),
                 }));
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence2(),
                 }));
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -899,7 +899,7 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.Presence.Map.Members.Should().HaveCount(1);
 
-                var localMessage = new PresenceMessage()
+                var localMessage = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:0",
@@ -968,7 +968,7 @@ namespace IO.Ably.Tests.Realtime
                 await client.WaitForState();
                 var channel = client.Channels.Get(channelName);
 
-                var localMessage1 = new PresenceMessage()
+                var localMessage1 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:1",
@@ -978,7 +978,7 @@ namespace IO.Ably.Tests.Realtime
                     Data = "local data 1"
                 };
 
-                var localMessage2 = new PresenceMessage()
+                var localMessage2 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:2",

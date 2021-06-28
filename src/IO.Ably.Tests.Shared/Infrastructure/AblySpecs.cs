@@ -110,7 +110,7 @@ namespace IO.Ably.Tests
         protected ProtocolMessage ConnectedProtocolMessage =>
             new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
                 ConnectionId = "1",
                 ConnectionSerial = 100
             };

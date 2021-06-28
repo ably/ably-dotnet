@@ -11,7 +11,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ToRequestParams_CreatesADictionaryOfAllProperties()
         {
-            var @params = new TokenParams()
+            var @params = new TokenParams
             {
                 Capability = Capability.AllowAll,
                 Ttl = TimeSpan.FromHours(1),
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ToRequestParams_SkipsNullOrEmptyValues()
         {
-            var @params = new TokenParams()
+            var @params = new TokenParams
             {
                 Capability = Capability.AllowAll,
                 Ttl = TimeSpan.FromHours(1),
@@ -48,12 +48,12 @@ namespace IO.Ably.Tests
         [Fact]
         public void ToRequestParams_WithDictionaryToMerge_MergesValuesWithoutDuplicatesAndFavoursTokenParamsValues()
         {
-            var @params = new TokenParams()
+            var @params = new TokenParams
             {
                 Capability = Capability.AllowAll,
                 Ttl = TimeSpan.FromHours(1),
             };
-            var toMerge = new Dictionary<string, string>() { { "ttl", "123400" }, { "authKey1", "authValue1" } };
+            var toMerge = new Dictionary<string, string> { { "ttl", "123400" }, { "authKey1", "authValue1" } };
 
             var result = @params.ToRequestParams(toMerge);
 
