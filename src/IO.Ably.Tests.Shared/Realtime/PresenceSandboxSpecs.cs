@@ -266,7 +266,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [InlineData(Protocol.Json, 30)] // Wait for 30 seconds
-            [InlineData(Protocol.Json, 150)] // Wait for 2 minutes and 30 seconds
+            [InlineData(Protocol.Json, 60)] // Wait for 2 minutes and 30 seconds
             [Trait("spec", "RTP17e")]
             public async Task Presence_ShouldReenterPresenceAfterAConnectionLoss(Protocol protocol, int waitInSeconds)
             {

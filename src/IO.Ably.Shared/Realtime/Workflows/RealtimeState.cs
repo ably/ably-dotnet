@@ -11,12 +11,8 @@ namespace IO.Ably.Realtime.Workflow
     {
         public class ConnectionData
         {
-            private object _confirmedAliveMutex;
-            private DateTimeOffset? _confirmedAlive;
-
             public ConnectionData(List<string> fallbackHosts)
             {
-                _confirmedAliveMutex = new object();
                 FallbackHosts = fallbackHosts ?? new List<string>();
             }
 
@@ -24,24 +20,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
 
-            public DateTimeOffset? ConfirmedAliveAt
-            {
-                get
-                {
-                    lock (_confirmedAliveMutex)
-                    {
-                        return _confirmedAlive;
-                    }
-                }
-
-                private set
-                {
-                    lock (_confirmedAliveMutex)
-                    {
-                        _confirmedAlive = value;
-                    }
-                }
-            }
+            public DateTimeOffset? ConfirmedAliveAt { get; private set; }
 
             /// <summary>
             ///     The id of the current connection. This string may be
