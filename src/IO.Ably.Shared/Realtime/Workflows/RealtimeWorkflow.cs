@@ -255,7 +255,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             if (command.ConfirmedAliveAt.HasValue)
             {
-                TimeSpan delta = DateTimeOffset.Now - command.ConfirmedAliveAt.Value;
+                TimeSpan delta = Now() - command.ConfirmedAliveAt.Value;
                 if (delta > command.ConnectionStateTtl)
                 {
                     if (!_heartbeatMonitorDisconnectRequested)
