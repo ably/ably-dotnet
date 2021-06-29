@@ -1,4 +1,6 @@
-﻿namespace IO.Ably.Push
+﻿using System;
+
+namespace IO.Ably.Push
 {
     /// <summary>
     /// Push Apis for Realtime clients.
@@ -11,9 +13,21 @@
         internal PushRealtime(AblyRest restClient, ILogger logger)
         {
             _restClient = restClient;
-            if (IoC.MobileDevice == null)
+            if (IoC.MobileDevice != null)
             {
                 _stateMachine = ActivationStateMachine.CreateAndLoadState(restClient, IoC.MobileDevice, logger);
+            }
+        }
+
+        /// <summary>
+        /// Used for debug purposes.
+        /// </summary>
+        /// <param name="handler">handler.</param>
+        public void OnActivationStateMachineChangeState(Action<string, string> handler)
+        {
+            if (_stateMachine != null && handler != null)
+            {
+                _stateMachine.StateChangeHandler = handler;
             }
         }
 
