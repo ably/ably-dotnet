@@ -647,7 +647,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel.AttachAsync();
                 channel.State.Should().BeEquivalentTo(ChannelState.Attached);
 
-                PresenceMessage[] TestPresence1()
+                static PresenceMessage[] TestPresence1()
                 {
                     return new[]
                     {
@@ -662,7 +662,7 @@ namespace IO.Ably.Tests.Realtime
                     };
                 }
 
-                PresenceMessage[] TestPresence2()
+                static PresenceMessage[] TestPresence2()
                 {
                     return new[]
                     {
@@ -685,7 +685,7 @@ namespace IO.Ably.Tests.Realtime
                     };
                 }
 
-                PresenceMessage[] TestPresence3()
+                static PresenceMessage[] TestPresence3()
                 {
                     return new[]
                     {
@@ -1047,7 +1047,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForState(ChannelState.Attached);
                 channel.State.Should().BeEquivalentTo(ChannelState.Attached);
 
-                PresenceMessage[] TestPresence1()
+                static PresenceMessage[] TestPresence1()
                 {
                     return new PresenceMessage[]
                     {

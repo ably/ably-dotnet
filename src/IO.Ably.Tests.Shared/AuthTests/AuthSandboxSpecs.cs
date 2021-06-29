@@ -363,14 +363,14 @@ namespace IO.Ably.Tests
             }
 
             // authCallback fails
-            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) => throw new Exception("AuthCallback force error");
             }
 
             // invalid token returned
-            void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
@@ -447,14 +447,14 @@ namespace IO.Ably.Tests
             }
 
             // authUrl fails and returns no body
-            void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
             }
 
-            // Authcallback that results in an ErrorInfo with code 403
-            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            // AuthCallback that results in an ErrorInfo with code 403
+            static void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) =>
