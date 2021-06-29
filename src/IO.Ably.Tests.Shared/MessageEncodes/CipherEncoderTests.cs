@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithStringData_EncryptsDataAndSetsCorrectEncoding()
             {
-                IPayload payload = new Message() { Data = _stringData };
+                IPayload payload = new Message { Data = _stringData };
 
                 payload = _encoder.Encode(payload, _channelOptions.ToDecodingContext()).Value;
 
@@ -138,7 +138,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithJsonData_EncryptsTheDataAndAddsCorrectEncodings()
             {
-                IPayload payload = new Message() { Data = _stringData, Encoding = "json" };
+                IPayload payload = new Message { Data = _stringData, Encoding = "json" };
 
                 payload = _encoder.Encode(payload, _channelOptions.ToDecodingContext()).Value;
 
