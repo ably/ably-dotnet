@@ -26,9 +26,8 @@ namespace IO.Ably.Tests
                 if (request.Url.Contains("requestToken"))
                 {
                     TokenRequestCount++;
-                    return string.Format(
-                                "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
-                                DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds()).ToAblyResponse();
+                    long expirationTime = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds();
+                    return $"{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{expirationTime}\"}}}}".ToAblyResponse();
                 }
 
                 return "{}".ToAblyResponse();

@@ -78,7 +78,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage(messageAction);
-            string expectedMessage = string.Format("{{\"action\":{0},\"msgSerial\":0}}", (int)messageAction);
+            string expectedMessage = $"{{\"action\":{(int)messageAction},\"msgSerial\":0}}";
 
             // Act
             Serialize(message).Should().Be(expectedMessage);
@@ -203,7 +203,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Action(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            string message = string.Format("{{ \"action\": {0} }}", (int)action);
+            string message = $"{{ \"action\": {(int)action} }}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -240,7 +240,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ChannelSerial(string serial)
         {
             // Arrange
-            string message = string.Format("{{\"channelSerial\":\"{0}\"}}", serial);
+            string message = $"{{\"channelSerial\":\"{serial}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -258,7 +258,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionId(string connectionId)
         {
             // Arrange
-            string message = string.Format("{{\"connectionId\":\"{0}\"}}", connectionId);
+            string message = $"{{\"connectionId\":\"{connectionId}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -276,7 +276,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange
-            string message = string.Format("{{\"id\":\"{0}\"}}", id);
+            string message = $"{{\"id\":\"{id}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -296,7 +296,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionSerial(object connectionSerial)
         {
             // Arrange
-            string message = string.Format("{{\"connectionSerial\":{0}}}", connectionSerial);
+            string message = $"{{\"connectionSerial\":{connectionSerial}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -316,7 +316,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Count(object count)
         {
             // Arrange
-            string message = string.Format("{{\"count\":{0}}}", count);
+            string message = $"{{\"count\":{count}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -336,7 +336,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_MsgSerial(object serial)
         {
             // Arrange
-            string message = string.Format("{{\"msgSerial\":{0}}}", serial);
+            string message = $"{{\"msgSerial\":{serial}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
@@ -356,7 +356,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Flags(object flags)
         {
             // Arrange
-            string message = string.Format("{{\"flags\":{0}}}", flags);
+            string message = $"{{\"flags\":{flags}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);

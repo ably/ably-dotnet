@@ -27,7 +27,7 @@ namespace IO.Ably.Tests
             // Arrange
             var reason = "test";
             var code = 40400;
-            var response = new AblyResponse { TextResponse = string.Format("{{ \"error\": {{ \"code\":{0}, \"message\":\"{1}\" }} }}", code, reason), Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
+            var response = new AblyResponse { TextResponse = $"{{ \"error\": {{ \"code\":{code}, \"message\":\"{reason}\" }} }}", Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
 
             // Act
             var errorInfo = ErrorInfo.Parse(response);

@@ -13,9 +13,9 @@ namespace IO.Ably.Tests
         {
             var headers = new TestHttpHeaders();
 
-            headers.Add("Link", string.Format("<./history{0}>; rel=\"first\"", FirstQueryString));
-            headers.Add("Link", string.Format("<./history{0}>; rel=\"next\"", NextQueryString));
-            headers.Add("Link", string.Format("<./history{0}>; rel=\"current\"", CurrentQueryString));
+            headers.Add("Link", $"<./history{FirstQueryString}>; rel=\"first\"");
+            headers.Add("Link", $"<./history{NextQueryString}>; rel=\"next\"");
+            headers.Add("Link", $"<./history{CurrentQueryString}>; rel=\"current\"");
             return headers;
         }
 
@@ -23,8 +23,8 @@ namespace IO.Ably.Tests
         {
             var headers = new TestHttpHeaders();
 
-            headers.Add("Link", string.Format("<./stats{0}>; rel=\"first\"", FirstQueryString));
-            headers.Add("Link", string.Format("<./stats{0}>; rel=\"next\"", NextQueryString));
+            headers.Add("Link", $"<./stats{FirstQueryString}>; rel=\"first\"");
+            headers.Add($"Link", $"<./stats{NextQueryString}>; rel=\"next\"");
             return headers;
         }
 
