@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Push
@@ -40,16 +43,33 @@ namespace IO.Ably.Push
         {
             // TODO: Add validation.
             // TODO: Add fullwait parameter.
-            var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
+            var request = _restClient.CreateRequest("/push/deviceRegistrations", HttpMethod.Post);
             request.PostData = details;
-            var result = await _restClient.ExecuteRequest<LocalDevice>(request);
-
-            if (result == null)
+            try
             {
-                throw new AblyException("Failed to register device", 40000);
-            }
+                var response = await _restClient.ExecuteRequest(request);
 
-            return result;
+                var jsonResponse = JObject.Parse(response.TextResponse);
+                var localDevice = jsonResponse.ToObject<LocalDevice>();
+                var deviceToken = (string)jsonResponse["deviceIdentityToken"]?["token"];
+                if (deviceToken != null)
+                {
+                    localDevice.DeviceIdentityToken = deviceToken;
+                }
+
+                return localDevice;
+            }
+            catch (JsonReaderException jsonEx)
+            {
+                _logger.Error("Error registering device. Invalid response", jsonEx);
+                var error = new ErrorInfo("Error registering device. Invalid response.", ErrorCodes.InternalError);
+                throw new AblyException(error, jsonEx);
+            }
+            catch (AblyException e)
+            {
+                _logger.Error("Error registering Device", e);
+                throw;
+            }
         }
 
         /// <summary>
