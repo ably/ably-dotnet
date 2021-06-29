@@ -102,46 +102,61 @@ namespace IO.Ably.Push
 
         public async Task HandleEvent(Event @event)
         {
-            Debug($"Handling event ({@event.GetType().Name}.");
+            async Task HandleInner()
+            {
+                State maybeNext = await CurrentState.Transition(@event);
+                if (maybeNext is null)
+                {
+                    Debug("No next state returned. Queuing event for later execution.");
+                    _pendingEvents.Enqueue(@event);
+                    return;
+                }
+                else
+                {
+                    Debug($"Setting state to {maybeNext.GetType().Name}");
+                }
+
+                CurrentState = maybeNext;
+
+                while (true)
+                {
+                    Event pending = _pendingEvents.Any() ? _pendingEvents.Peek() : null;
+                    if (pending is null)
+                    {
+                        break;
+                    }
+
+                    Debug($"Processing pending event ({pending.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+                    var nextState = await CurrentState.Transition(pending);
+                    if (nextState is null)
+                    {
+                        break;
+                    }
+
+                    Debug($"Setting state to {nextState.GetType().Name}");
+
+                    _ = _pendingEvents.Dequeue(); // Remove the message from the queue
+                    CurrentState = nextState;
+                }
+            }
 
             await Task.Yield();
 
-            var canEnter = await _handleEventsLock.WaitAsync(1000); // Arbitrary number = 1 second
+            Debug($"Handling event ({@event.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+
+            var canEnter = await _handleEventsLock.WaitAsync(2000); // Arbitrary number = 1 second
             if (canEnter)
             {
+                // TODO: Clean up this method.
                 try
                 {
-                    // Log.d(TAG, String.format("handling event %s from %s", event.getClass().getSimpleName(), current.getClass().getSimpleName()));
-                    State maybeNext = await CurrentState.Transition(@event);
-                    if (maybeNext == null)
-                    {
-                        _pendingEvents.Enqueue(@event);
-                        PersistState();
-                        return;
-                    }
-
-                    CurrentState = maybeNext;
-
-                    while (true)
-                    {
-                        var pending = _pendingEvents.Peek();
-                        if (pending == null)
-                        {
-                            break;
-                        }
-
-                        // TODO: Log
-                        var nextState = await CurrentState.Transition(pending);
-                        if (nextState == null)
-                        {
-                            break;
-                        }
-
-                        _ = _pendingEvents.Dequeue(); // Remove the message from the queue
-                        CurrentState = nextState;
-                    }
-
+                    await HandleInner();
                     PersistState();
+                }
+                catch (Exception exception)
+                {
+                    _logger.Error("Error processing handle event.", exception);
+                    throw;
                 }
                 finally
                 {
@@ -150,13 +165,14 @@ namespace IO.Ably.Push
             }
             else
             {
-                _pendingEvents.Enqueue(@event);
-                return;
+                Debug("Failed to acquire HandleEvent lock.");
             }
         }
 
         private void PersistState()
         {
+            Debug($"Prersisting State and PendingQueue. State: {CurrentState.GetType().Name}. Queue: {_pendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}");
+
             if (CurrentState != null && CurrentState.Persist)
             {
                 _mobileDevice.SetPreference(PersistKeys.StateMachine.CURRENT_STATE, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
