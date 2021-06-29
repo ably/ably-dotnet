@@ -102,16 +102,6 @@ namespace IO.Ably
         /// </summary>
         /// <param name="reason">error reason.</param>
         /// <param name="code">error code.</param>
-        public ErrorInfo(string reason, int code)
-            : this(reason, code, null, null, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorInfo"/> class.
-        /// </summary>
-        /// <param name="reason">error reason.</param>
-        /// <param name="code">error code.</param>
         /// <param name="statusCode">optional, http status code.</param>
         /// <param name="innerException">optional, InnerException.</param>
         public ErrorInfo(string reason, int code, HttpStatusCode? statusCode, Exception innerException)
