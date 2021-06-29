@@ -40,7 +40,7 @@ namespace IO.Ably.Tests
             return GetRestClient(handleRequestFunc, options);
         }
 
-        public MockHttpRestSpecs(ITestOutputHelper output)
+        protected MockHttpRestSpecs(ITestOutputHelper output)
             : base(output)
         {
         }
