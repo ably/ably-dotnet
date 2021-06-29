@@ -66,7 +66,7 @@ namespace IO.Ably.Push.Android
 
         public void SendIntent(string name, Dictionary<string, object> extraParameters)
         {
-            if (name.IsNotEmpty())
+            if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("Please provide name when sending intent.", nameof(name));
             }
@@ -100,7 +100,7 @@ namespace IO.Ably.Push.Android
 
         public string GetPreference(string key, string groupName)
         {
-            return Preferences.Get(key, groupName);
+            return Preferences.Get(key, "", groupName);
         }
 
         public void RemovePreference(string key, string groupName)
