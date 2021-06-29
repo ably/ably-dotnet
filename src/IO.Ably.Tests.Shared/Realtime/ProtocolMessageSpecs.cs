@@ -47,7 +47,7 @@ namespace IO.Ably.Tests.Shared.Realtime
             pm.HasFlag(ProtocolMessage.Flag.PresenceSubscribe).Should().BeTrue();
 
             // TR4a,TR4b,TR4c,TR4d,TR4e (show it is removed),TR4f,TR4g,TR4h,TR4i,TR4j,TR4k,TR4l,TR4m
-            var propertyNamesAndTypes = new (string, Type)[]
+            var propertyNamesAndTypes = new[]
             {
                 ("Action", typeof(ProtocolMessage.MessageAction)),
                 ("Id", typeof(string)),
