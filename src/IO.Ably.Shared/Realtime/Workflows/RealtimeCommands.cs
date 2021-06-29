@@ -282,7 +282,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return (Error != null) ? "Error: " + Error.ToString() : string.Empty;
+            return (Error != null) ? $"Error: {Error}" : string.Empty;
         }
 
         public static SetFailedStateCommand Create(ErrorInfo error) => new SetFailedStateCommand(error);
@@ -319,7 +319,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return $"Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 
@@ -413,7 +413,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return "Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 

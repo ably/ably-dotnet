@@ -50,7 +50,7 @@ namespace IO.Ably.Tests
 
         public void Connect()
         {
-            DefaultLogger.Debug("Connecting using: " + Parameters.GetUri().ToString());
+            DefaultLogger.Debug($"Connecting using: {Parameters.GetUri()}");
 
             ConnectCalled = true;
             if (OnConnectChangeStateToConnected)
