@@ -15,11 +15,24 @@ namespace IO.Ably.Push
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
 
+        public Action<string, string> StateChangeHandler = (currentState, newState) => { };
+        private State _currentState;
+
         public string ClientId { get; }
 
-        public State CurrentState { get; private set; }
+        public State CurrentState
+        {
+            get => _currentState;
+            private set
+            {
+                if (value != null)
+                {
+                    StateChangeHandler(_currentState?.GetType().Name, value.GetType().Name);
+                }
 
-        private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
+                _currentState = value;
+            }
+        }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
 
