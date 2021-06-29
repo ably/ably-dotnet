@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -315,7 +316,7 @@ namespace IO.Ably.Tests.AuthTests
             // Expected will be { "ttl" : "intvalue", "Test" :"Test" }
             var expectedAuthParams = new Dictionary<string, string>
                                          {
-                                             { "ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString() },
+                                             { "ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString(CultureInfo.InvariantCulture) },
                                              { "Test", "Test" }
                                          };
 
@@ -363,7 +364,7 @@ namespace IO.Ably.Tests.AuthTests
             // Expected will be { "ttl" : "intvalue", "Test" :"Test" }
             var expectedAuthParams = new Dictionary<string, string>
                                          {
-                                             { "ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString() },
+                                             { "ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString(CultureInfo.InvariantCulture) },
                                              { "Test", "Test" }
                                          };
 
