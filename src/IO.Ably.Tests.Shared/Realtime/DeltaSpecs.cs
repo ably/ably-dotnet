@@ -178,12 +178,12 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             messages[3].Data.Should().BeOfType<byte[]>();
             IsCorrectFile((byte[])messages[3].Data, "delta.4");
 
-            void IsCorrectFile(byte[] actual, string expectedFile)
+            static void IsCorrectFile(byte[] actual, string expectedFile)
             {
                 actual.SequenceEqual(ResourceHelper.GetBinaryResource(expectedFile)).Should().BeTrue("Bytes are not the same as " + expectedFile);
             }
 
-            Message CreateMessage(string filename, bool isDelta)
+            static Message CreateMessage(string filename, bool isDelta)
             {
                 if (isDelta)
                 {

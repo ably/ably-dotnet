@@ -114,7 +114,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k1")]
         public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
         {
-            void AssertMessage(Message message, int serial)
+            static void AssertMessage(Message message, int serial)
             {
                 message.Id.Should().NotBeNull();
                 var idParts = message.Id.Split(':');
