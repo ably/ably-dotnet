@@ -9,10 +9,6 @@ namespace IO.Ably.MessageEncoders
 
         public override string EncodingName => EncodingNameStr;
 
-        public VCDiffEncoder()
-        {
-        }
-
         public override bool CanProcess(string currentEncoding)
         {
             return currentEncoding.IsNotEmpty() && currentEncoding.StartsWith("vcdiff");
