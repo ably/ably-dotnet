@@ -63,7 +63,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageDecodingAcceptanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageEncodersAcceptanceTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\SerializationSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\ProtocolMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessagePack\SerializationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
