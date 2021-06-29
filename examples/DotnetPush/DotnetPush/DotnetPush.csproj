@@ -13,4 +13,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\StatePage.xaml.cs">
+      <DependentUpon>StatePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

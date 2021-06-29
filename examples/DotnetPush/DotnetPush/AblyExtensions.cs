@@ -1,4 +1,5 @@
-﻿using IO.Ably;
+﻿using System.Reflection;
+using IO.Ably;
 using IO.Ably.Push;
 
 namespace DotnetPush
@@ -7,7 +8,7 @@ namespace DotnetPush
     {
         public static PushRealtime GetPushRealtime(this AblyRealtime realtime)
         {
-            var pushProperty = realtime.GetType().GetProperty("Push");
+            var pushProperty = realtime.GetType().GetProperty("Push", BindingFlags.Instance | BindingFlags.NonPublic);
             return (PushRealtime)pushProperty.GetValue(realtime);
         }
     }
