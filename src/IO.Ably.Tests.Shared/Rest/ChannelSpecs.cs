@@ -132,9 +132,9 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var message = new Message() { Name = "event", Data = "data" };
-                var message1 = new Message() { Name = "event1", Data = "data" };
-                var message2 = new Message() { Name = "event2", Data = "data" };
+                var message = new Message { Name = "event", Data = "data" };
+                var message1 = new Message { Name = "event1", Data = "data" };
+                var message2 = new Message { Name = "event2", Data = "data" };
                 channel.PublishAsync(new List<Message> { message, message1, message2 });
 
                 Requests.Count.Should().Be(1);
@@ -156,7 +156,7 @@ namespace IO.Ably.Tests.Rest
                     options.IdempotentRestPublishing = false;
                 });
 
-                var messageWithNoData = new Message() { Name = "NoData" };
+                var messageWithNoData = new Message { Name = "NoData" };
                 await client.Channels.Get("nodata").PublishAsync(messageWithNoData);
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"name\":\"NoData\"}]");
@@ -172,7 +172,7 @@ namespace IO.Ably.Tests.Rest
                     options.IdempotentRestPublishing = false;
                 });
 
-                var messageWithNoName = new Message() { Data = "NoName" };
+                var messageWithNoName = new Message { Data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
@@ -200,7 +200,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
 
-                var messageWithNoName = new Message() { Data = "NoName" };
+                var messageWithNoName = new Message { Data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
             }
 
@@ -234,7 +234,7 @@ namespace IO.Ably.Tests.Rest
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
 
-                var message = new Message() { Name = "event", Data = "data" };
+                var message = new Message { Name = "event", Data = "data" };
                 channel.PublishAsync(new List<Message> { message });
 
                 var data = LastRequest.PostData as IEnumerable<Message>;
@@ -319,7 +319,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithStartBeforeEnd_Throws()
             {
                 var ex = await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.HistoryAsync(new PaginatedRequestParams() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.HistoryAsync(new PaginatedRequestParams { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -348,7 +348,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams { Limit = limit }));
             }
 
             [Fact]
@@ -358,7 +358,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates())
                 {
-                    var query = new PaginatedRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
+                    var query = new PaginatedRequestParams { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
                     var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
@@ -375,7 +375,7 @@ namespace IO.Ably.Tests.Rest
             public async Task History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
             {
                 // Arrange
-                var rest = GetRestClient(request => new AblyResponse()
+                var rest = GetRestClient(request => new AblyResponse
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = "[]"
@@ -397,12 +397,12 @@ namespace IO.Ably.Tests.Rest
             {
                 // Arrange
                 var rest = GetRestClient();
-                var message = new Message() { Name = "test", Data = "Test" };
+                var message = new Message { Name = "test", Data = "Test" };
                 var defaultParams = Crypto.GetDefaultParams();
 
                 rest.ExecuteHttpRequest = request =>
                 {
-                    var response = new AblyResponse()
+                    var response = new AblyResponse
                     {
                         Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                         TextResponse = $"[{JsonHelper.Serialize(message)}]"

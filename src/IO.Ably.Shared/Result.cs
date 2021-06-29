@@ -111,7 +111,7 @@ namespace IO.Ably
         /// <returns>Result.</returns>
         public static Result Fail(string message)
         {
-            return new Result(false, new ErrorInfo() { Message = message });
+            return new Result(false, new ErrorInfo { Message = message });
         }
 
         /// <summary>

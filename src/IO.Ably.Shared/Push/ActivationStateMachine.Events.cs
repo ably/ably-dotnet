@@ -72,7 +72,7 @@
         {
             public ErrorInfo Reason { get; }
 
-            public ErrorEvent(ErrorInfo reason)
+            protected ErrorEvent(ErrorInfo reason)
             {
                 Reason = reason;
             }

@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 if (request.Url.Contains("/keys"))
                 {
-                    throw new AblyException(new ErrorInfo() { Code = _tokenErrorCode });
+                    throw new AblyException(new ErrorInfo { Code = _tokenErrorCode });
                 }
 
                 return AblyResponse.EmptyResponse.ToTask();

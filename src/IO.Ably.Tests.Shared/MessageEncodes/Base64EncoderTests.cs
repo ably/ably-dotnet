@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBase64EncodedPayload_ConvertsItBackToBinaryData()
             {
-                IPayload payload = new Message() { Data = _base64Data, Encoding = "base64" };
+                IPayload payload = new Message { Data = _base64Data, Encoding = "base64" };
 
                 payload = _encoder.Decode(payload, new DecodingContext()).Value;
 
@@ -35,7 +35,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBase64EncodingBeforeOtherEncodings_ConvertsDataAndStripsEncodingCorrectly()
             {
-                IPayload payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
+                IPayload payload = new Message { Data = _base64Data, Encoding = "utf-8/base64" };
 
                 payload = _encoder.Decode(payload, new DecodingContext()).Value;
 
@@ -46,7 +46,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithMessageAnotherEncoding_LeavesDataAndEncodingIntact()
             {
-                IPayload payload = new Message() { Data = _stringData, Encoding = "utf-8" };
+                IPayload payload = new Message { Data = _stringData, Encoding = "utf-8" };
 
                 payload = _encoder.Decode(payload, new DecodingContext()).Value;
 
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.MessageEncodes
                 }
 
 #pragma warning disable 162
-                IPayload payload = new Message() { Data = _binaryData };
+                IPayload payload = new Message { Data = _binaryData };
 
                 payload = _encoder.Encode(payload, new DecodingContext()).Value;
 
@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEncoding()
             {
-                IPayload payload = new Message() { Data = _binaryData };
+                IPayload payload = new Message { Data = _binaryData };
 
                 payload = _encoder.Encode(payload, new DecodingContext()).Value;
 
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryPayloadAndExistingEncoding_ConvertsDataToBase64StringAndAddsBase64Encoding()
             {
-                IPayload payload = new Message() { Data = _binaryData, Encoding = "cipher" };
+                IPayload payload = new Message { Data = _binaryData, Encoding = "cipher" };
 
                 payload = _encoder.Encode(payload, new DecodingContext()).Value;
 
@@ -113,7 +113,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithStringPayload_LeavesDataAndEncodingIntact()
             {
-                IPayload payload = new Message() { Data = _stringData };
+                IPayload payload = new Message { Data = _stringData };
 
                 payload = _encoder.Encode(payload, new DecodingContext()).Value;
 

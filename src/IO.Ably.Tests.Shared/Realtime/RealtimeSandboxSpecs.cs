@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.Realtime
             var sentMessages = new List<ProtocolMessage>();
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.TransportFactory = new TestTransportFactory()
+                opts.TransportFactory = new TestTransportFactory
                 {
                     OnMessageSent = sentMessages.Add
                 };

@@ -784,7 +784,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -1134,7 +1134,7 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             });
 
-            await client.Auth.AuthorizeAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
+            await client.Auth.AuthorizeAsync(new TokenParams { Ttl = TimeSpan.FromSeconds(5) });
 
             var channel = client.Channels.Get("shortToken_test" + protocol);
             await channel.AttachAsync();
@@ -1212,7 +1212,7 @@ namespace IO.Ably.Tests.Realtime
                 // Throw 500
                 if (request.Url.Contains("internet"))
                 {
-                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.BadGateway });
+                    return Task.FromResult(new AblyResponse { StatusCode = HttpStatusCode.BadGateway });
                 }
 
                 return oldExecuteRequest(request);
@@ -1239,7 +1239,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout },
+                Error = new ErrorInfo { StatusCode = HttpStatusCode.GatewayTimeout },
             });
 
             var host = client.RestClient.HttpClient.PreferredHost;

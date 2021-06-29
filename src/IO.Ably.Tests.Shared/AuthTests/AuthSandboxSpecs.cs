@@ -487,7 +487,7 @@ namespace IO.Ably.Tests
                 failedAwaiter.SetCompleted();
             });
 
-            var authOptionsWhichFail = new AuthOptions()
+            var authOptionsWhichFail = new AuthOptions
             {
                 UseTokenAuth = true,
                 AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
@@ -510,7 +510,7 @@ namespace IO.Ably.Tests
 
             await realtimeClient.WaitForState(ConnectionState.Connected);
 
-            var authOptions = new AuthOptions()
+            var authOptions = new AuthOptions
             {
                 UseTokenAuth = true,
                 AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
@@ -617,7 +617,7 @@ namespace IO.Ably.Tests
             {
                 var tokenParams = CreateTokenParams(null);
                 tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
-                return ably.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions() { QueryTime = false }));
+                return ably.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions { QueryTime = false }));
             });
 
             error.ErrorInfo.Code.Should().Be(40104);
@@ -631,7 +631,7 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
+            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             ably.AblyAuth.ClientId.Should().Be("123");
 
             // uses Token Auth for all future requests (RSA10a)
@@ -639,7 +639,7 @@ namespace IO.Ably.Tests
 
             // create a token immediately (RSA10a)
             // regardless of whether the existing token is valid or not
-            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
+            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
         }
 
@@ -693,7 +693,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -718,7 +718,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -739,7 +739,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWhenPlainTextTokenIsReturn_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -763,7 +763,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
 
@@ -788,7 +788,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToConnect(Protocol protocol)
         {
             var ablyRest = await GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var tokenJson = token.ToJson();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
@@ -810,7 +810,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithIncorrectJsonTokenReturned_ShouldNotBeAbleToConnectAndShouldHaveError(Protocol protocol)
         {
             var ablyRest = await GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var tokenJson = token.ToJson();
             var incorrectJson = $"[{token.ToJson()}]";
@@ -847,7 +847,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" }).Convert();
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
@@ -870,7 +870,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
+                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });

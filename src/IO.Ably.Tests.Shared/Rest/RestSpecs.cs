@@ -175,7 +175,7 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 // Now = DateTimeOffset.Now;
-                var tokenDetails = new TokenDetails() { Token = "id", Expires = Now.AddHours(1) };
+                var tokenDetails = new TokenDetails { Token = "id", Expires = Now.AddHours(1) };
 
                 // Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
@@ -315,7 +315,7 @@ namespace IO.Ably.Tests
             {
                 var client = CreateClient(options => { options.Environment = environment; });
                 await MakeAnyRequest(client);
-                var expected = environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                var expected = environment.ToLower() + "-" + Defaults.RestHost;
                 _handler.LastRequest.RequestUri.Host.Should().Be(expected);
             }
 
@@ -455,7 +455,7 @@ namespace IO.Ably.Tests
             public FallbackSpecs(ITestOutputHelper output)
                 : base(output)
             {
-                _response = new HttpResponseMessage() { Content = new StringContent("1234") };
+                _response = new HttpResponseMessage { Content = new StringContent("1234") };
                 _handler = new FakeHttpMessageHandler(_response);
             }
 
@@ -787,7 +787,7 @@ namespace IO.Ably.Tests
                 Func<TokenParams, Task<object>> callback = (x) =>
                 {
                     called = true;
-                    return Task.FromResult<object>(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) });
+                    return Task.FromResult<object>(new TokenDetails { Expires = DateTimeOffset.UtcNow.AddHours(1) });
                 };
 
                 await GetClient(callback).StatsAsync();
@@ -892,7 +892,7 @@ namespace IO.Ably.Tests
 
                 return "[{}]".ToAblyResponse();
             };
-            rest.AblyAuth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.AblyAuth.CurrentToken = new TokenDetails { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             await rest.StatsAsync();
             newTokenRequested.Should().BeTrue();

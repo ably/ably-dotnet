@@ -235,7 +235,7 @@ namespace IO.Ably.Tests.Realtime
                 channel2.State.Should().BeEquivalentTo(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
-                ProtocolMessage syncMessage = new ProtocolMessage()
+                ProtocolMessage syncMessage = new ProtocolMessage
                 {
                     Channel = channel2Name,
                     Action = ProtocolMessage.MessageAction.Sync,
@@ -266,7 +266,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [InlineData(Protocol.Json, 30)] // Wait for 30 seconds
-            [InlineData(Protocol.Json, 150)] // Wait for 2 minutes and 30 seconds
+            [InlineData(Protocol.Json, 60)] // Wait for 1 minute
             [Trait("spec", "RTP17e")]
             public async Task Presence_ShouldReenterPresenceAfterAConnectionLoss(Protocol protocol, int waitInSeconds)
             {
@@ -741,7 +741,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 });
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -749,7 +749,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence1(),
                 }));
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence2(),
                 }));
 
-                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -899,7 +899,7 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.Presence.Map.Members.Should().HaveCount(1);
 
-                var localMessage = new PresenceMessage()
+                var localMessage = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:0",
@@ -968,7 +968,7 @@ namespace IO.Ably.Tests.Realtime
                 await client.WaitForState();
                 var channel = client.Channels.Get(channelName);
 
-                var localMessage1 = new PresenceMessage()
+                var localMessage1 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:1",
@@ -978,7 +978,7 @@ namespace IO.Ably.Tests.Realtime
                     Data = "local data 1"
                 };
 
-                var localMessage2 = new PresenceMessage()
+                var localMessage2 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
                     Id = $"local:0:2",
@@ -1963,7 +1963,6 @@ namespace IO.Ably.Tests.Realtime
         {
             private IRealtimeChannel _channel;
             private TaskCompletionAwaiter _tsc;
-            private int _count = 0;
 
             public PresenceAwaiter(IRealtimeChannel channel)
             {
@@ -1976,7 +1975,6 @@ namespace IO.Ably.Tests.Realtime
 
             public async Task<bool> WaitFor(int count)
             {
-                _count = count;
                 _tsc = new TaskCompletionAwaiter(10000, count);
                 return await _tsc.Task;
             }

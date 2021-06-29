@@ -33,7 +33,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             /* subscribe */
             await channel.AttachAsync();
 
-            var result = await channel.PublishAsync(new Message() { Name = "test", Data = "test", Extras = new MessageExtras(JToken.Parse(@"{""headers"":{ ""good"": ""walk"", ""nice"": ""exercise"" }}")) });
+            var result = await channel.PublishAsync(new Message { Name = "test", Data = "test", Extras = new MessageExtras(JToken.Parse(@"{""headers"":{ ""good"": ""walk"", ""nice"": ""exercise"" }}")) });
 
             result.IsSuccess.Should().BeTrue();
 

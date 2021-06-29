@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
 
         private static TokenParams GetTokenParams()
         {
-            return new TokenParams() { ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
+            return new TokenParams { ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
         }
 
         private TokenRequest _request;

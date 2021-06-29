@@ -123,7 +123,7 @@ namespace IO.Ably.Tests.Realtime
             var sentMessages = new List<ProtocolMessage>();
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {
-                var optionsTransportFactory = new TestTransportFactory()
+                var optionsTransportFactory = new TestTransportFactory
                 {
                     OnMessageSent = sentMessages.Add,
                 };
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
 
             var options = new ChannelOptions(
-                channelParams: new ChannelParams() { { "delta", "vcdiff" }, { "martin", "no chance" } });
+                channelParams: new ChannelParams { { "delta", "vcdiff" }, { "martin", "no chance" } });
             var channel = client.Channels.Get("Test", options);
 
             await channel.AttachAsync();
@@ -211,7 +211,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task SetOptions_WithDifferentModesOrParams_ShouldReAttachChannel(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channelParams = new ChannelParams() { { "delta", "vcdiff" } };
+            var channelParams = new ChannelParams { { "delta", "vcdiff" } };
             var options = new ChannelOptions(channelParams: channelParams);
             var channel = client.Channels.Get("test", options);
             await channel.AttachAsync();
@@ -636,7 +636,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
             var rest = await GetRestClient(protocol);
-            var token = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "1000" });
+            var token = await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = "1000" });
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
@@ -713,7 +713,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = clientId });
             });
 
             var channelName = "test".AddRandomSuffix();
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = clientId });
             });
             var channelName = "test".AddRandomSuffix();
             var channel = realtimeClient.Channels.Get(channelName);
@@ -1036,7 +1036,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
-            var history = await historyChannel.HistoryAsync(new PaginatedRequestParams() { Direction = QueryDirection.Forwards });
+            var history = await historyChannel.HistoryAsync(new PaginatedRequestParams { Direction = QueryDirection.Forwards });
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Items.Should().HaveCount(10);
@@ -1342,7 +1342,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(ConnectionEvent.Connected, async args =>
             {
                 await client.Channels.Get("test")
-                    .HistoryAsync(new PaginatedRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
+                    .HistoryAsync(new PaginatedRequestParams { Start = DateHelper.CreateDate(1969, 1, 1) });
             });
 
             var result = await client.Channels.Get("name").AttachAsync();

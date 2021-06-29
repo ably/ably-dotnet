@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
             // Arrange
             var rest = GetRestClient(request =>
             {
-                var response = new AblyResponse()
+                var response = new AblyResponse
                 {
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
                     TextResponse = "[{}]"
@@ -153,7 +153,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSCb3")]
         public void ShouldThrowIfLimitExceeds1000OrLessThan0(int limit)
         {
-            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams() { Limit = limit }));
+            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams { Limit = limit }));
         }
 
         [Theory]

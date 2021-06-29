@@ -25,7 +25,7 @@ namespace IO.Ably.Tests
 
         private static FakeTransport GetConnectedTransport()
         {
-            return new FakeTransport() { State = TransportState.Connected };
+            return new FakeTransport { State = TransportState.Connected };
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
         [Fact]
         public async Task ShouldHandleInboundConnectedMessage()
         {
-            _context.Transport = new FakeTransport() { State = TransportState.Connecting };
+            _context.Transport = new FakeTransport { State = TransportState.Connecting };
 
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
@@ -72,7 +72,7 @@ namespace IO.Ably.Tests
         public async Task WithInboundConnectedMessageAndClosingTransport_ShouldNotGoToConnected()
         {
             // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Closing };
+            _context.Transport = new FakeTransport { State = TransportState.Closing };
 
             // Act
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);

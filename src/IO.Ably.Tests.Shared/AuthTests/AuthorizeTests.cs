@@ -229,7 +229,7 @@ namespace IO.Ably.Tests.AuthTests
             var fakeApiKey = "foo.bar:baz";
             var cap = new Capability(capabilityString);
 
-            var tokenParams = new TokenParams() { Capability = cap };
+            var tokenParams = new TokenParams { Capability = cap };
 
             var token = new TokenDetails();
             var authOptions = new AuthOptions(fakeApiKey);

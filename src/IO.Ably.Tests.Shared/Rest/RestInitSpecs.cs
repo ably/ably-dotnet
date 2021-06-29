@@ -131,7 +131,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithTokenOnly_SetsTokenRenewableToFalse()
             {
-                var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
+                var rest = new AblyRest(new ClientOptions { Token = "token_id" });
 
                 rest.AblyAuth.TokenRenewable.Should().BeFalse();
             }
@@ -147,7 +147,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthUrl_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthUrl = new Uri("http://boo") });
+                var rest = new AblyRest(new ClientOptions { AuthUrl = new Uri("http://boo") });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
@@ -155,7 +155,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthCallback_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult<object>(new TokenDetails()) });
+                var rest = new AblyRest(new ClientOptions { AuthCallback = token => Task.FromResult<object>(new TokenDetails()) });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }

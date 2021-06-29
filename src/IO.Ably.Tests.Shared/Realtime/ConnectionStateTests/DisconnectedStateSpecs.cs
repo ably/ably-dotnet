@@ -97,7 +97,7 @@ namespace IO.Ably.Tests
         public async Task AfterAnInterval_ShouldRetryConnection()
         {
             // Arrange
-            var transport = new FakeTransport() { State = TransportState.Initialized };
+            var transport = new FakeTransport { State = TransportState.Initialized };
             _context.Transport = transport;
             var state = GetState(ErrorInfo.ReasonClosed);
 

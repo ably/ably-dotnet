@@ -282,7 +282,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return (Error != null) ? "Error: " + Error.ToString() : string.Empty;
+            return (Error != null) ? $"Error: {Error}" : string.Empty;
         }
 
         public static SetFailedStateCommand Create(ErrorInfo error) => new SetFailedStateCommand(error);
@@ -319,7 +319,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return $"Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 
@@ -413,7 +413,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return "Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 
@@ -498,6 +498,27 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData()
         {
             return $"Transport Id: {TransportId}. TransportState: {TransportState}. Exception: {Exception?.Message}";
+        }
+    }
+
+    internal class HeartbeatMonitorCommand : RealtimeCommand
+    {
+        private HeartbeatMonitorCommand(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl)
+        {
+            ConfirmedAliveAt = confirmedAliveAt;
+            ConnectionStateTtl = connectionStateTtl;
+        }
+
+        public DateTimeOffset? ConfirmedAliveAt { get; }
+
+        public TimeSpan ConnectionStateTtl { get; }
+
+        public static HeartbeatMonitorCommand Create(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl) =>
+            new HeartbeatMonitorCommand(confirmedAliveAt, connectionStateTtl);
+
+        protected override string ExplainData()
+        {
+            return $"ConfirmedAliveAt: {ConfirmedAliveAt}. ConnectionStateTtl {ConnectionStateTtl}";
         }
     }
 }

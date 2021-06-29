@@ -206,7 +206,7 @@ namespace IO.Ably.Tests.GithubSamples
         {
             var maxBufferSize = 64 * 1024;
             var options = new ClientOptions();
-            var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
+            var websocketOptions = new MsWebSocketOptions { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
             options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
             var realtime = new AblyRealtime(options);
         }

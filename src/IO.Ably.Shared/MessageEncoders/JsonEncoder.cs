@@ -57,10 +57,5 @@ namespace IO.Ably.MessageEncoders
         {
             return payload.Data is string == false && payload.Data is byte[] == false;
         }
-
-        public JsonEncoder()
-            : base()
-        {
-        }
     }
 }

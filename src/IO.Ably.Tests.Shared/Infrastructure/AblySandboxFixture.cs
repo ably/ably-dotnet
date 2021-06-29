@@ -27,7 +27,7 @@ namespace IO.Ably.Tests
 
         private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")
         {
-            var settings = new TestEnvironmentSettings()
+            var settings = new TestEnvironmentSettings
             {
                 Tls = true,
             };
