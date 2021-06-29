@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
             [InlineData(WebExceptionStatus.ConnectFailure)]
             [InlineData(WebExceptionStatus.NameResolutionFailure)]
             [Trait("spec", "RSC15d")]
-            public void IsRetyableError_WithHttpMessageExecption_ShouldBeTrue(WebExceptionStatus status)
+            public void IsRetyableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
             {
                 var exception = new HttpRequestException("Error", new WebException("boo", status));
                 AblyHttpClient.IsRetryableError(exception).Should().BeTrue();

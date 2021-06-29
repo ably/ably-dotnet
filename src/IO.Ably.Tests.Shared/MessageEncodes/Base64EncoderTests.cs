@@ -89,7 +89,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEnconding()
+            public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEncoding()
             {
                 IPayload payload = new Message { Data = _binaryData };
 
@@ -100,7 +100,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithBinaryPayloadAndExsitingEncoding_ConvertsDataToBase64StringAndAddsBase64Encoding()
+            public void WithBinaryPayloadAndExistingEncoding_ConvertsDataToBase64StringAndAddsBase64Encoding()
             {
                 IPayload payload = new Message { Data = _binaryData, Encoding = "cipher" };
 

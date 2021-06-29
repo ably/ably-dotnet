@@ -83,7 +83,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC2")]
-        public void DefaultLoggerSinkShouldbeSetup()
+        public void DefaultLoggerSinkShouldBeSetup()
         {
             var logger = new DefaultLogger.InternalLogger();
             logger.LoggerSink.Should().BeOfType<DefaultLoggerSink>();
@@ -155,7 +155,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC8b")]
-        public void WhenBinaryProtoclIsFalse_ShouldSetProtocolToJson()
+        public void WhenBinaryProtocolIsFalse_ShouldSetProtocolToJson()
         {
             var client = GetRestClient(setOptionsAction: opts => opts.UseBinaryProtocol = false);
             client.Protocol.Should().Be(Protocol.Json);
@@ -536,13 +536,13 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC15a")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
-                int interations = 20;
+                int interactions = 20;
                 _response.StatusCode = HttpStatusCode.BadGateway;
 
                 // The higher the retries the less chance the two lists will match
                 // but as per RSC15a each host will only be tried once (there are currently 6 hosts)...
                 List<string> firstAttemptHosts = new List<string>();
-                for (int i = 0; i < interations; i++)
+                for (int i = 0; i < interactions; i++)
                 {
                     var client = CreateClient(options => options.HttpMaxRetryCount = 10);
                     await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
@@ -554,7 +554,7 @@ namespace IO.Ably.Tests
                 await Task.Delay(100);
 
                 List<string> secondAttemptHosts = new List<string>();
-                for (int i = 0; i < interations; i++)
+                for (int i = 0; i < interactions; i++)
                 {
                     var client = CreateClient(options => options.HttpMaxRetryCount = 10);
                     await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));

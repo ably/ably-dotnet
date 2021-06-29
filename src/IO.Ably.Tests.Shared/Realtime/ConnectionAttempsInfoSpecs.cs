@@ -17,7 +17,7 @@ namespace IO.Ably.Tests.Realtime
         private RealtimeState _state = new RealtimeState();
 
         [Fact]
-        public void Reset_SHouldResetFirstAttemptAndNumberOfAttempts()
+        public void Reset_ShouldResetFirstAttemptAndNumberOfAttempts()
         {
             Info.Reset();
             Info.FirstAttempt.Should().NotHaveValue();
@@ -77,11 +77,11 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(502)]
         [InlineData(503)]
         [InlineData(504)]
-        public async Task CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(int httpcode)
+        public async Task CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(int httpCode)
         {
             var client = GetRealtime();
 
-            var result = await client.RestClient.CanFallback(new ErrorInfo("test", 111, (HttpStatusCode)httpcode));
+            var result = await client.RestClient.CanFallback(new ErrorInfo("test", 111, (HttpStatusCode)httpCode));
             result.Should().BeTrue();
         }
 

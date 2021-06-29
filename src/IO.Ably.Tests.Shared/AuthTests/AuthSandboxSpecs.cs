@@ -646,7 +646,7 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f1")]
-        public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
+        public async Task TokenAuthWithoutClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
             var client = await GetRestClient(protocol, opts => opts.QueryTime = true);
             var settings = await Fixture.GetSettings();
@@ -669,7 +669,7 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f2")]
-        public async Task TokenAuthWithouthClientIdAndAMessageWithExplicitId_ShouldThrow(Protocol protocol)
+        public async Task TokenAuthWithoutClientIdAndAMessageWithExplicitId_ShouldThrow(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
@@ -688,7 +688,7 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f3")]
-        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard(
+        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessfullyAndClientIdShouldBeSetToWildcard(
             Protocol protocol)
         {
             var client = await GetRestClient(protocol);

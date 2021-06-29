@@ -8,7 +8,7 @@ namespace IO.Ably.Tests
 {
     public class TaskUtilsTests
     {
-        public class MockBagroundService
+        public class MockBackGroundService
         {
             public static async Task FailingTask()
             {
@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
         public async Task FailingTaskShouldHaveExceptionHandled()
         {
             var tsc = new TaskCompletionAwaiter(500);
-            TaskUtils.RunInBackground(MockBagroundService.FailingTask(), exception =>
+            TaskUtils.RunInBackground(MockBackGroundService.FailingTask(), exception =>
             {
                 tsc.SetCompleted();
             });

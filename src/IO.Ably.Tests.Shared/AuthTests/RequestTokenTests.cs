@@ -459,13 +459,13 @@ namespace IO.Ably.Tests.AuthTests
             var rest = GetRestClient();
             var options = new AuthOptions { AuthUrl = new Uri("http://authUrl") };
             List<AblyRequest> requests = new List<AblyRequest>();
-            var requestdata = new TokenRequest { KeyName = KeyId, Capability = new Capability(), Mac = "mac" };
+            var requestData = new TokenRequest { KeyName = KeyId, Capability = new Capability(), Mac = "mac" };
             rest.ExecuteHttpRequest = (x) =>
                 {
                     requests.Add(x);
                     if (x.Url == options.AuthUrl.ToString())
                     {
-                        return JsonHelper.Serialize(requestdata).ToAblyResponse();
+                        return JsonHelper.Serialize(requestData).ToAblyResponse();
                     }
 
                     return DummyTokenResponse.ToTask();
@@ -477,7 +477,7 @@ namespace IO.Ably.Tests.AuthTests
 
             requests.Count.Should().Be(2);
             var last = requests.Last().PostData as TokenRequest;
-            last.Should().BeEquivalentTo(requestdata);
+            last.Should().BeEquivalentTo(requestData);
         }
 
         [Fact]

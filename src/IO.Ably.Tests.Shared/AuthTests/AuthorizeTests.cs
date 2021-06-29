@@ -106,7 +106,7 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10k")]
-        public async Task Authorize_WillObtainServerTimeAndPersist_ShouldUserServerTimeEvenIfFurtherRequestsDontHaveQueryTimeSetToTrue()
+        public async Task Authorize_WillObtainServerTimeAndPersist_ShouldUserServerTimeEvenIfFurtherRequestsDoNotHaveQueryTimeSetToTrue()
         {
             var client = GetRestClient();
             var serverTimeCalled = 0;
@@ -259,7 +259,7 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10g")]
-        public async Task ShouldKeepTokenParamsAndAuthOptionsExcetpForceAndCurrentTimestamp()
+        public async Task ShouldKeepTokenParamsAndAuthOptionsExceptForceAndCurrentTimestamp()
         {
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);

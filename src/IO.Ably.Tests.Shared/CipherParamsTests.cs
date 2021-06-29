@@ -6,7 +6,7 @@ namespace IO.Ably.Tests
     public class CipherParamsTests
     {
         [Fact]
-        public void Ctor_WithKeyAndNoAlgorithSpecified_DefaultsToAES()
+        public void Ctor_WithKeyAndNoAlgorithmSpecified_DefaultsToAES()
         {
             // Act
             var cipherParams = new CipherParams(string.Empty, new byte[] { });

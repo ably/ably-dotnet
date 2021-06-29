@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        public async Task TestAttachChannel_AttachesSuccessfuly(Protocol protocol)
+        public async Task TestAttachChannel_AttachesSuccessfully(Protocol protocol)
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
@@ -278,11 +278,11 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTL7f")]
         [Trait("spec", "RTC1a")]
-        public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
+        public async Task TestAttachChannel_SendingMessage_DoesNot_EchoesItBack(Protocol protocol)
         {
             var channelName = "echo_off_test";
 
-            // this should be logged in MsWebSocketTrasnport.CreateSocket
+            // this should be logged in MsWebSocketTransport.CreateSocket
             var testLogger = new TestLogger("Connecting to web socket on url:");
 
             // Arrange
@@ -615,10 +615,10 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "test".AddRandomSuffix();
             var channel = client.Channels.Get(channelName);
             int messagesReceived = 0;
-            string receivedClienId = string.Empty;
+            string receivedClientId = string.Empty;
             channel.Subscribe(message =>
             {
-                receivedClienId = message.ClientId;
+                receivedClientId = message.ClientId;
                 Interlocked.Increment(ref messagesReceived);
             });
 
@@ -627,7 +627,7 @@ namespace IO.Ably.Tests.Realtime
             await client.ProcessCommands();
 
             messagesReceived.Should().BeGreaterThan(0);
-            receivedClienId.Should().Be(clientId);
+            receivedClientId.Should().Be(clientId);
         }
 
         [Theory]
@@ -1278,7 +1278,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("issue", "117")]
-        public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
+        public async Task AttachAwaitShouldTimeoutIfStateChanges(Protocol protocol)
         {
             var client1 = await GetRealtimeClient(protocol, (opts, _) =>
             {

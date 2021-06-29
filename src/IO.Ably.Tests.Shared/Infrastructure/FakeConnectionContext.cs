@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
 {
     internal class FakeConnectionContext : IConnectionContext
     {
-        private bool _attempConnectionCalled;
+        private bool _attemptConnectionCalled;
 
         public bool CanConnectToAblyBool { get; } = true;
 
@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
 
         public bool CanUseFallBack { get; set; }
 
-        public bool AttempConnectionCalled { get => _attempConnectionCalled; set => _attempConnectionCalled = value; }
+        public bool AttemptConnectionCalled { get => _attemptConnectionCalled; set => _attemptConnectionCalled = value; }
 
         public T StateShouldBe<T>() where T : ConnectionStateBase
         {

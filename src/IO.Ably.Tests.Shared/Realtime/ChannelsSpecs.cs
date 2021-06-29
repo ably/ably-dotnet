@@ -58,7 +58,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS3c")]
-        public async Task WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
+        public async Task WithExistingChannelAndOptions_ShouldGetExistingChannelAndUpdateOptions()
         {
             // Arrange
             var client = await GetConnectedClient();
@@ -194,7 +194,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
+        public async Task ReleaseAll_ShouldRemoveChannelWhenFailed()
         {
             // Arrange
             var (client, channel) = await GetClientAndChannel();

@@ -211,7 +211,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA9d")]
-            public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
+            public async Task WithNoTimeStampInRequest_ShouldUseSystemType()
             {
                 var request = await CreateTokenRequest(Client);
                 request.Timestamp.Value.Should().BeCloseTo(Now, 500);
@@ -358,7 +358,7 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC17")]
             [Trait("spec", "RSA7b1")]
-            public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
+            public void WhenClientIdInOptions_ShouldPassClientIdToAblyAuth()
             {
                 var options = new ClientOptions(ValidKey) { ClientId = "123" };
                 var client = new AblyRest(options);

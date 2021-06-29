@@ -23,7 +23,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
 
         [Fact]
         [Trait("spec", "RSL6c2")]
-        public async Task WhenMessageRecevied_WithDeltaError_ShouldNotPassMessageToChannelSubscriber()
+        public async Task WhenMessageReceived_WithDeltaError_ShouldNotPassMessageToChannelSubscriber()
         {
             var (realtime, c) = await GetClientAndChannel();
             RealtimeChannel channel = (RealtimeChannel)c;

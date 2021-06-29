@@ -1118,7 +1118,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("issue", "65")]
-        public async Task WithShortlivedToken_ShouldRenewTokenMoreThanOnce(Protocol protocol)
+        public async Task WithShortLivedToken_ShouldRenewTokenMoreThanOnce(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {

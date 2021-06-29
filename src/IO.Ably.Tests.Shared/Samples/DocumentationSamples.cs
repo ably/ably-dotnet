@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.Samples
                 }
                 else
                 {
-                    Console.WriteLine("Message published sucessfully");
+                    Console.WriteLine("Message published successfully");
                 }
             });
 
@@ -143,7 +143,7 @@ namespace IO.Ably.Tests.Samples
             }
             else
             {
-                Console.WriteLine("Message published sucessfully");
+                Console.WriteLine("Message published successfully");
             }
         }
 

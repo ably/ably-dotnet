@@ -167,7 +167,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithCipherPayload_DercyptsDataAndStripsEncoding()
+            public void WithCipherPayload_DecryptsDataAndStripsEncoding()
             {
                 IPayload payload = new Message { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
 
@@ -178,7 +178,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithCipherPayloadBeforeOtherPayloads_DecryptsDataAndStriptsCipherEncoding()
+            public void WithCipherPayloadBeforeOtherPayloads_DecryptsDataAndStripsCipherEncoding()
             {
                 IPayload payload = new Message { Data = _encryptedBinaryData, Encoding = "utf-8/cipher+aes-256-cbc" };
 
@@ -222,7 +222,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithCipherPayload_DercyptsDataAndStripsEncoding()
+            public void WithCipherPayload_DecryptsDataAndStripsEncoding()
             {
                 IPayload payload = new Message { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
 

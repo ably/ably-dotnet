@@ -93,7 +93,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RTN12a")]
-        public void WhenCloseCalled_ShouldCHangeStateToClosing()
+        public void WhenCloseCalled_ShouldChangeStateToClosing()
         {
             // Act
             _state.Close();
