@@ -807,7 +807,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new object[] { new object(), string.Empty, new Uri("http://test") };
+                var objects = new[] { new object(), string.Empty, new Uri("http://test") };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>

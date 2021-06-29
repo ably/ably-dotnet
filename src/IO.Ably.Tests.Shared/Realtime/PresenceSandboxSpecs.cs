@@ -1049,7 +1049,7 @@ namespace IO.Ably.Tests.Realtime
 
                 PresenceMessage[] TestPresence1()
                 {
-                    return new PresenceMessage[]
+                    return new[]
                     {
                         new PresenceMessage
                         {
