@@ -41,7 +41,7 @@ namespace IO.Ably.Push
 
                         if (device.IsRegistered)
                         {
-                            await Machine.ValidateRegistration();
+                            _ = Machine.ValidateRegistration();
                             return new WaitingForRegistrationSync(Machine, @event);
                         }
 
