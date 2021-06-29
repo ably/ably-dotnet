@@ -11,7 +11,7 @@ namespace IO.Ably
     /// Provides Http helper methods.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Only used internally")]
-    public sealed class HttpUtility
+    public static class HttpUtility
     {
         public static HttpValueCollection ParseQueryString(string query)
         {
@@ -95,11 +95,6 @@ namespace IO.Ably
         {
             _data.Add(new kvp(name, value));
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
-        /// </summary>
-        public HttpValueCollection() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
