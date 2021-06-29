@@ -126,7 +126,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Statistics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenParams.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPostData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TokenRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttemptsInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionHeartbeatHandler.cs" />
