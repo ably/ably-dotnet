@@ -56,7 +56,7 @@ namespace IO.Ably.Push
 
                         if (device.IsCreated == false)
                         {
-                            var newLocalDevice = LocalDevice.Create(Machine.ClientId);
+                            var newLocalDevice = LocalDevice.Create(Machine.ClientId, Machine._mobileDevice);
                             Machine.PersistLocalDevice(newLocalDevice);
                             Machine.LocalDevice = newLocalDevice;
                         }
