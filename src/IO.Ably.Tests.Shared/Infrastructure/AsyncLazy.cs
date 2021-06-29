@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace IO.Ably.Tests
 {
     /// <summary>
-    /// Provides support for asynchronous lazy initialization. This type is fully threadsafe.
+    /// Provides support for asynchronous lazy initialization. This type is fully thread safe.
     /// </summary>
     /// <typeparam name="T">The type of object that is being asynchronously initialized.</typeparam>
     public sealed class AsyncLazy<T>
