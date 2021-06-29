@@ -72,7 +72,7 @@ namespace IO.Ably.Push
 
             // TODO: See if I need to get Ably from some kind of context
             var presentClientId = _restClient.Auth.ClientId;
-            if (presentClientId.IsNotEmpty() && presentClientId.EqualsTo(LocalDevice.ClientId) == false)
+            if (presentClientId.IsNotEmpty() && LocalDevice.ClientId.IsNotEmpty() && presentClientId.EqualsTo(LocalDevice.ClientId) == false)
             {
                 Debug(
                     $"Activation failed. Auth clientId '{presentClientId}' is not equal to Device clientId '{LocalDevice.ClientId}'");
@@ -180,15 +180,13 @@ namespace IO.Ably.Push
 
             var events = _pendingEvents.ToList();
 
-            _mobileDevice.SetPreference(PersistKeys.StateMachine.PENDING_EVENTS_LENGTH, events.Count.ToString(), PersistKeys.StateMachine.SharedName);
-
             // Saves pending events as a pipe separated list.
             _mobileDevice.SetPreference(PersistKeys.StateMachine.PENDING_EVENTS, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
         }
 
         private void AddToEventQueue(Event @event)
         {
-            PendingEvents.Enqueue(@event);
+            _pendingEvents.Enqueue(@event);
         }
 
         private void GetRegistrationToken()
@@ -308,6 +306,8 @@ namespace IO.Ably.Push
             string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
 
             var localDevice = new LocalDevice();
+            localDevice.Platform = _mobileDevice.DevicePlatform;
+            localDevice.FormFactor = _mobileDevice.FormFactor;
             string id = GetDeviceSetting(PersistKeys.Device.DEVICE_ID);
 
             localDevice.Id = id;
@@ -369,53 +369,60 @@ namespace IO.Ably.Push
                 throw new AblyException("Failed to get ActivationStateMachine state lock.");
             }
 
-            CurrentState = LoadState();
-            _pendingEvents = LoadPersistedEvents();
-
-            Debug($"State loaded. CurrentState: '{CurrentState.GetType().Name}', PendingEvents: '{_pendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}'.");
-
-            Queue<Event> LoadPersistedEvents()
+            try
             {
-                var persistedEvents = _mobileDevice.GetPreference(PersistKeys.StateMachine.PENDING_EVENTS, PersistKeys.StateMachine.SharedName);
-                var eventNames = persistedEvents.Split('|');
+                CurrentState = LoadState();
+                _pendingEvents = LoadPersistedEvents();
 
-                return new Queue<Event>(eventNames.Select(ParseEvent).Where(x => x != null));
-            }
+                Debug($"State loaded. CurrentState: '{CurrentState.GetType().Name}', PendingEvents: '{_pendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}'.");
 
-            Event ParseEvent(string eventName)
-            {
-                switch (eventName)
+                Queue<Event> LoadPersistedEvents()
                 {
-                    case nameof(CalledActivate):
-                        return new CalledActivate();
-                    case nameof(CalledDeactivate):
-                        return new CalledDeactivate();
-                    case nameof(GotPushDeviceDetails):
-                        return new GotPushDeviceDetails();
-                    case nameof(RegistrationSynced):
-                        return new RegistrationSynced();
-                    case nameof(Deregistered):
-                        return new Deregistered();
-                    default: return null;
+                    var persistedEvents = _mobileDevice.GetPreference(PersistKeys.StateMachine.PENDING_EVENTS, PersistKeys.StateMachine.SharedName);
+                    var eventNames = persistedEvents.Split('|');
+
+                    return new Queue<Event>(eventNames.Select(ParseEvent).Where(x => x != null));
+                }
+
+                Event ParseEvent(string eventName)
+                {
+                    switch (eventName)
+                    {
+                        case nameof(CalledActivate):
+                            return new CalledActivate();
+                        case nameof(CalledDeactivate):
+                            return new CalledDeactivate();
+                        case nameof(GotPushDeviceDetails):
+                            return new GotPushDeviceDetails();
+                        case nameof(RegistrationSynced):
+                            return new RegistrationSynced();
+                        case nameof(Deregistered):
+                            return new Deregistered();
+                        default: return null;
+                    }
+                }
+
+                State LoadState()
+                {
+                    var currentState = _mobileDevice.GetPreference(PersistKeys.StateMachine.CURRENT_STATE, PersistKeys.StateMachine.SharedName);
+                    switch (currentState)
+                    {
+                        case nameof(NotActivated):
+                            return new NotActivated(this);
+                        case nameof(WaitingForPushDeviceDetails):
+                            return new WaitingForPushDeviceDetails(this);
+                        case nameof(WaitingForNewPushDeviceDetails):
+                            return new WaitingForNewPushDeviceDetails(this);
+                        case nameof(AfterRegistrationSyncFailed):
+                            return new AfterRegistrationSyncFailed(this);
+                        default:
+                            return new NotActivated(this);
+                    }
                 }
             }
-
-            State LoadState()
+            finally
             {
-                var currentState = _mobileDevice.GetPreference(PersistKeys.StateMachine.CURRENT_STATE, PersistKeys.StateMachine.SharedName);
-                switch (currentState)
-                {
-                    case nameof(NotActivated):
-                        return new NotActivated(this);
-                    case nameof(WaitingForPushDeviceDetails):
-                        return new WaitingForPushDeviceDetails(this);
-                    case nameof(WaitingForNewPushDeviceDetails):
-                        return new WaitingForNewPushDeviceDetails(this);
-                    case nameof(AfterRegistrationSyncFailed):
-                        return new AfterRegistrationSyncFailed(this);
-                    default:
-                        return new NotActivated(this);
-                }
+                _handleEventsLock.Release();
             }
         }
     }
