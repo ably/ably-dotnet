@@ -29,7 +29,14 @@
     </StackLayout>
     <ScrollView Grid.Row="1">
       <StackLayout Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
-        <Label Text="Test Ably push notifications"/>
+        <StackLayout Orientation="Horizontal">
+          <Label Text="ClientId: "  TextColor="Black"/>
+          <Label Text="{Binding ClientId}"  TextColor="Black"/>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+          <Label Text="Current State: " TextColor="Black"/>
+          <Label Text="{Binding CurrentState}" TextColor="Black"/>
+        </StackLayout>
         <Button Margin="0,10,0,0" Text="Activate"
                         Command="{Binding ActivatePush}"
                         BackgroundColor="{StaticResource Primary}"
