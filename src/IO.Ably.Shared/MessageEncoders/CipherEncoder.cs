@@ -100,10 +100,5 @@ namespace IO.Ably.MessageEncoders
         {
             return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }
-
-        public CipherEncoder()
-            : base()
-        {
-        }
     }
 }
