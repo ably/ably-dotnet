@@ -399,6 +399,13 @@ namespace IO.Ably
         public bool AutomaticNetworkStateMonitoring { get; set; } = true;
 
         /// <summary>
+        /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server
+        /// connection has been lost.
+        /// Defaults: 1000.
+        /// </summary>
+        public int HeartbeatMonitorDelay { get; set; } = 1000;
+
+        /// <summary>
         /// If enabled, every REST request to Ably includes a `request_id` query string parameter.
         /// This request ID remains the same if a request is retried to a fallback host.
         /// </summary>

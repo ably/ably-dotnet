@@ -20,7 +20,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
 
-            public DateTimeOffset? ConfirmedAliveAt { get; set; }
+            public DateTimeOffset? ConfirmedAliveAt { get; private set; }
 
             /// <summary>
             ///     The id of the current connection. This string may be
