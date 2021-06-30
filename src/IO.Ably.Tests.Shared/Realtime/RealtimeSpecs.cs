@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
 
         public class RealtimePropertiesSpec : MockHttpRealtimeSpecs
         {
-            private AblyRealtime _client;
+            private readonly AblyRealtime _client;
 
             [Fact]
             [Trait("spec", "RTC2")]

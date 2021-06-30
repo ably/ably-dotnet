@@ -16,8 +16,8 @@ namespace IO.Ably.Tests.Rest
     [Trait("type", "integration")]
     public class ChannelSandboxSpecs : SandboxSpecs
     {
-        private JObject _examples;
-        private JObject _examples256;
+        private readonly JObject _examples;
+        private readonly JObject _examples256;
 
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)

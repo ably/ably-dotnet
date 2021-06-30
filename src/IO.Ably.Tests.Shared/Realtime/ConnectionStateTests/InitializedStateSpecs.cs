@@ -11,8 +11,9 @@ namespace IO.Ably.Tests
 {
     public class InitializedStateSpecs : AblySpecs
     {
+        private readonly ConnectionInitializedState _state;
+
         private FakeConnectionContext _context;
-        private ConnectionInitializedState _state;
 
         public InitializedStateSpecs(ITestOutputHelper output)
             : base(output)

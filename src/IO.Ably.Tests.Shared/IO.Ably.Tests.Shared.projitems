@@ -22,7 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageExtrasConverterTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DefaultTests.cs" />
@@ -70,7 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelsSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionAttempsInfoSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionAttemptsInfoSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxOperatingSystemEventsForNetworkSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxTransportSideEffectsSpecs.cs" />
@@ -131,6 +131,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetailsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenParamsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TokenRequestDataTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPopulateTests.cs" />
   </ItemGroup>
 </Project>

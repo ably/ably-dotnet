@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
     [Collection("UnitTests")]
     public class AuthorizationTests : MockHttpRestSpecs
     {
-        internal AblyResponse DummyTokenResponse = new AblyResponse
+        internal readonly AblyResponse DummyTokenResponse = new AblyResponse
         {
             Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}"
         };

@@ -12,9 +12,9 @@ namespace IO.Ably.Tests
 {
     public class DisconnectedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionDisconnectedState _state;
-        private FakeTimer _timer;
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionDisconnectedState _state;
+        private readonly FakeTimer _timer;
 
         public DisconnectedStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -22,11 +22,6 @@ namespace IO.Ably.Tests
             _context = new FakeConnectionContext();
             _timer = new FakeTimer();
             _state = GetState();
-        }
-
-        private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
-        {
-            return new ConnectionDisconnectedState(_context, error, _timer, Logger);
         }
 
         [Fact]
@@ -67,7 +62,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RTN12d")]
-        public void WhenCloseCalled_ShouldTrasitionToClosedAndTimerAborted()
+        public void WhenCloseCalled_ShouldTransitionToClosedAndTimerAborted()
         {
             // Arrange
             var state = GetState(ErrorInfo.ReasonClosed);
@@ -81,7 +76,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void WhenConnectCalled_SHouldTrasitionToConnecting()
+        public void WhenConnectCalled_ShouldTransitionToConnecting()
         {
             // Arrange
             var state = GetState(ErrorInfo.ReasonClosed);
@@ -108,6 +103,11 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _context.ShouldQueueCommand<SetConnectingStateCommand>();
+        }
+
+        private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
+        {
+            return new ConnectionDisconnectedState(_context, error, _timer, Logger);
         }
     }
 }

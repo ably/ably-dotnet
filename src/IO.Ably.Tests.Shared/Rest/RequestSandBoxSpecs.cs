@@ -21,12 +21,12 @@ namespace IO.Ably.Tests
     [Trait("spec", "RSC19e")]
     public class RequestSandBoxSpecs : SandboxSpecs, IAsyncLifetime
     {
-        private string _channelName;
-        private string _channelAltName;
-        private string _channelNamePrefix;
-        private string _channelPath;
-        private string _channelsPath;
-        private string _channelMessagesPath;
+        private readonly string _channelName;
+        private readonly string _channelAltName;
+        private readonly string _channelNamePrefix;
+        private readonly string _channelPath;
+        private readonly string _channelsPath;
+        private readonly string _channelMessagesPath;
 
         private AblyRequest _lastRequest = null;
 
