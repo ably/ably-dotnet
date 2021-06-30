@@ -291,7 +291,7 @@ namespace IO.Ably.Tests.Realtime
                 bool stateDidChange = false;
 
                 // set initial state
-                channel.SetChannelState((ChannelState)state);
+                channel.SetChannelState(state);
 
                 channel.Once(stateChange =>
                 {
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 // attempt to set the same state again
-                channel.SetChannelState((ChannelState)state);
+                channel.SetChannelState(state);
 
                 stateDidChange.Should().BeFalse();
             }
