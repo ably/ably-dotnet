@@ -141,7 +141,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionDisconnectedState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionFailedState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionInitializedState.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionStateBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ConnectionSuspendedState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ICountdownTimer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\TaskWrapper.cs" />
