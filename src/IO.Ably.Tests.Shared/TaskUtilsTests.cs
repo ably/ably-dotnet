@@ -8,15 +8,6 @@ namespace IO.Ably.Tests
 {
     public class TaskUtilsTests
     {
-        public class MockBackGroundService
-        {
-            public static async Task FailingTask()
-            {
-                await Task.Delay(100);
-                throw new Exception();
-            }
-        }
-
         [Fact(Skip = "Keeps failing when ran on the build server")]
         public async Task FailingTaskShouldHaveExceptionHandled()
         {
@@ -28,6 +19,15 @@ namespace IO.Ably.Tests
 
             var result = await tsc.Task;
             result.Should().BeTrue();
+        }
+
+        private static class MockBackGroundService
+        {
+            public static async Task FailingTask()
+            {
+                await Task.Delay(100);
+                throw new Exception();
+            }
         }
     }
 }
