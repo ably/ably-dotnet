@@ -130,7 +130,7 @@ namespace IO.Ably.Tests
             return Task.FromResult(client.Channels.Get(TestChannelName, channelOptions));
         }
 
-        public AblyRealtimeSpecs(ITestOutputHelper output)
+        protected AblyRealtimeSpecs(ITestOutputHelper output)
             : base(output)
         {
             FakeTransportFactory = new FakeTransportFactory();
