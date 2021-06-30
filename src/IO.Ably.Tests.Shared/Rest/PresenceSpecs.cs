@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         public class GetSpecs : PresenceSpecs
         {
             private AblyRest _client;
-            private IRestChannel _channel;
+            private readonly IRestChannel _channel;
 
             [Theory]
             [InlineData(null, "100", false)]

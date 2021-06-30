@@ -12,9 +12,10 @@ namespace IO.Ably.Tests
 {
     public class ClosedStateSpecs : AblySpecs
     {
+        private readonly ConnectionClosedState _state;
+        private readonly DefaultLogger.InternalLogger _logger;
+
         private FakeConnectionContext _context;
-        private ConnectionClosedState _state;
-        private DefaultLogger.InternalLogger _logger;
 
         public ClosedStateSpecs(ITestOutputHelper output)
             : base(output)
