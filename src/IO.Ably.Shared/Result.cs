@@ -58,8 +58,8 @@ namespace IO.Ably
 
         public static Unit operator +(Unit a, Unit b) =>
             Default;
-#pragma warning enable SA1600 // Elements should be documented
-#pragma warning enable SA1129 // Do not use default value constructor
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore SA1129 // Do not use default value constructor
     }
 
     /// <summary>
