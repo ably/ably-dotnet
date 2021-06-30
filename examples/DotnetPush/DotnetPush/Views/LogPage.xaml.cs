@@ -9,13 +9,19 @@ using Xamarin.Forms.Xaml;
 
 namespace DotnetPush.Views
 {
+    /// <summary>
+    /// Page to show logs.
+    /// </summary>
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LogPage : ContentPage
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LogPage"/> class.
+        /// </summary>
         public LogPage()
         {
             InitializeComponent();
-            this.BindingContext = new LogViewModel();
+            BindingContext = new LogViewModel();
         }
     }
 }

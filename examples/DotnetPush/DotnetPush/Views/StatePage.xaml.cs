@@ -9,13 +9,19 @@ using Xamarin.Forms.Xaml;
 
 namespace DotnetPush.Views
 {
+    /// <summary>
+    /// Page to display the phone's Ably RealtimePush state.
+    /// </summary>
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class StatePage : ContentPage
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StatePage"/> class.
+        /// </summary>
         public StatePage()
         {
             InitializeComponent();
-            this.BindingContext = new StateViewModel((message) => DisplayAlert("Alert", message, "ok"));
+            BindingContext = new StateViewModel((message) => DisplayAlert("Alert", message, "ok"));
         }
     }
 }

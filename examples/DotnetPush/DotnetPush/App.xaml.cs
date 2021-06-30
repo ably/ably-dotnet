@@ -1,47 +1,25 @@
-﻿using System.Collections.Generic;
-using DotnetPush.Services;
-using IO.Ably;
-using DotnetPush.Models;
+﻿using IO.Ably;
 using Xamarin.Forms;
 
 namespace DotnetPush
 {
-    public class AppLoggerSink : ILoggerSink
+    /// <summary>
+    /// Xamarin Application entry point.
+    /// </summary>
+    public partial class App
     {
-        public List<LogEntry> Messages { get; set; } = new List<LogEntry>();
-
-        public void LogEvent(LogLevel level, string message)
-        {
-            Messages.Add(new LogEntry(level, message));
-        }
-    }
-
-    public partial class App : Application
-    {
-        private readonly AblyRealtime _realtimeClient;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App"/> class.
+        /// </summary>
+        /// <param name="realtimeClient">Instance of the Ably Realtime client.</param>
+        /// <param name="appLoggerSink">Instance of the AppLoggerSink so we can display and analyze logs inside the app.</param>
         public App(AblyRealtime realtimeClient, AppLoggerSink appLoggerSink)
         {
-            _realtimeClient = realtimeClient;
             InitializeComponent();
 
-
-            DependencyService.Register<MockDataStore>();
-            DependencyService.RegisterSingleton(_realtimeClient);
+            DependencyService.RegisterSingleton(realtimeClient);
             DependencyService.RegisterSingleton(appLoggerSink);
             MainPage = new AppShell();
-        }
-
-        protected override void OnStart()
-        {
-        }
-
-        protected override void OnSleep()
-        {
-        }
-
-        protected override void OnResume()
-        {
         }
     }
 }

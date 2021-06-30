@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

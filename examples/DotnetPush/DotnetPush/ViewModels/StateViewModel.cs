@@ -6,13 +6,28 @@ using Xamarin.Forms;
 
 namespace DotnetPush.ViewModels
 {
+    /// <summary>
+    /// View model for the State page.
+    /// </summary>
     public class StateViewModel : BaseViewModel
     {
         private readonly Action<string> _displayAlert;
         private StateModel _state;
+
+        /// <summary>
+        /// Reads the current device preferences to load state.
+        /// </summary>
         public Command LoadStateCommand { get; }
+
+        /// <summary>
+        /// Deletes the preferences stored on the device.
+        /// </summary>
         public Command ClearStateCommand { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StateViewModel"/> class.
+        /// </summary>
+        /// <param name="displayAlert">Action called when we need to display an alert message.</param>
         public StateViewModel(Action<string> displayAlert)
         {
             _displayAlert = displayAlert;
@@ -28,17 +43,19 @@ namespace DotnetPush.ViewModels
             await LoadState();
         }
 
+        /// <summary>
+        /// Stores the current Device State.
+        /// </summary>
         public StateModel State
         {
             get => _state;
             set => SetProperty(ref _state, value);
         }
 
-        private async Task LoadState()
+        private Task LoadState()
         {
             string GetStateMachineProperty(string key) => Preferences.Get(key, "[not set]", "Ably_StateMachine");
             string GetDeviceProperty(string key) => Preferences.Get(key, "[not set]", "Ably_Device");
-
 
             var model = new StateModel();
             model.StateMachine.CurrentState = GetStateMachineProperty("ABLY_PUSH_CURRENT_STATE");
@@ -52,8 +69,13 @@ namespace DotnetPush.ViewModels
             model.Device.DeviceId = GetDeviceProperty("ABLY_DEVICE_ID");
 
             State = model;
+
+            return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Executed before the View is displayed.
+        /// </summary>
         public void OnAppearing()
         {
             _ = LoadState();

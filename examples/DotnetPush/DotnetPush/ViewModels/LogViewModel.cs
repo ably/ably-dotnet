@@ -9,18 +9,40 @@ using Xamarin.Forms;
 
 namespace DotnetPush.ViewModels
 {
+    /// <summary>
+    /// View model for the Log page.
+    /// </summary>
     public class LogViewModel : BaseViewModel
     {
-        public AppLoggerSink LoggerSync => DependencyService.Get<AppLoggerSink>();
+        /// <summary>
+        /// The current LoggerSink.
+        /// </summary>
+        public AppLoggerSink LoggerSink => DependencyService.Get<AppLoggerSink>();
 
+        /// <summary>
+        /// A flag used to filter the displayed logs. If `true` it will show logs only starting with ActivationStateMachine and
+        /// if `false` it will show all AblyRealtime logs.
+        /// Default: false.
+        /// </summary>
         public bool ShowOnlyStateMachineLogs { get; set; } = false;
-        public Command LoadItemsCommand { get; }
+
+        /// <summary>
+        /// Command to Load log entries.
+        /// </summary>
+        public Command LoadLogEntriesCommand { get; }
+
+        /// <summary>
+        /// Command to toggle ShowOnlyStateMachineLogs flag and reload the entries.
+        /// </summary>
         public Command FilterItemsCommand { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LogViewModel"/> class.
+        /// </summary>
         public LogViewModel()
         {
             LogEntries = new ObservableCollection<LogEntry>();
-            LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
+            LoadLogEntriesCommand = new Command(async () => await ExecuteLoadItemsCommand());
             FilterItemsCommand = new Command(async () =>
             {
                 ShowOnlyStateMachineLogs = !ShowOnlyStateMachineLogs;
@@ -28,16 +50,19 @@ namespace DotnetPush.ViewModels
             });
         }
 
+        /// <summary>
+        /// Observable collection of LogEntries.
+        /// </summary>
         public ObservableCollection<LogEntry> LogEntries { get; set; }
 
-        private async Task ExecuteLoadItemsCommand()
+        private Task ExecuteLoadItemsCommand()
         {
             IsBusy = true;
 
             try
             {
                 LogEntries.Clear();
-                foreach (var item in LoggerSync.Messages)
+                foreach (var item in LoggerSink.Messages)
                 {
                     switch (ShowOnlyStateMachineLogs)
                     {
@@ -50,6 +75,7 @@ namespace DotnetPush.ViewModels
 
                             break;
                         }
+
                         default:
                             LogEntries.Add(item);
                             break;
@@ -60,8 +86,13 @@ namespace DotnetPush.ViewModels
             {
                 IsBusy = false;
             }
+
+            return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Executed before the View is displayed.
+        /// </summary>
         public void OnAppearing()
         {
             IsBusy = true;
