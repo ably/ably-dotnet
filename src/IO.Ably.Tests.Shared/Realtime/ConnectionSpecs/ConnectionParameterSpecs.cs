@@ -154,7 +154,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f")]
         public async Task WithCustomTransportParamsInOptions_ShouldPassThemInQueryStringWhenCreatingTransport()
         {
-            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>()
+            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
             {
                 { "test", "best" },
                 { "best", "test" },
