@@ -14,7 +14,6 @@ namespace DotnetPush.Droid
         public string Body { get; set; }
 
         public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string>();
-
     }
 
     [Service]
@@ -22,8 +21,7 @@ namespace DotnetPush.Droid
     public class MyFirebaseMessaging : FirebaseMessagingService
     {
         private string notificationChannelId = "AblyChannel"; // Random number - don't know if it needs to be specific
-        private NotificationManager notificationManager;
-
+        private NotificationManager _notificationManager;
 
         public override void OnNewToken(String token)
         {
@@ -55,7 +53,7 @@ namespace DotnetPush.Droid
             }
         }
 
-        public const string PUSH_NOTIFICATION_ACTION = "MyFirebaseMessaging.PUSH_NOTIFICATION_MESSAGE";
+        public const string PushNotificationAction = "MyFirebaseMessaging.PUSH_NOTIFICATION_MESSAGE";
 
         /// <summary>
         /// Handles the notification to ensure the Notification manager is updated to alert the user
@@ -72,7 +70,7 @@ namespace DotnetPush.Droid
             var notificationId = int.Parse(DateTime.Now.ToString("MMddHHmmsss"));
 
             PendingIntent pendingIntent = PendingIntent.GetActivity(this, notificationId, intent, PendingIntentFlags.UpdateCurrent);
-            notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
+            _notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
 
             // Set BigTextStyle for expandable notifications
             NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
@@ -93,7 +91,7 @@ namespace DotnetPush.Droid
             .SetAutoCancel(true)
             .Build();
 
-            notificationManager.Notify(notificationId, notification);
+            _notificationManager.Notify(notificationId, notification);
         }
     }
 }
