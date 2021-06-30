@@ -14,6 +14,7 @@
         <RootNamespace>IO.Ably.Push.Android</RootNamespace>
         <AssemblyName>IO.Ably.Push.Android</AssemblyName>
         <FileAlignment>512</FileAlignment>
+        <Copyright>Copyright (c) 2021 Ably. All rights reserved.</Copyright>
         <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
         <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
         <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
@@ -26,6 +27,8 @@
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <DebugType>pdbonly</DebugType>
@@ -34,7 +37,16 @@
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="..\stylecop.json" />
+    </ItemGroup>
+    <ItemGroup>
+        <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll" />
+        <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+        <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    </ItemGroup>
     <ItemGroup>
         <Reference Include="Java.Interop" />
         <Reference Include="Mono.Android" />
