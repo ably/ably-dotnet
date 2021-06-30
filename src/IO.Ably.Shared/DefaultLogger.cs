@@ -25,7 +25,10 @@ namespace IO.Ably
         private static readonly object SyncLock = new object();
         private static ILogger _loggerInstance;
 
-        internal static ILogger LoggerInstance
+        /// <summary>
+        /// Global logger instance.
+        /// </summary>
+        public static ILogger LoggerInstance
         {
             get
             {
@@ -40,7 +43,7 @@ namespace IO.Ably
                 return _loggerInstance;
             }
 
-            set => _loggerInstance = value;
+            internal set => _loggerInstance = value;
         }
 
         /// <summary>Maximum level to log.</summary>
