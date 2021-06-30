@@ -21,11 +21,7 @@ namespace IO.Ably
 
         string ConnectionKey { get; set; }
 
-        object Data { get; set; }
-
         string ClientId { get; set; }
-
-        string Encoding { get; set; }
 
         DateTimeOffset? Timestamp { get; set; }
     }
