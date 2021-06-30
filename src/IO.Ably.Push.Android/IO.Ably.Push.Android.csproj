@@ -29,6 +29,7 @@
         <WarningLevel>4</WarningLevel>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
+        <DocumentationFile>bin\Debug\IO.Ably.Push.Android.xml</DocumentationFile>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <DebugType>pdbonly</DebugType>
@@ -37,7 +38,8 @@
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
-        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
+        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>  
+        <DocumentationFile>bin\Release\IO.Ably.Push.Android.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
         <AdditionalFiles Include="..\stylecop.json" />
