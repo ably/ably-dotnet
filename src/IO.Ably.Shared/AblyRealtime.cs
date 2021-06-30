@@ -75,6 +75,8 @@ namespace IO.Ably
 
         private void CaptureSynchronizationContext(ClientOptions options)
         {
+            // Disabling Deprecated warning for CustomContext.
+#pragma warning disable 618
             if (options.CustomContext != null)
             {
                 _synchronizationContext = options.CustomContext;
@@ -83,6 +85,7 @@ namespace IO.Ably
             {
                 _synchronizationContext = SynchronizationContext.Current;
             }
+#pragma warning restore 618
         }
 
         /// <summary>
