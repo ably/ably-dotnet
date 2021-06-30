@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;

@@ -1,4 +1,5 @@
-﻿using IO.Ably.Realtime;
+﻿using IO.Ably.Infrastructure;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport.States.Connection

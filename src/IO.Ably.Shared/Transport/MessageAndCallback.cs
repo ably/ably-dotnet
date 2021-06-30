@@ -1,4 +1,5 @@
 using System;
+using IO.Ably.Infrastructure;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport

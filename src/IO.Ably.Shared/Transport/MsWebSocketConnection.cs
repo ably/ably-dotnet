@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport

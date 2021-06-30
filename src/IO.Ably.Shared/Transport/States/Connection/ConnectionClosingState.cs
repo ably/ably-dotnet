@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;

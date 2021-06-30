@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace IO.Ably
+namespace IO.Ably.Infrastructure
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "StyleCop.CSharp.DocumentationRules",
         "SA1600:Elements should be documented",
         Justification = "Internal interface.")]
-    internal interface ILogger
+    public interface ILogger
     {
         LogLevel LogLevel { get; set; }
 

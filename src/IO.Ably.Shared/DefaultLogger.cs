@@ -1,44 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using IO.Ably.Infrastructure;
 
 namespace IO.Ably
 {
-    /// <summary>Level of a log message.</summary>
-    public enum LogLevel : byte
-    {
-        /// <summary>
-        /// Verbose setting. Logs everything.
-        /// </summary>
-        Debug = 0,
-
-        /// <summary>
-        /// Warning setting. Logs clues that something is not 100% right.
-        /// </summary>
-        Warning,
-
-        /// <summary>
-        /// Error setting. Logs errors
-        /// </summary>
-        Error,
-
-        /// <summary>
-        /// None setting. No logs produced
-        /// </summary>
-        None = 99
-    }
-
-    /// <summary>An interface that actually logs that messages somewhere.</summary>
-    public interface ILoggerSink
-    {
-        /// <summary>
-        /// Implement this method to log messages using your current infrastructure.
-        /// </summary>
-        /// <param name="level">the log level of the message.</param>
-        /// <param name="message">the actual message.</param>
-        void LogEvent(LogLevel level, string message);
-    }
-
     /// <summary>The default logger implementation, that writes to debug output.</summary>
     internal class DefaultLoggerSink : ILoggerSink
     {
@@ -57,9 +23,9 @@ namespace IO.Ably
     public static class DefaultLogger
     {
         private static readonly object SyncLock = new object();
-        private static InternalLogger _loggerInstance;
+        private static ILogger _loggerInstance;
 
-        internal static InternalLogger LoggerInstance
+        internal static ILogger LoggerInstance
         {
             get
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.Realtime.Workflow;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

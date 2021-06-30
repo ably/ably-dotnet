@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

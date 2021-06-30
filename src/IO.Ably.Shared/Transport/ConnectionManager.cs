@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;

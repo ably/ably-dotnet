@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using IO.Ably.Infrastructure;
 using IO.Ably.Transport;
 using Newtonsoft.Json;
 

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
+using IO.Ably.Infrastructure;
 using IO.Ably.Rest;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;

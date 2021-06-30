@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Push;
 using IO.Ably.Rest;

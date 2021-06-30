@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Infrastructure;
 
 namespace IO.Ably.Transport.States.Connection
 {

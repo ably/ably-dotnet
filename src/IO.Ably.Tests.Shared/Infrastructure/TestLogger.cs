@@ -1,4 +1,5 @@
 using System;
+using IO.Ably.Infrastructure;
 
 namespace IO.Ably.Tests
 {

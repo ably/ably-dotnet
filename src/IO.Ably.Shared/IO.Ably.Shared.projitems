@@ -15,6 +15,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILoggerSink.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ILogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\PayloadCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\ProcessedPayload.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
@@ -65,7 +68,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannels.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />

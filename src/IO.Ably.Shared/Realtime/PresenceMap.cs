@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Infrastructure;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime

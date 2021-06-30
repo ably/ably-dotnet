@@ -1,4 +1,6 @@
-﻿namespace IO.Ably.Push
+﻿using IO.Ably.Infrastructure;
+
+namespace IO.Ably.Push
 {
     /// <summary>
     /// Push Apis for Rest clients.

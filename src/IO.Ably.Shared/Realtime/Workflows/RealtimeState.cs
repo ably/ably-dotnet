@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Ably.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
