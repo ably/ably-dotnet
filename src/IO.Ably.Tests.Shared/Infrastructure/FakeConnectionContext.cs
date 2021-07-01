@@ -15,12 +15,6 @@ namespace IO.Ably.Tests
     {
         private bool _attemptConnectionCalled;
 
-        public bool CanConnectToAblyBool { get; } = true;
-
-        public bool CreateTransportCalled { get; private set; }
-
-        public bool ResetConnectionAttemptsCalled { get; private set; }
-
         public FakeConnectionContext()
         {
             Connection = new Connection(null, TestHelpers.NowFunc());
