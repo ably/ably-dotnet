@@ -28,11 +28,12 @@ namespace IO.Ably.Realtime.Workflow
     /// </summary>
     internal class RealtimeWorkflow : IQueueCommand
     {
+        private readonly CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
+
         // This is used for the tests so we can have a good
         // way of figuring out when processing has finished
         private volatile bool _processingCommand = false;
         private bool _heartbeatMonitorDisconnectRequested = false;
-        private CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
 
         private AblyRealtime Client { get; }
 

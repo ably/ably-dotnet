@@ -11,9 +11,9 @@ namespace IO.Ably.Tests
 {
     public class ConnectingStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionConnectingState _state;
-        private FakeTimer _timer;
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionConnectingState _state;
+        private readonly FakeTimer _timer;
 
         public ConnectingStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -21,11 +21,6 @@ namespace IO.Ably.Tests
             _context = new FakeConnectionContext();
             _timer = new FakeTimer();
             _state = new ConnectionConnectingState(_context, _timer, Logger);
-        }
-
-        private static FakeTransport GetConnectedTransport()
-        {
-            return new FakeTransport { State = TransportState.Connected };
         }
 
         [Fact]
@@ -134,6 +129,11 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _context.ShouldQueueCommand<HandleConnectingDisconnectedCommand>();
+        }
+
+        private static FakeTransport GetConnectedTransport()
+        {
+            return new FakeTransport { State = TransportState.Connected };
         }
     }
 }

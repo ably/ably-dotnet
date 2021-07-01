@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Push
@@ -8,26 +7,26 @@ namespace IO.Ably.Push
     {
         public abstract class State
         {
-            protected ActivationStateMachine Machine { get; }
-
             protected State(ActivationStateMachine machine)
             {
                 Machine = machine;
             }
 
+            protected ActivationStateMachine Machine { get; }
+
             public abstract bool Persist { get; }
 
-            public abstract Task<State> Transition(ActivationStateMachine.Event @event);
+            public abstract Task<State> Transition(Event @event);
         }
 
         public sealed class NotActivated : State
         {
-            public override bool Persist => true;
-
             public NotActivated(ActivationStateMachine machine)
                 : base(machine)
             {
             }
+
+            public override bool Persist => true;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -74,12 +73,12 @@ namespace IO.Ably.Push
         // Stub for now
         public sealed class WaitingForPushDeviceDetails : State
         {
-            public override bool Persist => true;
-
             public WaitingForPushDeviceDetails(ActivationStateMachine machine)
                 : base(machine)
             {
             }
+
+            public override bool Persist => true;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -144,12 +143,12 @@ namespace IO.Ably.Push
 
         public sealed class WaitingForDeviceRegistration : State
         {
-            public override bool Persist => false;
-
             public WaitingForDeviceRegistration(ActivationStateMachine machine)
                 : base(machine)
             {
             }
+
+            public override bool Persist => false;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -172,12 +171,12 @@ namespace IO.Ably.Push
 
         public sealed class WaitingForNewPushDeviceDetails : State
         {
-            public override bool Persist => true;
-
             public WaitingForNewPushDeviceDetails(ActivationStateMachine machine)
                 : base(machine)
             {
             }
+
+            public override bool Persist => true;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -207,15 +206,15 @@ namespace IO.Ably.Push
 
         public sealed class WaitingForDeregistration : State
         {
-            public override bool Persist => false;
-
-            private State _previousState;
+            private readonly State _previousState;
 
             public WaitingForDeregistration(ActivationStateMachine machine, State previousState)
                 : base(machine)
             {
                 _previousState = previousState;
             }
+
+            public override bool Persist => false;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -240,15 +239,15 @@ namespace IO.Ably.Push
         // Stub for now
         public sealed class WaitingForRegistrationSync : State
         {
-            public override bool Persist => false;
-
-            private Event _fromEvent;
+            private readonly Event _fromEvent;
 
             public WaitingForRegistrationSync(ActivationStateMachine machine, Event fromEvent)
                 : base(machine)
             {
                 _fromEvent = fromEvent;
             }
+
+            public override bool Persist => false;
 
             public override async Task<State> Transition(Event @event)
             {
@@ -294,12 +293,12 @@ namespace IO.Ably.Push
 
         public sealed class AfterRegistrationSyncFailed : State
         {
-            public override bool Persist => true;
-
             public AfterRegistrationSyncFailed(ActivationStateMachine machine)
                 : base(machine)
             {
             }
+
+            public override bool Persist => true;
 
             public override async Task<State> Transition(Event @event)
             {

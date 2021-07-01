@@ -163,7 +163,7 @@ namespace IO.Ably.Tests
 
         public class WithInvalidToken : MockHttpRestSpecs
         {
-            private TokenDetails _returnedDummyTokenDetails;
+            private readonly TokenDetails _returnedDummyTokenDetails;
             private bool _firstAttempt = true;
 
             [Theory]

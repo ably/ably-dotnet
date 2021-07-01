@@ -12,9 +12,9 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ConnectionAttemptsInfoSpecs : MockHttpRealtimeSpecs
     {
-        private ConnectionAttemptsInfo Info => _state.AttemptsInfo;
+        private readonly RealtimeState _state = new RealtimeState();
 
-        private RealtimeState _state = new RealtimeState();
+        private ConnectionAttemptsInfo Info => _state.AttemptsInfo;
 
         [Fact]
         public void Reset_ShouldResetFirstAttemptAndNumberOfAttempts()
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests.Realtime
             SetNowFunc(() => DateTimeOffset.UtcNow);
             Info.Attempts.Add(new ConnectionAttempt(Now));
 
-            // Move now to default ConnetionStatettl - 1 second
+            // Move now to default ConnectionStateTtl - 1 second
             NowAdd(Defaults.ConnectionStateTtl.Add(TimeSpan.FromSeconds(-1)));
             _state.ShouldSuspend().Should().BeFalse();
             SetNowFunc(() => DateTimeOffset.UtcNow);
@@ -55,7 +55,7 @@ namespace IO.Ably.Tests.Realtime
 
             state.AttemptsInfo.Attempts.Add(new ConnectionAttempt(NowWrapperFn()));
 
-            // Move now to default ConnetionStatettl - 1 second
+            // Move now to default ConnectionStateTtl - 1 second
             currentDate = DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl);
             state.ShouldSuspend(now).Should().BeTrue("When time is equal"); // =
             currentDate = DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl).AddSeconds(60);

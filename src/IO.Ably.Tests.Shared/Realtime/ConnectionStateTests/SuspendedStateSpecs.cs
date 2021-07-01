@@ -14,9 +14,9 @@ namespace IO.Ably.Tests
 {
     public class SuspendedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionSuspendedState _state;
-        private FakeTimer _timer;
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionSuspendedState _state;
+        private readonly FakeTimer _timer;
 
         private ConnectionSuspendedState GetState(ErrorInfo info = null)
         {

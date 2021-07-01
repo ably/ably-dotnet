@@ -12,7 +12,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
     public class MessageExtrasConverterTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        public JsonSerializerSettings JsonSettings = JsonHelper.Settings;
+        private readonly JsonSerializerSettings JsonSettings = JsonHelper.Settings;
 
         public MessageExtrasConverterTests(ITestOutputHelper testOutputHelper)
         {

@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
     [Collection("UnitTests")]
     public class AuthorizationTests : MockHttpRestSpecs
     {
-        internal AblyResponse DummyTokenResponse = new AblyResponse
+        internal readonly AblyResponse DummyTokenResponse = new AblyResponse
         {
             Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}"
         };
@@ -222,7 +222,7 @@ namespace IO.Ably.Tests
             public async Task WithTimeStampOverridesDefault()
             {
                 var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
-                var data = await CreateTokenRequest(Client, new TokenParams() { Timestamp = date }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Timestamp = date }, null);
                 data.Timestamp.Should().Be(date);
             }
 

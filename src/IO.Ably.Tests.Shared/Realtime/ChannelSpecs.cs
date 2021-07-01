@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ChannelSpecs : AblyRealtimeSpecs
     {
-        private Action<ClientOptions> _switchBinaryOff = opts => opts.UseBinaryProtocol = false;
+        private readonly Action<ClientOptions> _switchBinaryOff = opts => opts.UseBinaryProtocol = false;
 
         public class GeneralSpecs : ChannelSpecs
         {
@@ -291,7 +291,7 @@ namespace IO.Ably.Tests.Realtime
                 bool stateDidChange = false;
 
                 // set initial state
-                channel.SetChannelState((ChannelState)state);
+                channel.SetChannelState(state);
 
                 channel.Once(stateChange =>
                 {
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 // attempt to set the same state again
-                channel.SetChannelState((ChannelState)state);
+                channel.SetChannelState(state);
 
                 stateDidChange.Should().BeFalse();
             }
@@ -1530,7 +1530,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL8")]
         public class UnsubscribeSpecs : ChannelSpecs
         {
-            private Action<Message> _handler = message =>
+            private readonly Action<Message> _handler = message =>
             {
                 throw new AssertionFailedException("This handler should no longer be called");
             };

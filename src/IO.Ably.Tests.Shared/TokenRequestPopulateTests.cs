@@ -9,29 +9,8 @@ namespace IO.Ably.Tests
     public class TokenRequestPopulateTests
     {
         private const string ApiKey = "123.456:789";
-        public readonly DateTimeOffset Now = DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
-
-        private static string GetKeyId()
-        {
-            return ApiKey.Split(':')[0];
-        }
-
-        private static string GetKeyValue()
-        {
-            return ApiKey.Split(':')[1];
-        }
-
-        private static TokenParams GetTokenParams()
-        {
-            return new TokenParams { ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
-        }
-
-        private TokenRequest _request;
-
-        private TokenRequest Populate(TokenParams tokenParams)
-        {
-            return _request.Populate(tokenParams, GetKeyId(), GetKeyValue());
-        }
+        private readonly DateTimeOffset _now = DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
+        private readonly TokenRequest _request;
 
         /// <summary>
         /// Initializes a new instance of the TokenRequestDataTests class.
@@ -98,7 +77,7 @@ namespace IO.Ably.Tests
             var tokenParams = GetTokenParams();
             var request = new TokenRequest(NowFunc);
             var request2 = request.Populate(tokenParams, GetKeyId(), GetKeyValue());
-            request2.Timestamp.Should().Be(Now);
+            request2.Timestamp.Should().Be(_now);
         }
 
         [Fact]
@@ -132,6 +111,26 @@ namespace IO.Ably.Tests
             string mac = Crypto.ComputeHMacSha256(signText, GetKeyValue());
 
             Assert.Equal(mac, request.Mac);
+        }
+
+        private static string GetKeyId()
+        {
+            return ApiKey.Split(':')[0];
+        }
+
+        private static string GetKeyValue()
+        {
+            return ApiKey.Split(':')[1];
+        }
+
+        private static TokenParams GetTokenParams()
+        {
+            return new TokenParams { ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
+        }
+
+        private TokenRequest Populate(TokenParams tokenParams)
+        {
+            return _request.Populate(tokenParams, GetKeyId(), GetKeyValue());
         }
     }
 }

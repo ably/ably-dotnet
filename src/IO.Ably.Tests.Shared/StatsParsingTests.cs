@@ -6,7 +6,7 @@ namespace IO.Ably.Tests
 {
     public class StatsParsingTests
     {
-        private Stats _stats;
+        private readonly Stats _stats;
 
         public StatsParsingTests()
         {

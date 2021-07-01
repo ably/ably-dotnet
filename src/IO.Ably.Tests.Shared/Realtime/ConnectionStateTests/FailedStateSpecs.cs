@@ -11,13 +11,8 @@ namespace IO.Ably.Tests
 {
     public class FailedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionFailedState _state;
-
-        private ConnectionFailedState GetState(ErrorInfo info = null)
-        {
-            return new ConnectionFailedState(_context, info, Logger);
-        }
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionFailedState _state;
 
         public FailedStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -75,6 +70,11 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.False(result);
+        }
+
+        private ConnectionFailedState GetState(ErrorInfo info = null)
+        {
+            return new ConnectionFailedState(_context, info, Logger);
         }
     }
 }

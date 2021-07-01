@@ -47,7 +47,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSN3")]
         public class GettingAChannel : ChannelSpecs
         {
-            private AblyRest _client;
+            private readonly AblyRest _client;
 
             public GettingAChannel(ITestOutputHelper output)
                 : base(output)
@@ -253,8 +253,8 @@ namespace IO.Ably.Tests.Rest
 
         public class ChannelHistory : ChannelSpecs
         {
+            private readonly IRestChannel _channel;
             private AblyRest _client;
-            private IRestChannel _channel;
 
             [Fact]
             [Trait("spec", "RSL2a")]

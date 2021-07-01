@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
 
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
-        public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+        protected SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
             ResetEvent = new ManualResetEvent(false);
             Fixture = fixture;
