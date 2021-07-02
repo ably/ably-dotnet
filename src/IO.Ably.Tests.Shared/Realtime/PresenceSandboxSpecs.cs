@@ -61,6 +61,8 @@ namespace IO.Ably.Tests.Realtime
                 await Task.WhenAll(tasks.ToArray());
 
                 var channel2 = client2.Channels.Get(testChannel) as RealtimeChannel;
+                Assert.NotNull(channel2);
+
                 int inSync = 0;
                 int syncComplete = 0;
 
@@ -1222,6 +1224,7 @@ namespace IO.Ably.Tests.Realtime
                     await client.WaitForState();
 
                     var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     int initialCount = 0;
                     bool? success = null;
@@ -1265,6 +1268,8 @@ namespace IO.Ably.Tests.Realtime
                     await client.WaitForState();
 
                     var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
+
                     var result = await channel.Presence.EnterClientAsync("123", null);
                     result.IsSuccess.Should().BeTrue();
 
@@ -1444,6 +1449,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16a"; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     ErrorInfo errInfo = null;
 
@@ -1482,6 +1488,7 @@ namespace IO.Ably.Tests.Realtime
 
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1531,6 +1538,7 @@ namespace IO.Ably.Tests.Realtime
                         options.QueueMessages = false;
                     });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     await client.WaitForState(ConnectionState.Connected);
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
@@ -1573,7 +1581,9 @@ namespace IO.Ably.Tests.Realtime
                         options.ClientId = "RTP16b";
                         options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
                     });
+
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1625,6 +1635,7 @@ namespace IO.Ably.Tests.Realtime
 
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1677,6 +1688,7 @@ namespace IO.Ably.Tests.Realtime
                         options.QueueMessages = false;
                     });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+                    Assert.NotNull(channel);
 
                     await client.WaitForState(ConnectionState.Connected);
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
@@ -1686,6 +1698,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
                     channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
+
                     presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);
@@ -1711,6 +1724,8 @@ namespace IO.Ably.Tests.Realtime
                     async Task TestWithConnectionState(ConnectionState state, RealtimeCommand changeStateCommand)
                     {
                         var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
+                        Assert.NotNull(channel);
+
                         await client.WaitForState(ConnectionState.Connected);
 
                         // capture all outbound protocol messages for later inspection
@@ -1766,6 +1781,7 @@ namespace IO.Ably.Tests.Realtime
                     async Task TestWithChannelState(ChannelState state)
                     {
                         var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
+                        Assert.NotNull(channel);
 
                         await client.WaitForState(ConnectionState.Connected);
 
