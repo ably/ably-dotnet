@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using Xunit;
@@ -99,7 +100,7 @@ namespace IO.Ably.Tests
             var values = new[]
             {
                 request.KeyName,
-                request.Ttl?.TotalMilliseconds.ToString(),
+                request.Ttl?.TotalMilliseconds.ToString(CultureInfo.InvariantCulture),
                 request.Capability.ToJson(),
                 request.ClientId,
                 request.Timestamp?.ToUnixTimeInMilliseconds().ToString(),

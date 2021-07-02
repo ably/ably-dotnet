@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using IO.Ably.Encryption;
 using Newtonsoft.Json;
 
@@ -116,7 +117,7 @@ namespace IO.Ably
             var values = new[]
                 {
                     KeyName,
-                    Ttl?.TotalMilliseconds.ToString(),
+                    Ttl?.TotalMilliseconds.ToString(CultureInfo.InvariantCulture),
                     Capability?.ToJson(),
                     ClientId,
                     Timestamp?.ToUnixTimeInMilliseconds().ToString(),

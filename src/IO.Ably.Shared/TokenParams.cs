@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace IO.Ably
 {
@@ -108,7 +109,7 @@ namespace IO.Ably
             var dictionary = new Dictionary<string, string>();
             if (Ttl.HasValue)
             {
-                dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());
+                dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
             }
 
             if (ClientId.IsNotEmpty())
