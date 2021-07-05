@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace IO.Ably.Tests
 {
@@ -16,7 +17,7 @@ namespace IO.Ably.Tests
             var response = new AblyResponse(string.Empty, type, new byte[0]);
 
             // Assert
-            Assert.Equal((ResponseType)responseType, response.Type);
+            ((ResponseType)responseType).Should().Be(response.Type);
         }
 
         [Theory]
@@ -30,7 +31,7 @@ namespace IO.Ably.Tests
             var response = new AblyResponse(encoding, string.Empty, new byte[0]);
 
             // Assert
-            Assert.Equal(expected, response.Encoding);
+            expected.Should().Be(response.Encoding);
         }
 
         [Fact]
@@ -43,7 +44,7 @@ namespace IO.Ably.Tests
             var response = new AblyResponse(string.Empty, "application/json", text.GetBytes());
 
             // Assert
-            Assert.Equal(text, response.TextResponse);
+            text.Should().Be(response.TextResponse);
         }
     }
 }

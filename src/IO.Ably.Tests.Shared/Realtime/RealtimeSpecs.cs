@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -110,21 +112,21 @@ namespace IO.Ably.Tests
         public void New_Realtime_HasConnection()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Connection);
+            realtime.Connection.Should().NotBeNull();
         }
 
         [Fact]
         public void New_Realtime_HasChannels()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Channels);
+            realtime.Channels.Should().NotBeNull();
         }
 
         [Fact]
         public void New_Realtime_HasAuth()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Auth);
+            realtime.Auth.Should().NotBeNull();
         }
 
         [Theory(Skip = "This test can only be run on its own without any other tests because it depends on static values. Make sure you run each test case individually.")]

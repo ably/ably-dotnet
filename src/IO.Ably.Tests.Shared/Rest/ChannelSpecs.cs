@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -213,8 +215,8 @@ namespace IO.Ably.Tests.Rest
 
                 var messages = LastRequest.PostData as IEnumerable<Message>;
                 var data = messages.First();
-                Assert.Equal("data", data.Data);
-                Assert.Equal("event", data.Name);
+                data.Data.Should().Be("data");
+                data.Name.Should().Be("event");
             }
 
             [Fact]
@@ -225,7 +227,7 @@ namespace IO.Ably.Tests.Rest
                 channel.PublishAsync("event", new byte[] { 1, 2 });
 
                 var postData = (LastRequest.PostData as IEnumerable<Message>).First();
-                Assert.Equal("base64", postData.Encoding);
+                postData.Encoding.Should().Be("base64");
             }
 
             [Fact]
@@ -238,11 +240,12 @@ namespace IO.Ably.Tests.Rest
                 channel.PublishAsync(new List<Message> { message });
 
                 var data = LastRequest.PostData as IEnumerable<Message>;
-                Assert.NotNull(data);
+                data.Should().NotBeNull();
+
                 data.Count().Should().Be(1);
                 var payloadMessage = data.First();
-                Assert.Equal("data", payloadMessage.Data);
-                Assert.Equal("event", payloadMessage.Name);
+                payloadMessage.Data.Should().Be("data");
+                payloadMessage.Name.Should().Be("event");
             }
 
             public ChannelPublish(ITestOutputHelper output)
@@ -263,8 +266,8 @@ namespace IO.Ably.Tests.Rest
                 var result = await _channel.HistoryAsync();
 
                 result.Should().BeOfType<PaginatedResult<Message>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/messages", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/messages");
             }
 
             [Fact]
@@ -387,9 +390,9 @@ namespace IO.Ably.Tests.Rest
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextQueryParams);
-                Assert.NotNull(result.CurrentQueryParams);
-                Assert.NotNull(result.FirstQueryParams);
+                result.NextQueryParams.Should().NotBeNull();
+                result.CurrentQueryParams.Should().NotBeNull();
+                result.FirstQueryParams.Should().NotBeNull();
             }
 
             [Fact]
@@ -418,7 +421,7 @@ namespace IO.Ably.Tests.Rest
                 // Assert
                 Assert.NotEmpty(result.Items);
                 var firstMessage = result.Items.First();
-                Assert.Equal(message.Data, firstMessage.Data);
+                firstMessage.Data.Should().Be(message.Data);
             }
 
             public ChannelHistory(ITestOutputHelper output)

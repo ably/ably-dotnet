@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+
 using FluentAssertions;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace IO.Ably.Tests
         public void Capability_WithOutAnyResources_ReturnsJsonString()
         {
             var capability = new Capability();
-            Assert.Equal(string.Empty, capability.ToJson());
+            capability.ToJson().Should().Be(string.Empty);
         }
 
         [Fact]
@@ -21,7 +22,7 @@ namespace IO.Ably.Tests
             capability
                 .AddResource("name").AllowPublish();
 
-            Assert.Equal("{\"name\":[\"publish\"]}", capability.ToJson());
+            capability.ToJson().Should().Be("{\"name\":[\"publish\"]}");
         }
 
         [Fact]
@@ -32,7 +33,7 @@ namespace IO.Ably.Tests
             capability
                 .AddResource("name").AllowSubscribe().AllowPublish().AllowPresence();
 
-            Assert.Equal("{\"name\":[\"presence\",\"publish\",\"subscribe\"]}", capability.ToJson());
+            capability.ToJson().Should().Be("{\"name\":[\"presence\",\"publish\",\"subscribe\"]}");
         }
 
         [Fact]
@@ -41,7 +42,7 @@ namespace IO.Ably.Tests
             var capability = new Capability();
             capability.AddResource("name").AllowPublish().AllowAll();
 
-            Assert.Equal("{\"name\":[\"*\"]}", capability.ToJson());
+            capability.ToJson().Should().Be("{\"name\":[\"*\"]}");
         }
 
         [Fact]
@@ -50,7 +51,7 @@ namespace IO.Ably.Tests
             var capability = new Capability();
             capability.AddResource("name");
 
-            Assert.Equal(string.Empty, capability.ToJson());
+            capability.ToJson().Should().Be(string.Empty);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace IO.Ably.Tests
             capability.AddResource("second").AllowPublish();
             capability.AddResource("first").AllowAll();
 
-            Assert.Equal("{\"first\":[\"*\"],\"second\":[\"publish\"]}", capability.ToJson());
+            capability.ToJson().Should().Be("{\"first\":[\"*\"],\"second\":[\"publish\"]}");
         }
 
         [Fact]
@@ -70,9 +71,9 @@ namespace IO.Ably.Tests
             var capabilityString = "{\"first\":[\"*\"],\"second\":[\"publish\"]}";
             var capability = new Capability(capabilityString);
 
-            Assert.Equal(2, capability.Resources.Count);
-            Assert.Equal("first", capability.Resources.First().Name);
-            Assert.Equal("*", capability.Resources.First().AllowedOperations.First());
+            capability.Resources.Count.Should().Be(2);
+            capability.Resources.First().Name.Should().Be("first");
+            capability.Resources.First().AllowedOperations.First().Should().Be("*");
         }
 
         [Fact]

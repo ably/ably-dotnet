@@ -1,4 +1,6 @@
 ﻿using IO.Ably.Encryption;
+
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -12,7 +14,7 @@ namespace IO.Ably.Tests
             var cipherParams = new CipherParams(string.Empty, new byte[] { });
 
             // Assert
-            Assert.Equal(Crypto.DefaultAlgorithm, cipherParams.Algorithm);
+            cipherParams.Algorithm.Should().Be(Crypto.DefaultAlgorithm);
             Assert.Equal(new byte[] { }, cipherParams.Key);
         }
     }

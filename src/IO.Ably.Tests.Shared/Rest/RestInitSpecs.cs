@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new AblyRest(ValidKey);
-            Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
+            client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Basic);
         }
 
         [Trait("spec", "RSA4")]
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
             public void WithKeyAndClientId_ShouldUseBasicAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
-                Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Basic);
             }
 
             [Fact]
@@ -78,7 +78,7 @@ namespace IO.Ably.Tests
                     opts.ClientId = "123";
                 });
 
-                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
             }
 
             [Fact]

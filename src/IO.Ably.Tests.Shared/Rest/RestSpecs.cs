@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.AcceptanceTests;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,7 +30,7 @@ namespace IO.Ably.Tests
             public void WithValidKey_InitialisesTheClient()
             {
                 var client = new AblyRest(ValidKey);
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -36,7 +38,7 @@ namespace IO.Ably.Tests
             public void WithKeyInOptions_InitialisesTheClient()
             {
                 var client = new AblyRest(new ClientOptions(ValidKey));
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -44,7 +46,7 @@ namespace IO.Ably.Tests
             public void Ctor_WithKeyPassedInOptions_InitializesClient()
             {
                 var client = new AblyRest(opts => opts.Key = ValidKey);
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -57,7 +59,7 @@ namespace IO.Ably.Tests
                     opts.ClientId = "123";
                 });
 
-                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
             }
 
             [Theory]
@@ -933,7 +935,7 @@ namespace IO.Ably.Tests
 
             var channel = rest.Channels.Get("Test");
 
-            Assert.Equal("Test", channel.Name);
+            channel.Name.Should().Be("Test");
         }
 
         public RestSpecs(ITestOutputHelper output)

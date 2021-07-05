@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -16,9 +18,9 @@ namespace IO.Ably.Tests
             var errorInfo = ErrorInfo.Parse(response);
 
             // Assert
-            Assert.Equal("Unknown error", errorInfo.Message);
-            Assert.Equal(50000, errorInfo.Code);
-            Assert.Equal(response.StatusCode, errorInfo.StatusCode);
+            errorInfo.Message.Should().Be("Unknown error");
+            errorInfo.Code.Should().Be(50000);
+            errorInfo.StatusCode.Should().Be(response.StatusCode);
         }
 
         [Fact]
@@ -33,8 +35,8 @@ namespace IO.Ably.Tests
             var errorInfo = ErrorInfo.Parse(response);
 
             // Assert
-            Assert.Equal(reason, errorInfo.Message);
-            Assert.Equal(code, errorInfo.Code);
+            errorInfo.Message.Should().Be(reason);
+            errorInfo.Code.Should().Be(code);
         }
 
         [Fact]
@@ -46,7 +48,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("Error Reason", 1000, HttpStatusCode.Accepted);
 
             // Assert
-            Assert.Equal("[ErrorInfo Reason: Error Reason (See https://help.ably.io/error/1000); Code: 1000; StatusCode: 202 (Accepted); Href: https://help.ably.io/error/1000]", errorInfo.ToString());
+            errorInfo.ToString().Should().Be("[ErrorInfo Reason: Error Reason (See https://help.ably.io/error/1000); Code: 1000; StatusCode: 202 (Accepted); Href: https://help.ably.io/error/1000]");
         }
 
         [Fact]
@@ -58,7 +60,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("Reason", 1000);
 
             // Assert
-            Assert.Equal("[ErrorInfo Reason: Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000]", errorInfo.ToString());
+            errorInfo.ToString().Should().Be("[ErrorInfo Reason: Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000]");
         }
 
         [Fact]
@@ -70,7 +72,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("Reason", 1000, null, "http://example.com");
 
             // Assert
-            Assert.Equal("[ErrorInfo Reason: Reason (See http://example.com); Code: 1000; Href: http://example.com]", errorInfo.ToString());
+            errorInfo.ToString().Should().Be("[ErrorInfo Reason: Reason (See http://example.com); Code: 1000; Href: http://example.com]");
         }
 
         [Fact]
@@ -81,7 +83,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("The Reason", 1000, null, null, cause);
 
             // Assert
-            Assert.Equal("[ErrorInfo Reason: The Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000; Cause: [ErrorInfo Reason: The Cause (See https://help.ably.io/error/999); Code: 999; Href: https://help.ably.io/error/999]]", errorInfo.ToString());
+            errorInfo.ToString().Should().Be("[ErrorInfo Reason: The Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000; Cause: [ErrorInfo Reason: The Cause (See https://help.ably.io/error/999); Code: 999; Href: https://help.ably.io/error/999]]");
         }
 
         [Fact]
@@ -92,7 +94,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("The Reason", 1000, null, null, null, inner);
 
             // Assert
-            Assert.Equal("[ErrorInfo Reason: The Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000; InnerException: System.Exception: Inner Exception Message]", errorInfo.ToString());
+            errorInfo.ToString().Should().Be("[ErrorInfo Reason: The Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000; InnerException: System.Exception: Inner Exception Message]");
         }
     }
 }

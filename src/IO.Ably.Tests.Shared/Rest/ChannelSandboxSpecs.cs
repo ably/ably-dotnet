@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
 using IO.Ably.Tests.Infrastructure;
+
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -210,11 +212,9 @@ namespace IO.Ably.Tests.Rest
             messages[2].Id = "RSL1k3:0";
 
             var ex = await Record.ExceptionAsync(async () => await channel.PublishAsync(messages));
-            Assert.NotNull(ex);
+            ex.Should().NotBeNull();
             Assert.IsType<AblyException>(ex);
-            Assert.Equal(
-                40031,
-                ((AblyException)ex).ErrorInfo.Code); // Invalid publish request (invalid client-specified id), see https://github.com/ably/ably-common/pull/30
+            ((AblyException)ex).ErrorInfo.Code.Should().Be(40031);  // Invalid publish request (invalid client-specified id), see https://github.com/ably/ably-common/pull/30
         }
 
         [Theory(Skip = "Keeps failing")]

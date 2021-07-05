@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Rest;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,8 +27,8 @@ namespace IO.Ably.Tests
 
             presence.Should().BeOfType<PaginatedResult<PresenceMessage>>();
 
-            Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
+            LastRequest.Method.Should().Be(HttpMethod.Get);
+            LastRequest.Url.Should().Be($"/channels/{channel.Name}/presence");
         }
 
         public class GetSpecs : PresenceSpecs
@@ -74,8 +76,8 @@ namespace IO.Ably.Tests
                 var result = await _channel.Presence.HistoryAsync();
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/presence/history", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/presence/history");
             }
 
             [Fact]
@@ -85,8 +87,8 @@ namespace IO.Ably.Tests
                 var result = await _channel.Presence.HistoryAsync(new PaginatedRequestParams());
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/presence/history", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/presence/history");
             }
 
             [Fact]
@@ -182,9 +184,9 @@ namespace IO.Ably.Tests
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextQueryParams);
-                Assert.NotNull(result.CurrentQueryParams);
-                Assert.NotNull(result.FirstQueryParams);
+                result.NextQueryParams.Should().NotBeNull();
+                result.CurrentQueryParams.Should().NotBeNull();
+                result.FirstQueryParams.Should().NotBeNull();
             }
 
             public GetSpecs(ITestOutputHelper output)
