@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace IO.Ably.Tests
 {
@@ -21,31 +22,32 @@ namespace IO.Ably.Tests
             var endDate = long.Parse("1380794881058").FromUnixTimeInMilliseconds();
 
             // Assert
-            Assert.Equal(startDate, _query.Start);
-            Assert.Equal(endDate, _query.End);
+            _query.Start.Should().Be(startDate);
+            _query.End.Should().Be(endDate);
         }
 
         [Fact]
         public void Parse_WithQueryString_SetsCorrectLimit()
         {
-            Assert.Equal(100, _query.Limit);
+            // Assert
+            _query.Limit.Should().Be(100);
         }
 
         [Fact]
         public void Parse_SetsCorrectDirection()
         {
             // Assert
-            Assert.Equal(QueryDirection.Forwards, _query.Direction);
+            _query.Direction.Should().Be(QueryDirection.Forwards);
         }
 
         [Fact]
         public void Parse_HasTwoExtraParameters()
         {
             // Assert
-            Assert.Equal(3, _query.ExtraParameters.Count);
-            Assert.True(_query.ExtraParameters.ContainsKey("by"));
-            Assert.True(_query.ExtraParameters.ContainsKey("first_start"));
-            Assert.True(_query.ExtraParameters.ContainsKey("format"));
+            _query.ExtraParameters.Count.Should().Be(3);
+            _query.ExtraParameters.ContainsKey("by").Should().BeTrue();
+            _query.ExtraParameters.ContainsKey("first_start").Should().BeTrue();
+            _query.ExtraParameters.ContainsKey("format").Should().BeTrue();
         }
     }
 }

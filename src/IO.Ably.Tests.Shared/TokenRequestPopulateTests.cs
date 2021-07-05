@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
-using FluentAssertions;
+
 using IO.Ably.Encryption;
+
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -58,7 +60,7 @@ namespace IO.Ably.Tests
             var tokenParams = GetTokenParams();
             var request = Populate(tokenParams);
 
-            Assert.Equal(tokenParams.Capability, request.Capability);
+            request.Capability.Should().Be(tokenParams.Capability);
         }
 
         [Fact]
@@ -110,7 +112,7 @@ namespace IO.Ably.Tests
 
             string mac = Crypto.ComputeHMacSha256(signText, GetKeyValue());
 
-            Assert.Equal(mac, request.Mac);
+            request.Mac.Should().Be(mac);
         }
 
         private static string GetKeyId()
