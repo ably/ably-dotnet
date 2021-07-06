@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.5](https://github.com/ably/ably-dotnet/tree/1.2.5) (2021-07-02)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.4...1.2.5)
+
+**Implemented enhancements:**
+
+- Heartbeat support for detecting dropped connections [\#507](https://github.com/ably/ably-dotnet/issues/507)
+- Numerous code quality fixes (see [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.4...1.2.5))
+
 ## [1.2.4](https://github.com/ably/ably-dotnet/tree/1.2.4) (2021-05-05)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.3...1.2.4)
 
