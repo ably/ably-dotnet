@@ -77,7 +77,6 @@ This client library is currently *not compatible* with some of the Ably features
 | [Push Notification target](https://www.ably.io/documentation/general/push/activate-subscribe#subscribing) |
 | [Push Notification admin](https://www.ably.io/documentation/general/push/admin) |
 | [Custom transportParams](https://www.ably.io/documentation/realtime/usage#client-options) |
-| [Message extras](https://www.ably.io/documentation/realtime/types#message) |
 
 ## Documentation
 
