@@ -1,4 +1,6 @@
-﻿namespace IO.Ably.Tests
+﻿using FluentAssertions;
+
+namespace IO.Ably.Tests
 {
 #if MSGPACK
     public class GenerateMsgPackSerializers
@@ -249,7 +251,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(action, target.Action);
         }
 
@@ -278,7 +280,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(channel, target.Channel);
         }
 
@@ -306,7 +308,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(serial, target.ChannelSerial);
         }
 
@@ -327,7 +329,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionId, target.ConnectionId);
         }
 
@@ -348,7 +350,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionKey, target.ConnectionKey);
         }
 
@@ -369,7 +371,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(id, target.Id);
         }
 
@@ -389,7 +391,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
         }
 
@@ -406,7 +408,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(count, target.Count.Value);
         }
 
@@ -426,7 +428,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(serial, target.MsgSerial);
         }
 
@@ -447,7 +449,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<byte>((byte)flags, (byte)target.Flags);
         }
 
@@ -466,8 +468,8 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
+            target.Should().NotBeNull();
+            target.Messages.Should().NotBeNull();
             Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {

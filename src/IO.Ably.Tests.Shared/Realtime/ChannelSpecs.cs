@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
+
 using IO.Ably.AcceptanceTests;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
@@ -13,6 +12,9 @@ using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+
+using FluentAssertions;
+using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1580,7 +1582,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await channel.HistoryAsync();
 
-                Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+                LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
             }
 
             [Fact]

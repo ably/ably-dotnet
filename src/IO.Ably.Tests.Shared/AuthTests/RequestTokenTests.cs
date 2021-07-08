@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -450,7 +451,7 @@ namespace IO.Ably.Tests.AuthTests
             var tokenRequest = new TokenParams { Capability = new Capability() };
 
             var token = await rest.Auth.RequestTokenAsync(tokenRequest, options);
-            Assert.NotNull(token);
+            token.Should().NotBeNull();
             dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
         }
 

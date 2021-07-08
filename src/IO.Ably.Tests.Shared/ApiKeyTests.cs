@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -18,9 +19,9 @@ namespace IO.Ably.Tests
         {
             var key = ApiKey.Parse("123.456:789");
 
-            Assert.Equal("123", key.AppId);
-            Assert.Equal("123.456", key.KeyName);
-            Assert.Equal("789", key.KeySecret);
+            key.AppId.Should().Be("123");
+            key.KeyName.Should().Be("123.456");
+            key.KeySecret.Should().Be("789");
         }
 
         [Fact]
@@ -28,9 +29,9 @@ namespace IO.Ably.Tests
         {
             var key = ApiKey.Parse(" 123.456:789 ");
 
-            Assert.Equal("123", key.AppId);
-            Assert.Equal("123.456", key.KeyName);
-            Assert.Equal("789", key.KeySecret);
+            key.AppId.Should().Be("123");
+            key.KeyName.Should().Be("123.456");
+            key.KeySecret.Should().Be("789");
         }
     }
 }

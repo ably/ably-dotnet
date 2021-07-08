@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FluentAssertions;
+
 using IO.Ably.Types;
+
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -209,7 +211,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(action, target.Action);
         }
 
@@ -228,7 +230,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(channel, target.Channel);
         }
 
@@ -246,7 +248,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(serial, target.ChannelSerial);
         }
 
@@ -264,7 +266,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionId, target.ConnectionId);
         }
 
@@ -282,7 +284,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(id, target.Id);
         }
 
@@ -302,7 +304,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
         }
 
@@ -322,7 +324,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count.Value);
         }
 
@@ -342,7 +344,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
         }
 
@@ -362,7 +364,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<byte>(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
         }
 
@@ -378,8 +380,8 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message.ToString());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
+            target.Should().NotBeNull();
+            target.Messages.Should().NotBeNull();
             Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
@@ -400,8 +402,8 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message.ToString());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Presence);
+            target.Should().NotBeNull();
+            target.Presence.Should().NotBeNull();
             Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {

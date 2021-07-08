@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using FluentAssertions;
 using Xunit;
 
@@ -69,7 +70,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             // test that the Logger gets instanced
-            Assert.NotNull(DefaultLogger.LoggerInstance);
+            DefaultLogger.LoggerInstance.Should().NotBeNull();
         }
 
         [Fact]

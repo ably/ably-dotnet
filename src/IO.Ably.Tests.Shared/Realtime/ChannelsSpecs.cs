@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
 using IO.Ably.Types;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -69,7 +71,7 @@ namespace IO.Ably.Tests.Realtime
             var channel2 = client.Channels.Get("test", options);
 
             // Assert
-            Assert.NotNull(channel2);
+            channel2.Should().NotBeNull();
             Assert.Same(options, channel2.Options);
         }
 
@@ -87,7 +89,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.Release("test");
 
             // Assert
-            Assert.Equal(ChannelState.Detaching, channel.State);
+            channel.State.Should().Be(ChannelState.Detaching);
         }
 
         [Fact]
@@ -156,7 +158,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.ReleaseAll();
 
             // Assert
-            Assert.Equal(ChannelState.Detaching, channel.State);
+            channel.State.Should().Be(ChannelState.Detaching);
         }
 
         [Fact]
@@ -335,7 +337,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var key = Convert.FromBase64String("dDGE8dYl8M9+uyUTIv0+ncs1hEa++HiNDu75Dyj4kmw=");
             var cipherParams = new CipherParams(key);
-            var options = new ChannelOptions(cipherParams); // enable encrytion
+            var options = new ChannelOptions(cipherParams); // enable encryption
             var client = await GetConnectedClient();
             var channel = client.Channels.Get("test", options);
 
