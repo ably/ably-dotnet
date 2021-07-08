@@ -8,7 +8,7 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 
 ## Xamarin and VS 2017
 
-There is an open issue for versions 1.1.14 and above when working with Xamarim Projects and Visual Studio 2017. Ably (1.1.14) was compiled using MsBuild that came with VS 2019 which causes an issue when a Xamarin app is compiled using VS 2017. More information can be found in this [Stackoverflow post](https://stackoverflow.com/questions/58032635/updating-nuget-caused-exception-unhandled-system-typeloadexception/58064929#58064929). 
+There is an open issue for versions 1.1.14 and above when working with Xamarim Projects and Visual Studio 2017. Ably (1.1.14) was compiled using MsBuild that came with VS 2019 which causes an issue when a Xamarin app is compiled using VS 2017. More information can be found in this [Stack Overflow post](https://stackoverflow.com/questions/58032635/updating-nuget-caused-exception-unhandled-system-typeloadexception/58064929#58064929). 
 Until we resolve the issue you can either use version 1.1.13 or update to using Visual Studio 2019. Please create an support issue if this is causing problems. 
 
 
@@ -40,11 +40,11 @@ See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-tran
 
 &ast;&ast; We regression-test the library against .NET Core 3.1 and .NET Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
-### Partial platform support
+## Partially supported platforms
 
 The following platforms are supported, but have some shortcomings or considerations:
 
-#### Unity
+### Unity
 
 Unity support is currently in beta. See below for details on why it's considered beta.
 
@@ -64,9 +64,15 @@ Please download the latest Unity package from the [github releases page](https:/
 
 Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the SynchronizationContext and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following Client option `CaptureCurrentSynchronizationContext`. Even thought the setting is deprecated it will not be removed.
 
-### Unsupported platforms
+## Unsupported platforms
 
-A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
+### .NET 6 and Visual Studio 2022
+
+`.NET 6` and `Visual Studio 2022`, both currently in preview, at not supported at this time but will be supported when they are officially released.
+
+### Portable Class Libraries
+
+A Portable Class Library version is not available. Portable Class Libraries are now considered deprecated and shared code should be packaged in .NET Standard Libraries. More information can be found [here](https://docs.microsoft.com/en-us/xamarin/cross-platform/app-fundamentals/code-sharing).
 
 ## Known Limitations
 
@@ -76,7 +82,7 @@ This client library is currently *not compatible* with some of the Ably features
 |:--- |
 | [Push Notification target](https://www.ably.io/documentation/general/push/activate-subscribe#subscribing) |
 | [Push Notification admin](https://www.ably.io/documentation/general/push/admin) |
-| [Custom transportParams](https://www.ably.io/documentation/realtime/usage#client-options) |
+| [Custom `transportParams`](https://www.ably.io/documentation/realtime/usage#client-options) |
 
 ## Documentation
 
@@ -92,6 +98,12 @@ You can install it from the Package Manager Console using this command
 PM> Install-Package ably.io
 ```
 
+or using the .NET CLI in your project directory using
+
+```
+$ dotnet add package ably.io
+```
+
 ## Using the Realtime API
 
 ### Introduction
@@ -99,12 +111,12 @@ PM> Install-Package ably.io
 All examples assume a client has been created as follows:
 
 ```csharp
-// using basic auth with API key
+// Using basic auth with API key
 var realtime = new AblyRealtime("<api key>");
 ```
 
 ```csharp
-// using taken auth with token string
+// Using token auth with token string
 var realtime = new AblyRealtime(new ClientOptions { Token = "token" });
 ```
 
@@ -115,7 +127,7 @@ If you do not have an API key, [sign up for a free API key now](https://www.ably
 Connecting and observing connection state changes. By default the library automatically initializes a connection. 
 
 ```csharp
-realtime.Connection.On(ConnectionState.Connected, args =>
+realtime.Connection.On(ConnectionEvent.Connected, args =>
 {
     // Do stuff  
 });
@@ -124,8 +136,8 @@ realtime.Connection.On(ConnectionState.Connected, args =>
 To disable the default automatic connect behavior of the library, set `AutoConnect=false` when initializing the client.
 
 ```csharp
-var realtime = new AblyRealtime(new ClientOptions("<api key>") {AutoConnect = false});
-// some code
+var realtime = new AblyRealtime(new ClientOptions("<api key>") { AutoConnect = false });
+// Some code
 realtime.Connect();
 ```
 
@@ -136,7 +148,7 @@ realtime.Connection.On(args =>
 {
     var currentState = args.Current; // Current state the connection transitioned to
     var previousState = args.Previous; // Previous state
-    var error = args.Reason; // If the connection errored the Reason object will be populated.
+    var error = args.Reason; // If the connection error-ed the Reason object will be populated.
 });
 ```
 
@@ -145,7 +157,7 @@ realtime.Connection.On(args =>
 Create a channel
 
 ```csharp
-var channel = realtime.Channels.Get("test");
+IRealtimeChannel channel = realtime.Channels.Get("test");
 ```
 
 Subscribing to all events:
@@ -174,11 +186,13 @@ Observing channel state changes and errors:
 channel.On(args =>
 {
     var state = args.NewState; // Current channel State
-    var error = args.Error; // If the channel errored it will be reflected here
+    var error = args.Error; // If the channel error-ed it will be reflected here
 });
+```
 
-// or
+or
 
+```csharp
 channel.On(ChannelState.Attached, args =>
 {
     // Do stuff when channel is attached
@@ -196,7 +210,7 @@ var channelParams = new ChannelParams();
 channelParams.Add("delta", "vcdiff");
 var channelOptions = new ChannelOptions();
 channelOptions.Params = channelParams;
-var channel = ably.Channels.Get(ChannelName, channelOptions);
+IRealtimeChannel channel = ably.Channels.Get(ChannelName, channelOptions);
 ```
 
 Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
@@ -216,8 +230,8 @@ with a callback:
 ```csharp
 channel.Publish("greeting", "Hello World!", (success, error) =>
 {
-    // if publish succeeded `success` is `true`
-    // if publish failed `success` is `false` and error will contain the specific error
+    // If publish succeeded 'success' is 'true'
+    // if publish failed 'success' is 'false' and 'error' will contain the specific error
 });
 ```
 
@@ -238,7 +252,7 @@ Calling history returns a paginated list of message. The object is of type `Pagi
 
 ```csharp
 var history = await channel.HistoryAsync();
-// loop through current history page
+// Loop through current history page
 foreach (var message in history.Items)
 {
     // Do something with message
@@ -253,7 +267,7 @@ Getting presence history is similar to how message history works. You get back `
 
 ```csharp
 var presenceHistory = await channel.Presence.HistoryAsync();
-// loop through the presence messages
+// Loop through the presence messages
 foreach (var presence in presenceHistory.Items)
 {
     // Do something with the messages
@@ -271,7 +285,7 @@ var secret = Crypto.GetRandomKey();
 var encryptedChannel = realtime.Get("encrypted", new ChannelOptions(secret));
 encryptedChannel.Subscribe(message =>
 {
-    var data = message.data; // sensitive data (encrypted before published)
+    var data = message.data; // Sensitive data (encrypted before published)
 });
 encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
 ```
@@ -286,7 +300,7 @@ All examples assume a client and/or channel has been created as follows:
 
 ```csharp
 var client = new AblyRest("<api key>");
-var channel = client.Channels.Get("test");
+IRealtimeChannel channel = client.Channels.Get("test");
 ```
 
 If you do not have an API key, [sign up for a free API key now](https://www.ably.io/signup)
@@ -318,7 +332,7 @@ foreach (var message in historyPage.Items)
 {
     // Do something with each message
 }
-// get next page
+// Get the next page
 var nextHistoryPage = await historyPage.NextAsync();
 ```
 
@@ -327,11 +341,11 @@ var nextHistoryPage = await historyPage.NextAsync();
 ```csharp
 var presence = await channel.Presence.GetAsync();
 var first = presence.Items.FirstOrDefault();
-var clientId = first.clientId; // clientId of the first member present
+var clientId = first.clientId; // 'clientId' of the first member present
 var nextPresencePage = await presence.NextAsync();
 foreach (var presenceMessage in nextPresencePage.Items)
 {
-    // do stuff with next page presence messages
+    // Do stuff with next page presence messages
 }
 ```
 
@@ -363,7 +377,7 @@ var options = new ClientOptions
 {
     AuthCallback = async tokenParams =>
     {
-        // Return a TokenDetails instance or a preferably a TokenRequest string.
+        // Return a 'TokenDetails' instance or a preferably a 'TokenRequest' string.
         // Typically this method would wrap a request to your web server.
         return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
     }
@@ -385,7 +399,7 @@ When a 128 bit or 256 bit key is provided to the library, all payloads are encry
 
 ```csharp
 var secret = Crypto.GetRandomKey();
-var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
+IRealtimeChannel encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
 await encryptedChannel.PublishAsync("name", "sensitive data"); // Data will be encrypted before publish
 var history = await encryptedChannel.HistoryAsync();
 var data = history.First().data; // "sensitive data" the message will be automatically decrypted once received
@@ -426,7 +440,9 @@ var realtime = new AblyRealtime(options);
 
 ```csharp
 using System;
+
 using IO.Ably;
+
 namespace testing_ably_console
 {
     class Program
@@ -435,7 +451,7 @@ namespace testing_ably_console
         {
             Console.WriteLine("Hello World!");
             var realtime = new AblyRealtime("<api key>");
-            var channel = realtime.Channels.Get("test");
+            IRealtimeChannel channel = realtime.Channels.Get("test");
             await channel.PublishAsync("greeting", "Hello World!");
             Console.WriteLine("Farewell World!");
         }
@@ -447,7 +463,9 @@ namespace testing_ably_console
 
 ```csharp
 using System;
+
 using IO.Ably;
+
 namespace testing_ably_console
 {
     class Program
@@ -461,7 +479,7 @@ namespace testing_ably_console
         {
             Console.WriteLine("Hello World!");
             var realtime = new AblyRealtime("<api key>");
-            var channel = realtime.Channels.Get("test");
+            IRealtimeChannel channel = realtime.Channels.Get("test");
             await channel.PublishAsync("greeting", "Hello World!");
         }
     }
@@ -490,7 +508,7 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Building and Packaging
 
-The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 or Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
 
     choco install fake
     choco install nuget.commandline
@@ -504,10 +522,10 @@ If you want to incorporate ably-dotnet into your project from source (perhaps to
 
 1. Clone this repository to your local system (`git clone --recurse-submodules https://github.com/ably/ably-dotnet.git`)
 2. Open the solution you want to reference ably-dotnet from
-3. In Solution Explorer right click the root note (it will be labled Solution 'YourSolutionName')
+3. In Solution Explorer right click the root node (it will be labelled Solution 'YourSolutionName')
 4. Select Add > Existing Project from the context menu
 5. Browse to the ably-dotnet repository and add ably-dotnet\src\IO.Ably.Shared\IO.Ably.Shared.shproj
-6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targetting .NET Framework (AKA Classic .NET) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
+6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targeting .NET Framework (AKA Classic .NET) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
 7. In any project that you want to use ably-dotnet you need to add a project reference, to do so:
     1. Find your project in Solution Explorer and expand the tree so that the Dependencies node is visible
     2. Right click Dependencies and select Add Reference
