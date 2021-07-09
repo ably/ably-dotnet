@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 
