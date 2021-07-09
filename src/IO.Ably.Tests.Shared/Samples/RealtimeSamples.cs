@@ -136,7 +136,7 @@ namespace IO.Ably.Tests.GithubSamples
         public async Task RestApiSamples()
         {
             var client = new AblyRest(PlaceholderKey);
-            IRealtimeChannel channel = client.Channels.Get("test");
+            IRestChannel channel = client.Channels.Get("test");
 
             try
             {
@@ -182,7 +182,7 @@ namespace IO.Ably.Tests.GithubSamples
 
             // Publishing encrypted messages
             var secret = Crypto.GenerateRandomKey();
-            IRealtimeChannel encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
+            IRestChannel encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
             await encryptedChannel.PublishAsync("name", "sensitive data"); // Data will be encrypted before publish
             var history = await encryptedChannel.HistoryAsync();
             var data = history.Items.First().Data;
