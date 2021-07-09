@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 
 using Xunit;
