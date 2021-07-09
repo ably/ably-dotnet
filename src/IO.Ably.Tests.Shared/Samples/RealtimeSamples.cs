@@ -1,35 +1,38 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
+
 using Xunit;
 
 namespace IO.Ably.Tests.GithubSamples
 {
     public class RealtimeSamples
     {
-        private string _placeholderKey = "key.placeholder:placeholder";
+        private const string PlaceholderKey = "key.placeholder:placeholder";
 
         [Fact]
-        public void InitialiseClient()
+        public void InitializeClient()
         {
             // If you do not have an API key, [sign up for a free API key now](ht tps://www.ably.io/signup)
-            var realtimeBasic = new AblyRealtime(_placeholderKey);
+            var realtimeBasic = new AblyRealtime(PlaceholderKey);
             var realtimeToken = new AblyRealtime(new ClientOptions { Token = "token" });
         }
 
         [Fact]
         public void SuccessfulConnection()
         {
-            var realtime = new AblyRealtime(_placeholderKey);
+            var realtime = new AblyRealtime(PlaceholderKey);
 
             realtime.Connection.On(ConnectionEvent.Connected, args =>
             {
                 // Do stuff
             });
 
-            // or
+            // Or ...
             realtime.Connection.ConnectionStateChanged += (s, args) =>
             {
                 if (args.Current == ConnectionState.Connected)
@@ -42,25 +45,25 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact]
         public void AutoConnectOff()
         {
-            var realtime = new AblyRealtime(new ClientOptions(_placeholderKey) { AutoConnect = false });
+            var realtime = new AblyRealtime(new ClientOptions(PlaceholderKey) { AutoConnect = false });
             realtime.Connect();
 
             realtime.Connection.On(args =>
             {
-                var currentState = args.Current; // Current state the connection transitioned to
-                var previousState = args.Previous; // Previous state
-                var error = args.Reason; // If the connection errored the Reason object will be populated.
+                var currentState = args.Current;      // Current state the connection transitioned to
+                var previousState = args.Previous;    // Previous state
+                var error = args.Reason;              // If the connection error-ed the 'Reason' object will be populated.
             });
         }
 
         [Fact(Skip = "Used to make sure samples compile")]
         public async Task ChannelSubscribe()
         {
-            var realtime = new AblyRealtime(new ClientOptions(_placeholderKey) { AutoConnect = false });
-            var channel = realtime.Channels.Get("test");
+            var realtime = new AblyRealtime(new ClientOptions(PlaceholderKey) { AutoConnect = false });
+            IRealtimeChannel channel = realtime.Channels.Get("test");
 
-            // or
-            var channel2 = realtime.Channels.Get("shortcut");
+            // Or ...
+            IRealtimeChannel channel2 = realtime.Channels.Get("shortcut");
 
             channel.Subscribe(message =>
             {
@@ -70,8 +73,8 @@ namespace IO.Ably.Tests.GithubSamples
 
             channel.On(args =>
             {
-                var state = args.Current; // Current channel State
-                var error = args.Error; // If the channel errored it will be refrected here
+                var state = args.Current;    // Current channel State
+                var error = args.Error;      // If the channel error-ed it will be reflected here
             });
 
             channel.On(ChannelEvent.Attached, args =>
@@ -82,8 +85,8 @@ namespace IO.Ably.Tests.GithubSamples
             channel.Publish("greeting", "Hello World!");
             channel.Publish("greeting", "Hello World!", (success, error) =>
             {
-                // if publish succeeded `success` is true
-                // if publish failed `success` is false and error will contain the specific error
+                // If 'Publish' succeeded 'success' is 'true'
+                // If 'Publish' failed 'success' is 'false' and 'error' will contain the specific error
             });
 
             var result = await channel.PublishAsync("greeting", "Hello World!");
@@ -91,26 +94,27 @@ namespace IO.Ably.Tests.GithubSamples
             // You can check if the message failed
             if (result.IsFailure)
             {
-                var error = result.Error; // The error reason can be accessed as well
+                var error = result.Error;    // The error reason can be accessed as well
             }
 
             var secret = Crypto.GenerateRandomKey();
             var encryptedChannel = realtime.Channels.Get("encrypted", new ChannelOptions(secret));
             encryptedChannel.Subscribe(message =>
             {
-                var data = message.Data; // sensitive data (encrypted before published)
+                var data = message.Data;    // Sensitive data (encrypted before published)
             });
+
             encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
         }
 
         [Fact(Skip = "Just need to make sure it compiles")]
         public async Task ChannelHistory()
         {
-            var realtime = new AblyRealtime(_placeholderKey);
-            var channel = realtime.Channels.Get("test");
+            var realtime = new AblyRealtime(PlaceholderKey);
+            IRealtimeChannel channel = realtime.Channels.Get("test");
             var history = await channel.HistoryAsync();
 
-            // loop through current history page
+            // Loop through current history page
             foreach (var message in history.Items)
             {
                 // Do something with message
@@ -120,7 +124,7 @@ namespace IO.Ably.Tests.GithubSamples
 
             var presenceHistory = await channel.Presence.HistoryAsync();
 
-            // loop through the presence messages
+            // Loop through the presence messages
             foreach (var presence in presenceHistory.Items)
             {
                 // Do something with the messages
@@ -132,8 +136,8 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact(Skip = "Making sure the samples compile")]
         public async Task RestApiSamples()
         {
-            var client = new AblyRest(_placeholderKey);
-            var channel = client.Channels.Get("test");
+            var client = new AblyRest(PlaceholderKey);
+            IRestChannel channel = client.Channels.Get("test");
 
             try
             {
@@ -151,17 +155,17 @@ namespace IO.Ably.Tests.GithubSamples
                 // Do something with each message
             }
 
-            // get next page
+            // Get next page
             var nextHistoryPage = await historyPage.NextAsync();
 
             // Current presence
             var presence = await channel.Presence.GetAsync();
             var first = presence.Items.FirstOrDefault();
-            var clientId = first.ClientId; // clientId of the first member present
+            var clientId = first.ClientId;    // 'clientId' of the first member present
             var nextPresencePage = await presence.NextAsync();
             foreach (var presenceMessage in nextPresencePage.Items)
             {
-                // do stuff with next page presence messages
+                // Do stuff with next page presence messages
             }
 
             // Presence history
@@ -177,9 +181,9 @@ namespace IO.Ably.Tests.GithubSamples
                 // Do stuff with next page messages
             }
 
-            // publishing encrypted messages
+            // Publishing encrypted messages
             var secret = Crypto.GenerateRandomKey();
-            var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
+            IRestChannel encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
             await encryptedChannel.PublishAsync("name", "sensitive data"); // Data will be encrypted before publish
             var history = await encryptedChannel.HistoryAsync();
             var data = history.Items.First().Data;
