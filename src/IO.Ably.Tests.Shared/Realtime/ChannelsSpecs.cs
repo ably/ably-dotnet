@@ -227,7 +227,7 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             Assert.Same(channel, enumerator.Current);
-            Assert.False(enumerator.MoveNext());
+            enumerator.MoveNext().Should().BeFalse();
         }
 
         [Fact]
@@ -243,7 +243,7 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             Assert.Same(channel, enumerator.Current);
-            Assert.False(enumerator.MoveNext());
+            enumerator.MoveNext().Should().BeFalse();
         }
 
         [Fact]
@@ -348,7 +348,7 @@ namespace IO.Ably.Tests.Realtime
             await client.ProcessCommands();
 
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
-            Assert.True(options.CipherParams.Equals(cipherParams));
+            options.CipherParams.Equals(cipherParams).Should().BeTrue();
         }
     }
 }

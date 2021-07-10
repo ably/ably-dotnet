@@ -69,7 +69,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
         }
 
         private ConnectionFailedState GetState(ErrorInfo info = null)

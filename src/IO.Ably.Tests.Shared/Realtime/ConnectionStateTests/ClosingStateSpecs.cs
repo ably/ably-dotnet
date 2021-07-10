@@ -92,7 +92,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
             _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace IO.Ably.Tests.Shared
 {
@@ -10,12 +11,12 @@ namespace IO.Ably.Tests.Shared
         public void DefaultOptions()
         {
             var options = new ClientOptions();
-            Assert.Equal("realtime.ably.io", options.FullRealtimeHost());
-            Assert.Equal("rest.ably.io", options.FullRestHost());
-            Assert.Equal(80, options.Port);
-            Assert.Equal(443, options.TlsPort);
+            options.FullRealtimeHost().Should().Be("realtime.ably.io");
+            options.FullRestHost().Should().Be("rest.ably.io");
+            options.Port.Should().Be(80);
+            options.TlsPort.Should().Be(443);
             Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
 
         [Fact]
@@ -26,12 +27,12 @@ namespace IO.Ably.Tests.Shared
             {
                 Environment = "production"
             };
-            Assert.Equal("realtime.ably.io", options.FullRealtimeHost());
-            Assert.Equal("rest.ably.io", options.FullRestHost());
-            Assert.Equal(80, options.Port);
-            Assert.Equal(443, options.TlsPort);
+            options.FullRealtimeHost().Should().Be("realtime.ably.io");
+            options.FullRestHost().Should().Be("rest.ably.io");
+            options.Port.Should().Be(80);
+            options.TlsPort.Should().Be(443);
             Assert.Equal(Defaults.FallbackHosts, options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
 
         [Fact]
@@ -43,12 +44,12 @@ namespace IO.Ably.Tests.Shared
             {
                 Environment = "sandbox"
             };
-            Assert.Equal("sandbox-realtime.ably.io", options.FullRealtimeHost());
-            Assert.Equal("sandbox-rest.ably.io", options.FullRestHost());
-            Assert.Equal(80, options.Port);
-            Assert.Equal(443, options.TlsPort);
+            options.FullRealtimeHost().Should().Be("sandbox-realtime.ably.io");
+            options.FullRestHost().Should().Be("sandbox-rest.ably.io");
+            options.Port.Should().Be(80);
+            options.TlsPort.Should().Be(443);
             Assert.Equal(Defaults.GetEnvironmentFallbackHosts("sandbox"), options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
 
         [Fact]
@@ -64,12 +65,12 @@ namespace IO.Ably.Tests.Shared
                 TlsPort = 8081
             };
 
-            Assert.Equal("local-realtime.ably.io", options.FullRealtimeHost());
-            Assert.Equal("local-rest.ably.io", options.FullRestHost());
-            Assert.Equal(8080, options.Port);
-            Assert.Equal(8081, options.TlsPort);
+            options.FullRealtimeHost().Should().Be("local-realtime.ably.io");
+            options.FullRestHost().Should().Be("local-rest.ably.io");
+            options.Port.Should().Be(8080);
+            options.TlsPort.Should().Be(8081);
             Assert.Empty(options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
 
         [Fact]
@@ -81,12 +82,12 @@ namespace IO.Ably.Tests.Shared
                 RestHost = "test.org"
             };
 
-            Assert.Equal("test.org", options.FullRestHost());
-            Assert.Equal("test.org", options.FullRealtimeHost());
-            Assert.Equal(80, options.Port);
-            Assert.Equal(443, options.TlsPort);
+            options.FullRestHost().Should().Be("test.org");
+            options.FullRealtimeHost().Should().Be("test.org");
+            options.Port.Should().Be(80);
+            options.TlsPort.Should().Be(443);
             Assert.Empty(options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
 
         [Fact]
@@ -99,12 +100,12 @@ namespace IO.Ably.Tests.Shared
                 RealtimeHost = "ws.test.org"
             };
 
-            Assert.Equal("test.org", options.FullRestHost());
-            Assert.Equal("ws.test.org", options.FullRealtimeHost());
-            Assert.Equal(80, options.Port);
-            Assert.Equal(443, options.TlsPort);
+            options.FullRestHost().Should().Be("test.org");
+            options.FullRealtimeHost().Should().Be("ws.test.org");
+            options.Port.Should().Be(80);
+            options.TlsPort.Should().Be(443);
             Assert.Empty(options.GetFallbackHosts());
-            Assert.True(options.Tls);
+            options.Tls.Should().BeTrue();
         }
     }
 }
