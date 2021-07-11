@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             await SendRequestTokenWithValidOptions();
 
-            Assert.IsType<TokenRequest>(LastRequest.PostData);
+            LastRequest.PostData.Should().BeOfType<TokenRequest>();
         }
 
         [Fact]

@@ -213,7 +213,7 @@ namespace IO.Ably.Tests.Rest
 
             var ex = await Record.ExceptionAsync(async () => await channel.PublishAsync(messages));
             ex.Should().NotBeNull();
-            Assert.IsType<AblyException>(ex);
+            ex.Should().BeOfType<AblyException>();
             ((AblyException)ex).ErrorInfo.Code.Should().Be(40031);  // Invalid publish request (invalid client-specified id), see https://github.com/ably/ably-common/pull/30
         }
 

@@ -495,7 +495,7 @@ namespace IO.Ably.Tests
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync(null, authOptionsWhichFail));
 
-            Assert.IsType<AblyException>(ex);
+            ex.Should().BeOfType<AblyException>();
 
             (await failedAwaiter.Task).Should().BeTrue("With 403 response connection should become Failed");
         }
@@ -517,7 +517,7 @@ namespace IO.Ably.Tests
             };
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.RequestTokenAsync(null, authOptions));
-            Assert.IsType<AblyException>(ex);
+            ex.Should().BeOfType<AblyException>();
             ex.ErrorInfo.Code.Should().Be(80019);
             ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             await Task.Delay(1000);

@@ -91,7 +91,7 @@ namespace IO.Ably.Tests
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -122,7 +122,7 @@ namespace IO.Ably.Tests
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -154,7 +154,7 @@ namespace IO.Ably.Tests
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -228,7 +228,7 @@ namespace IO.Ably.Tests
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
