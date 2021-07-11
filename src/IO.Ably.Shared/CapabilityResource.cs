@@ -8,50 +8,6 @@ namespace IO.Ably
     public class CapabilityResource
     {
         /// <summary>
-        /// Describes all the allowed operations.
-        /// </summary>
-        public static class AllowedOps
-        {
-            /// <summary>
-            /// Publish operation.
-            /// </summary>
-            public const string Publish = "publish";
-
-            /// <summary>
-            /// Subscribe operation.
-            /// </summary>
-            public const string Subscribe = "subscribe";
-
-            /// <summary>
-            /// Presence operation.
-            /// </summary>
-            public const string Presence = "presence";
-
-            /// <summary>
-            /// All operations.
-            /// </summary>
-            public const string All = "*";
-        }
-
-        /// <summary>
-        /// Name of the resource.
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// List of allowed operations.
-        /// </summary>
-        public List<string> AllowedOperations { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CapabilityResource"/> class.
-        /// </summary>
-        public CapabilityResource()
-        {
-            AllowedOperations = new List<string>();
-        }
-
-        /// <summary>
         /// Initializes a new instance and assigns a name.
         /// </summary>
         /// <param name="name">name of the resource.</param>
@@ -60,6 +16,24 @@ namespace IO.Ably
         {
             Name = name;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CapabilityResource"/> class.
+        /// </summary>
+        private CapabilityResource()
+        {
+            AllowedOperations = new List<string>();
+        }
+
+        /// <summary>
+        /// Name of the resource.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// List of allowed operations.
+        /// </summary>
+        public List<string> AllowedOperations { get; }
 
         /// <summary>
         /// Does the current resource allow all operations.
@@ -108,6 +82,32 @@ namespace IO.Ably
             AllowedOperations.Add(AllowedOps.Publish);
             AllowedOperations.Sort();
             return this;
+        }
+
+        /// <summary>
+        /// Describes all the allowed operations.
+        /// </summary>
+        public static class AllowedOps
+        {
+            /// <summary>
+            /// Publish operation.
+            /// </summary>
+            public const string Publish = "publish";
+
+            /// <summary>
+            /// Subscribe operation.
+            /// </summary>
+            public const string Subscribe = "subscribe";
+
+            /// <summary>
+            /// Presence operation.
+            /// </summary>
+            public const string Presence = "presence";
+
+            /// <summary>
+            /// All operations.
+            /// </summary>
+            public const string All = "*";
         }
     }
 }
