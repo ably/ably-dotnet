@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
             public async Task WithTlsFalseAndBasicAuth_Throws()
             {
                 var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-                await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthorizeAsync());
+                await Assert.ThrowsAsync<AblyInsecureRequestException>(() => client.Auth.AuthorizeAsync());
             }
 
             [Fact]
