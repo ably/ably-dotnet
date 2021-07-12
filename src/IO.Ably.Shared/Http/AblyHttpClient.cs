@@ -11,59 +11,25 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
-        private class HttpResponseWrapper
-        {
-            public AblyResponse AblyResponse { get; set; }
-
-            public bool Success { get; set; }
-
-            public bool CanRetry { get; set; }
-
-            public Exception Exception { get; set; }
-
-            public string GetFailedMessage()
-            {
-                if (Exception != null)
-                {
-                    return "Can't make request because of Exception: " + Exception.Message;
-                }
-
-                return $"Ably server returned error. Status: {AblyResponse.StatusCode}.";
-            }
-
-            private HttpResponseWrapper()
-            {
-            }
-
-            public static HttpResponseWrapper FromError(Exception ex, bool canRetry)
-            {
-                return new HttpResponseWrapper { Success = false, CanRetry = canRetry, Exception = ex };
-            }
-
-            public static HttpResponseWrapper FromResponse(AblyResponse response, bool success, bool canRetry)
-            {
-                return new HttpResponseWrapper { Success = success, AblyResponse = response, CanRetry = canRetry };
-            }
-
-            public static HttpResponseWrapper FromSuccess(AblyResponse response)
-                => new HttpResponseWrapper { Success = true, AblyResponse = response };
-        }
-
         private readonly Random _random = new Random();
+        private string _realtimeConnectedFallbackHost;
+
+        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
+        {
+            Now = options.NowFunc;
+            Logger = options.Logger ?? DefaultLogger.LoggerInstance;
+            Options = options;
+            CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
+            SendAsync = InternalSendAsync;
+        }
 
         internal Func<HttpRequestMessage, Task<HttpResponseMessage>> SendAsync { get; set; }
 
-        internal Func<DateTimeOffset> Now { get; set; }
-
-        internal ILogger Logger { get; set; }
-
         internal AblyHttpOptions Options { get; }
 
-        private bool CanRetry => Options.IsDefaultHost || Options.FallbackHostsUseDefault;
+        internal HttpClient Client { get; set; }
 
         internal string PreferredHost { get; private set; }
-
-        private string _realtimeConnectedFallbackHost;
 
         internal string RealtimeConnectedFallbackHost
         {
@@ -80,6 +46,14 @@ namespace IO.Ably
             }
         }
 
+        private Func<DateTimeOffset> Now { get; set; }
+
+        private ILogger Logger { get; set; }
+
+        private DateTimeOffset? FallbackHostUsedFrom { get; set; }
+
+        private bool CanRetry => Options.IsDefaultHost || Options.FallbackHostsUseDefault;
+
         internal void SetPreferredHost(string currentHost)
         {
             // If we are retrying the default host we need to clear the preferred one
@@ -94,19 +68,6 @@ namespace IO.Ably
                 FallbackHostUsedFrom = Now();
                 PreferredHost = currentHost;
             }
-        }
-
-        private DateTimeOffset? FallbackHostUsedFrom { get; set; }
-
-        internal HttpClient Client { get; set; }
-
-        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
-        {
-            Now = options.NowFunc;
-            Logger = options.Logger ?? DefaultLogger.LoggerInstance;
-            Options = options;
-            CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
-            SendAsync = InternalSendAsync;
         }
 
         internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
@@ -186,12 +147,12 @@ namespace IO.Ably
                 catch (Exception ex)
                 {
                     // TODO: Sentry logging here
-                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request. " + ex.Message), 50000), ex);
+                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request. " + ex.Message), ErrorCodes.InternalError), ex);
                 }
             }
             while (currentTry < numberOfRetries);
 
-            throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), 50000));
+            throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), ErrorCodes.InternalError));
 
             List<string> GetFallbackHosts()
             {
@@ -263,7 +224,7 @@ namespace IO.Ably
                         return HttpResponseWrapper.FromError(ex, true);
                     }
 
-                    StringBuilder reason = new StringBuilder(ex.Message);
+                    var reason = new StringBuilder(ex.Message);
                     var innerEx = ex.InnerException;
                     while (innerEx != null)
                     {
@@ -271,7 +232,7 @@ namespace IO.Ably
                         innerEx = innerEx.InnerException;
                     }
 
-                    throw new AblyException(new ErrorInfo(reason.ToString(), 50000), ex);
+                    throw new AblyException(new ErrorInfo(reason.ToString(), ErrorCodes.InternalError), ex);
                 }
                 catch (TaskCanceledException ex)
                 {
@@ -283,10 +244,10 @@ namespace IO.Ably
                     if (ex.CancellationToken.IsCancellationRequested == false)
                     {
                         throw new AblyException(
-                            new ErrorInfo(WrapWithRequestId("Error executing request. Request timed out."), 50000), ex);
+                            new ErrorInfo(WrapWithRequestId("Error executing request. Request timed out."), ErrorCodes.InternalError), ex);
                     }
 
-                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), 50000), ex);
+                    throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), ErrorCodes.InternalError), ex);
                 }
             }
 
@@ -329,7 +290,7 @@ namespace IO.Ably
                 {
                     Logger.Error(WrapWithRequestId($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded"));
                     throw new AblyException(
-                        new ErrorInfo(WrapWithRequestId($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded. The value is controlled by `ClientOptions.HttpMaxRetryDuration`."), 50000, null));
+                        new ErrorInfo(WrapWithRequestId($"Cumulative retry timeout of {Options.HttpMaxRetryDuration.TotalSeconds}s was exceeded. The value is controlled by `ClientOptions.HttpMaxRetryDuration`."), ErrorCodes.InternalError));
                 }
             }
 
@@ -343,7 +304,7 @@ namespace IO.Ably
                 return;
             }
 
-            StringBuilder logMessage = new StringBuilder();
+            var logMessage = new StringBuilder();
             logMessage.AppendLine($"Response from: {url}");
             logMessage.AppendLine($"Status code: {(int)ablyResponse.StatusCode} {ablyResponse.StatusCode}");
 
@@ -377,7 +338,7 @@ namespace IO.Ably
                 return;
             }
 
-            StringBuilder logMessage = new StringBuilder();
+            var logMessage = new StringBuilder();
             if (message.Headers.Any())
             {
                 logMessage.AppendLine("---- Headers ----");
@@ -397,11 +358,6 @@ namespace IO.Ably
             Logger.Debug(logMessage.ToString());
         }
 
-        private bool IsFallbackHost(string host)
-        {
-            return Options.FallbackHosts.Contains(host);
-        }
-
         internal static bool IsRetryableResponse(HttpResponseMessage response)
         {
             return ErrorInfo.IsRetryableStatusCode(response.StatusCode);
@@ -415,16 +371,15 @@ namespace IO.Ably
             }
 
             var httpEx = ex as HttpRequestException;
-            if (httpEx?.InnerException is WebException)
+            if (httpEx?.InnerException is WebException webEx)
             {
-                var webEx = httpEx.InnerException as WebException;
                 return webEx.Status == WebExceptionStatus.NameResolutionFailure ||
-                    webEx.Status == WebExceptionStatus.Timeout ||
-                    webEx.Status == WebExceptionStatus.ConnectFailure ||
-                    webEx.Status == WebExceptionStatus.ReceiveFailure ||
-                    webEx.Status == WebExceptionStatus.ConnectionClosed ||
-                    webEx.Status == WebExceptionStatus.SendFailure ||
-                    webEx.Status == WebExceptionStatus.ServerProtocolViolation;
+                       webEx.Status == WebExceptionStatus.Timeout ||
+                       webEx.Status == WebExceptionStatus.ConnectFailure ||
+                       webEx.Status == WebExceptionStatus.ReceiveFailure ||
+                       webEx.Status == WebExceptionStatus.ConnectionClosed ||
+                       webEx.Status == WebExceptionStatus.SendFailure ||
+                       webEx.Status == WebExceptionStatus.ServerProtocolViolation;
             }
 
             return false;
@@ -487,7 +442,7 @@ namespace IO.Ably
             var ablyResponse = new AblyResponse(contentTypeHeader?.CharSet, contentTypeHeader?.MediaType, content)
             {
                 StatusCode = response.StatusCode,
-                Headers = response.Headers
+                Headers = response.Headers,
             };
 
             return ablyResponse;
@@ -500,12 +455,12 @@ namespace IO.Ably
                 host = Options.Host;
             }
 
-            string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
             {
                 return new Uri($"{request.Url}{GetQuery(request)}");
             }
 
+            string protocol = Options.IsSecure ? "https://" : "http://";
             return new Uri($"{protocol}{host}{(Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty)}{request.Url}{GetQuery(request)}");
         }
 
@@ -523,6 +478,42 @@ namespace IO.Ably
             }
 
             return string.Empty;
+        }
+
+        private class HttpResponseWrapper
+        {
+            public AblyResponse AblyResponse { get; private set; }
+
+            public bool Success { get; private set; }
+
+            public bool CanRetry { get; private set; }
+
+            public Exception Exception { get; private set; }
+
+            public string GetFailedMessage()
+            {
+                if (Exception != null)
+                {
+                    return "Can't make request because of Exception: " + Exception.Message;
+                }
+
+                return $"Ably server returned error. Status: {AblyResponse.StatusCode}.";
+            }
+
+            public static HttpResponseWrapper FromError(Exception ex, bool canRetry)
+            {
+                return new HttpResponseWrapper { Success = false, CanRetry = canRetry, Exception = ex };
+            }
+
+            public static HttpResponseWrapper FromResponse(AblyResponse response, bool success, bool canRetry)
+            {
+                return new HttpResponseWrapper { Success = success, AblyResponse = response, CanRetry = canRetry };
+            }
+
+            public static HttpResponseWrapper FromSuccess(AblyResponse response)
+            {
+                return new HttpResponseWrapper { Success = true, AblyResponse = response };
+            }
         }
     }
 }
