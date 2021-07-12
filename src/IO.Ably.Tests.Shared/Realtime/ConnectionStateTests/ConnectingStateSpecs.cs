@@ -49,7 +49,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
         }
 
         [Fact]

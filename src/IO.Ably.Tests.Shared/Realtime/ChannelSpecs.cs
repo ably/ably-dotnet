@@ -838,7 +838,7 @@ namespace IO.Ably.Tests.Realtime
 
                 WaitOne();
 
-                Assert.True(called);
+                called.Should().BeTrue();
             }
 
             [Fact]

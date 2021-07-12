@@ -403,7 +403,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
                 // Assert
-                Assert.True(result);
+                result.Should().BeTrue();
             }
 
             [Theory]
@@ -431,7 +431,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
                 // Assert
-                Assert.False(result);
+                result.Should().BeFalse();
             }
 
             [Fact]

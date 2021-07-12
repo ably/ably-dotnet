@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
-using Xunit;
+
+using FluentAssertions;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
@@ -17,7 +19,7 @@ namespace IO.Ably.Tests
         public void WaitOne()
         {
             var result = _signal.WaitOne(2000);
-            Assert.True(result, "Result was not returned within 2000ms");
+            result.Should().BeTrue("Result was not returned within 2000ms");
         }
 
         public void Done()

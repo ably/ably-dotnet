@@ -863,7 +863,7 @@ namespace IO.Ably.Tests
 
             await rest.StatsAsync();
 
-            Assert.True(called, "Rest with Callback needs to request token using callback");
+            called.Should().BeTrue("Rest with Callback needs to request token using callback");
         }
 
         [Fact]

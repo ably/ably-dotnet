@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             await SendRequestTokenWithValidOptions();
 
-            Assert.IsType<TokenRequest>(LastRequest.PostData);
+            LastRequest.PostData.Should().BeOfType<TokenRequest>();
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests.AuthTests
                               };
             var result = await rest.Auth.RequestTokenAsync(tokenRequest, options);
 
-            Assert.True(authCallbackCalled);
+            authCallbackCalled.Should().BeTrue();
             Assert.Same(token, result);
         }
 
