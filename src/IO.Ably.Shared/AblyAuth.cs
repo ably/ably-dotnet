@@ -459,7 +459,7 @@ namespace IO.Ably
         {
             if (AuthMethod == AuthMethod.Basic && Options.Tls == false)
             {
-                throw new InsecureRequestException();
+                throw new AblyInsecureRequestException();
             }
         }
 
