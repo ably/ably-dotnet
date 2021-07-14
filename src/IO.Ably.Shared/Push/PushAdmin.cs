@@ -12,6 +12,9 @@ namespace IO.Ably.Push
     public class PushAdmin : IPushChannelSubscriptions, IDeviceRegistrations
     {
         private readonly AblyRest _restClient;
+
+        private ClientOptions Options => _restClient.Options;
+
         private readonly ILogger _logger;
 
         internal PushAdmin(AblyRest restClient, ILogger logger)
@@ -39,8 +42,8 @@ namespace IO.Ably.Push
         internal async Task<LocalDevice> RegisterDevice(DeviceDetails details)
         {
             // TODO: Add validation.
-            // TODO: Add fullwait parameter.
             var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
+            AddFullWaitIfNecessary(request);
             request.PostData = details;
             var result = await _restClient.ExecuteRequest<LocalDevice>(request);
 
@@ -66,6 +69,7 @@ namespace IO.Ably.Push
             });
 
             var request = _restClient.CreateRequest($"/push/deviceRegistrations/{details.Id}", new HttpMethod("PATCH"));
+            AddFullWaitIfNecessary(request);
             request.PostData = body;
             var result = await _restClient.ExecuteRequest(request);
 
@@ -82,7 +86,7 @@ namespace IO.Ably.Push
         {
             // TODO: Add logging
             var request = _restClient.CreatePostRequest("/push/publish");
-
+            AddFullWaitIfNecessary(request);
             JObject data = new JObject();
             data.Add("recipient", recipient);
             foreach (var property in payload.Properties())
@@ -90,7 +94,6 @@ namespace IO.Ably.Push
                 data.Add(property.Name, property.Value);
             }
 
-            // TODO: Add FullWait to Client options and then to Request
             request.PostData = data;
 
             var result = _restClient.ExecuteRequest(request);
@@ -102,8 +105,8 @@ namespace IO.Ably.Push
         async Task<ChannelSubscription> IPushChannelSubscriptions.SaveAsync(ChannelSubscription subscription)
         {
             // TODO: Add validation
-            // TODO: Implement fullWait query param
             var request = _restClient.CreatePostRequest("/push/channelSubscriptions");
+            AddFullWaitIfNecessary(request);
             request.PostData = subscription;
 
             return await _restClient.ExecuteRequest<ChannelSubscription>(request);
@@ -167,6 +170,7 @@ namespace IO.Ably.Push
             }
 
             var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            AddFullWaitIfNecessary(request);
             _ = await _restClient.ExecuteHttpRequest(request);
 
             // TODO: Handle errors
@@ -184,8 +188,8 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<DeviceDetails> IDeviceRegistrations.SaveAsync(DeviceDetails details)
         {
-            // TODO: Add fullwait parameter
             var request = _restClient.CreateRequest("/push/deviceRegistrations/" + details.Id, HttpMethod.Put);
+            AddFullWaitIfNecessary(request);
             request.PostData = details;
             var result = await _restClient.ExecuteRequest<DeviceDetails>(request);
 
@@ -195,8 +199,8 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<DeviceDetails> IDeviceRegistrations.GetAsync(string deviceId)
         {
-            // TODO: Add fullWait parameter
             var request = _restClient.CreateGetRequest($"/push/deviceRegistrations/{deviceId}");
+            AddFullWaitIfNecessary(request);
 
             return await _restClient.ExecuteRequest<DeviceDetails>(request);
         }
@@ -242,13 +246,19 @@ namespace IO.Ably.Push
         async Task IDeviceRegistrations.RemoveAsync(string deviceId)
         {
             // TODO: Validate the deviceId is not empty
-
-            // TODO: Add fullWait parameter
             var request = _restClient.CreateRequest($"/push/deviceRegistrations/{deviceId}", HttpMethod.Delete);
-
+            AddFullWaitIfNecessary(request);
             var result = await _restClient.ExecuteRequest(request);
 
             // Question: what happens if the request errors
+        }
+
+        private void AddFullWaitIfNecessary(AblyRequest request)
+        {
+            if (Options.PushAdminFullWait)
+            {
+                request.AddQueryParameters(new[] { new KeyValuePair<string, string>("fullWait", "true") });
+            }
         }
     }
 }
