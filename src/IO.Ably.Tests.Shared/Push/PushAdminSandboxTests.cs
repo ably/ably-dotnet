@@ -16,16 +16,26 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1a")]
             public async Task ShouldSuccessfullyPublishAPayload(Protocol protocol)
             {
+                // Arrange
                 var client = await GetRealtimeClient(protocol);
                 var channelName = "pushenabled:test".AddRandomSuffix();
 
-
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
-                var awaiter = new TaskCompletionAwaiter();
+
                 var pushPayload = JObject.FromObject(new { notification = new { title = "test", body = "message body" }, data = new { foo = "bar" }, });
+                var pushRecipient = JObject.FromObject(new
+                {
+                    transportType = "ablyChannel",
+                    channel = channelName,
+                    ablyKey = client.Options.Key,
+                    ablyUrl = "https://" + client.Options.FullRestHost(),
+                });
+
+                var awaiter = new TaskCompletionAwaiter();
                 channel.Subscribe(message =>
                 {
+                    // Assert
                     message.Name.Should().Be("__ably_push__");
                     var payload = JObject.Parse((string)message.Data);
                     payload["data"].Should().BeEquivalentTo(pushPayload["data"]);
@@ -35,20 +45,11 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     awaiter.SetCompleted();
                 });
 
-                var host = "https://" + client.Options.FullRestHost();
-                var key = client.Options.Key;
-
-                var pushRecipient = JObject.FromObject(new
-                {
-                    transportType = "ablyChannel",
-                    channel = channelName,
-                    ablyKey = key,
-                    ablyUrl = host,
-                });
+                // Act
                 await client.Push.Admin.PublishAsync(pushRecipient, pushPayload);
 
-                var result = await awaiter.Task;
-                result.Should().BeTrue();
+                // Wait for 10 seconds for awaiter.SetCompleted() and make sure it was called.
+                (await awaiter.Task).Should().BeTrue();
             }
 
             public PublishTests(AblySandboxFixture fixture, ITestOutputHelper output)
