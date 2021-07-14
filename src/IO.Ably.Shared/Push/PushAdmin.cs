@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Push
@@ -38,21 +39,15 @@ namespace IO.Ably.Push
         /// The public api doesn't expose this method but it's much easier to put it here than to manually call it when needed.
         /// </summary>
         /// <param name="details">Device details needed for registration.</param>
-        /// <returns>Updated device.</returns>
+        /// <returns>Updated device including a deviceIdentityToken assigned by the Push service.</returns>
         internal async Task<LocalDevice> RegisterDevice(DeviceDetails details)
         {
             ValidateDeviceDetails();
             var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
             AddFullWaitIfNecessary(request);
             request.PostData = details;
-            var result = await _restClient.ExecuteRequest<LocalDevice>(request);
 
-            if (result == null)
-            {
-                throw new AblyException("Failed to register device", 40000);
-            }
-
-            return result;
+            return await ExecuteRequest();
 
             void ValidateDeviceDetails()
             {
@@ -80,6 +75,35 @@ namespace IO.Ably.Push
                 if (details.Push?.Recipient is null)
                 {
                     throw new AblyException("A valid recipient is required to register a device.", ErrorCodes.BadRequest);
+                }
+            }
+
+            async Task<LocalDevice> ExecuteRequest()
+            {
+                try
+                {
+                    var response = await _restClient.ExecuteRequest(request);
+
+                    var jsonResponse = JObject.Parse(response.TextResponse);
+                    var localDevice = jsonResponse.ToObject<LocalDevice>();
+                    var deviceToken = (string)jsonResponse["deviceIdentityToken"]?["token"];
+                    if (deviceToken != null)
+                    {
+                        localDevice.DeviceIdentityToken = deviceToken;
+                    }
+
+                    return localDevice;
+                }
+                catch (JsonReaderException jsonEx)
+                {
+                    _logger.Error("Error registering device. Invalid response", jsonEx);
+                    var error = new ErrorInfo("Error registering device. Invalid response.", ErrorCodes.InternalError);
+                    throw new AblyException(error, jsonEx);
+                }
+                catch (AblyException e)
+                {
+                    _logger.Error("Error registering Device", e);
+                    throw;
                 }
             }
         }
