@@ -41,7 +41,7 @@ namespace IO.Ably.Push
         /// <returns>Updated device.</returns>
         internal async Task<LocalDevice> RegisterDevice(DeviceDetails details)
         {
-            // TODO: Add validation.
+            ValidateDeviceDetails();
             var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
             AddFullWaitIfNecessary(request);
             request.PostData = details;
@@ -53,6 +53,35 @@ namespace IO.Ably.Push
             }
 
             return result;
+
+            void ValidateDeviceDetails()
+            {
+                if (details is null)
+                {
+                    throw new AblyException("DeviceDetails is null.", ErrorCodes.BadRequest);
+                }
+
+                if (details.Id.IsEmpty())
+                {
+                    throw new AblyException("DeviceDetails needs an non empty Id parameter.", ErrorCodes.BadRequest);
+                }
+
+                if (details.Platform.IsEmpty())
+                {
+                    throw new AblyException("DeviceDetails needs a valid Platform. Supported values are 'ios', 'android' or 'browser'.", ErrorCodes.BadRequest);
+                }
+
+                if (details.FormFactor.IsEmpty())
+                {
+                    throw new AblyException(
+                        "DeviceDetails needs a valid FormFactor. Supporter values are 'phone', 'tablet', 'desktop', 'tv', 'watch', 'car' or 'embedded'.", ErrorCodes.BadRequest);
+                }
+
+                if (details.Push?.Recipient is null)
+                {
+                    throw new AblyException("A valid recipient is required to register a device.", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <summary>

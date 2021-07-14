@@ -3,52 +3,6 @@
 namespace IO.Ably.Push
 {
     /// <summary>
-    /// Describes possible device form factors.
-    /// </summary>
-    public enum DeviceFormFactor
-    {
-        /// <summary>
-        /// Phone
-        /// </summary>
-        Phone,
-
-        /// <summary>
-        /// Tablet
-        /// </summary>
-        Tablet,
-
-        /// <summary>
-        /// Desktop
-        /// </summary>
-        Desktop,
-
-        /// <summary>
-        /// Tv
-        /// </summary>
-        Tv,
-
-        /// <summary>
-        /// Watch
-        /// </summary>
-        Watch,
-
-        /// <summary>
-        /// Car
-        /// </summary>
-        Car,
-
-        /// <summary>
-        /// Embedded
-        /// </summary>
-        Embedded,
-
-        /// <summary>
-        /// Other
-        /// </summary>
-        Other
-    }
-
-    /// <summary>
     /// Class representing a Device registered for Ably push notifications.
     /// </summary>
     public class DeviceDetails
@@ -64,9 +18,9 @@ namespace IO.Ably.Push
         public string Platform { get; set; }
 
         /// <summary>
-        /// Device form factor. <see cref="FormFactor"/>.
+        /// Device form factor.
         /// </summary>
-        public DeviceFormFactor FormFactor { get; set; }
+        public string FormFactor { get; set; }
 
         /// <summary>
         /// Device ClientId. TODO: Explain how this can be used to send push notifications.
