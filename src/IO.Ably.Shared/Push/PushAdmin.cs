@@ -113,7 +113,6 @@ namespace IO.Ably.Push
         /// The public api doesn't expose this method but it's much easier to put it here than to manually call it when needed.
         /// </summary>
         /// <param name="details">Device details which contain the update.</param>
-        /// <returns>Updated device.</returns>
         internal async Task PatchDeviceRecipient(DeviceDetails details)
         {
             var body = JObject.FromObject(new
@@ -124,9 +123,7 @@ namespace IO.Ably.Push
             var request = _restClient.CreateRequest($"/push/deviceRegistrations/{details.Id}", new HttpMethod("PATCH"));
             AddFullWaitIfNecessary(request);
             request.PostData = body;
-            var result = await _restClient.ExecuteRequest(request);
-
-            // TODO: Throw if result if failed
+            _ = await _restClient.ExecuteRequest(request);
         }
 
         /// <summary>
