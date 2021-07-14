@@ -120,10 +120,29 @@ namespace IO.Ably.Push
                 push = new { recipient = details.Push.Recipient },
             });
 
+            ValidateDeviceDetails();
             var request = _restClient.CreateRequest($"/push/deviceRegistrations/{details.Id}", new HttpMethod("PATCH"));
             AddFullWaitIfNecessary(request);
             request.PostData = body;
             _ = await _restClient.ExecuteRequest(request);
+
+            void ValidateDeviceDetails()
+            {
+                if (details is null)
+                {
+                    throw new AblyException("DeviceDetails is null.", ErrorCodes.BadRequest);
+                }
+
+                if (details.Id.IsEmpty())
+                {
+                    throw new AblyException("DeviceDetails needs an non empty Id parameter.", ErrorCodes.BadRequest);
+                }
+
+                if (details.Push?.Recipient is null)
+                {
+                    throw new AblyException("A valid recipient is required to patch device recipient.", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <summary>
