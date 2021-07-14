@@ -9,56 +9,68 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.DotNetCore20.Push
 {
     [Trait("spec", "RSH1")]
-    public class PushAdminTests : MockHttpRestSpecs
+    public class PushAdminTests
     {
-        [Fact]
-        [Trait("spec", "RSH1a")]
-        public async Task Publish_WithEmptyRecipientOrData_ShouldThrow()
+        public class PublishTests : MockHttpRestSpecs
         {
-            var rest = GetRestClient();
-
-            var recipientEx = await Assert.ThrowsAsync<AblyException>(() => rest.Push.Admin.PublishAsync(null, new JObject()));
-            recipientEx.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
-
-            var dataEx = await Assert.ThrowsAsync<AblyException>(() => rest.Push.Admin.PublishAsync(new JObject(), null));
-            dataEx.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
-        }
-
-        [Fact]
-        [Trait("spec", "RSH1a")]
-        public async Task Publish_ShouldMakeRequest_ToCorrectUrl()
-        {
-            bool requestCompleted = false;
-            var recipient = JObject.FromObject(new { transportType = "fcm", registrationToken = "token" });
-            var payload = JObject.FromObject(new { data = "data" });
-
-            var rest = GetRestClient(request =>
+            [Fact]
+            [Trait("spec", "RSH1a")]
+            public async Task Publish_WithEmptyRecipientOrData_ShouldThrow()
             {
-                request.Url.Should().Be("/push/publish");
-                var data = (JObject) request.PostData;
-                data.Should().NotBeNull();
-                // Recipient should be set in the recipient property
-                ((JObject)data["recipient"]).Should().BeSameAs(recipient);
+                var rest = GetRestClient();
 
-                var expected = payload.DeepClone();
-                expected["recipient"] = recipient;
-                data.Should().BeEquivalentTo(expected);
+                var recipientEx = await Assert.ThrowsAsync<AblyException>(() => rest.Push.Admin.PublishAsync(null, new JObject()));
+                recipientEx.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
 
-                requestCompleted = true;
+                var dataEx = await Assert.ThrowsAsync<AblyException>(() => rest.Push.Admin.PublishAsync(new JObject(), null));
+                dataEx.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
+            }
 
-                return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.Accepted });
-            });
+            [Fact]
+            [Trait("spec", "RSH1a")]
+            public async Task Publish_ShouldMakeRequest_ToCorrectUrl()
+            {
+                bool requestCompleted = false;
+                var recipient = JObject.FromObject(new { transportType = "fcm", registrationToken = "token" });
+                var payload = JObject.FromObject(new { data = "data" });
 
-            Func<Task> publishAction = async () => await rest.Push.Admin.PublishAsync(recipient, payload);
+                var rest = GetRestClient(request =>
+                {
+                    request.Url.Should().Be("/push/publish");
+                    var data = (JObject) request.PostData;
+                    data.Should().NotBeNull();
+                    // Recipient should be set in the recipient property
+                    ((JObject)data["recipient"]).Should().BeSameAs(recipient);
 
-            await publishAction.Should().NotThrowAsync();
+                    var expected = payload.DeepClone();
+                    expected["recipient"] = recipient;
+                    data.Should().BeEquivalentTo(expected);
 
-            requestCompleted.Should().BeTrue();
+                    requestCompleted = true;
+
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.Accepted });
+                });
+
+                Func<Task> publishAction = async () => await rest.Push.Admin.PublishAsync(recipient, payload);
+
+                await publishAction.Should().NotThrowAsync();
+
+                requestCompleted.Should().BeTrue();
+            }
+
+            public PublishTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
         }
 
-        public PushAdminTests(ITestOutputHelper output)
-            : base(output)
+        [Trait("spec", "RSH1b")]
+        public class DeviceRegistrationTests : MockHttpRestSpecs
         {
+            public DeviceRegistrationTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
         }
     }
 }
