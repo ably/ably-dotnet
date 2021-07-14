@@ -165,7 +165,7 @@ namespace IO.Ably.Push
 
             request.PostData = data;
 
-            _ = _restClient.ExecuteRequest(request);
+            _ = await _restClient.ExecuteRequest(request);
 
             void ValidateRequest()
             {
