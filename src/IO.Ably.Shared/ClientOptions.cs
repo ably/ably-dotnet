@@ -411,6 +411,12 @@ namespace IO.Ably
         /// </summary>
         public bool AddRequestIds { get; set; } = false;
 
+        /// <summary>
+        /// It tells Ably push REST requests to fully wait for all their effects before responding.
+        /// Default: false.
+        /// </summary>
+        public bool PushAdminFullWait { get; set; }
+
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
         {
