@@ -90,7 +90,7 @@ namespace IO.Ably
                     .Append(" os-platform/")
                     .Append(osPlatform)
                     .Append(" runtime/")
-                    .Append(Environment.Version.ToString());
+                    .Append(Environment.Version);
 
                 return sb.ToString();
             }
