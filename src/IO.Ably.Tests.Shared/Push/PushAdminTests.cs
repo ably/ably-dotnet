@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var rest = GetRestClient(request =>
                 {
                     request.Url.Should().Be("/push/publish");
-                    var data = (JObject) request.PostData;
+                    var data = (JObject)request.PostData;
                     data.Should().NotBeNull();
                     // Recipient should be set in the recipient property
                     ((JObject)data["recipient"]).Should().BeSameAs(recipient);
