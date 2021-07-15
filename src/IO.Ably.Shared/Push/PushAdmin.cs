@@ -153,7 +153,7 @@ namespace IO.Ably.Push
         /// <returns>Task.</returns>
         public async Task PublishAsync(JObject recipient, JObject payload)
         {
-            // TODO: Add logging
+            ValidateRequest();
             var request = _restClient.CreatePostRequest("/push/publish");
             AddFullWaitIfNecessary(request);
             JObject data = new JObject();
@@ -165,9 +165,20 @@ namespace IO.Ably.Push
 
             request.PostData = data;
 
-            var result = _restClient.ExecuteRequest(request);
+            _ = await _restClient.ExecuteRequest(request);
 
-            // TODO: Throw an exception if fails
+            void ValidateRequest()
+            {
+                if (recipient is null)
+                {
+                    throw new AblyException("Please provide a valid and non-empty recipient", ErrorCodes.BadRequest);
+                }
+
+                if (payload is null)
+                {
+                    throw new AblyException("Please provide a non-empty payload", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <inheritdoc />
