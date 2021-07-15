@@ -76,7 +76,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             }
         }
 
-
         public class PublishTests : MockHttpRestSpecs
         {
             [Fact]
@@ -133,6 +132,59 @@ namespace IO.Ably.Tests.DotNetCore20.Push
         [Trait("spec", "RSH1b")]
         public class DeviceRegistrationTests : MockHttpRestSpecs
         {
+            [Fact]
+            [Trait("spec", "RSH1b1")]
+            public async Task Get_ShouldThrowIfNoOrEmptyDeviceIdIsProvided()
+            {
+                var rest = GetRestClient();
+
+                Func<string, Task> func = (deviceId) => rest.Push.Admin.DeviceRegistrations.GetAsync(deviceId);
+
+                Func<Task> withEmptyDeviceId = () => func(string.Empty);
+                Func<Task> withNullDeviceId = () => func(null);
+
+                await withEmptyDeviceId.Should().ThrowAsync<AblyException>();
+                await withNullDeviceId.Should().ThrowAsync<AblyException>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b1")]
+            public async Task Get_ShouldCallTheCorrectEndpoint()
+            {
+                string urlCalled = null;
+                var rest = GetRestClient(request =>
+                {
+                    urlCalled = request.Url;
+                    return Task.FromResult(new AblyResponse
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        TextResponse = JObject.FromObject(new LocalDevice()).ToString(),
+                    });
+                });
+
+                var id = Guid.NewGuid().ToString("D");
+                await rest.Push.Admin.DeviceRegistrations.GetAsync(id);
+
+                urlCalled.Should().Be($"/push/deviceRegistrations/{id}");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b1")]
+            public async Task Get_ShouldThrowIfDeviceNotFound()
+            {
+                var rest = GetRestClient(request => Task.FromResult(new AblyResponse
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    TextResponse = string.Empty,
+                }));
+
+                var id = Guid.NewGuid().ToString("D");
+                var result = await rest.Push.Admin.DeviceRegistrations.GetAsync(id);
+
+                result.IsFailure.Should().BeTrue();
+                result.Error.Code.Should().Be(ErrorCodes.NotFound);
+            }
+
             public DeviceRegistrationTests(ITestOutputHelper output)
                 : base(output)
             {
