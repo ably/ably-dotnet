@@ -388,6 +388,31 @@ namespace IO.Ably.Push
             }
         }
 
+        /// <inheritdoc />
+        async Task IDeviceRegistrations.RemoveWhereAsync(Dictionary<string, string> deleteFilter)
+        {
+            Validate();
+
+            var request = _restClient.CreateRequest($"/push/deviceRegistrations", HttpMethod.Delete);
+            AddFullWaitIfNecessary(request);
+            request.AddQueryParameters(deleteFilter);
+
+            if (deleteFilter.ContainsKey("deviceId") && deleteFilter["deviceId"] == _restClient.Device?.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, _restClient.Device);
+            }
+
+            await _restClient.ExecuteRequest(request);
+
+            void Validate()
+            {
+                if (deleteFilter is null)
+                {
+                    throw new AblyException("DeleteFilter cannot be null.", ErrorCodes.BadRequest);
+                }
+            }
+        }
+
         private void AddFullWaitIfNecessary(AblyRequest request)
         {
             if (Options.PushAdminFullWait)
