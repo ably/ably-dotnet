@@ -11,6 +11,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 {
     public static class PushAdminSandboxTests
     {
+        [Trait("type", "integration")]
         public class PublishTests : SandboxSpecs
         {
             [Theory]
@@ -60,6 +61,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             }
         }
 
+        [Trait("type", "integration")]
         public class DeviceRegistrationsTests : SandboxSpecs
         {
             [Theory]
@@ -67,20 +69,10 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1")]
             public async Task ShouldSuccessfullyRegisterDevice(Protocol protocol)
             {
-                using var _ = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
-                var device = LocalDevice.Create("123");
-                device.FormFactor = "phone";
-                device.Platform = "android";
-                device.Push.Recipient = JObject.FromObject(new
-                {
-                    transportType = "ablyChannel",
-                    channel = "pushenabled:test",
-                    ablyKey = client.Options.Key,
-                    ablyUrl = "https://" + client.Options.FullRestHost(),
-                });
+                var device = GetTestLocalDevice(client);
 
                 Func<Task> callRegister = async () =>
                 {
@@ -95,20 +87,10 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1b3")]
             public async Task ShouldSuccessfullySaveDeviceRegistration(Protocol protocol)
             {
-                using var _ = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
-                var device = LocalDevice.Create("123");
-                device.FormFactor = "phone";
-                device.Platform = "android";
-                device.Push.Recipient = JObject.FromObject(new
-                {
-                    transportType = "ablyChannel",
-                    channel = "pushenabled:test",
-                    ablyKey = client.Options.Key,
-                    ablyUrl = "https://" + client.Options.FullRestHost(),
-                });
+                var device = GetTestLocalDevice(client);
 
                 Func<Task> callSave = async () =>
                 {
@@ -124,7 +106,58 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 await callSave.Should().NotThrowAsync<AblyException>();
             }
 
-            public DeviceRegistrationsTests(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b4")]
+            public async Task ShouldSuccessfullySaveAndDeleteDeviceRegistration(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = GetTestLocalDevice(client);
+
+                Func<Task> callSaveAndDelete = async () =>
+                {
+                    var savedDevice = await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+                    await client.Push.Admin.DeviceRegistrations.RemoveAsync(savedDevice);
+                };
+
+                await callSaveAndDelete.Should().NotThrowAsync<AblyException>();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b4")]
+            public async Task ShouldSuccessfullyDeleteNotExistentDeviceRegistration(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                Func<Task> callSaveAndDelete = async () =>
+                {
+                    await client.Push.Admin.DeviceRegistrations.RemoveAsync("1234");
+                };
+
+                await callSaveAndDelete.Should().NotThrowAsync<AblyException>();
+            }
+
+            private static LocalDevice GetTestLocalDevice(AblyRest client)
+            {
+                var device = LocalDevice.Create("123");
+                device.FormFactor = "phone";
+                device.Platform = "android";
+                device.Push.Recipient = JObject.FromObject(new
+                {
+                    transportType = "ablyChannel",
+                    channel = "pushenabled:test",
+                    ablyKey = client.Options.Key,
+                    ablyUrl = "https://" + client.Options.FullRestHost(),
+                });
+                return device;
+            }
+
+            public DeviceRegistrationsTests(AblySandboxFixture fixture, ITestOutputHelper output)
+                : base(fixture, output)
             {
             }
         }

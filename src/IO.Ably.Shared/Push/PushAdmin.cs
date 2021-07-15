@@ -367,18 +367,25 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task IDeviceRegistrations.RemoveAsync(DeviceDetails details)
         {
-            await ((IDeviceRegistrations)this).RemoveAsync(details.Id);
+            await ((IDeviceRegistrations)this).RemoveAsync(details?.Id);
         }
 
         /// <inheritdoc />
         async Task IDeviceRegistrations.RemoveAsync(string deviceId)
         {
-            // TODO: Validate the deviceId is not empty
+            Validate();
+
             var request = _restClient.CreateRequest($"/push/deviceRegistrations/{deviceId}", HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
-            var result = await _restClient.ExecuteRequest(request);
+            await _restClient.ExecuteRequest(request);
 
-            // Question: what happens if the request errors
+            void Validate()
+            {
+                if (deviceId.IsEmpty())
+                {
+                    throw new AblyException("Please pass a non-empty deviceId to Remove", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         private void AddFullWaitIfNecessary(AblyRequest request)
