@@ -64,6 +64,9 @@ namespace IO.Ably
         internal const int TokenErrorCodesRangeStart = 40140;
         internal const int TokenErrorCodesRangeEnd = 40149;
 
+        internal const string DeviceIdentityTokenHeader = "X-Ably-DeviceIdentityToken";
+        internal const string DeviceSecretHeader = "X-Ably-DeviceSecret";
+
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using IO.Ably.Encryption;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Push
@@ -12,6 +13,7 @@ namespace IO.Ably.Push
         /// <summary>
         /// Devices that have completed registration have an identity token assigned to them by the push service. TODO: Check how accurate this is.
         /// </summary>
+        [JsonIgnore]
         public string DeviceIdentityToken { get; set; }
 
         internal bool IsRegistered => DeviceIdentityToken.IsNotEmpty();

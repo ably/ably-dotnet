@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Push;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -54,6 +56,46 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             public PublishTests(AblySandboxFixture fixture, ITestOutputHelper output)
                 : base(fixture, output)
+            {
+            }
+        }
+        public class DeviceRegistrationsTests : SandboxSpecs
+        {
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b3")]
+            public async Task ShouldSuccessfullySaveDeviceRegistration(Protocol protocol)
+            {
+                using var _ = EnableDebugLogging();
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = LocalDevice.Create("123");
+                device.FormFactor = "phone";
+                device.Platform = "android";
+                device.Push.Recipient = JObject.FromObject(new
+                {
+                    transportType = "ablyChannel",
+                    channel = "pushenabled:test",
+                    ablyKey = client.Options.Key,
+                    ablyUrl = "https://" + client.Options.FullRestHost(),
+                });
+
+                Func<Task> callSave = async () =>
+                {
+                    var savedDevice = await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+
+                    savedDevice.Metadata = JObject.FromObject(new { tag = "test-tag" });
+                    savedDevice.Push.State = null; // Clear state as we don't care about it.
+
+                    var updatedDevice = await client.Push.Admin.DeviceRegistrations.SaveAsync(savedDevice);
+                    updatedDevice.Metadata.Should().BeEquivalentTo(savedDevice.Metadata);
+                };
+
+                await callSave.Should().NotThrowAsync<AblyException>();
+            }
+
+            public DeviceRegistrationsTests(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
             }
         }
