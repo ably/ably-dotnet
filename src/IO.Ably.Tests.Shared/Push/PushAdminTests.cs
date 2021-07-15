@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Push;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,6 +13,70 @@ namespace IO.Ably.Tests.DotNetCore20.Push
     [Trait("spec", "RSH1")]
     public class PushAdminTests
     {
+        public class GeneralTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH6")]
+            [Trait("spec", "RSH6a")]
+            public void WhenLocalDeviceHasDeviceIdentityToken_ShouldAddHeaderToRequestWithCorrectValue()
+            {
+                var request = new AblyRequest("/", HttpMethod.Get);
+                var localDevice = new LocalDevice() { DeviceIdentityToken = "test" };
+
+                var rest = GetRestClient();
+                rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
+
+                request.Headers.Should().ContainKey("X-Ably-DeviceIdentityToken").WhichValue.Should().Be("test");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH6")]
+            [Trait("spec", "RSH6b")]
+            public void WhenLocalDeviceHasDeviceSecret_ShouldAddHeaderToRequestWithCorrectValue()
+            {
+                var request = new AblyRequest("/", HttpMethod.Get);
+                var localDevice = new LocalDevice() { DeviceSecret = "test" };
+
+                var rest = GetRestClient();
+                rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
+
+                request.Headers.Should().ContainKey("X-Ably-DeviceSecret").WhichValue.Should().Be("test");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH6")]
+            public void WhenLocalDeviceHasBothDeviceIdentityTokenAndSecret_ShouldOnlyAddIdentityTokenHeader()
+            {
+                var request = new AblyRequest("/", HttpMethod.Get);
+                var localDevice = new LocalDevice() { DeviceIdentityToken = "test", DeviceSecret = "secret" };
+
+                var rest = GetRestClient();
+                rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
+
+                request.Headers.Should().ContainKey("X-Ably-DeviceIdentityToken").WhichValue.Should().Be("test");
+                request.Headers.Should().NotContainKey("X-Ably-DeviceSecret");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH6")]
+            public void WhenLocalDevice_DoesNOT_HaveEitherDeviceIdentityTokenAndSecret_ShouldNotAddAnyHeaders()
+            {
+                var request = new AblyRequest("/", HttpMethod.Get);
+                var localDevice = new LocalDevice();
+
+                var rest = GetRestClient();
+                rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
+
+                request.Headers.Should().BeEmpty();
+            }
+
+            public GeneralTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
+
+
         public class PublishTests : MockHttpRestSpecs
         {
             [Fact]

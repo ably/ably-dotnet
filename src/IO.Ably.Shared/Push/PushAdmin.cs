@@ -340,5 +340,17 @@ namespace IO.Ably.Push
                 request.AddQueryParameters(new[] { new KeyValuePair<string, string>("fullWait", "true") });
             }
         }
+
+        internal void AddDeviceAuthenticationToRequest(AblyRequest request, LocalDevice device)
+        {
+            if (device.DeviceIdentityToken.IsNotEmpty())
+            {
+                request.Headers.Add("X-Ably-DeviceIdentityToken", device.DeviceIdentityToken);
+            }
+            else if (device.DeviceSecret.IsNotEmpty())
+            {
+                request.Headers.Add("X-Ably-DeviceSecret", device.DeviceSecret);
+            }
+        }
     }
 }
