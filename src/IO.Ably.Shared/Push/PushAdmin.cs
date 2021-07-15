@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -277,12 +282,41 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task<DeviceDetails> IDeviceRegistrations.GetAsync(string deviceId)
+        async Task<Result<DeviceDetails>> IDeviceRegistrations.GetAsync(string deviceId)
         {
+            Validate();
+
             var request = _restClient.CreateGetRequest($"/push/deviceRegistrations/{deviceId}");
             AddFullWaitIfNecessary(request);
 
-            return await _restClient.ExecuteRequest<DeviceDetails>(request);
+            var response = await _restClient.ExecuteRequest(request);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return Result.Fail<DeviceDetails>(new ErrorInfo($"Device with Id '{deviceId}' is not found", ErrorCodes.NotFound, HttpStatusCode.NotFound));
+            }
+
+            return ParseResponse(request, response);
+
+            void Validate()
+            {
+                if (deviceId.IsEmpty())
+                {
+                    throw new AblyException("Please provide a non-empty deviceId", ErrorCodes.BadRequest);
+                }
+            }
+
+            Result<DeviceDetails> ParseResponse(AblyRequest ablyRequest, AblyResponse ablyResponse)
+            {
+                try
+                {
+                    return Result.Ok(_restClient.MessageHandler.ParseResponse<DeviceDetails>(ablyRequest, ablyResponse));
+                }
+                catch (Exception e)
+                {
+                    return Result.Fail<DeviceDetails>(new ErrorInfo($"Error parsing response for /push/deviceRegistrations/{deviceId}", ErrorCodes.InternalError, HttpStatusCode.InternalServerError, e));
+                }
+            }
         }
 
         /// <inheritdoc />

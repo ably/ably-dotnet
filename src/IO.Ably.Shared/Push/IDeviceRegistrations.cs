@@ -21,7 +21,7 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="deviceId">Id of the device.</param>
         /// <returns>Returns a DeviceDetails class if the device is found or `null` if not.</returns>
-        Task<DeviceDetails> GetAsync(string deviceId);
+        Task<Result<DeviceDetails>> GetAsync(string deviceId);
 
         /// <summary>
         /// Obtain the details for devices registered for receiving push registrations.
