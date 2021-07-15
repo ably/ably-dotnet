@@ -273,12 +273,28 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<DeviceDetails> IDeviceRegistrations.SaveAsync(DeviceDetails details)
         {
+            Validate();
+
             var request = _restClient.CreateRequest("/push/deviceRegistrations/" + details.Id, HttpMethod.Put);
             AddFullWaitIfNecessary(request);
+            var localDevice = _restClient.Device;
+            if (localDevice != null && localDevice.Id == details.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, localDevice);
+            }
+
             request.PostData = details;
             var result = await _restClient.ExecuteRequest<DeviceDetails>(request);
 
             return result;
+
+            void Validate()
+            {
+                if (details is null || details.Id.IsEmpty())
+                {
+                    throw new AblyException("Please provide a non-null DeviceDetails including a valid Id", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -382,11 +398,11 @@ namespace IO.Ably.Push
 
             if (device.DeviceIdentityToken.IsNotEmpty())
             {
-                request.Headers.Add("X-Ably-DeviceIdentityToken", device.DeviceIdentityToken);
+                request.Headers.Add(Defaults.DeviceIdentityTokenHeader, device.DeviceIdentityToken);
             }
             else if (device.DeviceSecret.IsNotEmpty())
             {
-                request.Headers.Add("X-Ably-DeviceSecret", device.DeviceSecret);
+                request.Headers.Add(Defaults.DeviceSecretHeader, device.DeviceSecret);
             }
         }
     }

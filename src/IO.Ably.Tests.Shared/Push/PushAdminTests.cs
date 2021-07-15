@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var rest = GetRestClient();
                 rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey("X-Ably-DeviceIdentityToken").WhichValue.Should().Be("test");
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
             }
 
             [Fact]
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var rest = GetRestClient();
                 rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey("X-Ably-DeviceSecret").WhichValue.Should().Be("test");
+                request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader).WhichValue.Should().Be("test");
             }
 
             [Fact]
@@ -54,8 +54,8 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var rest = GetRestClient();
                 rest.Push.Admin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey("X-Ably-DeviceIdentityToken").WhichValue.Should().Be("test");
-                request.Headers.Should().NotContainKey("X-Ably-DeviceSecret");
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
+                request.Headers.Should().NotContainKey(Defaults.DeviceSecretHeader);
             }
 
             [Fact]
@@ -192,7 +192,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
                 var rest = GetRestClient(request =>
                 {
-                    request.Headers.Should().ContainKey("X-Ably-DeviceSecret");
+                    request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader);
 
                     return Task.FromResult(new AblyResponse
                     {
@@ -239,6 +239,81 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var clientIdRequest = await ListDevices(ListDeviceDetailsRequest.WithClientId("234"));
                 clientIdRequest.Url.Should().Be("/push/deviceRegistrations");
                 clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("234");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b3")]
+            public async Task Save_ShouldCallTheCorrectUrlWithTheCorrectPayload()
+            {
+                AblyRequest executedRequest = null;
+                var restClient = GetRestClient(request =>
+                {
+                    executedRequest = request;
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                });
+
+                var deviceDetails = new LocalDevice() { Id = "123" };
+
+                _ = await restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
+
+                executedRequest.Url.Should().Be($"/push/deviceRegistrations/{deviceDetails.Id}");
+                executedRequest.PostData.Should().BeSameAs(deviceDetails);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b3")]
+            public async Task Save_ShouldAddDeviceAuthenticationIfDeviceIdMatchesLocalDeviceSaved()
+            {
+                AblyRequest executedRequest = null;
+                var restClient = GetRestClient(request =>
+                {
+                    executedRequest = request;
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                });
+
+                var deviceDetails = new LocalDevice() { Id = "123" };
+                restClient.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token" };
+
+                _ = await restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
+
+                executedRequest.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b3")]
+            public async Task Save_ShouldNotAddDeviceAuthenticationWhenDeviceIdDoesNotMatchLocalDeviceSaved()
+            {
+                AblyRequest executedRequest = null;
+                var restClient = GetRestClient(request =>
+                {
+                    executedRequest = request;
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                });
+
+                var deviceDetails = new LocalDevice() { Id = "123" };
+                restClient.Device = new LocalDevice() { Id = "456", DeviceIdentityToken = "token" };
+
+                _ = await restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
+
+                executedRequest.Headers.Should().NotContainKey(Defaults.DeviceIdentityTokenHeader);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b3")]
+            public async Task Save_ShouldThrowWithInvalidDeviceDetails()
+            {
+                var restClient = GetRestClient();
+
+                Func<DeviceDetails, Task> callSave = (deviceDetails) => restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
+
+                Func<Task> withNullDeviceDetails = () => callSave(null);
+                Func<Task> withDeviceDetailsWithoutId = () => callSave(new DeviceDetails());
+
+                (await withNullDeviceDetails.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+
+                (await withDeviceDetailsWithoutId.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
             }
 
             public DeviceRegistrationTests(ITestOutputHelper output)
