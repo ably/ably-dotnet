@@ -170,7 +170,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             [Fact]
             [Trait("spec", "RSH1b1")]
-            public async Task Get_ShouldThrowIfDeviceNotFound()
+            public async Task Get_ShouldFailDeviceNotFound()
             {
                 var rest = GetRestClient(request => Task.FromResult(new AblyResponse
                 {
@@ -183,6 +183,27 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 result.IsFailure.Should().BeTrue();
                 result.Error.Code.Should().Be(ErrorCodes.NotFound);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b1")]
+            public async Task Get_ShouldAddDeviceAuthHeadersWhenAvailable()
+            {
+                var rest = GetRestClient(request =>
+                {
+                    request.Headers.Should().ContainKey("X-Ably-DeviceSecret");
+
+                    return Task.FromResult(new AblyResponse
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        TextResponse = new LocalDevice().ToJson(),
+                    });
+                });
+
+                rest.Device = new LocalDevice() { DeviceSecret = "secret" };
+
+                var id = Guid.NewGuid().ToString("D");
+                await rest.Push.Admin.DeviceRegistrations.GetAsync(id);
             }
 
             public DeviceRegistrationTests(ITestOutputHelper output)
