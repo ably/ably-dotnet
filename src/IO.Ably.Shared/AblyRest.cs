@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Push;
@@ -75,6 +76,10 @@ namespace IO.Ably
         public IAblyAuth Auth => AblyAuth;
 
         internal PushRest Push { get; private set; }
+
+        // TODO: Think about how the local device will be shared among Rest instances and
+        // what will happen whet it gets updated.
+        internal LocalDevice Device { get; set; }
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
 

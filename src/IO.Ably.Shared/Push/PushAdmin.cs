@@ -288,7 +288,7 @@ namespace IO.Ably.Push
 
             var request = _restClient.CreateGetRequest($"/push/deviceRegistrations/{deviceId}");
             AddFullWaitIfNecessary(request);
-
+            AddDeviceAuthenticationToRequest(request, _restClient.Device);
             var response = await _restClient.ExecuteRequest(request);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
