@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -204,6 +205,40 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 var id = Guid.NewGuid().ToString("D");
                 await rest.Push.Admin.DeviceRegistrations.GetAsync(id);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b2")]
+            public async Task List_ShouldCallCorrectUrlAndQueryParameters()
+            {
+                Func<ListDeviceDetailsRequest, Task<AblyRequest>> ListDevices =
+                    async query =>
+                    {
+                        AblyRequest currentRequest = null;
+                        var client = GetRestClient(request =>
+                        {
+                            currentRequest = request;
+                            return Task.FromResult<AblyResponse>(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                        });
+
+                        await client.Push.Admin.DeviceRegistrations.List(query);
+
+                        return currentRequest;
+                    };
+
+
+                var emptyFilterRequest = await ListDevices(ListDeviceDetailsRequest.Empty(100));
+                emptyFilterRequest.Url.Should().Be("/push/deviceRegistrations");
+                emptyFilterRequest.QueryParameters.Should().HaveCount(1);
+                emptyFilterRequest.QueryParameters.Should().ContainKey("limit");
+
+                var deviceIdRequest = await ListDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
+                deviceIdRequest.Url.Should().Be("/push/deviceRegistrations");
+                deviceIdRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("123");
+
+                var clientIdRequest = await ListDevices(ListDeviceDetailsRequest.WithClientId("234"));
+                clientIdRequest.Url.Should().Be("/push/deviceRegistrations");
+                clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("234");
             }
 
             public DeviceRegistrationTests(ITestOutputHelper output)

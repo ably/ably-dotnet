@@ -320,34 +320,32 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult<DeviceDetails>> IDeviceRegistrations.List(string clientId, string deviceId, int? limit)
+        async Task<PaginatedResult<DeviceDetails>> IDeviceRegistrations.List(ListDeviceDetailsRequest filterRequest)
         {
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            if (clientId.IsNotEmpty())
-            {
-                queryParams.Add("clientId", clientId);
-            }
-
-            if (deviceId.IsNotEmpty())
-            {
-                queryParams.Add("deviceId", deviceId);
-            }
-
-            if (limit.HasValue)
-            {
-                queryParams.Add("limit", limit.ToString());
-            }
+            Validate();
 
             var url = "/push/deviceRegistrations";
-            if (queryParams.Any())
-            {
-                url += "?" + queryParams.ToQueryString();
-            }
 
             var request = _restClient.CreateGetRequest(url);
+            request.AddQueryParameters(filterRequest.ToQueryParams());
 
-            // TODO: Replace with proper paginated request
-            return await _restClient.ExecuteRequest<PaginatedResult<DeviceDetails>>(request);
+            return await _restClient.ExecutePaginatedRequest(request, HandleConsequentPaginatedRequests);
+
+            void Validate()
+            {
+                if (filterRequest is null)
+                {
+                    throw new AblyException(
+                        "Please provide a non null request. You can use ListDeviceDetailsRequest.WithClientId or ListDeviceDetailsRequest.WithDeviceId to filter it further.", ErrorCodes.BadRequest);
+                }
+            }
+        }
+
+        private async Task<PaginatedResult<DeviceDetails>> HandleConsequentPaginatedRequests(PaginatedRequestParams requestParams)
+        {
+            var request = _restClient.CreateGetRequest("/push/deviceRegistrations");
+            request.AddQueryParameters(requestParams.GetParameters());
+            return await _restClient.ExecutePaginatedRequest(request, HandleConsequentPaginatedRequests);
         }
 
         /// <inheritdoc />
@@ -377,6 +375,11 @@ namespace IO.Ably.Push
 
         internal void AddDeviceAuthenticationToRequest(AblyRequest request, LocalDevice device)
         {
+            if (device is null)
+            {
+                return;
+            }
+
             if (device.DeviceIdentityToken.IsNotEmpty())
             {
                 request.Headers.Add("X-Ably-DeviceIdentityToken", device.DeviceIdentityToken);
