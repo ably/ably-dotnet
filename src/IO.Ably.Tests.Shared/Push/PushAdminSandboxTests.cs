@@ -59,8 +59,37 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
             }
         }
+
         public class DeviceRegistrationsTests : SandboxSpecs
         {
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1")]
+            public async Task ShouldSuccessfullyRegisterDevice(Protocol protocol)
+            {
+                using var _ = EnableDebugLogging();
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = LocalDevice.Create("123");
+                device.FormFactor = "phone";
+                device.Platform = "android";
+                device.Push.Recipient = JObject.FromObject(new
+                {
+                    transportType = "ablyChannel",
+                    channel = "pushenabled:test",
+                    ablyKey = client.Options.Key,
+                    ablyUrl = "https://" + client.Options.FullRestHost(),
+                });
+
+                Func<Task> callRegister = async () =>
+                {
+                    await client.Push.Admin.RegisterDevice(device);
+                };
+
+                await callRegister.Should().NotThrowAsync<AblyException>();
+            }
+
             [Theory]
             [ProtocolData]
             [Trait("spec", "RSH1b3")]

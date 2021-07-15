@@ -48,7 +48,7 @@ namespace IO.Ably.Push
         internal async Task<LocalDevice> RegisterDevice(DeviceDetails details)
         {
             ValidateDeviceDetails();
-            var request = _restClient.CreateRequest("/push/deviceRegistrations/", HttpMethod.Post);
+            var request = _restClient.CreateRequest("/push/deviceRegistrations", HttpMethod.Post);
             AddFullWaitIfNecessary(request);
             request.PostData = details;
 
