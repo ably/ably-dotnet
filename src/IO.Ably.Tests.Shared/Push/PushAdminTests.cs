@@ -401,5 +401,67 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
             }
         }
+
+        [Trait("spec", "RSH1c")]
+        public class ChannelSubscriptionsTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH1c1")]
+            public async Task List_ShouldCallTheCorrectUrl()
+            {
+                AblyRequest request = null;
+                var rest = GetRestClient(r =>
+                {
+                    request = r;
+                    return Task.FromResult<AblyResponse>(new AblyResponse() { TextResponse = string.Empty });
+                });
+
+                await rest.Push.Admin.ChannelSubscriptions.ListAsync(ListSubscriptionsRequest.Empty());
+
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Get);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c1")]
+            public async Task List_ShouldPassTheCorrectFilters()
+            {
+                Func<ListSubscriptionsRequest, Task<AblyRequest>> callList = async filter =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+                    await rest.Push.Admin.ChannelSubscriptions.ListAsync(filter);
+                    return request;
+                };
+
+                var emptyFilterRequest = await callList(ListSubscriptionsRequest.Empty(100));
+                emptyFilterRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("100");
+
+                var channelDeviceIdRequest =
+                    await callList(ListSubscriptionsRequest.WithDeviceId("test-channel", "device123"));
+
+                channelDeviceIdRequest.QueryParameters.Should().ContainKey("channel")
+                    .WhichValue.Should().Be("test-channel");
+                channelDeviceIdRequest.QueryParameters.Should().ContainKey("deviceId")
+                    .WhichValue.Should().Be("device123");
+
+                var channelClientIdRequest =
+                    await callList(ListSubscriptionsRequest.WithClientId("test-channel", "clientId123"));
+
+                channelClientIdRequest.QueryParameters.Should().ContainKey("channel")
+                    .WhichValue.Should().Be("test-channel");
+                channelClientIdRequest.QueryParameters.Should().ContainKey("clientId")
+                    .WhichValue.Should().Be("clientId123");
+            }
+
+            public ChannelSubscriptionsTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
     }
 }
