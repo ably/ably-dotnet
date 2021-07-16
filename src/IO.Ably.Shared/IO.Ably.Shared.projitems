@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.States.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushCallbacks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushChannelSubscription.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\DeviceDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IDeviceRegistrations.cs" />

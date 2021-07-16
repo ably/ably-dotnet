@@ -50,6 +50,8 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             throw new NotImplementedException();
         }
 
+        public PushCallbacks Callbacks { get; } = new PushCallbacks();
+
         public string DevicePlatform => "test";
 
         public string FormFactor => "phone";
