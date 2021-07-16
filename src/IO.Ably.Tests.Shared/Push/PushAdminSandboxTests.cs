@@ -225,7 +225,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1c3")]
             public async Task ShouldSuccessfullySetAndUpdateChannelSubscription(Protocol protocol)
             {
-                using var _ = EnableDebugLogging();
+                using var loggingContext = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
@@ -250,7 +250,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1c4")]
             public async Task ShouldSuccessfullyRemoveAChannelSubscription(Protocol protocol)
             {
-                using var _ = EnableDebugLogging();
+                using var loggingContext = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
