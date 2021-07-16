@@ -460,7 +460,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             [Fact]
             [Trait("spec", "RSH1c2")]
-            public async Task Push_ChannelsCallsTheCorrectUrl()
+            public async Task ListChannels_ShouldCallsTheCorrectUrl()
             {
                 Func<PaginatedRequestParams, Task<AblyRequest>> callListChannels = async filter =>
                 {
