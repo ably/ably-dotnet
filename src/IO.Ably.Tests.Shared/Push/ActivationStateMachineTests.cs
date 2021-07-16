@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
         {
             [Fact]
             [Trait("spec", "RSH3a1")]
-            public void NotActivateTest_ShouldBeAbleToHandleCalledDeactivate()
+            public void CalledDeactivateEvent_CanBeHandled()
             {
                 var state = GetState();
 
@@ -23,7 +23,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             [Fact]
             [Trait("spec", "RSH3a1a")]
-            public async Task NotActivateTest_ShouldTriggerDeactivatedCallback()
+            public async Task CalledDeactivateEvent_ShouldTriggerDeactivatedCallback()
             {
                 var state = GetState();
                 var awaiter = new TaskCompletionAwaiter();
@@ -39,6 +39,18 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 (await awaiter.Task).Should().BeTrue();
                 callbackExecuted.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a1b")]
+            public async Task CalledDeactivateEvent_ShouldKeepTheSameState()
+            {
+                var state = GetState();
+
+                var (nextState, eventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeSameAs(state);
+                (await eventFunc()).Should().BeNull(); // No more events should be generated.
             }
 
             private ActivationStateMachine.NotActivated GetState()
