@@ -9,6 +9,9 @@ namespace IO.Ably.Push
         internal static readonly Func<Task<Event>> EmptyNextEventFunc =
             () => Task.FromResult((Event)null);
 
+        internal static Func<Task<Event>> ToNextEventFunc(Func<Task<Event>> singleEventFunc)
+            => async () => await singleEventFunc();
+
         public abstract class State
         {
             protected State(ActivationStateMachine machine)
@@ -38,7 +41,7 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                return @event is CalledDeactivate;
+                return @event is CalledDeactivate || @event is CalledActivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -48,6 +51,15 @@ namespace IO.Ably.Push
                     case CalledDeactivate _:
                         Machine.TriggerDeactivatedCallback();
                         return (this, EmptyNextEventFunc);
+                    case CalledActivate _:
+
+                        if (Machine.LocalDevice.IsRegistered)
+                        {
+                            var nextState = new WaitingForRegistrationSync(Machine, @event);
+                            return (nextState, ToNextEventFunc(Machine.ValidateRegistration));
+                        }
+
+                        return (null, null);
                 }
 
                 return (null, null);
