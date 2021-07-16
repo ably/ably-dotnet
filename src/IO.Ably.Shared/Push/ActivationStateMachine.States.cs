@@ -40,7 +40,14 @@ namespace IO.Ably.Push
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledDeactivate _:
+                        Machine.TriggerDeactivatedCallback();
+                        break;
+                }
+
+                return (null, null);
             }
         }
 
