@@ -12,6 +12,21 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 {
     public static class PushAdminSandboxTests
     {
+        private static LocalDevice GetTestLocalDevice(AblyRest client)
+        {
+            var device = LocalDevice.Create("123");
+            device.FormFactor = "phone";
+            device.Platform = "android";
+            device.Push.Recipient = JObject.FromObject(new
+            {
+                transportType = "ablyChannel",
+                channel = "pushenabled:test",
+                ablyKey = client.Options.Key,
+                ablyUrl = "https://" + client.Options.FullRestHost(),
+            });
+            return device;
+        }
+
         [Trait("type", "integration")]
         public class PublishTests : SandboxSpecs
         {
@@ -196,22 +211,41 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 await callRemoveWithNoFilter.Should().NotThrowAsync<AblyException>();
             }
 
-            private static LocalDevice GetTestLocalDevice(AblyRest client)
+            public DeviceRegistrationsTests(AblySandboxFixture fixture, ITestOutputHelper output)
+                : base(fixture, output)
             {
-                var device = LocalDevice.Create("123");
-                device.FormFactor = "phone";
-                device.Platform = "android";
-                device.Push.Recipient = JObject.FromObject(new
-                {
-                    transportType = "ablyChannel",
-                    channel = "pushenabled:test",
-                    ablyKey = client.Options.Key,
-                    ablyUrl = "https://" + client.Options.FullRestHost(),
-                });
-                return device;
+            }
+        }
+
+        [Trait("type", "integration")]
+        public class ChannelSubscriptionsTests : SandboxSpecs
+        {
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1c3")]
+            public async Task ShouldSuccessfullySetAndUpdateChannelSubscription(Protocol protocol)
+            {
+                using var _ = EnableDebugLogging();
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = GetTestLocalDevice(client);
+
+                var savedDevice = await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+
+                var channelName = "pushenabled:test".AddRandomSuffix();
+                var channelSub = PushChannelSubscription.ForDevice(channelName, savedDevice.Id);
+                var savedSub = await client.Push.Admin.ChannelSubscriptions.SaveAsync(channelSub);
+                savedSub.Channel.Should().Be(channelSub.Channel);
+                savedSub.DeviceId.Should().Be(channelSub.DeviceId);
+
+                var channelSubForClient = PushChannelSubscription.ForClientId(channelName, "123");
+                var clientSavedSub = await client.Push.Admin.ChannelSubscriptions.SaveAsync(channelSubForClient);
+                clientSavedSub.Channel.Should().Be(channelSubForClient.Channel);
+                clientSavedSub.ClientId.Should().Be(channelSubForClient.ClientId);
             }
 
-            public DeviceRegistrationsTests(AblySandboxFixture fixture, ITestOutputHelper output)
+            public ChannelSubscriptionsTests(AblySandboxFixture fixture, ITestOutputHelper output)
                 : base(fixture, output)
             {
             }

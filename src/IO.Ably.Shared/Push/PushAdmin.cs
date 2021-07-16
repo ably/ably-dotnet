@@ -189,12 +189,32 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<PushChannelSubscription> IPushChannelSubscriptions.SaveAsync(PushChannelSubscription subscription)
         {
-            // TODO: Add validation
+            Validate();
+
             var request = _restClient.CreatePostRequest("/push/channelSubscriptions");
             AddFullWaitIfNecessary(request);
+
+            if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, _restClient.Device);
+            }
+
             request.PostData = subscription;
 
             return await _restClient.ExecuteRequest<PushChannelSubscription>(request);
+
+            void Validate()
+            {
+                if (subscription is null)
+                {
+                    throw new AblyException("Subscription cannot be null", ErrorCodes.BadRequest);
+                }
+
+                if (subscription.Channel.IsEmpty())
+                {
+                    throw new AblyException("Please provide a non-empty channel name.", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <inheritdoc />
