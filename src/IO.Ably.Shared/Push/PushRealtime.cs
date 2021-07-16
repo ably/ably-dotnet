@@ -26,8 +26,6 @@
             {
                 throw new AblyException("Realtime push is not enabled. Please call (AndroidMobileDevice / IOSMobileDevice).Initialize() before calling `Activate`"); // TODO: Come up with a better message.
             }
-
-            _ = _stateMachine.HandleEvent(new ActivationStateMachine.CalledActivate());
         }
 
         /// <summary>
@@ -39,8 +37,6 @@
             {
                 throw new AblyException("Realtime push is not enabled. Please call (AndroidMobileDevice / IOSMobileDevice).Initialize() before calling `Deactivate`"); // TODO: Come up with a better message.
             }
-
-            _ = _stateMachine.HandleEvent(new ActivationStateMachine.CalledDeactivate());
         }
 
         /// <summary>
