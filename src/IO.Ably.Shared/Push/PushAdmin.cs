@@ -284,6 +284,28 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
+        async Task IPushChannelSubscriptions.RemoveWhereAsync(IDictionary<string, string> removeParams)
+        {
+            Validate();
+
+            var url = "/push/channelSubscriptions";
+
+            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            AddFullWaitIfNecessary(request);
+            request.AddQueryParameters(removeParams);
+
+            _ = await _restClient.ExecuteRequest(request);
+
+            void Validate()
+            {
+                if (removeParams is null)
+                {
+                    throw new AblyException("RemoveParams should not be null", ErrorCodes.BadRequest);
+                }
+            }
+        }
+
+        /// <inheritdoc />
         async Task<PaginatedResult<string>> IPushChannelSubscriptions.ListChannelsAsync(PaginatedRequestParams requestParams)
         {
             var request = _restClient.CreateGetRequest("/push/channels");
