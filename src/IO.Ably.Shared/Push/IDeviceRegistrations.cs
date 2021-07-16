@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Push
 {
@@ -46,5 +47,13 @@ namespace IO.Ably.Push
         /// <param name="deviceId">The deviceId of the device to be removed.</param>
         /// <returns>Task.</returns>
         Task RemoveAsync(string deviceId);
+
+        /// <summary>
+        /// Removes a registered devices based on a filter of parameters.
+        /// RestAPI: https://ably.com/documentation/rest-api#delete-device-registration.
+        /// </summary>
+        /// <param name="deleteFilter">Filter devices by deviceId or clientId.</param>
+        /// <returns>Task.</returns>
+        Task RemoveWhereAsync(Dictionary<string, string> deleteFilter);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
@@ -139,6 +140,60 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 };
 
                 await callSaveAndDelete.Should().NotThrowAsync<AblyException>();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b5")]
+            public async Task ShouldSuccessfullyDeleteDeviceRegistrationWithFilterByClientId(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = GetTestLocalDevice(client);
+
+                Func<Task> callSaveAndDelete = async () =>
+                {
+                    await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+                    await client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(new Dictionary<string, string> { { "clientId", device.ClientId } });
+                };
+
+                await callSaveAndDelete.Should().NotThrowAsync<AblyException>();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b5")]
+            public async Task ShouldSuccessfullyDeleteDeviceRegistrationWithFilterByDeviceId(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = GetTestLocalDevice(client);
+
+                Func<Task> callSaveAndDelete = async () =>
+                {
+                    await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+                    await client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(new Dictionary<string, string> { { "deviceId", device.Id } });
+                };
+
+                await callSaveAndDelete.Should().NotThrowAsync<AblyException>();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1b5")]
+            public async Task ShouldSuccessfullyDeleteDeviceRegistrationWithOutMatchingFilter(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                Func<Task> callRemoveWithNoFilter = async () =>
+                {
+                    await client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(new Dictionary<string, string>() { { "deviceId", "test" } });
+                };
+
+                await callRemoveWithNoFilter.Should().NotThrowAsync<AblyException>();
             }
 
             private static LocalDevice GetTestLocalDevice(AblyRest client)

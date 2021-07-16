@@ -352,6 +352,50 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     .Be(ErrorCodes.BadRequest);
             }
 
+            [Fact]
+            [Trait("spec", "RSH1b5")]
+            public async Task RemoveWhere_CallsTheCorrectUrlWithFiltersInQuery()
+            {
+                AblyRequest currentRequest = null;
+                var client = GetRestClient(request =>
+                {
+                    currentRequest = request;
+                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                });
+
+                client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(
+                    new Dictionary<string, string>
+                    {
+                        { "deviceId", "test" },
+                        { "random", "boo" },
+                    });
+
+                currentRequest.Url.Should().Be("/push/deviceRegistrations");
+                currentRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("test");
+                currentRequest.QueryParameters.Should().ContainKey("random").WhichValue.Should().Be("boo");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b5")]
+            public async Task RemoveWhere_PassesDeviceAuthHeaderIfDeviceIdFilterMatchesCurrentDevice()
+            {
+                AblyRequest currentRequest = null;
+                var client = GetRestClient(request =>
+                {
+                    currentRequest = request;
+                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                });
+
+                client.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token" };
+                client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(
+                    new Dictionary<string, string>
+                    {
+                        { "deviceId", "123" },
+                    });
+
+                currentRequest.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
+            }
+
             public DeviceRegistrationTests(ITestOutputHelper output)
                 : base(output)
             {
