@@ -19,7 +19,7 @@ namespace IO.Ably.Push
 
         internal bool IsRegistered => DeviceIdentityToken.IsNotEmpty();
 
-        internal bool IsCreated => Id.IsNotEmpty();
+        internal bool IsCreated => Id.IsNotEmpty() && DeviceSecret.IsNotEmpty();
 
         internal RegistrationToken RegistrationToken
         {
