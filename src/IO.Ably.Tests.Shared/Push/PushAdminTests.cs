@@ -316,6 +316,42 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     .Be(ErrorCodes.BadRequest);
             }
 
+            [Fact]
+            [Trait("spec", "RSH1b4")]
+            public async Task Delete_ShouldUseTheCorrectUrl()
+            {
+                AblyRequest currentRequest = null;
+                var client = GetRestClient(request =>
+                {
+                    currentRequest = request;
+                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                });
+
+                var deviceId = "123";
+                await client.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+
+                currentRequest.Url.Should().Be($"/push/deviceRegistrations/{deviceId}");
+                currentRequest.Method.Should().Be(HttpMethod.Delete);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1b4")]
+            public async Task Delete_ThrowWhenThereIsNoDeviceIdPassed()
+            {
+                var client = GetRestClient();
+
+                Func<string, Task> callDelete = (deviceId) => client.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+
+                Func<Task> withNullDeviceId = () => callDelete(null);
+                Func<Task> withEmptyDeviceId = () => callDelete(string.Empty);
+
+                (await withEmptyDeviceId.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+
+                (await withNullDeviceId.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+            }
+
             public DeviceRegistrationTests(ITestOutputHelper output)
                 : base(output)
             {
