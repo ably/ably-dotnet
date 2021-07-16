@@ -1,4 +1,6 @@
-﻿namespace IO.Ably.Push
+﻿using Newtonsoft.Json;
+
+namespace IO.Ably.Push
 {
     /// <summary>
     /// Represents a push channel subscription.
@@ -8,17 +10,20 @@
         /// <summary>
         /// Name of the channel.
         /// </summary>
-        public string Channel { get; }
+        [JsonProperty("channel")]
+        public string Channel { get; set; }
 
         /// <summary>
         /// Device id attached to the subscription.
         /// </summary>
-        public string DeviceId { get; }
+        [JsonProperty("deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Client id attached to the channel.
         /// </summary>
-        public string ClientId { get; }
+        [JsonProperty("clientId")]
+        public string ClientId { get; set; }
 
         /// <summary>
         /// Factory method for creating a PushChannelSubscription for a deviceId.
@@ -26,7 +31,7 @@
         /// <param name="channel">Name of the channel.</param>
         /// <param name="deviceId">Device id.</param>
         /// <returns>Returns an instance of PushChannelSubscription.</returns>
-        public static PushChannelSubscription ForDevice(string channel, string deviceId)
+        public static PushChannelSubscription ForDevice(string channel, string deviceId = null)
         {
             return new PushChannelSubscription(channel, deviceId, null);
         }
@@ -37,7 +42,7 @@
         /// <param name="channel">Name of the channel.</param>
         /// <param name="clientId">Client id.</param>
         /// <returns>Returns an instance of PushChannelSubscription.</returns>
-        public static PushChannelSubscription ForClientId(string channel, string clientId)
+        public static PushChannelSubscription ForClientId(string channel, string clientId = null)
         {
             return new PushChannelSubscription(channel, null, clientId);
         }
@@ -47,6 +52,13 @@
             Channel = channel;
             DeviceId = deviceId;
             ClientId = clientId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PushChannelSubscription"/> class.
+        /// </summary>
+        public PushChannelSubscription()
+        {
         }
     }
 }

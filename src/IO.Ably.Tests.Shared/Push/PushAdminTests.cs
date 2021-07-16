@@ -482,6 +482,76 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 limitRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("150");
             }
 
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldCallsTheCorrectUrlAndHaveTheCorrectBody()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
+                    return request;
+                };
+
+                var sub = PushChannelSubscription.ForDevice("test");
+                var request = await callSave(sub);
+
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Post);
+                request.PostData.Should().BeSameAs(sub);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldValidateSubscriptionBeforeSendingItToTheServer()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
+                    return request;
+                };
+
+                Func<Task> nullSubscription = () => callSave(null);
+                Func<Task> withEmptyChannel = () => callSave(PushChannelSubscription.ForDevice(String.Empty));
+
+                (await nullSubscription.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+
+                (await withEmptyChannel.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldUseDeviceAuthIfDeviceIdMatches()
+            {
+                AblyRequest request = null;
+                var rest = GetRestClient(r =>
+                {
+                    request = r;
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                });
+                rest.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token"};
+
+                var sub = PushChannelSubscription.ForDevice("test", "123");
+                await rest.Push.Admin.ChannelSubscriptions.SaveAsync(sub);
+
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
+            }
+
             public ChannelSubscriptionsTests(ITestOutputHelper output)
                 : base(output)
             {
