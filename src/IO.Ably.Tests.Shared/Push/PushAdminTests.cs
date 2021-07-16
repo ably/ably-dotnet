@@ -401,5 +401,191 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
             }
         }
+
+        [Trait("spec", "RSH1c")]
+        public class ChannelSubscriptionsTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH1c1")]
+            public async Task List_ShouldCallTheCorrectUrl()
+            {
+                AblyRequest request = null;
+                var rest = GetRestClient(r =>
+                {
+                    request = r;
+                    return Task.FromResult<AblyResponse>(new AblyResponse() { TextResponse = string.Empty });
+                });
+
+                await rest.Push.Admin.ChannelSubscriptions.ListAsync(ListSubscriptionsRequest.Empty());
+
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Get);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c1")]
+            public async Task List_ShouldPassTheCorrectFilters()
+            {
+                Func<ListSubscriptionsRequest, Task<AblyRequest>> callList = async filter =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+                    await rest.Push.Admin.ChannelSubscriptions.ListAsync(filter);
+                    return request;
+                };
+
+                var emptyFilterRequest = await callList(ListSubscriptionsRequest.Empty(100));
+                emptyFilterRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("100");
+
+                var channelDeviceIdRequest =
+                    await callList(ListSubscriptionsRequest.WithDeviceId("test-channel", "device123"));
+
+                channelDeviceIdRequest.QueryParameters.Should().ContainKey("channel")
+                    .WhichValue.Should().Be("test-channel");
+                channelDeviceIdRequest.QueryParameters.Should().ContainKey("deviceId")
+                    .WhichValue.Should().Be("device123");
+
+                var channelClientIdRequest =
+                    await callList(ListSubscriptionsRequest.WithClientId("test-channel", "clientId123"));
+
+                channelClientIdRequest.QueryParameters.Should().ContainKey("channel")
+                    .WhichValue.Should().Be("test-channel");
+                channelClientIdRequest.QueryParameters.Should().ContainKey("clientId")
+                    .WhichValue.Should().Be("clientId123");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c2")]
+            public async Task ListChannels_ShouldCallsTheCorrectUrl()
+            {
+                Func<PaginatedRequestParams, Task<AblyRequest>> callListChannels = async filter =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+                    await rest.Push.Admin.ChannelSubscriptions.ListChannelsAsync(filter);
+                    return request;
+                };
+
+                var request = await callListChannels(PaginatedRequestParams.Empty);
+
+                request.Url.Should().Be("/push/channels");
+
+                var limitRequest = await callListChannels(new PaginatedRequestParams { Limit = 150 });
+                limitRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("150");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldCallsTheCorrectUrlAndHaveTheCorrectBody()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
+                    return request;
+                };
+
+                var sub = PushChannelSubscription.ForDevice("test");
+                var request = await callSave(sub);
+
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Post);
+                request.PostData.Should().BeSameAs(sub);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldValidateSubscriptionBeforeSendingItToTheServer()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
+                    return request;
+                };
+
+                Func<Task> nullSubscription = () => callSave(null);
+                Func<Task> withEmptyChannel = () => callSave(PushChannelSubscription.ForDevice(String.Empty));
+
+                (await nullSubscription.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+
+                (await withEmptyChannel.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
+                    .Be(ErrorCodes.BadRequest);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c3")]
+            public async Task Save_ShouldUseDeviceAuthIfDeviceIdMatches()
+            {
+                AblyRequest request = null;
+                var rest = GetRestClient(r =>
+                {
+                    request = r;
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                });
+                rest.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token"};
+
+                var sub = PushChannelSubscription.ForDevice("test", "123");
+                await rest.Push.Admin.ChannelSubscriptions.SaveAsync(sub);
+
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH1c4")]
+            public async Task Remove_ShouldCallTheCorrectUrl()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callRemove = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.RemoveAsync(subscription);
+                    return request;
+                };
+
+                var request = await callRemove(PushChannelSubscription.ForDevice("channel", "device"));
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Delete);
+
+                request.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
+                request.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("device");
+
+                var requestWithClientId = await callRemove(PushChannelSubscription.ForClientId("channel", "123"));
+
+                requestWithClientId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
+                requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("123");
+            }
+
+            public ChannelSubscriptionsTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
     }
 }

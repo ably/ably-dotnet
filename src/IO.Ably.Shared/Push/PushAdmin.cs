@@ -187,87 +187,109 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task<ChannelSubscription> IPushChannelSubscriptions.SaveAsync(ChannelSubscription subscription)
+        async Task<PushChannelSubscription> IPushChannelSubscriptions.SaveAsync(PushChannelSubscription subscription)
         {
-            // TODO: Add validation
+            Validate();
+
             var request = _restClient.CreatePostRequest("/push/channelSubscriptions");
             AddFullWaitIfNecessary(request);
+
+            if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, _restClient.Device);
+            }
+
             request.PostData = subscription;
 
-            return await _restClient.ExecuteRequest<ChannelSubscription>(request);
+            return await _restClient.ExecuteRequest<PushChannelSubscription>(request);
+
+            void Validate()
+            {
+                if (subscription is null)
+                {
+                    throw new AblyException("Subscription cannot be null", ErrorCodes.BadRequest);
+                }
+
+                if (subscription.Channel.IsEmpty())
+                {
+                    throw new AblyException("Please provide a non-empty channel name.", ErrorCodes.BadRequest);
+                }
+            }
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult<ChannelSubscription>> IPushChannelSubscriptions.ListAsync(string channel, string clientId, string deviceId, int? limit) // TODO: Update parametrs to PaginatedQuery
+        async Task<PaginatedResult<PushChannelSubscription>> IPushChannelSubscriptions.ListAsync(ListSubscriptionsRequest requestFilter) // TODO: Update parametrs to PaginatedQuery
         {
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            if (channel.IsNotEmpty())
-            {
-                queryParams.Add("channel", channel);
-            }
-
-            if (clientId.IsNotEmpty())
-            {
-                queryParams.Add("clientId", clientId);
-            }
-
-            if (deviceId.IsNotEmpty())
-            {
-                queryParams.Add("deviceId", deviceId);
-            }
-
-            if (limit.HasValue)
-            {
-                queryParams.Add("limit", limit.ToString());
-            }
-
             var url = "/push/channelSubscriptions";
-            if (queryParams.Any())
-            {
-                url += "?" + queryParams.ToQueryString();
-            }
 
-            // TODO: Use paginated query
             var request = _restClient.CreateGetRequest(url);
+            request.AddQueryParameters(requestFilter.ToQueryParams());
 
-            return await _restClient.ExecuteRequest<PaginatedResult<ChannelSubscription>>(request);
+            return await _restClient.ExecutePaginatedRequest(request, ListChannelSubscriptions);
+
+            async Task<PaginatedResult<PushChannelSubscription>> ListChannelSubscriptions(PaginatedRequestParams requestParams)
+            {
+                var paginatedRequest = _restClient.CreateGetRequest(url);
+                paginatedRequest.AddQueryParameters(requestParams.GetParameters());
+                return await _restClient.ExecutePaginatedRequest(paginatedRequest, ListChannelSubscriptions);
+            }
         }
 
         /// <inheritdoc />
-        async Task IPushChannelSubscriptions.RemoveAsync(ChannelSubscription subscription) // TODO: Do we allow to specify the channel as well.
+        async Task IPushChannelSubscriptions.RemoveAsync(PushChannelSubscription subscription) // TODO: Do we allow to specify the channel as well.
         {
-            // TODO: Validation
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            if (subscription.ClientId.IsNotEmpty())
-            {
-                queryParams.Add("clientId", subscription.ClientId);
-            }
-
-            if (subscription.DeviceId.IsNotEmpty())
-            {
-                queryParams.Add("deviceId", subscription.DeviceId);
-            }
+            Validate();
 
             var url = "/push/channelSubscriptions";
-            if (queryParams.Any())
-            {
-                url += "?" + queryParams.ToQueryString();
-            }
 
             var request = _restClient.CreateRequest(url, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
-            _ = await _restClient.ExecuteHttpRequest(request);
+            request.AddQueryParameters(GetQueryParams());
 
-            // TODO: Handle errors
+            if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, _restClient.Device);
+            }
+
+            _ = await _restClient.ExecuteRequest(request);
+
+            void Validate()
+            {
+                if (subscription is null)
+                {
+                    throw new AblyException("Subscription should not be null", ErrorCodes.BadRequest);
+                }
+
+                if (subscription.Channel.IsEmpty())
+                {
+                    throw new AblyException(
+                        "Please provide a subscription with a non-empty channel name.",
+                        ErrorCodes.BadRequest);
+                }
+            }
+
+            IEnumerable<KeyValuePair<string, string>> GetQueryParams()
+            {
+                yield return new KeyValuePair<string, string>("channel", subscription.Channel);
+                if (subscription.DeviceId.IsNotEmpty())
+                {
+                    yield return new KeyValuePair<string, string>("deviceId", subscription.DeviceId);
+                }
+
+                if (subscription.ClientId.IsNotEmpty())
+                {
+                    yield return new KeyValuePair<string, string>("clientId", subscription.ClientId);
+                }
+            }
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult<string>> IPushChannelSubscriptions.ListChannelsAsync()
+        async Task<PaginatedResult<string>> IPushChannelSubscriptions.ListChannelsAsync(PaginatedRequestParams requestParams)
         {
             var request = _restClient.CreateGetRequest("/push/channels");
+            request.AddQueryParameters(requestParams.GetParameters());
 
-            // TODO: Convert to proper paginated request
-            return await _restClient.ExecuteRequest<PaginatedResult<string>>(request);
+            return await _restClient.ExecutePaginatedRequest(request, ((IPushChannelSubscriptions)this).ListChannelsAsync);
         }
 
         /// <inheritdoc />

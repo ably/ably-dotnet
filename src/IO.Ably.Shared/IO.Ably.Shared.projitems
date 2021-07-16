@@ -25,12 +25,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.States.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Push\ChannelSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushChannelSubscription.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\DeviceDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IDeviceRegistrations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IMobileDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\IPushChannelSubscriptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ListDeviceDetailsRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ListSubscriptionsRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\LocalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PersistKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdmin.cs" />
