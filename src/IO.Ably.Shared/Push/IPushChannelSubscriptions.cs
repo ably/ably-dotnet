@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Push
 {
@@ -24,20 +25,30 @@ namespace IO.Ably.Push
         Task<PaginatedResult<PushChannelSubscription>> ListAsync(ListSubscriptionsRequest requestFilter);
 
         /// <summary>
+        /// List all channels with at least one subscribed device.
+        /// RestApi: https://ably.com/documentation/rest-api#list-channels.
+        /// </summary>
+        /// <param name="requestParams">Allows adding a limit to the number of results and supports paginated requests handling.</param>
+        /// <returns>Paginated list of channel names.</returns>
+        Task<PaginatedResult<string>> ListChannelsAsync(PaginatedRequestParams requestParams);
+
+        /// <summary>
         /// Stop receiving push notifications when push messages are published on the specified channels.
         /// Please note that this operation is done asynchronously so immediate requests subsequent to this delete request may briefly still return the subscription.
         /// RestApi: https://ably.com/documentation/rest-api#delete-channel-subscription.
         /// </summary>
         /// <param name="subscription">Channel Subscription object to unsubscribe.</param>
         /// <returns>Task.</returns>
-        Task RemoveAsync(PushChannelSubscription subscription); // TODO: Add request object and allow other params
+        Task RemoveAsync(PushChannelSubscription subscription);
 
         /// <summary>
-        /// List all channels with at least one subscribed device.
-        /// RestApi: https://ably.com/documentation/rest-api#list-channels.
+        /// Stop receiving push notifications when push messages are published on the specified channels.
+        /// Please note that this operation is done asynchronously so immediate requests subsequent to this delete request may briefly still return the subscription.
+        /// Allows custom parameters to be passed in the filter.
+        /// RestApi: https://ably.com/documentation/rest-api#delete-channel-subscription.
         /// </summary>
-        /// <param name="requestParams">Allows adding a limit to the number of results and supports paginated requests handling.</param>
-        /// <returns>Paginated list of channel names.</returns>
-        Task<PaginatedResult<string>> ListChannelsAsync(PaginatedRequestParams requestParams); // TODO: Create a return type that is not string. Note: Java implementation has possible deviceId parameter but the REST documentation doesn't include it.
+        /// <param name="removeParams">Dictionary with query parameters passed to the server. Possible values are `clientId`, `deviceId` and `channel`.</param>
+        /// <returns>Task.</returns>
+        Task RemoveWhereAsync(IDictionary<string, string> removeParams);
     }
 }
