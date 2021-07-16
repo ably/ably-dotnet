@@ -8,6 +8,8 @@ namespace IO.Ably.Tests.DotNetCore20.Push
     {
         public Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 
+        public bool RequestRegistrationTokenCalled { get; set; }
+
         public void SendIntent(string name, Dictionary<string, object> extraParameters)
         {
             throw new NotImplementedException();
@@ -44,6 +46,12 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 Settings.Remove(key);
             }
         }
+
+        public void RequestRegistrationToken(Action<Result<RegistrationToken>> callback)
+        {
+            RequestRegistrationTokenCalled = true;
+        }
+
 
         public void RequestRegistrationToken(Action<Result<string>> callback)
         {

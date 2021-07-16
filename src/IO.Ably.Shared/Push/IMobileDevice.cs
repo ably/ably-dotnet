@@ -48,7 +48,7 @@ namespace IO.Ably.Push
         /// Requests a registration token. So far used only by Android.
         /// </summary>
         /// <param name="callback">Action which is executed when the operation completes.</param>
-        void RequestRegistrationToken(Action<Result<string>> callback);
+        void RequestRegistrationToken(Action<Result<RegistrationToken>> callback);
 
         /// <summary>
         /// Defines callbacks executed at different parts of the push journey.
