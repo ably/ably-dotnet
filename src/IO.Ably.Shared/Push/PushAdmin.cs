@@ -238,29 +238,49 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task IPushChannelSubscriptions.RemoveAsync(PushChannelSubscription subscription) // TODO: Do we allow to specify the channel as well.
         {
-            // TODO: Validation
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            if (subscription.ClientId.IsNotEmpty())
-            {
-                queryParams.Add("clientId", subscription.ClientId);
-            }
-
-            if (subscription.DeviceId.IsNotEmpty())
-            {
-                queryParams.Add("deviceId", subscription.DeviceId);
-            }
+            Validate();
 
             var url = "/push/channelSubscriptions";
-            if (queryParams.Any())
-            {
-                url += "?" + queryParams.ToQueryString();
-            }
 
             var request = _restClient.CreateRequest(url, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
-            _ = await _restClient.ExecuteHttpRequest(request);
+            request.AddQueryParameters(GetQueryParams());
 
-            // TODO: Handle errors
+            if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
+            {
+                AddDeviceAuthenticationToRequest(request, _restClient.Device);
+            }
+
+            _ = await _restClient.ExecuteRequest(request);
+
+            void Validate()
+            {
+                if (subscription is null)
+                {
+                    throw new AblyException("Subscription should not be null", ErrorCodes.BadRequest);
+                }
+
+                if (subscription.Channel.IsEmpty())
+                {
+                    throw new AblyException(
+                        "Please provide a subscription with a non-empty channel name.",
+                        ErrorCodes.BadRequest);
+                }
+            }
+
+            IEnumerable<KeyValuePair<string, string>> GetQueryParams()
+            {
+                yield return new KeyValuePair<string, string>("channel", subscription.Channel);
+                if (subscription.DeviceId.IsNotEmpty())
+                {
+                    yield return new KeyValuePair<string, string>("deviceId", subscription.DeviceId);
+                }
+
+                if (subscription.ClientId.IsNotEmpty())
+                {
+                    yield return new KeyValuePair<string, string>("clientId", subscription.ClientId);
+                }
+            }
         }
 
         /// <inheritdoc />

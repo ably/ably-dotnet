@@ -552,6 +552,36 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
             }
 
+            [Fact]
+            [Trait("spec", "RSH1c4")]
+            public async Task Remove_ShouldCallTheCorrectUrl()
+            {
+                Func<PushChannelSubscription, Task<AblyRequest>> callRemove = async subscription =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.RemoveAsync(subscription);
+                    return request;
+                };
+
+                var request = await callRemove(PushChannelSubscription.ForDevice("channel", "device"));
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Delete);
+
+                request.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
+                request.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("device");
+
+                var requestWithClientId = await callRemove(PushChannelSubscription.ForClientId("channel", "123"));
+
+                requestWithClientId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
+                requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("123");
+            }
+
             public ChannelSubscriptionsTests(ITestOutputHelper output)
                 : base(output)
             {
