@@ -78,5 +78,15 @@ namespace IO.Ably.Push
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
         }
+
+        private void GetRegistrationToken()
+        {
+            _mobileDevice.RequestRegistrationToken(UpdateRegistrationToken);
+        }
+
+        public void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

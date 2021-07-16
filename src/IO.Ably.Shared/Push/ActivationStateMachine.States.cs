@@ -12,6 +12,16 @@ namespace IO.Ably.Push
         internal static Func<Task<Event>> ToNextEventFunc(Func<Task<Event>> singleEventFunc)
             => async () => await singleEventFunc();
 
+        internal static Func<Task<Event>> ToNextEventFunc(Event nextEvent)
+        {
+            if (nextEvent is null)
+            {
+                return EmptyNextEventFunc;
+            }
+
+            return async () => nextEvent;
+        }
+
         public abstract class State
         {
             protected State(ActivationStateMachine machine)
@@ -66,12 +76,17 @@ namespace IO.Ably.Push
                             var newLocalDevice = LocalDevice.Create(Machine.ClientId, Machine._mobileDevice);
                             Machine.PersistLocalDevice(newLocalDevice);
                             Machine.LocalDevice = newLocalDevice;
+                            Machine.GetRegistrationToken();
+
+                            return (new WaitingForPushDeviceDetails(Machine), EmptyNextEventFunc);
                         }
 
-                        return (null, null);
-                }
+                        var nextEvent = localDevice.RegistrationToken != null ? new GotPushDeviceDetails() : null;
 
-                return (null, null);
+                        return (new WaitingForPushDeviceDetails(Machine), ToNextEventFunc(nextEvent));
+                    default:
+                        throw new AblyException($"NotActivated cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
             }
         }
 

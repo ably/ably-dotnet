@@ -136,6 +136,60 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 nextEvent.Should().BeOfType<ActivationStateMachine.SyncRegistrationFailed>();
             }
 
+            [Fact]
+            [Trait("spec", "RSH3a2")]
+            [Trait("spec", "RSH3a2b")]
+            public async Task WithCalledActivate_WithoutCreatedLocalDevice_ShouldCreateNewLocalDeviceAndPersistIt()
+            {
+                var (state, stateMachine) = GetStateAndStateMachine(GetRestClient(null, options => options.ClientId = "123"));
+
+                stateMachine.LocalDevice = new LocalDevice();
+
+                await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                MobileDevice.GetPreference(PersistKeys.Device.DEVICE_ID, PersistKeys.Device.SharedName)
+                    .Should().NotBeEmpty();
+
+                MobileDevice.GetPreference(PersistKeys.Device.CLIENT_ID, PersistKeys.Device.SharedName)
+                    .Should().NotBeEmpty();
+
+                MobileDevice.GetPreference(PersistKeys.Device.DEVICE_SECRET, PersistKeys.Device.SharedName)
+                    .Should().NotBeEmpty();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a2")]
+            [Trait("spec", "RSH3a2d")]
+            public async Task WithCalledActivate_WithoutCreatedLocalDevice_ShouldTriggerGetRegistrationToken()
+            {
+                var (state, stateMachine) = GetStateAndStateMachine(GetRestClient(null, options => options.ClientId = "123"));
+
+                stateMachine.LocalDevice = new LocalDevice();
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                (await nextEventFunc()).Should().BeNull(); // No next next
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForPushDeviceDetails>();
+                MobileDevice.RequestRegistrationTokenCalled.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a2")]
+            [Trait("spec", "RSH3a2c")]
+            public async Task WithCalledActivate_WhenLocalDeviceHasPushDetails_ShouldTriggerGotPushDeviceDetailsEvent()
+            {
+                var (state, stateMachine) = GetStateAndStateMachine();
+
+                var localDevice = LocalDevice.Create("123");
+                localDevice.RegistrationToken = new RegistrationToken("test", "token");
+                stateMachine.LocalDevice = localDevice;
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForPushDeviceDetails>();
+            }
+
             private ActivationStateMachine.NotActivated GetState()
             {
                 var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
