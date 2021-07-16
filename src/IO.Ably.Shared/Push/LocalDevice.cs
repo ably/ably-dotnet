@@ -52,14 +52,19 @@ namespace IO.Ably.Push
         /// Create a new instance of localDevice with a random Id and secret.
         /// </summary>
         /// <param name="clientId">Optional clientId which is set on the device.</param>
+        /// <param name="mobileDevice">If a mobile device is present it we will use the DevicePlatform and FormFactor from there.</param>
         /// <returns>Instance of LocalDevice.</returns>
-        public static LocalDevice Create(string clientId = null)
+        public static LocalDevice Create(string clientId = null, IMobileDevice mobileDevice = null)
         {
             return new LocalDevice
             {
                 Id = Guid.NewGuid().ToString("D"),
                 DeviceSecret = Crypto.GenerateSecret(),
-                ClientId = clientId
+                ClientId = clientId,
+
+                // TODO: Pass mobile device in constructor instead of using static dependencies.
+                Platform = mobileDevice?.DevicePlatform,
+                FormFactor = mobileDevice?.FormFactor,
             };
         }
     }

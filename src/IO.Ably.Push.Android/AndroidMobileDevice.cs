@@ -89,6 +89,9 @@ namespace IO.Ably.Push.Android
             }
         }
 
+        public PushCallbacks Callbacks { get; } = new PushCallbacks();
+        public string DevicePlatform { get; } = "android"; // TODO: Update how we get Mobile Device.
+        public string FormFactor { get; } = "tbc"; // TODO: Update how we pull form factor.
 
         public class RequestTokenCompleteListener : Java.Lang.Object, IOnCompleteListener
         {

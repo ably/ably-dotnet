@@ -54,5 +54,15 @@ namespace IO.Ably.Push
         /// Defines callbacks executed at different parts of the push journey.
         /// </summary>
         PushCallbacks Callbacks { get; }
+
+        /// <summary>
+        /// Device platform i.e. Android.
+        /// </summary>
+        string DevicePlatform { get; }
+
+        /// <summary>
+        /// Device form factor.
+        /// </summary>
+        string FormFactor { get; }
     }
 }
