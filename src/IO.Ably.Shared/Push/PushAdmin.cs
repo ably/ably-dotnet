@@ -244,12 +244,12 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult<string>> IPushChannelSubscriptions.ListChannelsAsync()
+        async Task<PaginatedResult<string>> IPushChannelSubscriptions.ListChannelsAsync(PaginatedRequestParams requestParams)
         {
             var request = _restClient.CreateGetRequest("/push/channels");
+            request.AddQueryParameters(requestParams.GetParameters());
 
-            // TODO: Convert to proper paginated request
-            return await _restClient.ExecuteRequest<PaginatedResult<string>>(request);
+            return await _restClient.ExecutePaginatedRequest(request, ((IPushChannelSubscriptions)this).ListChannelsAsync);
         }
 
         /// <inheritdoc />

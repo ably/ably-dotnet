@@ -36,7 +36,8 @@ namespace IO.Ably.Push
         /// List all channels with at least one subscribed device.
         /// RestApi: https://ably.com/documentation/rest-api#list-channels.
         /// </summary>
+        /// <param name="requestParams">Allows adding a limit to the number of results and supports paginated requests handling.</param>
         /// <returns>Paginated list of channel names.</returns>
-        Task<PaginatedResult<string>> ListChannelsAsync(); // TODO: Create a return type that is not string. Note: Java implementation has possible deviceId parameter but the REST documentation doesn't include it.
+        Task<PaginatedResult<string>> ListChannelsAsync(PaginatedRequestParams requestParams); // TODO: Create a return type that is not string. Note: Java implementation has possible deviceId parameter but the REST documentation doesn't include it.
     }
 }

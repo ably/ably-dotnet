@@ -458,6 +458,30 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     .WhichValue.Should().Be("clientId123");
             }
 
+            [Fact]
+            [Trait("spec", "RSH1c2")]
+            public async Task ListChannels_ShouldCallsTheCorrectUrl()
+            {
+                Func<PaginatedRequestParams, Task<AblyRequest>> callListChannels = async filter =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+                    await rest.Push.Admin.ChannelSubscriptions.ListChannelsAsync(filter);
+                    return request;
+                };
+
+                var request = await callListChannels(PaginatedRequestParams.Empty);
+
+                request.Url.Should().Be("/push/channels");
+
+                var limitRequest = await callListChannels(new PaginatedRequestParams { Limit = 150 });
+                limitRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("150");
+            }
+
             public ChannelSubscriptionsTests(ITestOutputHelper output)
                 : base(output)
             {
