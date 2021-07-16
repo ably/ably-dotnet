@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net;
+using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
@@ -79,6 +81,59 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var nextEvent = await nextEventFunc();
                 nextEvent.Should().BeOfType<ActivationStateMachine.SyncRegistrationFailed>()
                     .Which.Reason.Code.Should().Be(ErrorCodes.ActivationFailedClientIdMismatch);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a2")]
+            [Trait("spec", "RSH3a2a3")]
+            public async Task WithCalledActivate_WhenLocalDeviceHasDeviceIdentityToken_AndSuccessfulDeviceRegistration_ShouldReturnRegistrationSyncedNextEvent()
+            {
+                var restClient = GetRestClient(request =>
+                {
+                    if (request.Url.StartsWith("/push/deviceRegistrations"))
+                    {
+                        return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = LocalDevice.Create().ToJson() });
+                    }
+
+                    return Task.FromResult(new AblyResponse());
+                });
+
+                var (state, stateMachine) = GetStateAndStateMachine(restClient);
+                var localDevice = LocalDevice.Create();
+                localDevice.DeviceIdentityToken = "token";
+                stateMachine.LocalDevice = localDevice;
+
+                var (_, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                var nextEvent = await nextEventFunc();
+                nextEvent.Should().BeOfType<ActivationStateMachine.RegistrationSynced>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a2")]
+            [Trait("spec", "RSH3a2a3")]
+            public async Task WithCalledActivate_WhenLocalDeviceHasDeviceIdentityToken_AndFailedDeviceRegistration_ShouldReturnSyncRegistrationFailedNextEvent()
+            {
+                var restClient = GetRestClient(request =>
+                {
+                    if (request.Url.StartsWith("/push/deviceRegistrations"))
+                    {
+                        throw new AblyException("Invalid request");
+                    }
+
+                    return Task.FromResult(new AblyResponse());
+                });
+
+                var (state, stateMachine) = GetStateAndStateMachine(restClient);
+
+                var localDevice = LocalDevice.Create();
+                localDevice.DeviceIdentityToken = "token";
+                stateMachine.LocalDevice = localDevice;
+
+                var (_, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                var nextEvent = await nextEventFunc();
+                nextEvent.Should().BeOfType<ActivationStateMachine.SyncRegistrationFailed>();
             }
 
             private ActivationStateMachine.NotActivated GetState()

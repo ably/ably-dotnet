@@ -54,7 +54,17 @@ namespace IO.Ably.Push
                 return new SyncRegistrationFailed(error);
             }
 
-            return null;
+            try
+            {
+                await _restClient.Push.Admin.DeviceRegistrations.SaveAsync(LocalDevice);
+
+                return new RegistrationSynced();
+            }
+            catch (AblyException e)
+            {
+                Error("Error validating registration", e);
+                return new SyncRegistrationFailed(e.ErrorInfo);
+            }
         }
 
         private void Debug(string message) => _logger.Debug($"ActivationStateMachine: {message}");
