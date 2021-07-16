@@ -53,10 +53,19 @@ namespace IO.Ably.Push
                         return (this, EmptyNextEventFunc);
                     case CalledActivate _:
 
-                        if (Machine.LocalDevice.IsRegistered)
+                        var localDevice = Machine.LocalDevice;
+
+                        if (localDevice.IsRegistered)
                         {
                             var nextState = new WaitingForRegistrationSync(Machine, @event);
                             return (nextState, ToNextEventFunc(Machine.ValidateRegistration));
+                        }
+
+                        if (localDevice.IsCreated == false)
+                        {
+                            var newLocalDevice = LocalDevice.Create(Machine.ClientId, Machine._mobileDevice);
+                            Machine.PersistLocalDevice(newLocalDevice);
+                            Machine.LocalDevice = newLocalDevice;
                         }
 
                         return (null, null);
