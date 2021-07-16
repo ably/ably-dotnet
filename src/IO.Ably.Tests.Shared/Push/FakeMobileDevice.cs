@@ -52,7 +52,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             RequestRegistrationTokenCalled = true;
         }
 
-
         public void RequestRegistrationToken(Action<Result<string>> callback)
         {
             throw new NotImplementedException();
