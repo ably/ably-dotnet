@@ -35,7 +35,7 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new System.NotImplementedException();
+                return @event is CalledDeactivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
