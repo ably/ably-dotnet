@@ -13,18 +13,15 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="subscription">Channel subscription object.</param>
         /// <returns>Return an updated Channel subscription object.</returns>
-        Task<ChannelSubscription> SaveAsync(ChannelSubscription subscription);
+        Task<PushChannelSubscription> SaveAsync(PushChannelSubscription subscription);
 
         /// <summary>
         /// Get a list of push notification subscriptions to channels.
         /// RestApi: https://ably.com/documentation/rest-api#list-channel-subscriptions.
         /// </summary>
-        /// <param name="channel">Filter by channel name.</param>
-        /// <param name="clientId">Filter to restrict to subscriptions associated with that clientId. Cannot be used together with deviceId.</param>
-        /// <param name="deviceId">Filter to restrict to subscriptions associated with that deviceId. Cannot be used together with clientId.</param>
-        /// <param name="limit">Number of returns to return. Max limit is 1000.</param>
+        /// <param name="requestFilter">Provides a way to filter results. <see cref="ListSubscriptionsRequest"/>.</param>
         /// <returns>Returns a paginated list of ChannelSubscriptions.</returns>
-        Task<PaginatedResult<ChannelSubscription>> ListAsync(string channel, string clientId = null, string deviceId = null, int? limit = null); // TODO: Add request object
+        Task<PaginatedResult<PushChannelSubscription>> ListAsync(ListSubscriptionsRequest requestFilter);
 
         /// <summary>
         /// Stop receiving push notifications when push messages are published on the specified channels.
@@ -33,7 +30,7 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="subscription">Channel Subscription object to unsubscribe.</param>
         /// <returns>Task.</returns>
-        Task RemoveAsync(ChannelSubscription subscription); // TODO: Add request object and allow other params
+        Task RemoveAsync(PushChannelSubscription subscription); // TODO: Add request object and allow other params
 
         /// <summary>
         /// List all channels with at least one subscribed device.
