@@ -162,6 +162,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\MessageExtras.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\PresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ProtocolMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\SemanticVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionOnDispose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ConnectionAwaiter.cs" />
