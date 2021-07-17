@@ -42,7 +42,7 @@ namespace IO.Ably.Types
             var ver = new Version(3, 5, 8, 13);
             var semVer = new SemanticVersion(ver);
 
-            semVer.ToString().Should().Be("3,5,8");
+            semVer.ToString().Should().Be("3.5.8");
         }
     }
 }
