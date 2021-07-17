@@ -211,14 +211,14 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1b2")]
             public async Task List_ShouldCallCorrectUrlAndQueryParameters()
             {
-                Func<ListDeviceDetailsRequest, Task<AblyRequest>> ListDevices =
+                Func<ListDeviceDetailsRequest, Task<AblyRequest>> listDevices =
                     async query =>
                     {
                         AblyRequest currentRequest = null;
                         var client = GetRestClient(request =>
                         {
                             currentRequest = request;
-                            return Task.FromResult<AblyResponse>(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                            return Task.FromResult<AblyResponse>(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                         });
 
                         await client.Push.Admin.DeviceRegistrations.List(query);
@@ -226,17 +226,16 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                         return currentRequest;
                     };
 
-
-                var emptyFilterRequest = await ListDevices(ListDeviceDetailsRequest.Empty(100));
+                var emptyFilterRequest = await listDevices(ListDeviceDetailsRequest.Empty(100));
                 emptyFilterRequest.Url.Should().Be("/push/deviceRegistrations");
                 emptyFilterRequest.QueryParameters.Should().HaveCount(1);
                 emptyFilterRequest.QueryParameters.Should().ContainKey("limit");
 
-                var deviceIdRequest = await ListDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
+                var deviceIdRequest = await listDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
                 deviceIdRequest.Url.Should().Be("/push/deviceRegistrations");
                 deviceIdRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("123");
 
-                var clientIdRequest = await ListDevices(ListDeviceDetailsRequest.WithClientId("234"));
+                var clientIdRequest = await listDevices(ListDeviceDetailsRequest.WithClientId("234"));
                 clientIdRequest.Url.Should().Be("/push/deviceRegistrations");
                 clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("234");
             }
@@ -324,7 +323,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var client = GetRestClient(request =>
                 {
                     currentRequest = request;
-                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                 });
 
                 var deviceId = "123";
@@ -360,7 +359,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var client = GetRestClient(request =>
                 {
                     currentRequest = request;
-                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                 });
 
                 client.Push.Admin.DeviceRegistrations.RemoveWhereAsync(
@@ -383,7 +382,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var client = GetRestClient(request =>
                 {
                     currentRequest = request;
-                    return Task.FromResult(new AblyResponse() {StatusCode = HttpStatusCode.OK});
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                 });
 
                 client.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token" };
@@ -525,7 +524,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 };
 
                 Func<Task> nullSubscription = () => callSave(null);
-                Func<Task> withEmptyChannel = () => callSave(PushChannelSubscription.ForDevice(String.Empty));
+                Func<Task> withEmptyChannel = () => callSave(PushChannelSubscription.ForDevice(string.Empty));
 
                 (await nullSubscription.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
                     .Be(ErrorCodes.BadRequest);
@@ -544,7 +543,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     request = r;
                     return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
                 });
-                rest.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token"};
+                rest.Device = new LocalDevice() { Id = "123", DeviceIdentityToken = "token" };
 
                 var sub = PushChannelSubscription.ForDevice("test", "123");
                 await rest.Push.Admin.ChannelSubscriptions.SaveAsync(sub);
