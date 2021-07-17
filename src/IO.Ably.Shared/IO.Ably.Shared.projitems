@@ -97,7 +97,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Http\AblyRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Http\AblyResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAblyHttpClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IAuthCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCipher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRestClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DefaultLogger.cs" />
