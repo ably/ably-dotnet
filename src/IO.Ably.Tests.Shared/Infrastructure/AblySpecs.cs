@@ -140,22 +140,8 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            foreach (var client in RealtimeClients)
-            {
-                try
-                {
-                    client.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Output?.WriteLine("Error disposing Client: " + ex.Message);
-                }
-            }
-
             _signal?.Dispose();
         }
-
-        public List<AblyRealtime> RealtimeClients { get; set; } = new List<AblyRealtime>();
     }
 
     public abstract class AblySpecs
