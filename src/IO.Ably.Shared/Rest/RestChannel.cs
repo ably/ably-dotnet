@@ -14,20 +14,7 @@ namespace IO.Ably.Rest
     /// </summary>
     public class RestChannel : IRestChannel, IPresence
     {
-        /// <inheritdoc/>
-        public string Name { get; private set; }
-
         private readonly AblyRest _ablyRest;
-
-        /// <summary>
-        /// Channel options of this channel.
-        /// </summary>
-        public ChannelOptions Options
-        {
-            get => _options;
-            set => _options = value ?? new ChannelOptions();
-        }
-
         private readonly string _basePath;
         private ChannelOptions _options;
 
@@ -38,6 +25,21 @@ namespace IO.Ably.Rest
             _options = options;
             _basePath = $"/channels/{name.EncodeUriPart()}";
         }
+
+        /// <inheritdoc/>
+        public string Name { get; private set; }
+
+        /// <summary>
+        /// Channel options of this channel.
+        /// </summary>
+        public ChannelOptions Options
+        {
+            get => _options;
+            set => _options = value ?? new ChannelOptions();
+        }
+
+        /// <inheritdoc/>
+        public IPresence Presence => this;
 
         /// <inheritdoc/>
         public Task PublishAsync(string name, object data, string clientId = null)
@@ -83,9 +85,6 @@ namespace IO.Ably.Rest
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);
         }
-
-        /// <inheritdoc/>
-        public IPresence Presence => this;
 
         /// <inheritdoc/>
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(int? limit, string clientId, string connectionId)
