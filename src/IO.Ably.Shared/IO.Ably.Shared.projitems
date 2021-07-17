@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChannelModeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\PayloadCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\ProcessedPayload.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
