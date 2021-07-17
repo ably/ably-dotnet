@@ -153,7 +153,7 @@ namespace IO.Ably.Push
         /// <summary>
         /// Publish a push notification message.
         /// </summary>
-        /// <param name="recipient">Recipient. TODO: When format is know, update to strongly typed object.</param>
+        /// <param name="recipient">Recipient. Best description of what is allowed can be found in the RestApi documentation: https://ably.com/documentation/rest-api#post-device-registration.</param>
         /// <param name="payload">Message payload.</param>
         /// <returns>Task.</returns>
         public async Task PublishAsync(JObject recipient, JObject payload)
@@ -218,7 +218,7 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult<PushChannelSubscription>> IPushChannelSubscriptions.ListAsync(ListSubscriptionsRequest requestFilter) // TODO: Update parametrs to PaginatedQuery
+        async Task<PaginatedResult<PushChannelSubscription>> IPushChannelSubscriptions.ListAsync(ListSubscriptionsRequest requestFilter)
         {
             var url = "/push/channelSubscriptions";
 
@@ -236,7 +236,7 @@ namespace IO.Ably.Push
         }
 
         /// <inheritdoc />
-        async Task IPushChannelSubscriptions.RemoveAsync(PushChannelSubscription subscription) // TODO: Do we allow to specify the channel as well.
+        async Task IPushChannelSubscriptions.RemoveAsync(PushChannelSubscription subscription)
         {
             Validate();
 
@@ -279,6 +279,28 @@ namespace IO.Ably.Push
                 if (subscription.ClientId.IsNotEmpty())
                 {
                     yield return new KeyValuePair<string, string>("clientId", subscription.ClientId);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        async Task IPushChannelSubscriptions.RemoveWhereAsync(IDictionary<string, string> removeParams)
+        {
+            Validate();
+
+            var url = "/push/channelSubscriptions";
+
+            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            AddFullWaitIfNecessary(request);
+            request.AddQueryParameters(removeParams);
+
+            _ = await _restClient.ExecuteRequest(request);
+
+            void Validate()
+            {
+                if (removeParams is null)
+                {
+                    throw new AblyException("RemoveParams should not be null", ErrorCodes.BadRequest);
                 }
             }
         }

@@ -250,7 +250,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1c4")]
             public async Task ShouldSuccessfullyRemoveAChannelSubscription(Protocol protocol)
             {
-                using var _ = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
@@ -269,7 +268,35 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     await client.Push.Admin.ChannelSubscriptions.RemoveAsync(clientSavedSub);
 
                     await client.Push.Admin.ChannelSubscriptions.RemoveAsync(
-                        PushChannelSubscription.ForDevice("not-existant", "not-existant"));
+                        PushChannelSubscription.ForDevice("not-existent", "not-existent"));
+                };
+
+                await executeTest.Should().NotThrowAsync();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSH1c5")]
+            public async Task ShouldSuccessfullyRemoveAChannelSubscriptionWithCustomFilter(Protocol protocol)
+            {
+                // Arrange
+                var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
+
+                var device = GetTestLocalDevice(client);
+
+                var savedDevice = await client.Push.Admin.DeviceRegistrations.SaveAsync(device);
+                Func<Task> executeTest = async () =>
+                {
+                    var channelName = "pushenabled:test".AddRandomSuffix();
+                    var channelSub = PushChannelSubscription.ForDevice(channelName, savedDevice.Id);
+                    var savedSub = await client.Push.Admin.ChannelSubscriptions.SaveAsync(channelSub);
+                    await client.Push.Admin.ChannelSubscriptions.RemoveWhereAsync(new Dictionary<string, string> { { "channel", savedSub.Channel }, { "deviceId", savedSub.DeviceId } });
+
+                    var channelSubForClient = PushChannelSubscription.ForClientId(channelName, "123");
+                    var clientSavedSub = await client.Push.Admin.ChannelSubscriptions.SaveAsync(channelSubForClient);
+                    await client.Push.Admin.ChannelSubscriptions.RemoveWhereAsync(new Dictionary<string, string> { { "channel", clientSavedSub.Channel }, { "clientId", clientSavedSub.ClientId } });
+
+                    await client.Push.Admin.ChannelSubscriptions.RemoveWhereAsync(new Dictionary<string, string> { { "channel", "not-existent" }, { "deviceId", "not-existent" } });
                 };
 
                 await executeTest.Should().NotThrowAsync();

@@ -582,6 +582,38 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("123");
             }
 
+            [Fact]
+            [Trait("spec", "RSH1c5")]
+            public async Task RemoveWhere_ShouldCallTheCorrectUrl()
+            {
+                Func<IDictionary<string, string>, Task<AblyRequest>> callRemoveWhere = async whereParams =>
+                {
+                    AblyRequest request = null;
+                    var rest = GetRestClient(r =>
+                    {
+                        request = r;
+                        return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
+                    });
+
+                    await rest.Push.Admin.ChannelSubscriptions.RemoveWhereAsync(whereParams);
+                    return request;
+                };
+
+                var request = await callRemoveWhere(new Dictionary<string, string>());
+                request.Url.Should().Be("/push/channelSubscriptions");
+                request.Method.Should().Be(HttpMethod.Delete);
+                request.QueryParameters.Should().BeEmpty();
+
+                var requestWithChannelAndDeviceId = await callRemoveWhere(new Dictionary<string, string>() { { "channel", "test" }, { "deviceId", "best" } });
+
+                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("test");
+                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("best");
+
+                var requestWithRandomParameter = await callRemoveWhere(new Dictionary<string, string>() { { "random", "value" } });
+
+                requestWithRandomParameter.QueryParameters.Should().ContainKey("random").WhichValue.Should().Be("value");
+            }
+
             public ChannelSubscriptionsTests(ITestOutputHelper output)
                 : base(output)
             {

@@ -11,7 +11,8 @@ namespace IO.Ably.Push
     public class LocalDevice : DeviceDetails
     {
         /// <summary>
-        /// Devices that have completed registration have an identity token assigned to them by the push service. TODO: Check how accurate this is.
+        /// Devices that have completed registration have an identity token assigned to them by the push service.
+        /// It can be used to authenticate Push Admin requests.
         /// </summary>
         [JsonIgnore]
         public string DeviceIdentityToken { get; set; }
@@ -50,9 +51,9 @@ namespace IO.Ably.Push
         /// <summary>
         /// Create a new instance of localDevice with a random Id and secret.
         /// </summary>
-        /// <param name="clientId">The clientId which is set on the device. Can be null.</param>
+        /// <param name="clientId">Optional clientId which is set on the device.</param>
         /// <returns>Instance of LocalDevice.</returns>
-        public static LocalDevice Create(string clientId)
+        public static LocalDevice Create(string clientId = null)
         {
             return new LocalDevice
             {

@@ -15,37 +15,37 @@ namespace IO.Ably.Push
         public string Id { get; set; }
 
         /// <summary>
-        /// Device platform (android|ios|web). TODO: Double check.
+        /// Device platform. One of 'android', 'ios' or 'browser').
         /// </summary>
         [JsonProperty("platform")]
         public string Platform { get; set; }
 
         /// <summary>
-        /// Device form factor.
+        /// Device form factor. One of 'phone', 'tablet', 'desktop', 'tv', 'watch', 'car' or 'embedded'.
         /// </summary>
         [JsonProperty("formFactor")]
         public string FormFactor { get; set; }
 
         /// <summary>
-        /// Device ClientId. TODO: Explain how this can be used to send push notifications.
+        /// Device ClientId which is associated with the push registration.
         /// </summary>
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
         /// <summary>
-        /// Device Metadata. TODO: Give example how this can be used.
+        /// Device Metadata. It's a flexible key value pair. Usually used to tag devices.
         /// </summary>
         [JsonProperty("metadata")]
         public JObject Metadata { get; set; }
 
         /// <summary>
-        /// Push registration data. TODO: Describe how it is relevant to each platform and how it differs.
+        /// Push registration data.
         /// </summary>
         [JsonProperty("push")]
         public PushData Push { get; set; } = new PushData();
 
         /// <summary>
-        /// Device secret. TODO: Describe how this could be used to authenticate push messages.
+        /// Random string which is automatically generated when a new LocalDevice is created and can be used to authenticate PushAdmin Rest requests.
         /// </summary>
         [JsonProperty("deviceSecret")]
         public string DeviceSecret { get; set; }
@@ -56,13 +56,14 @@ namespace IO.Ably.Push
         public class PushData
         {
             /// <summary>
-            /// Push Recipient. TODO: // describe the different options.
+            /// Push Recipient. Currently supporter recipients are Apple (apns), Google (fcm) and Browser (web).
+            /// For more information - https://ably.com/documentation/rest-api#post-device-registration.
             /// </summary>
             [JsonProperty("recipient")]
-            public JObject Recipient { get; set; } // TODO: Once we know all the variations of the data, I'd like to make it strongly typed.
+            public JObject Recipient { get; set; }
 
             /// <summary>
-            /// State. TODO: Add examples.
+            /// State of the push integration.
             /// </summary>
             [JsonProperty("state")]
             public string State { get; set; }
