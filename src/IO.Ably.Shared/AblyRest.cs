@@ -75,7 +75,11 @@ namespace IO.Ably
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
 
-        internal PushRest Push { get; private set; }
+        /// <summary>
+        /// Expose Push Admin Rest APIs.
+        /// Rest API documentation: https://ably.com/documentation/rest-api#push.
+        /// </summary>
+        public PushRest Push { get; private set; }
 
         // TODO: Think about how the local device will be shared among Rest instances and
         // what will happen whet it gets updated.
