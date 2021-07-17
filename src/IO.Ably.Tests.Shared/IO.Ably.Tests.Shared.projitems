@@ -9,6 +9,7 @@
     <Import_RootNamespace>IO.Ably.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AblyInsecureRequestExceptionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyResponseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthOptionsTests.cs" />
