@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
