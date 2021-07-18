@@ -265,6 +265,42 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await nextEventFunc()).Should().BeNull();
             }
 
+            [Fact]
+            [Trait("spec", "RSH3b2")]
+            public async Task ShouldBeAbleToHandleCalledDeactivate()
+            {
+                var state = GetState();
+                state.CanHandleEvent(new ActivationStateMachine.CalledDeactivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3b2a")]
+            public async Task CalledDeactivateEvent_ShouldTriggerDeactivatedCallback()
+            {
+                var state = GetState();
+                var awaiter = new TaskCompletionAwaiter();
+                MobileDevice.Callbacks.DeactivatedCallback = error =>
+                {
+                    error.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                await state.Transition(new ActivationStateMachine.CalledDeactivate());
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3b2b")]
+            public async Task CalledDeactivateEvent_ShouldTransitionToNotActivatedWithNoFurtherEvents()
+            {
+                var state = GetState();
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeOfType<ActivationStateMachine.NotActivated>();
+                (await nextEventFunc()).Should().BeNull();
+            }
+
             public WaitingForPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
             {
