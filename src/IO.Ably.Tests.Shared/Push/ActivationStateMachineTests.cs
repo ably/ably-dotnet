@@ -242,5 +242,51 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             public FakeMobileDevice MobileDevice { get; }
         }
+
+        [Trait("spec", "RSH3b")]
+        public class WaitingForPushDeviceDetailsTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3b1")]
+            public async Task ShouldBeAbleToHandleCalledActivate()
+            {
+                var state = GetState();
+                state.CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3b1")]
+            public async Task WithCalledActivateEvent_ShouldReturnSameState()
+            {
+                var state = GetState();
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+            public WaitingForPushDeviceDetailsTests(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForPushDeviceDetails GetState()
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForPushDeviceDetails(stateMachine);
+            }
+
+            private (ActivationStateMachine.WaitingForPushDeviceDetails, ActivationStateMachine) GetStateAndStateMachine(AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForPushDeviceDetails(stateMachine), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
     }
 }
