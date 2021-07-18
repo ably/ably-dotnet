@@ -119,7 +119,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestInitSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RequestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpecExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSandBoxSpecs.cs" />
