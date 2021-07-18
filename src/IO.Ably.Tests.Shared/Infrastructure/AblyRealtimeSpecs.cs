@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
 
         public List<AblyRealtime> RealtimeClients { get; set; } = new List<AblyRealtime>();
 
-        protected FakeTransportFactoryB FakeTransportFactory { get; private set; }
+        protected FakeTransportFactory FakeTransportFactory { get; private set; }
 
         protected ProtocolMessage ConnectedProtocolMessage =>
             new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
