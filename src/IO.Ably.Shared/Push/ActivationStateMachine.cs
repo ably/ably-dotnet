@@ -19,12 +19,12 @@ namespace IO.Ably.Push
 
         private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
-        internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
+        internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger = null)
         {
             _restClient = restClient;
             ClientId = _restClient.Auth.ClientId;
             _mobileDevice = mobileDevice;
-            _logger = logger;
+            _logger = logger ?? restClient.Logger;
         }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
@@ -98,6 +98,53 @@ namespace IO.Ably.Push
         {
             LocalDevice.DeviceIdentityToken = deviceIdentityToken;
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, deviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        private LocalDevice EnsureLocalDeviceIsLoaded()
+        {
+            if (LocalDevice.IsCreated == false)
+            {
+                LocalDevice = LoadPersistedLocalDevice();
+            }
+
+            return LocalDevice;
+        }
+
+        internal LocalDevice LoadPersistedLocalDevice()
+        {
+            Debug("Loading Local Device persisted state.");
+            string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
+
+            var localDevice = new LocalDevice();
+            localDevice.Platform = _mobileDevice.DevicePlatform;
+            localDevice.FormFactor = _mobileDevice.FormFactor;
+            string id = GetDeviceSetting(PersistKeys.Device.DEVICE_ID);
+
+            localDevice.Id = id;
+            if (id.IsNotEmpty())
+            {
+                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DEVICE_SECRET);
+            }
+
+            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.CLIENT_ID);
+            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DEVICE_TOKEN);
+
+            var tokenType = GetDeviceSetting(PersistKeys.Device.TOKEN_TYPE);
+
+            if (tokenType.IsNotEmpty())
+            {
+                string tokenString = GetDeviceSetting(PersistKeys.Device.TOKEN);
+
+                if (tokenString.IsNotEmpty())
+                {
+                    var token = new RegistrationToken(tokenType, tokenString);
+                    localDevice.RegistrationToken = token;
+                }
+            }
+
+            Debug($"LocalDevice loaded: {localDevice.ToJson()}");
+
+            return localDevice;
         }
     }
 }
