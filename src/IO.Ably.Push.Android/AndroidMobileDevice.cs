@@ -71,26 +71,14 @@ namespace IO.Ably.Push.Android
             Preferences.Clear(groupName);
         }
 
-        public void RequestRegistrationToken(Action<Result<string>> callback)
+        public void RequestRegistrationToken(Action<Result<RegistrationToken>> callback)
         {
-            try
-            {
-                var messagingInstance = FirebaseMessaging.Instance;
-                var resultTask = messagingInstance.GetToken();
-
-                resultTask.AddOnCompleteListener(new RequestTokenCompleteListener(callback));
-            }
-            catch (Exception e)
-            {
-                // TODO: Log
-                var errorInfo = new ErrorInfo($"Failed to request AndroidToken. Error: {e?.Message}.", 50000,
-                    HttpStatusCode.InternalServerError, e);
-                callback(Result.Fail<string>(errorInfo));
-            }
+            throw new NotImplementedException();
         }
 
-        public PushCallbacks Callbacks { get; }
-
+        public PushCallbacks Callbacks { get; } = new PushCallbacks();
+        public string DevicePlatform { get; } = "android"; // TODO: Update how we get Mobile Device.
+        public string FormFactor { get; } = "tbc"; // TODO: Update how we pull form factor.
 
         public class RequestTokenCompleteListener : Java.Lang.Object, IOnCompleteListener
         {

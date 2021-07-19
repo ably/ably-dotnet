@@ -71,6 +71,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachineTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\FakeMobileDevice.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\LocalDeviceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdminSandboxTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdminTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />

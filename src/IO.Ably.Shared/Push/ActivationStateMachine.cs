@@ -70,5 +70,23 @@ namespace IO.Ably.Push
         private void Debug(string message) => _logger.Debug($"ActivationStateMachine: {message}");
 
         private void Error(string message, Exception ex) => _logger.Error($"ActivationStateMachine: {message}", ex);
+
+        private void PersistLocalDevice(LocalDevice localDevice)
+        {
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_ID, localDevice.Id, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.CLIENT_ID, localDevice.ClientId, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        private void GetRegistrationToken()
+        {
+            _mobileDevice.RequestRegistrationToken(UpdateRegistrationToken);
+        }
+
+        public void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

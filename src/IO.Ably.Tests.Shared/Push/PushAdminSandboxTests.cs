@@ -225,7 +225,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             [Trait("spec", "RSH1c3")]
             public async Task ShouldSuccessfullySetAndUpdateChannelSubscription(Protocol protocol)
             {
-                using var loggingContext = EnableDebugLogging();
                 // Arrange
                 var client = await GetRestClient(protocol, options => options.PushAdminFullWait = true);
 
