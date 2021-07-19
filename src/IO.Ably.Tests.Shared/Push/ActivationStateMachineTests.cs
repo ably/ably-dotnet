@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
@@ -576,6 +577,58 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await nextEventFunc()).Should().BeNull();
 
                 (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d2")]
+            public async Task ShouldHandleCalledDeactivate()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.CalledDeactivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d2b")]
+            [Trait("spec", "RSH3d2c")]
+            public async Task WithCalledDeactivateEvent_ShouldTransitionToWaitingForDeregistrationAndCallRemoveDeviceRestApi()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+
+                var awaiter = new TaskCompletionAwaiter();
+                RestClient.ExecuteHttpRequest = request =>
+                {
+                    request.Method.Should().Be(HttpMethod.Delete);
+
+                    awaiter.SetCompleted();
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForDeregistration>().Which.PreviousState.Should().BeSameAs(state);
+
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.Deregistered>();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d2b")]
+            [Trait("spec", "RSH3d2c")]
+            public async Task WithCalledDeactivateEvent_WhenCallToRemoveDeviceFails_ShouldTransitionToWaitingAndTheNextEventShouldBeDeregistrationFailed()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+
+                var error = new ErrorInfo();
+                RestClient.ExecuteHttpRequest = request => throw new AblyException(error);
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForDeregistration>().Which.PreviousState.Should().BeSameAs(state);
+
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.DeregistrationFailed>().Which.Reason.Should().BeSameAs(error);
             }
 
             public WaitingForNewPushDeviceDetailsTests(ITestOutputHelper output)
