@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyCollectionFixture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySandboxFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AsyncLazy.cs" />
