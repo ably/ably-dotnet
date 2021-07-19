@@ -93,5 +93,11 @@ namespace IO.Ably.Push
         {
             throw new NotImplementedException();
         }
+
+        private void SetDeviceIdentityToken(string deviceIdentityToken)
+        {
+            LocalDevice.DeviceIdentityToken = deviceIdentityToken;
+            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, deviceIdentityToken, PersistKeys.Device.SharedName);
+        }
     }
 }

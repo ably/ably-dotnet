@@ -165,7 +165,9 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                return @event is CalledActivate;
+                return @event is CalledActivate
+                       || @event is GotDeviceRegistration
+                       || @event is GettingDeviceRegistrationFailed;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -174,6 +176,13 @@ namespace IO.Ably.Push
                 {
                     case CalledActivate _:
                         return (this, EmptyNextEventFunc);
+                    case GotDeviceRegistration registrationEvent:
+                        Machine.SetDeviceIdentityToken(registrationEvent.DeviceIdentityToken);
+                        Machine.TriggerActivatedCallback();
+                        return (new WaitingForNewPushDeviceDetails(Machine), EmptyNextEventFunc);
+                    case GettingDeviceRegistrationFailed failedEvent:
+                        Machine.TriggerActivatedCallback(failedEvent.Reason);
+                        return (new NotActivated(Machine), EmptyNextEventFunc);
                     default:
                         throw new AblyException($"WaitingForDeviceRegistration cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
                 }
