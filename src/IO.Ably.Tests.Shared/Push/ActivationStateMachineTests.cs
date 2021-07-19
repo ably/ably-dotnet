@@ -399,7 +399,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await awaiter.Task).Should().BeTrue();
             }
 
-
             public WaitingForPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
             {
@@ -539,6 +538,63 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
                 var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
                 return (new ActivationStateMachine.WaitingForDeviceRegistration(stateMachine), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
+
+        [Trait("spec", "RSH3d")]
+        public class WaitingForNewPushDeviceDetailsTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3d1")]
+            public async Task ShouldHandleCalledActivate()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d1a")]
+            [Trait("spec", "RSH3d1b")]
+            public async Task WithCalledActivate_ShouldTriggerCallbackAndReturnTheSameState()
+            {
+                var state = GetState();
+
+                var awaiter = new TaskCompletionAwaiter();
+                MobileDevice.Callbacks.ActivatedCallback = error =>
+                {
+                    error.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            public WaitingForNewPushDeviceDetailsTests(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForNewPushDeviceDetails GetState()
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForNewPushDeviceDetails(stateMachine);
+            }
+
+            private (ActivationStateMachine.WaitingForNewPushDeviceDetails, ActivationStateMachine) GetStateAndStateMachine(AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForNewPushDeviceDetails(stateMachine), stateMachine);
             }
 
             public FakeMobileDevice MobileDevice { get; set; }
