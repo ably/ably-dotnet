@@ -105,7 +105,8 @@ namespace IO.Ably.Push
             public override bool CanHandleEvent(Event @event)
             {
                 return @event is CalledActivate
-                       || @event is CalledDeactivate;
+                       || @event is CalledDeactivate
+                       || @event is GotPushDeviceDetails;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -117,8 +118,34 @@ namespace IO.Ably.Push
                     case CalledDeactivate _:
                         Machine.TriggerDeactivatedCallback();
                         return (new NotActivated(Machine), EmptyNextEventFunc);
+                    case GotPushDeviceDetails _:
+                        return (new WaitingForDeviceRegistration(Machine), ToNextEventFunc(RegisterDevice));
                     default:
                         throw new AblyException($"WaitingForPushDeviceDetails cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
+
+                async Task<Event> RegisterDevice()
+                {
+                    DeviceDetails device = Machine.LocalDevice;
+
+                    var ably = Machine._restClient; // TODO: Check if there is an instance when Ably is not set. In which case Java set queues GettingDeviceRegistrationFailed
+
+                    try
+                    {
+                        var registeredDevice = await ably.Push.Admin.RegisterDevice(device);
+                        var deviceIdentityToken = registeredDevice.DeviceIdentityToken;
+                        if (deviceIdentityToken.IsEmpty())
+                        {
+                            return new GettingDeviceRegistrationFailed(new ErrorInfo(
+                                "Invalid deviceIdentityToken in response", 40000, HttpStatusCode.BadRequest));
+                        }
+
+                        return new GotDeviceRegistration(deviceIdentityToken);
+                    }
+                    catch (AblyException e)
+                    {
+                        return new GettingDeviceRegistrationFailed(e.ErrorInfo);
+                    }
                 }
             }
         }
