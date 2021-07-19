@@ -104,12 +104,18 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new NotImplementedException();
+                return @event is CalledActivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledActivate _:
+                        return (this, EmptyNextEventFunc);
+                    default:
+                        throw new AblyException($"WaitingForPushDeviceDetails cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
             }
         }
 
