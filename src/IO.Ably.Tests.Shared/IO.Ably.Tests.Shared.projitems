@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\ServerTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\TestAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
