@@ -695,7 +695,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 RestClient.ExecuteHttpRequest = request =>
                 {
                     request.Url.Should().Be($"/push/deviceRegistrations/{machine.LocalDevice.Id}");
-                    request.Method.Should().Be(HttpMethod.Patch);
+                    request.Method.Should().Be(new HttpMethod("PATCH"));
 
                     awaiter.SetCompleted();
                     return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
