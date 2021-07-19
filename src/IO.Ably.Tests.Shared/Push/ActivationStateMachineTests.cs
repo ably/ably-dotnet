@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
@@ -186,6 +187,36 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
                 nextState.Should().BeOfType<ActivationStateMachine.WaitingForPushDeviceDetails>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a3")]
+            [Trait("spec", "RSH3a3a")]
+            public async Task WithGotPushDeviceDetails_ShouldReturnTheSameStateWithoutAnyFurtherEvents()
+            {
+                var (state, stateMachine) = GetStateAndStateMachine();
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                (await nextEventFunc()).Should().BeNull();
+                nextState.Should().BeSameAs(state);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3a3")]
+            public async Task NotActivated_ShouldBeAbleToHandleGotPushDeviceDetails()
+            {
+                var state = GetState();
+                state.CanHandleEvent(new ActivationStateMachine.GotPushDeviceDetails()).Should().BeTrue();
+            }
+
+            [Fact]
+            public async Task NotActivated_ShouldThrowIfItCannotHandleEventType()
+            {
+                var state = GetState();
+                Func<Task> transitionWithWrongEvent = () => state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                await transitionWithWrongEvent.Should().ThrowAsync<AblyException>();
             }
 
             private ActivationStateMachine.NotActivated GetState()
