@@ -106,7 +106,8 @@ namespace IO.Ably.Push
             {
                 return @event is CalledActivate
                        || @event is CalledDeactivate
-                       || @event is GotPushDeviceDetails;
+                       || @event is GotPushDeviceDetails
+                       || @event is GettingDeviceRegistrationFailed;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -117,6 +118,9 @@ namespace IO.Ably.Push
                         return (this, EmptyNextEventFunc);
                     case CalledDeactivate _:
                         Machine.TriggerDeactivatedCallback();
+                        return (new NotActivated(Machine), EmptyNextEventFunc);
+                    case GettingDeviceRegistrationFailed failedEvent:
+                        Machine.TriggerActivatedCallback(failedEvent.Reason);
                         return (new NotActivated(Machine), EmptyNextEventFunc);
                     case GotPushDeviceDetails _:
                         return (new WaitingForDeviceRegistration(Machine), ToNextEventFunc(RegisterDevice));

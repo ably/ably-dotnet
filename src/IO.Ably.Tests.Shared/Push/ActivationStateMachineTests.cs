@@ -357,6 +357,49 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                     .Reason.Message.Should().Be("Error");
             }
 
+            [Fact]
+            [Trait("spec", "RSH3b4")]
+            public async Task ShouldBeAbleToHandleGettingDeviceRegistrationFailed()
+            {
+                var state = GetState();
+                state.CanHandleEvent(new ActivationStateMachine.GettingDeviceRegistrationFailed(new ErrorInfo())).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3b4")]
+            [Trait("spec", "RSH3c3b")]
+            public async Task GettingDeviceRegistrationFailed_ShouldTransitionToNotActivated()
+            {
+                var state = GetState();
+
+                var (nextState, nextEventFunc) =
+                    await state.Transition(new ActivationStateMachine.GettingDeviceRegistrationFailed(new ErrorInfo()));
+
+                nextState.Should().BeOfType<ActivationStateMachine.NotActivated>();
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3b4")]
+            [Trait("spec", "RSH3c3a")]
+            public async Task GettingDeviceRegistrationFailed_ShouldTriggerActivatedCallbackAndPassErrorInfo()
+            {
+                var state = GetState();
+
+                var errorInfo = new ErrorInfo("Reason");
+                var awaiter = new TaskCompletionAwaiter();
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeSameAs(errorInfo);
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                await state.Transition(new ActivationStateMachine.GettingDeviceRegistrationFailed(errorInfo));
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+
             public WaitingForPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
             {

@@ -13,5 +13,11 @@ namespace IO.Ably.Push
         /// Error info is either `null` or holds the current error.
         /// </summary>
         public Func<ErrorInfo, Task> DeactivatedCallback { get; set; } = async error => { };
+
+        /// <summary>
+        /// Action called when the device has been activated for push notifications.
+        /// Error info is either `null` or holds the current error.
+        /// </summary>
+        public Func<ErrorInfo, Task> ActivatedCallback { get; set; } = async error => { };
     }
 }
