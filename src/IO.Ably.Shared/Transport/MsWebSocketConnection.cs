@@ -9,19 +9,6 @@ using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
-    internal readonly struct MessageToSend
-    {
-        public ArraySegment<byte> Message { get; }
-
-        public WebSocketMessageType Type { get; }
-
-        public MessageToSend(byte[] message, WebSocketMessageType type)
-        {
-            Message = new ArraySegment<byte>(message);
-            Type = type;
-        }
-    }
-
     /// <summary>
     /// Wrapper around Websocket which handles state changes.
     /// </summary>
@@ -414,6 +401,19 @@ namespace IO.Ably.Transport
         ~MsWebSocketConnection()
         {
             Dispose(false);
+        }
+
+        private readonly struct MessageToSend
+        {
+            public MessageToSend(byte[] message, WebSocketMessageType type)
+            {
+                Message = new ArraySegment<byte>(message);
+                Type = type;
+            }
+
+            public ArraySegment<byte> Message { get; }
+
+            public WebSocketMessageType Type { get; }
         }
     }
 }

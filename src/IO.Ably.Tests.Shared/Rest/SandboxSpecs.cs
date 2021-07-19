@@ -12,14 +12,6 @@ namespace IO.Ably.Tests
 {
     public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>, IDisposable
     {
-        internal ILogger Logger { get; set; }
-
-        protected AblySandboxFixture Fixture { get; }
-
-        protected ITestOutputHelper Output { get; }
-
-        protected ManualResetEvent ResetEvent { get; }
-
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
         protected SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
@@ -37,14 +29,13 @@ namespace IO.Ably.Tests
             // Logger.LogLevel = LogLevel.Debug;
         }
 
-        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
-        {
-            var settings = await Fixture.GetSettings(environment);
-            var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
-            optionsAction?.Invoke(defaultOptions);
-            return new AblyRest(defaultOptions);
-        }
+        internal ILogger Logger { get; set; }
+
+        protected AblySandboxFixture Fixture { get; }
+
+        protected ITestOutputHelper Output { get; }
+
+        protected ManualResetEvent ResetEvent { get; }
 
         public IDisposable EnableDebugLogging()
         {
@@ -56,6 +47,33 @@ namespace IO.Ably.Tests
                 Logger.LoggerSink = new DefaultLoggerSink();
                 Logger.LogLevel = LogLevel.Warning;
             });
+        }
+
+        public void Dispose()
+        {
+            Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
+            foreach (var client in _realtimeClients)
+            {
+                try
+                {
+                    client.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Output?.WriteLine("Error disposing Client: " + ex.Message);
+                }
+            }
+
+            ResetEvent?.Dispose();
+        }
+
+        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
+        {
+            var settings = await Fixture.GetSettings(environment);
+            var defaultOptions = settings.CreateDefaultOptions();
+            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
+            optionsAction?.Invoke(defaultOptions);
+            return new AblyRest(defaultOptions);
         }
 
         protected async Task<AblyRealtime> GetRealtimeClient(
@@ -121,6 +139,22 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, taskCount, done, onFail);
         }
 
+        protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
+        {
+            return WaitForState(realtime, waitSpan: waitSpan);
+        }
+
+        protected Task WaitForState(AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
+        {
+            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
+            if (waitSpan.HasValue)
+            {
+                return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
+            return connectionAwaiter.Wait();
+        }
+
         public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
@@ -143,56 +177,6 @@ namespace IO.Ably.Tests
                     Console.WriteLine($"{level}: {message}. Exception: {ex.Message}");
                 }
             }
-        }
-
-        protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
-        {
-            return WaitForState(realtime, waitSpan: waitSpan);
-        }
-
-        protected Task WaitForState(AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
-        {
-            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return connectionAwaiter.Wait(waitSpan.Value);
-            }
-
-            return connectionAwaiter.Wait();
-        }
-
-        protected static async Task WaitFor30SOrUntilTrue(Func<bool> predicate)
-        {
-            int count = 0;
-            while (count < 30)
-            {
-                count++;
-
-                if (predicate())
-                {
-                    break;
-                }
-
-                await Task.Delay(1000);
-            }
-        }
-
-        public void Dispose()
-        {
-            Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
-            foreach (var client in _realtimeClients)
-            {
-                try
-                {
-                    client.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Output?.WriteLine("Error disposing Client: " + ex.Message);
-                }
-            }
-
-            ResetEvent?.Dispose();
         }
     }
 }

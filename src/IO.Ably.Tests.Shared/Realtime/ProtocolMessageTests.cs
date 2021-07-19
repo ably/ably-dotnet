@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
-using FluentAssertions;
+
 using IO.Ably.Types;
+
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests.Shared.Realtime
