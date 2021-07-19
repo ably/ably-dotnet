@@ -808,6 +808,58 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await nextEventFunc()).Should().BeNull();
             }
 
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public void ShouldBeAbleToHandleRegistrationSynced()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.RegistrationSynced()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public async Task WithRegistrationSyncedEventAndFromEventCalledActivate_ShouldTriggerCallbackAndTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+
+                var awaiter = new TaskCompletionAwaiter();
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public async Task WithRegistrationSyncedEventAndFromEventIsNotCalledActivate_ShouldTriggerNotTriggerCallbackAnd_ShouldTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+
+                var awaiter = new TaskCompletionAwaiter(500);
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+                (await awaiter.Task).Should().BeFalse();
+            }
+
             public WaitingForRegistrationSync(ITestOutputHelper output)
                 : base(output)
             {
