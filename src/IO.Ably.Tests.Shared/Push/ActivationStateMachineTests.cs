@@ -399,7 +399,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await awaiter.Task).Should().BeTrue();
             }
 
-
             public WaitingForPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
             {
@@ -578,8 +577,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 (await awaiter.Task).Should().BeTrue();
             }
-
-
 
             public WaitingForNewPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
