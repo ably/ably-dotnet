@@ -423,5 +423,52 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
             public AblyRest RestClient { get; set; }
         }
+
+        [Trait("spec", "RSH3c")]
+        public class WaitingForDeviceRegistrationTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3c1")]
+            public async Task ShouldBeAbleToHandleCallActivateEvent()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3c1a")]
+            public async Task WithCalledActivated_ShouldNotChangeState()
+            {
+                var state = GetState();
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+
+            public WaitingForDeviceRegistrationTests(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForDeviceRegistration GetState()
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForDeviceRegistration(stateMachine);
+            }
+
+            private (ActivationStateMachine.WaitingForDeviceRegistration, ActivationStateMachine) GetStateAndStateMachine(AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForDeviceRegistration(stateMachine), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
     }
 }
