@@ -134,5 +134,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetailsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPopulateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\SemanticVersionTests.cs" />
   </ItemGroup>
 </Project>
