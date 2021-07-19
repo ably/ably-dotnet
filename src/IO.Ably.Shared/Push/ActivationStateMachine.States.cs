@@ -6,6 +6,9 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
+        internal static readonly Func<Task<Event>> EmptyNextEventFunc =
+            () => Task.FromResult((Event)null);
+
         public abstract class State
         {
             protected State(ActivationStateMachine machine)
@@ -35,12 +38,19 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new System.NotImplementedException();
+                return @event is CalledDeactivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledDeactivate _:
+                        Machine.TriggerDeactivatedCallback();
+                        return (this, EmptyNextEventFunc);
+                }
+
+                return (null, null);
             }
         }
 

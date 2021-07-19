@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Utils;
 
 namespace IO.Ably.Push
 {
@@ -26,5 +27,10 @@ namespace IO.Ably.Push
         }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+
+        private void TriggerDeactivatedCallback()
+        {
+            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.DeactivatedCallback?.Invoke(null), _logger);
+        }
     }
 }

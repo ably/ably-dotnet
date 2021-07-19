@@ -89,6 +89,8 @@ namespace IO.Ably.Push.Android
             }
         }
 
+        public PushCallbacks Callbacks { get; }
+
 
         public class RequestTokenCompleteListener : Java.Lang.Object, IOnCompleteListener
         {
