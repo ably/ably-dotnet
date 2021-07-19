@@ -141,7 +141,7 @@ namespace IO.Ably.Push
                         if (deviceIdentityToken.IsEmpty())
                         {
                             return new GettingDeviceRegistrationFailed(new ErrorInfo(
-                                "Invalid deviceIdentityToken in response", 40000, HttpStatusCode.BadRequest));
+                                "Invalid deviceIdentityToken in response", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
                         }
 
                         return new GotDeviceRegistration(deviceIdentityToken);
@@ -200,7 +200,9 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                return @event is CalledActivate;
+                return @event is CalledActivate
+                    || @event is CalledDeactivate
+                    || @event is GotPushDeviceDetails;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -210,20 +212,55 @@ namespace IO.Ably.Push
                     case CalledActivate _:
                         Machine.TriggerActivatedCallback();
                         return (this, EmptyNextEventFunc);
+                    case CalledDeactivate _:
+                        var localDevice = Machine.LocalDevice;
+                        return (new WaitingForDeregistration(Machine, this), ToNextEventFunc(() => Deregister(localDevice.Id)));
+                    case GotPushDeviceDetails _:
+                        var device = Machine.EnsureLocalDeviceIsLoaded();
+
+                        return (new WaitingForRegistrationSync(Machine, @event), ToNextEventFunc(() => UpdateRegistration(device)));
                     default:
                         throw new AblyException($"WaitingForNewPushDeviceDetails cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
+
+                async Task<Event> Deregister(string deviceId)
+                {
+                    try
+                    {
+                        await Machine._restClient.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+                        return new Deregistered();
+                    }
+                    catch (AblyException e)
+                    {
+                        return new DeregistrationFailed(e.ErrorInfo);
+                    }
+                }
+
+                async Task<Event> UpdateRegistration(DeviceDetails details)
+                {
+                    try
+                    {
+                        Machine.Debug($"Updating device registration {details.ToJson()}");
+                        await Machine._restClient.Push.Admin.PatchDeviceRecipient(details);
+                        return new RegistrationSynced();
+                    }
+                    catch (AblyException ex)
+                    {
+                        Machine.Error($"Error updating Registration. DeviceDetails: {details.ToJson()}", ex);
+                        return new SyncRegistrationFailed(ex.ErrorInfo);
+                    }
                 }
             }
         }
 
         public sealed class WaitingForDeregistration : State
         {
-            private readonly State _previousState;
+            public State PreviousState { get; }
 
             public WaitingForDeregistration(ActivationStateMachine machine, State previousState)
                 : base(machine)
             {
-                _previousState = previousState;
+                PreviousState = previousState;
             }
 
             public override bool Persist => false;
@@ -242,24 +279,31 @@ namespace IO.Ably.Push
         // Stub for now
         public sealed class WaitingForRegistrationSync : State
         {
-            private readonly Event _fromEvent;
+            public Event FromEvent { get; }
 
             public WaitingForRegistrationSync(ActivationStateMachine machine, Event fromEvent)
                 : base(machine)
             {
-                _fromEvent = fromEvent;
+                FromEvent = fromEvent;
             }
 
             public override bool Persist => false;
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new System.NotImplementedException();
+                return @event is CalledActivate && !(FromEvent is CalledActivate);
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledActivate _ when (FromEvent is CalledActivate) == false:
+                        Machine.TriggerActivatedCallback();
+                        return (this, EmptyNextEventFunc);
+                    default:
+                        throw new AblyException($"WaitingForRegistrationSync cannot handle {@event.GetType().Name} event when FromEvent is {FromEvent.GetType().Name}.", ErrorCodes.InternalError);
+                }
             }
         }
 
