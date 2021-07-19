@@ -29,9 +29,14 @@ namespace IO.Ably.Push
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
 
-        private void TriggerDeactivatedCallback()
+        private void TriggerDeactivatedCallback(ErrorInfo reason = null)
         {
-            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.DeactivatedCallback?.Invoke(null), _logger);
+            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.DeactivatedCallback?.Invoke(reason), _logger);
+        }
+
+        private void TriggerActivatedCallback(ErrorInfo reason = null)
+        {
+            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.ActivatedCallback?.Invoke(reason), _logger);
         }
 
         private async Task<Event> ValidateRegistration()
