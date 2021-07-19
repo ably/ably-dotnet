@@ -141,7 +141,7 @@ namespace IO.Ably.Push
                         if (deviceIdentityToken.IsEmpty())
                         {
                             return new GettingDeviceRegistrationFailed(new ErrorInfo(
-                                "Invalid deviceIdentityToken in response", 40000, HttpStatusCode.BadRequest));
+                                "Invalid deviceIdentityToken in response", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
                         }
 
                         return new GotDeviceRegistration(deviceIdentityToken);
