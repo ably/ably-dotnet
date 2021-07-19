@@ -20,12 +20,12 @@ namespace IO.Ably.Push
         /// <summary>
         /// Constructs a new registration token instance.
         /// </summary>
-        /// <param name="type">Token type.</param>
-        /// <param name="token">Token value.</param>
-        public RegistrationToken(string type, string token)
+        /// <param name="tokenType">Token type.</param>
+        /// <param name="tokenValue">Token value.</param>
+        public RegistrationToken(string tokenType, string tokenValue)
         {
-            Type = type;
-            Token = token;
+            Type = tokenType;
+            Token = tokenValue;
         }
 
         /// <summary>
