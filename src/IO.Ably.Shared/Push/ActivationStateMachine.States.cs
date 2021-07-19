@@ -200,7 +200,8 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                return @event is CalledActivate;
+                return @event is CalledActivate
+                    || @event is CalledDeactivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -210,20 +211,36 @@ namespace IO.Ably.Push
                     case CalledActivate _:
                         Machine.TriggerActivatedCallback();
                         return (this, EmptyNextEventFunc);
+                    case CalledDeactivate _:
+                        var localDevice = Machine.LocalDevice;
+                        return (new WaitingForDeregistration(Machine, this), ToNextEventFunc(() => Deregister(localDevice.Id)));
                     default:
                         throw new AblyException($"WaitingForNewPushDeviceDetails cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
+
+                async Task<Event> Deregister(string deviceId)
+                {
+                    try
+                    {
+                        await Machine._restClient.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+                        return new Deregistered();
+                    }
+                    catch (AblyException e)
+                    {
+                        return new DeregistrationFailed(e.ErrorInfo);
+                    }
                 }
             }
         }
 
         public sealed class WaitingForDeregistration : State
         {
-            private readonly State _previousState;
+            public State PreviousState { get; }
 
             public WaitingForDeregistration(ActivationStateMachine machine, State previousState)
                 : base(machine)
             {
-                _previousState = previousState;
+                PreviousState = previousState;
             }
 
             public override bool Persist => false;
