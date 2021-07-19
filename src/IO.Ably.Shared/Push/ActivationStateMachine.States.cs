@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Push
@@ -16,7 +17,11 @@ namespace IO.Ably.Push
 
             public abstract bool Persist { get; }
 
-            public abstract Task<State> Transition(Event @event);
+            public abstract bool CanHandleEvent(Event @event);
+
+            // Transition will return a new state for the Activation State machine to transition to
+            // and a function to be executed straight after the State has transitioned.
+            public abstract Task<(State, Func<Task<Event>>)> Transition(Event @event);
         }
 
         public sealed class NotActivated : State
@@ -28,9 +33,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => true;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -44,9 +54,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => true;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -59,9 +74,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => false;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -74,9 +94,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => true;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -92,9 +117,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => false;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -111,9 +141,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => false;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -126,9 +161,14 @@ namespace IO.Ably.Push
 
             public override bool Persist => true;
 
-            public override async Task<State> Transition(Event @event)
+            public override bool CanHandleEvent(Event @event)
             {
-                return null;
+                throw new System.NotImplementedException();
+            }
+
+            public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
+            {
+                throw new NotImplementedException();
             }
         }
     }
