@@ -292,7 +292,8 @@ namespace IO.Ably.Push
             public override bool CanHandleEvent(Event @event)
             {
                 return (@event is CalledActivate && !(FromEvent is CalledActivate))
-                    || @event is RegistrationSynced;
+                       || @event is RegistrationSynced
+                       || @event is SyncRegistrationFailed;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -309,6 +310,18 @@ namespace IO.Ably.Push
                         }
 
                         return (new WaitingForNewPushDeviceDetails(Machine), EmptyNextEventFunc);
+                    case SyncRegistrationFailed failed:
+                        ErrorInfo reason = failed.Reason;
+                        if (FromEvent is CalledActivate)
+                        {
+                            Machine.TriggerActivatedCallback(reason);
+                        }
+                        else
+                        {
+                            Machine.TriggerSyncRegistrationFailedCallback(reason);
+                        }
+
+                        return (new AfterRegistrationSyncFailed(Machine), EmptyNextEventFunc);
 
                     default:
                         throw new AblyException($"WaitingForRegistrationSync cannot handle {@event.GetType().Name} event when FromEvent is {FromEvent.GetType().Name}.", ErrorCodes.InternalError);
