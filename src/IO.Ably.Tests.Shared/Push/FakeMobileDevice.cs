@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using IO.Ably.Push;
 
 namespace IO.Ably.Tests.DotNetCore20.Push
@@ -22,7 +23,12 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
         public string GetPreference(string key, string groupName)
         {
-            return Settings[$"{groupName}:{key}"];
+            if (Settings.ContainsKey($"{groupName}:{key}"))
+            {
+                return Settings[$"{groupName}:{key}"];
+            }
+
+            return null;
         }
 
         public void RemovePreference(string key, string groupName)

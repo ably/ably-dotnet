@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,6 +14,47 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 {
     public class ActivationStateMachineTests
     {
+        public class GeneralTests : MockHttpRestSpecs
+        {
+            [Fact]
+            public async Task LoadPersistedLocalDevice_ShouldLoadAllSavedProperties()
+            {
+                var mobileDevice = new FakeMobileDevice();
+                void SetSetting(string key, string value) => mobileDevice.SetPreference(key, value, PersistKeys.Device.SharedName);
+
+                var stateMachine = new ActivationStateMachine(GetRestClient(), mobileDevice);
+
+                var deviceId = "deviceId";
+                SetSetting(PersistKeys.Device.DEVICE_ID, deviceId);
+                var clientid = "clientId";
+                SetSetting(PersistKeys.Device.CLIENT_ID, clientid);
+                var deviceSecret = "secret";
+                SetSetting(PersistKeys.Device.DEVICE_SECRET, deviceSecret);
+                var identityToken = "token";
+                SetSetting(PersistKeys.Device.DEVICE_TOKEN, identityToken);
+                var tokenType = "fcm";
+                SetSetting(PersistKeys.Device.TOKEN_TYPE, tokenType);
+                var token = "registration_token";
+                SetSetting(PersistKeys.Device.TOKEN, token);
+
+                var localDevice = stateMachine.LoadPersistedLocalDevice();
+                localDevice.Platform.Should().Be(mobileDevice.DevicePlatform);
+                localDevice.FormFactor.Should().Be(mobileDevice.FormFactor);
+
+                localDevice.Id.Should().Be(deviceId);
+                localDevice.ClientId.Should().Be(clientid);
+                localDevice.DeviceSecret.Should().Be(deviceSecret);
+                localDevice.DeviceIdentityToken.Should().Be(identityToken);
+                localDevice.RegistrationToken.Type.Should().Be(tokenType);
+                localDevice.RegistrationToken.Token.Should().Be(token);
+            }
+
+            public GeneralTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
+
         public class NotActivatedStateTests : MockHttpRestSpecs
         {
             [Fact]
@@ -578,6 +621,130 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await awaiter.Task).Should().BeTrue();
             }
 
+            [Fact]
+            [Trait("spec", "RSH3d2")]
+            public async Task ShouldHandleCalledDeactivate()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.CalledDeactivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d2b")]
+            [Trait("spec", "RSH3d2c")]
+            public async Task WithCalledDeactivateEvent_ShouldTransitionToWaitingForDeregistrationAndCallRemoveDeviceRestApi()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+
+                var awaiter = new TaskCompletionAwaiter();
+                RestClient.ExecuteHttpRequest = request =>
+                {
+                    request.Method.Should().Be(HttpMethod.Delete);
+
+                    awaiter.SetCompleted();
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForDeregistration>().Which.PreviousState.Should().BeSameAs(state);
+
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.Deregistered>();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d2b")]
+            [Trait("spec", "RSH3d2c")]
+            public async Task WithCalledDeactivateEvent_WhenCallToRemoveDeviceFails_ShouldTransitionToWaitingAndTheNextEventShouldBeDeregistrationFailed()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+
+                var error = new ErrorInfo();
+                RestClient.ExecuteHttpRequest = request => throw new AblyException(error);
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForDeregistration>().Which.PreviousState.Should().BeSameAs(state);
+
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.DeregistrationFailed>().Which.Reason.Should().BeSameAs(error);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3")]
+            public async Task ShouldHandleGotPushDeviceDetails()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.GotPushDeviceDetails()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3b")]
+            public async Task WithGotPushDeviceDetailsEvent_ShouldPatchDeviceDetails()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                var awaiter = new TaskCompletionAwaiter();
+                RestClient.ExecuteHttpRequest = request =>
+                {
+                    request.Url.Should().Be($"/push/deviceRegistrations/{machine.LocalDevice.Id}");
+                    request.Method.Should().Be(new HttpMethod("PATCH"));
+
+                    awaiter.SetCompleted();
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+                };
+
+                var (_, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                await nextEventFunc();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3c")]
+            [Trait("spec", "RSH3d3d")]
+            public async Task WithGotPushDeviceDetailsEvent_WhenPatchDeviceDetailsSucceeds_ShouldTransitionToWaitingForRegistrationSyncAndProduceRegistrationSyncedEvent()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                RestClient.ExecuteHttpRequest = request => Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForRegistrationSync>().Which.FromEvent.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.RegistrationSynced>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3c")]
+            [Trait("spec", "RSH3d3d")]
+            public async Task WithGotPushDeviceDetailsEvent_WhenPatchDeviceDetailsFails_ShouldTransitionToWaitingForRegistrationSyncAndProduceSyncRegistrationFailedEvent()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                var error = new ErrorInfo();
+                RestClient.ExecuteHttpRequest = request => throw new AblyException(error);
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForRegistrationSync>().Which.FromEvent.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.SyncRegistrationFailed>().Which.Reason.Should().BeSameAs(error);
+            }
+
             public WaitingForNewPushDeviceDetailsTests(ITestOutputHelper output)
                 : base(output)
             {
@@ -595,6 +762,122 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
                 var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
                 return (new ActivationStateMachine.WaitingForNewPushDeviceDetails(stateMachine), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
+
+        [Trait("spec", "RSH3e")]
+        public class WaitingForRegistrationSync : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3e1")]
+            public void ShouldBeAbleToHandleCallActivate_WhenFromEventWasNotCallActivate()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e1")]
+            public void ShouldNotBeAbleToHandleCallActivate_WhenFromEventIsCallActivate()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+                state.CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeFalse();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e1a")]
+            public async Task WithCalledActivateEvent_ShouldCallActivateCallbackAndNotChangeState()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                var awaiter = new TaskCompletionAwaiter();
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public void ShouldBeAbleToHandleRegistrationSynced()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.RegistrationSynced()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2a")]
+            [Trait("spec", "RSH3e2b")]
+            public async Task WithRegistrationSyncedEventAndFromEventCalledActivate_ShouldTriggerCallbackAndTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+
+                var awaiter = new TaskCompletionAwaiter();
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2a")]
+            public async Task WithRegistrationSyncedEventAndFromEventIsNotCalledActivate_ShouldTriggerNotTriggerCallbackAnd_ShouldTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+
+                var awaiter = new TaskCompletionAwaiter(500);
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+                (await awaiter.Task).Should().BeFalse();
+            }
+
+            public WaitingForRegistrationSync(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForRegistrationSync GetState(ActivationStateMachine.Event fromEvent)
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForRegistrationSync(stateMachine, fromEvent);
+            }
+
+            private (ActivationStateMachine.WaitingForRegistrationSync, ActivationStateMachine) GetStateAndStateMachine(ActivationStateMachine.Event fromEvent, AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForRegistrationSync(stateMachine, fromEvent), stateMachine);
             }
 
             public FakeMobileDevice MobileDevice { get; set; }
