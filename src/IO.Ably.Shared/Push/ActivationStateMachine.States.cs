@@ -340,12 +340,35 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new System.NotImplementedException();
+                return @event is CalledActivate || @event is GotPushDeviceDetails || @event is CalledDeactivate;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledActivate _:
+                    case GotPushDeviceDetails _:
+                        return (new WaitingForRegistrationSync(Machine, @event), ToNextEventFunc(Machine.ValidateRegistration));
+                    case CalledDeactivate _:
+                        var localDevice = Machine.LocalDevice;
+                        return (new WaitingForDeregistration(Machine, this), ToNextEventFunc(() => Deregister(localDevice.Id)));
+                    default:
+                        throw new AblyException($"AfterRegistrationSyncFailed cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
+                }
+
+                async Task<Event> Deregister(string deviceId)
+                {
+                    try
+                    {
+                        await Machine._restClient.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+                        return new Deregistered();
+                    }
+                    catch (AblyException e)
+                    {
+                        return new DeregistrationFailed(e.ErrorInfo);
+                    }
+                }
             }
         }
     }
