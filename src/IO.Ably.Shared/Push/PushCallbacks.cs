@@ -19,5 +19,10 @@ namespace IO.Ably.Push
         /// Error info is either `null` or holds the current error.
         /// </summary>
         public Func<ErrorInfo, Task> ActivatedCallback { get; set; } = async error => { };
+
+        /// <summary>
+        /// Action called when a registration sync failed. The reason it failed will be in the error info.
+        /// </summary>
+        public Func<ErrorInfo, Task> SyncRegistrationFailedCallback { get; set; } = async error => { };
     }
 }

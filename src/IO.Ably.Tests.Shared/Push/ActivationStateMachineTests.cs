@@ -808,6 +808,113 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 (await nextEventFunc()).Should().BeNull();
             }
 
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public void ShouldBeAbleToHandleRegistrationSynced()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.RegistrationSynced()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2a")]
+            [Trait("spec", "RSH3e2b")]
+            public async Task WithRegistrationSyncedEventAndFromEventCalledActivate_ShouldTriggerCallbackAndTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+
+                var awaiter = new TaskCompletionAwaiter();
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2a")]
+            public async Task WithRegistrationSyncedEventAndFromEventIsNotCalledActivate_ShouldTriggerNotTriggerCallbackAnd_ShouldTransitionToWaitingForRegistrationSync()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+
+                var awaiter = new TaskCompletionAwaiter(500);
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.RegistrationSynced());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+                (await awaiter.Task).Should().BeFalse();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e2")]
+            public void ShouldBeAbleToHandleSyncRegistrationFailed()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.SyncRegistrationFailed(new ErrorInfo())).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e3b")]
+            [Trait("spec", "RSH3e3c")]
+            public async Task WithSyncRegistrationFailedEventAndFromEventIsCalledActivate_ShouldTriggerShouldTriggerCallbackAndTransitionToAfterRegistrationSyncFailed()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+
+                var awaiter = new TaskCompletionAwaiter();
+                var error = new ErrorInfo();
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeSameAs(error);
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.SyncRegistrationFailed(error));
+
+                nextState.Should().BeOfType<ActivationStateMachine.AfterRegistrationSyncFailed>();
+                (await nextEventFunc()).Should().BeNull();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e3a")]
+            [Trait("spec", "RSH3e3b")]
+            public async Task WithSyncRegistrationFailedEventAndFromEventIsNOTCalledActivate_ShouldTriggerShouldTriggerSyncFailedCallbackAndTransitionToAfterRegistrationSyncFailed()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+
+                var awaiter = new TaskCompletionAwaiter();
+                var error = new ErrorInfo();
+                MobileDevice.Callbacks.SyncRegistrationFailedCallback = reason =>
+                {
+                    reason.Should().BeSameAs(error);
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.SyncRegistrationFailed(error));
+
+                nextState.Should().BeOfType<ActivationStateMachine.AfterRegistrationSyncFailed>();
+                (await nextEventFunc()).Should().BeNull();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
             public WaitingForRegistrationSync(ITestOutputHelper output)
                 : base(output)
             {
