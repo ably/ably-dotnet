@@ -817,7 +817,8 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             }
 
             [Fact]
-            [Trait("spec", "RSH3e2")]
+            [Trait("spec", "RSH3e2a")]
+            [Trait("spec", "RSH3e2b")]
             public async Task WithRegistrationSyncedEventAndFromEventCalledActivate_ShouldTriggerCallbackAndTransitionToWaitingForRegistrationSync()
             {
                 var state = GetState(new ActivationStateMachine.CalledActivate());
@@ -840,7 +841,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             }
 
             [Fact]
-            [Trait("spec", "RSH3e2")]
+            [Trait("spec", "RSH3e2a")]
             public async Task WithRegistrationSyncedEventAndFromEventIsNotCalledActivate_ShouldTriggerNotTriggerCallbackAnd_ShouldTransitionToWaitingForRegistrationSync()
             {
                 var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
