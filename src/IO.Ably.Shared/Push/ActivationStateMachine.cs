@@ -31,12 +31,47 @@ namespace IO.Ably.Push
 
         private void TriggerDeactivatedCallback(ErrorInfo reason = null)
         {
-            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.DeactivatedCallback?.Invoke(reason), _logger);
+            if (_mobileDevice.Callbacks.DeactivatedCallback != null)
+            {
+                _ = NotifyExternalClient(
+                    () => _mobileDevice.Callbacks.DeactivatedCallback(reason),
+                    nameof(_mobileDevice.Callbacks.DeactivatedCallback));
+            }
         }
 
         private void TriggerActivatedCallback(ErrorInfo reason = null)
         {
-            ActionUtils.SafeExecute(() => _mobileDevice.Callbacks.ActivatedCallback?.Invoke(reason), _logger);
+            if (_mobileDevice.Callbacks.ActivatedCallback != null)
+            {
+                NotifyExternalClient(
+                    () => _mobileDevice.Callbacks.ActivatedCallback(reason),
+                    nameof(_mobileDevice.Callbacks.ActivatedCallback));
+            }
+        }
+
+        private void TriggerSyncRegistrationFailedCallback(ErrorInfo reason)
+        {
+            if (_mobileDevice.Callbacks.SyncRegistrationFailedCallback != null)
+            {
+                NotifyExternalClient(
+                    () => _mobileDevice.Callbacks.SyncRegistrationFailedCallback(reason),
+                    nameof(_mobileDevice.Callbacks.SyncRegistrationFailedCallback));
+            }
+        }
+
+        private Task NotifyExternalClient(Func<Task> action, string reason)
+        {
+            try
+            {
+                Debug($"Triggering callback {reason}");
+                return Task.Run(() => ActionUtils.SafeExecute(action));
+            }
+            catch (Exception e)
+            {
+                Error("Error while notifying external client for " + reason, e);
+            }
+
+            return Task.CompletedTask;
         }
 
         private async Task<Event> ValidateRegistration()
