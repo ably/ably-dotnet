@@ -55,7 +55,6 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             }
         }
 
-
         public class NotActivatedStateTests : MockHttpRestSpecs
         {
             [Fact]
@@ -763,6 +762,69 @@ namespace IO.Ably.Tests.DotNetCore20.Push
             {
                 var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
                 return (new ActivationStateMachine.WaitingForNewPushDeviceDetails(stateMachine), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
+
+        [Trait("spec", "RSH3e")]
+        public class WaitingForRegistrationSync : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3e1")]
+            public void ShouldBeAbleToHandleCallActivate_WhenFromEventWasNotCallActivate()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                state.CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e1")]
+            public void ShouldNotBeAbleToHandleCallActivate_WhenFromEventIsCallActivate()
+            {
+                var state = GetState(new ActivationStateMachine.CalledActivate());
+                state.CanHandleEvent(new ActivationStateMachine.CalledActivate()).Should().BeFalse();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3e1a")]
+            public async Task WithCalledActivateEvent_ShouldCallActivateCallbackAndNotChangeState()
+            {
+                var state = GetState(new ActivationStateMachine.GotPushDeviceDetails());
+                var awaiter = new TaskCompletionAwaiter();
+
+                MobileDevice.Callbacks.ActivatedCallback = reason =>
+                {
+                    reason.Should().BeNull();
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+            public WaitingForRegistrationSync(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForRegistrationSync GetState(ActivationStateMachine.Event fromEvent)
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForRegistrationSync(stateMachine, fromEvent);
+            }
+
+            private (ActivationStateMachine.WaitingForRegistrationSync, ActivationStateMachine) GetStateAndStateMachine(ActivationStateMachine.Event fromEvent, AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForRegistrationSync(stateMachine, fromEvent), stateMachine);
             }
 
             public FakeMobileDevice MobileDevice { get; set; }
