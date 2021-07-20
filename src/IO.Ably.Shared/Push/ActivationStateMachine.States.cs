@@ -201,7 +201,8 @@ namespace IO.Ably.Push
             public override bool CanHandleEvent(Event @event)
             {
                 return @event is CalledActivate
-                    || @event is CalledDeactivate;
+                    || @event is CalledDeactivate
+                    || @event is GotPushDeviceDetails;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -214,6 +215,10 @@ namespace IO.Ably.Push
                     case CalledDeactivate _:
                         var localDevice = Machine.LocalDevice;
                         return (new WaitingForDeregistration(Machine, this), ToNextEventFunc(() => Deregister(localDevice.Id)));
+                    case GotPushDeviceDetails _:
+                        var device = Machine.EnsureLocalDeviceIsLoaded();
+
+                        return (new WaitingForRegistrationSync(Machine, @event), ToNextEventFunc(() => UpdateRegistration(device)));
                     default:
                         throw new AblyException($"WaitingForNewPushDeviceDetails cannot handle {@event.GetType().Name} event.", ErrorCodes.InternalError);
                 }
@@ -228,6 +233,21 @@ namespace IO.Ably.Push
                     catch (AblyException e)
                     {
                         return new DeregistrationFailed(e.ErrorInfo);
+                    }
+                }
+
+                async Task<Event> UpdateRegistration(DeviceDetails details)
+                {
+                    try
+                    {
+                        Machine.Debug($"Updating device registration {details.ToJson()}");
+                        await Machine._restClient.Push.Admin.PatchDeviceRecipient(details);
+                        return new RegistrationSynced();
+                    }
+                    catch (AblyException ex)
+                    {
+                        Machine.Error($"Error updating Registration. DeviceDetails: {details.ToJson()}", ex);
+                        return new SyncRegistrationFailed(ex.ErrorInfo);
                     }
                 }
             }
@@ -259,12 +279,12 @@ namespace IO.Ably.Push
         // Stub for now
         public sealed class WaitingForRegistrationSync : State
         {
-            private readonly Event _fromEvent;
+            public Event FromEvent { get; }
 
             public WaitingForRegistrationSync(ActivationStateMachine machine, Event fromEvent)
                 : base(machine)
             {
-                _fromEvent = fromEvent;
+                FromEvent = fromEvent;
             }
 
             public override bool Persist => false;

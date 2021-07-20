@@ -6,6 +6,7 @@ using FluentAssertions;
 using IO.Ably.Push;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,6 +14,48 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 {
     public class ActivationStateMachineTests
     {
+        public class GeneralTests : MockHttpRestSpecs
+        {
+            [Fact]
+            public async Task LoadPersistedLocalDevice_ShouldLoadAllSavedProperties()
+            {
+                var mobileDevice = new FakeMobileDevice();
+                void SetSetting(string key, string value) => mobileDevice.SetPreference(key, value, PersistKeys.Device.SharedName);
+
+                var stateMachine = new ActivationStateMachine(GetRestClient(), mobileDevice);
+
+                var deviceId = "deviceId";
+                SetSetting(PersistKeys.Device.DEVICE_ID, deviceId);
+                var clientid = "clientId";
+                SetSetting(PersistKeys.Device.CLIENT_ID, clientid);
+                var deviceSecret = "secret";
+                SetSetting(PersistKeys.Device.DEVICE_SECRET, deviceSecret);
+                var identityToken = "token";
+                SetSetting(PersistKeys.Device.DEVICE_TOKEN, identityToken);
+                var tokenType = "fcm";
+                SetSetting(PersistKeys.Device.TOKEN_TYPE, tokenType);
+                var token = "registration_token";
+                SetSetting(PersistKeys.Device.TOKEN, token);
+
+                var localDevice = stateMachine.LoadPersistedLocalDevice();
+                localDevice.Platform.Should().Be(mobileDevice.DevicePlatform);
+                localDevice.FormFactor.Should().Be(mobileDevice.FormFactor);
+
+                localDevice.Id.Should().Be(deviceId);
+                localDevice.ClientId.Should().Be(clientid);
+                localDevice.DeviceSecret.Should().Be(deviceSecret);
+                localDevice.DeviceIdentityToken.Should().Be(identityToken);
+                localDevice.RegistrationToken.Type.Should().Be(tokenType);
+                localDevice.RegistrationToken.Token.Should().Be(token);
+            }
+
+            public GeneralTests(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
+
+
         public class NotActivatedStateTests : MockHttpRestSpecs
         {
             [Fact]
@@ -629,6 +672,78 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 nextState.Should().BeOfType<ActivationStateMachine.WaitingForDeregistration>().Which.PreviousState.Should().BeSameAs(state);
 
                 (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.DeregistrationFailed>().Which.Reason.Should().BeSameAs(error);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3")]
+            public async Task ShouldHandleGotPushDeviceDetails()
+            {
+                GetState().CanHandleEvent(new ActivationStateMachine.GotPushDeviceDetails()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3b")]
+            public async Task WithGotPushDeviceDetailsEvent_ShouldPatchDeviceDetails()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                var awaiter = new TaskCompletionAwaiter();
+                RestClient.ExecuteHttpRequest = request =>
+                {
+                    request.Url.Should().Be($"/push/deviceRegistrations/{machine.LocalDevice.Id}");
+                    request.Method.Should().Be(new HttpMethod("PATCH"));
+
+                    awaiter.SetCompleted();
+                    return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+                };
+
+                var (_, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                await nextEventFunc();
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3c")]
+            [Trait("spec", "RSH3d3d")]
+            public async Task WithGotPushDeviceDetailsEvent_WhenPatchDeviceDetailsSucceeds_ShouldTransitionToWaitingForRegistrationSyncAndProduceRegistrationSyncedEvent()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                RestClient.ExecuteHttpRequest = request => Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = string.Empty });
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForRegistrationSync>().Which.FromEvent.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.RegistrationSynced>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3d3c")]
+            [Trait("spec", "RSH3d3d")]
+            public async Task WithGotPushDeviceDetailsEvent_WhenPatchDeviceDetailsFails_ShouldTransitionToWaitingForRegistrationSyncAndProduceSyncRegistrationFailedEvent()
+            {
+                var (state, machine) = GetStateAndStateMachine();
+
+                machine.LocalDevice = LocalDevice.Create();
+                machine.LocalDevice.DeviceIdentityToken = "token";
+                machine.LocalDevice.Push.Recipient = new JObject();
+
+                var error = new ErrorInfo();
+                RestClient.ExecuteHttpRequest = request => throw new AblyException(error);
+
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForRegistrationSync>().Which.FromEvent.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeOfType<ActivationStateMachine.SyncRegistrationFailed>().Which.Reason.Should().BeSameAs(error);
             }
 
             public WaitingForNewPushDeviceDetailsTests(ITestOutputHelper output)
