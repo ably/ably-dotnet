@@ -267,12 +267,25 @@ namespace IO.Ably.Push
 
             public override bool CanHandleEvent(Event @event)
             {
-                throw new System.NotImplementedException();
+                return @event is CalledDeactivate || @event is Deregistered || @event is DeregistrationFailed;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
             {
-                throw new NotImplementedException();
+                switch (@event)
+                {
+                    case CalledDeactivate _:
+                        return (this, EmptyNextEventFunc);
+                    case Deregistered _:
+                        Machine.ResetDevice();
+                        Machine.TriggerDeactivatedCallback();
+                        return (new NotActivated(Machine), EmptyNextEventFunc);
+                    case DeregistrationFailed failed:
+                        Machine.TriggerDeactivatedCallback(failed.Reason);
+                        return (PreviousState, EmptyNextEventFunc);
+                    default:
+                        throw new AblyException($"WaitingForNewPushDeviceDetails cannot handle {@event.GetType().Name} event. Previous State: {PreviousState?.GetType().Name}", ErrorCodes.InternalError);
+                }
             }
         }
 

@@ -111,12 +111,18 @@ namespace IO.Ably.Push
 
         private void Error(string message, Exception ex) => _logger.Error($"ActivationStateMachine: {message}", ex);
 
-        private void PersistLocalDevice(LocalDevice localDevice)
+        internal void PersistLocalDevice(LocalDevice localDevice)
         {
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_ID, localDevice.Id, PersistKeys.Device.SharedName);
             _mobileDevice.SetPreference(PersistKeys.Device.CLIENT_ID, localDevice.ClientId, PersistKeys.Device.SharedName);
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
             _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        private void ResetDevice()
+        {
+            _mobileDevice.ClearPreferences(PersistKeys.Device.SharedName);
+            LocalDevice = new LocalDevice();
         }
 
         private void GetRegistrationToken()

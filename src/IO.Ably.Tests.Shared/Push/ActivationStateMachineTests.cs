@@ -1049,5 +1049,126 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 }
             }
         }
+
+        [Trait("spec", "RSH3g")]
+        public class WaitingForDeregistrationTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH3g1")]
+            public void ShouldBeAbleToHandleCalledDeactivate()
+            {
+                var state = GetState(machine => new ActivationStateMachine.NotActivated(machine));
+                state.CanHandleEvent(new ActivationStateMachine.CalledDeactivate()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g1a")]
+            public async Task WithCalledDeactivateEvent_ShouldTransitionToItself()
+            {
+                var state = GetState(machine => new ActivationStateMachine.NotActivated(machine));
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledDeactivate());
+
+                nextState.Should().BeSameAs(state);
+                (await nextEventFunc()).Should().BeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g2")]
+            public void ShouldBeAbleToHandleDeregistered()
+            {
+                var state = GetState(machine => new ActivationStateMachine.NotActivated(machine));
+                state.CanHandleEvent(new ActivationStateMachine.Deregistered()).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g2а")]
+            [Trait("spec", "RSH3g2c")]
+            public async Task WithDeregistered_ShouldClearLocalDeviceAndTransitionToNotActivated()
+            {
+                var (state, machine) = GetStateAndStateMachine(machine => new ActivationStateMachine.NotActivated(machine));
+                var machineLocalDevice = LocalDevice.Create();
+                machine.LocalDevice = machineLocalDevice;
+                machine.PersistLocalDevice(machine.LocalDevice);
+
+                MobileDevice.Settings.Should().NotBeEmpty();
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.Deregistered());
+
+                nextState.Should().BeOfType<ActivationStateMachine.NotActivated>();
+                (await nextEventFunc()).Should().BeNull();
+                machine.LocalDevice.Should().NotBeSameAs(machineLocalDevice);
+                MobileDevice.Settings.Should().BeEmpty();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g2b")]
+            public async Task WithDeregistered_ShouldTriggerDeactivatedCallback()
+            {
+                var state = GetState(m => new ActivationStateMachine.NotActivated(m));
+
+                var awaiter = new TaskCompletionAwaiter();
+                MobileDevice.Callbacks.DeactivatedCallback = error =>
+                {
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+
+                await state.Transition(new ActivationStateMachine.Deregistered());
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g3")]
+            public void ShouldBeAbleToHandleDeregistrationFailed()
+            {
+                var state = GetState(machine => new ActivationStateMachine.NotActivated(machine));
+                state.CanHandleEvent(new ActivationStateMachine.DeregistrationFailed(new ErrorInfo())).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSH3g3a")]
+            [Trait("spec", "RSH3g3b")]
+            public async Task WithDeregistrationFailedEvent_ShouldCallDeactivateCallbackWithErrorAndShouldReturnToThePreviousState()
+            {
+                var state = GetState(m => new ActivationStateMachine.WaitingForNewPushDeviceDetails(m));
+                var reason = new ErrorInfo();
+                var awaiter = new TaskCompletionAwaiter();
+                MobileDevice.Callbacks.DeactivatedCallback = error =>
+                {
+                    error.Should().BeSameAs(reason);
+                    awaiter.SetCompleted();
+                    return Task.CompletedTask;
+                };
+                var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.DeregistrationFailed(reason));
+
+                nextState.Should().BeOfType<ActivationStateMachine.WaitingForNewPushDeviceDetails>();
+                (await nextEventFunc()).Should().BeNull();
+
+                (await awaiter.Task).Should().BeTrue();
+            }
+
+            public WaitingForDeregistrationTests(ITestOutputHelper output)
+                : base(output)
+            {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
+            }
+
+            private ActivationStateMachine.WaitingForDeregistration GetState(Func<ActivationStateMachine, ActivationStateMachine.State> getPreviousState)
+            {
+                var stateMachine = new ActivationStateMachine(RestClient, MobileDevice, RestClient.Logger);
+                return new ActivationStateMachine.WaitingForDeregistration(stateMachine, getPreviousState(stateMachine));
+            }
+
+            private (ActivationStateMachine.WaitingForDeregistration, ActivationStateMachine) GetStateAndStateMachine(Func<ActivationStateMachine, ActivationStateMachine.State> getPreviousState, AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, RestClient.Logger);
+                return (new ActivationStateMachine.WaitingForDeregistration(stateMachine, getPreviousState(stateMachine)), stateMachine);
+            }
+
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public AblyRest RestClient { get; set; }
+        }
     }
 }
