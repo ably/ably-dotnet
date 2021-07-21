@@ -53,6 +53,42 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 : base(output)
             {
             }
+
+            private class FakeEvent : ActivationStateMachine.Event
+            {
+                public ActivationStateMachine.State NextState { get; set; }
+
+                public Func<Task<ActivationStateMachine.Event>> GetNextEventFunc { get; set; } = async () => null;
+            }
+
+            private class FakeState : ActivationStateMachine.State
+            {
+                public FakeState(ActivationStateMachine machine, bool persist = true)
+                    : base(machine)
+                {
+                    Persist = persist;
+                }
+
+                public Func<ActivationStateMachine.Event, bool> CanHandleEventFunc = @event => true;
+
+                public override bool Persist { get; }
+
+                public override bool CanHandleEvent(ActivationStateMachine.Event @event)
+                {
+                    return CanHandleEventFunc(@event);
+                }
+
+                public override async Task<(ActivationStateMachine.State, Func<Task<ActivationStateMachine.Event>>)> Transition(ActivationStateMachine.Event @event)
+                {
+                    switch (@event)
+                    {
+                        case FakeEvent fakeEvent:
+                            return (fakeEvent.NextState, fakeEvent.GetNextEventFunc);
+                        default:
+                            throw new AblyException("This is a fake state and can only handle fake events.");
+                    }
+                }
+            }
         }
 
         public class NotActivatedStateTests : MockHttpRestSpecs
