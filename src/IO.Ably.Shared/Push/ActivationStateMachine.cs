@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Utils;
 
@@ -9,6 +10,8 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
+        private SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
+
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
@@ -28,6 +31,116 @@ namespace IO.Ably.Push
         }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+
+        public async Task HandleEvent(Event @event)
+        {
+            // Handle current event and any consequent events
+            // if current event didn't change state put it in pending queue and return
+            // finally check the pending event queue and process it following the above rules
+            // finally finally - preserve the state
+            Debug($"Handling event ({@event.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+
+            var canEnter = await _handleEventsLock.WaitAsync(2000); // Arbitrary number = 2 second
+            if (canEnter)
+            {
+                try
+                {
+                    await HandleInner();
+                    PersistState();
+                }
+                catch (Exception exception)
+                {
+                    _logger.Error("Error processing handle event.", exception);
+                    throw;
+                }
+                finally
+                {
+                    _handleEventsLock.Release();
+                }
+            }
+            else
+            {
+                Debug("Failed to acquire HandleEvent lock.");
+            }
+
+            async Task<State> GetNextState(State currentState, Event @eventToProcess)
+            {
+                if (eventToProcess is null)
+                {
+                    return currentState;
+                }
+
+                var (nextState, nextEventFunc) = await currentState.Transition(@eventToProcess);
+
+                if (nextState == null || ReferenceEquals(nextState, currentState))
+                {
+                    return currentState;
+                }
+
+                var nextEvent = await nextEventFunc();
+
+                if (nextEvent is null)
+                {
+                    return nextState;
+                }
+
+                return await GetNextState(nextState, nextEvent);
+            }
+
+            async Task HandleInner()
+            {
+                if (CurrentState.CanHandleEvent(@event) == false)
+                {
+                    Debug("No next state returned. Queuing event for later execution.");
+                    PendingEvents.Enqueue(@event);
+                    return;
+                }
+
+                CurrentState = await GetNextState(CurrentState, @event);
+
+                // Once we have updated the state we can get the next event which came from the Update
+                // and try to transition the state again.
+                while (PendingEvents.Any())
+                {
+                    Event pending = PendingEvents.Peek();
+                    if (pending is null)
+                    {
+                        break;
+                    }
+
+                    if (CurrentState.CanHandleEvent(pending))
+                    {
+                        Debug($"Processing pending event ({pending.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+
+                        // Update the current state based on the event we got.
+                        CurrentState = await GetNextState(CurrentState, pending);
+                        _ = PendingEvents.Dequeue(); // Remove the message from the queue.
+                    }
+                    else
+                    {
+                        Debug(
+                            $"({pending.GetType().Name} can't be handled by currentState: {CurrentState.GetType().Name}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void PersistState()
+        {
+            Debug(
+                $"Persisting State and PendingQueue. State: {CurrentState.GetType().Name}. Queue: {PendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}");
+
+            if (CurrentState != null && CurrentState.Persist)
+            {
+                _mobileDevice.SetPreference(PersistKeys.StateMachine.CurrentState, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
+            }
+
+            var events = PendingEvents.ToList();
+
+            // Saves pending events as a pipe separated list.
+            _mobileDevice.SetPreference(PersistKeys.StateMachine.PendingEvents, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
+        }
 
         private void TriggerDeactivatedCallback(ErrorInfo reason = null)
         {
@@ -113,10 +226,10 @@ namespace IO.Ably.Push
 
         internal void PersistLocalDevice(LocalDevice localDevice)
         {
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_ID, localDevice.Id, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.CLIENT_ID, localDevice.ClientId, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceId, localDevice.Id, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceSecret, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
         }
 
         private void ResetDevice()
@@ -138,7 +251,7 @@ namespace IO.Ably.Push
         private void SetDeviceIdentityToken(string deviceIdentityToken)
         {
             LocalDevice.DeviceIdentityToken = deviceIdentityToken;
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, deviceIdentityToken, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, deviceIdentityToken, PersistKeys.Device.SharedName);
         }
 
         private LocalDevice EnsureLocalDeviceIsLoaded()
@@ -159,22 +272,22 @@ namespace IO.Ably.Push
             var localDevice = new LocalDevice();
             localDevice.Platform = _mobileDevice.DevicePlatform;
             localDevice.FormFactor = _mobileDevice.FormFactor;
-            string id = GetDeviceSetting(PersistKeys.Device.DEVICE_ID);
+            string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
 
             localDevice.Id = id;
             if (id.IsNotEmpty())
             {
-                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DEVICE_SECRET);
+                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
             }
 
-            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.CLIENT_ID);
-            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DEVICE_TOKEN);
+            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
+            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
 
-            var tokenType = GetDeviceSetting(PersistKeys.Device.TOKEN_TYPE);
+            var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
 
             if (tokenType.IsNotEmpty())
             {
-                string tokenString = GetDeviceSetting(PersistKeys.Device.TOKEN);
+                string tokenString = GetDeviceSetting(PersistKeys.Device.Token);
 
                 if (tokenString.IsNotEmpty())
                 {
