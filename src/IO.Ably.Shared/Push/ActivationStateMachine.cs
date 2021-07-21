@@ -74,7 +74,7 @@ namespace IO.Ably.Push
             return Task.CompletedTask;
         }
 
-        private async Task<Event> ValidateRegistration()
+        protected virtual async Task<Event> ValidateRegistration()
         {
             Debug("Validating Registration");
 

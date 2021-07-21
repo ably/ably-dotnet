@@ -23,9 +23,10 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
         public string GetPreference(string key, string groupName)
         {
-            if (Settings.ContainsKey($"{groupName}:{key}"))
+            var settingKey = $"{groupName}:{key}";
+            if (Settings.ContainsKey(settingKey))
             {
-                return Settings[$"{groupName}:{key}"];
+                return Settings[settingKey];
             }
 
             return null;
