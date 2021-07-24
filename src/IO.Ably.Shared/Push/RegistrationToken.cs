@@ -1,22 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace IO.Ably.Push
+﻿namespace IO.Ably.Push
 {
     /// <summary>
     /// Class used to hold registration tokens.
     /// </summary>
     public class RegistrationToken
     {
-        /// <summary>
-        /// FGM or GCM for Google and APNS for Apple.
-        /// </summary>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Token value.
-        /// </summary>
-        public string Token { get; set; }
-
         /// <summary>
         /// Constructs a new registration token instance.
         /// </summary>
@@ -27,6 +15,16 @@ namespace IO.Ably.Push
             Type = tokenType;
             Token = tokenValue;
         }
+
+        /// <summary>
+        /// FGM or GCM for Google and APNS for Apple.
+        /// </summary>
+        public string Type { get; }
+
+        /// <summary>
+        /// Token value.
+        /// </summary>
+        public string Token { get; }
 
         /// <summary>
         /// Overrides to string to display Type and Token.
