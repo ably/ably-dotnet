@@ -113,10 +113,10 @@ namespace IO.Ably.Push
 
         internal void PersistLocalDevice(LocalDevice localDevice)
         {
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_ID, localDevice.Id, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.CLIENT_ID, localDevice.ClientId, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_SECRET, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceId, localDevice.Id, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceSecret, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
         }
 
         private void ResetDevice()
@@ -138,7 +138,7 @@ namespace IO.Ably.Push
         private void SetDeviceIdentityToken(string deviceIdentityToken)
         {
             LocalDevice.DeviceIdentityToken = deviceIdentityToken;
-            _mobileDevice.SetPreference(PersistKeys.Device.DEVICE_TOKEN, deviceIdentityToken, PersistKeys.Device.SharedName);
+            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, deviceIdentityToken, PersistKeys.Device.SharedName);
         }
 
         private LocalDevice EnsureLocalDeviceIsLoaded()
@@ -159,22 +159,22 @@ namespace IO.Ably.Push
             var localDevice = new LocalDevice();
             localDevice.Platform = _mobileDevice.DevicePlatform;
             localDevice.FormFactor = _mobileDevice.FormFactor;
-            string id = GetDeviceSetting(PersistKeys.Device.DEVICE_ID);
+            string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
 
             localDevice.Id = id;
             if (id.IsNotEmpty())
             {
-                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DEVICE_SECRET);
+                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
             }
 
-            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.CLIENT_ID);
-            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DEVICE_TOKEN);
+            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
+            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
 
-            var tokenType = GetDeviceSetting(PersistKeys.Device.TOKEN_TYPE);
+            var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
 
             if (tokenType.IsNotEmpty())
             {
-                string tokenString = GetDeviceSetting(PersistKeys.Device.TOKEN);
+                string tokenString = GetDeviceSetting(PersistKeys.Device.Token);
 
                 if (tokenString.IsNotEmpty())
                 {
