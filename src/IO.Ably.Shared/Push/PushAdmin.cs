@@ -14,6 +14,8 @@ namespace IO.Ably.Push
     /// </summary>
     public class PushAdmin : IPushChannelSubscriptions, IDeviceRegistrations
     {
+        private const string ChannelSubUrl = "/push/channelSubscriptions";
+
         private readonly ILogger _logger;
         private readonly AblyRest _restClient;
 
@@ -187,7 +189,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var request = _restClient.CreatePostRequest("/push/channelSubscriptions");
+            var request = _restClient.CreatePostRequest(ChannelSubUrl);
             AddFullWaitIfNecessary(request);
 
             if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
@@ -216,16 +218,14 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<PaginatedResult<PushChannelSubscription>> IPushChannelSubscriptions.ListAsync(ListSubscriptionsRequest requestFilter)
         {
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateGetRequest(url);
+            var request = _restClient.CreateGetRequest(ChannelSubUrl);
             request.AddQueryParameters(requestFilter.ToQueryParams());
 
             return await _restClient.ExecutePaginatedRequest(request, ListChannelSubscriptions);
 
             async Task<PaginatedResult<PushChannelSubscription>> ListChannelSubscriptions(PaginatedRequestParams requestParams)
             {
-                var paginatedRequest = _restClient.CreateGetRequest(url);
+                var paginatedRequest = _restClient.CreateGetRequest(ChannelSubUrl);
                 paginatedRequest.AddQueryParameters(requestParams.GetParameters());
                 return await _restClient.ExecutePaginatedRequest(paginatedRequest, ListChannelSubscriptions);
             }
@@ -236,9 +236,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            var request = _restClient.CreateRequest(ChannelSubUrl, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
             request.AddQueryParameters(GetQueryParams());
 
@@ -284,9 +282,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            var request = _restClient.CreateRequest(ChannelSubUrl, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
             request.AddQueryParameters(removeParams);
 
