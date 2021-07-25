@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
-namespace IO.Ably.Tests.DotNetCore20.Infrastructure
+namespace IO.Ably.Tests.Infrastructure
 {
     public class ConditionalAwaiter
     {

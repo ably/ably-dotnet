@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;

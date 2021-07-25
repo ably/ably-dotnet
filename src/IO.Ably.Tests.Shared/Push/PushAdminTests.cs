@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Push
+namespace IO.Ably.Tests.Push
 {
     [Trait("spec", "RSH1")]
     public class PushAdminTests
