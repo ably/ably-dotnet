@@ -12,7 +12,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
     public class MessageExtrasConverterTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        private readonly JsonSerializerSettings JsonSettings = JsonHelper.Settings;
+        private readonly JsonSerializerSettings _jsonSettings = JsonHelper.Settings;
 
         public MessageExtrasConverterTests(ITestOutputHelper testOutputHelper)
         {
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
                              }
                         }";
             var originalJToken = JToken.Parse(json);
-            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, JsonSettings);
+            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
 
             messageExtras.Delta.Should().NotBeNull();
             messageExtras.Delta.From.Should().Be("1");
@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
 
             ((string)messageExtras.ToJson()["random"]).Should().Be("boo");
 
-            var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(messageExtras, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
 
             JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
@@ -60,14 +60,14 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
                             }
                         }";
             var originalJToken = JToken.Parse(json);
-            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, JsonSettings);
+            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
             ((string)messageExtras.ToJson()["random"]).Should().Be("boo");
             ((string)messageExtras.ToJson()["foo"]).Should().Be("fooValue");
             ((string)messageExtras.ToJson()["bar"]).Should().Be("barValue");
             ((string)messageExtras.ToJson()["object"]["key1"]).Should().Be("value1");
             ((string)messageExtras.ToJson()["object"]["key2"]).Should().Be("value2");
 
-            var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(messageExtras, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
             JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
         }
@@ -83,13 +83,13 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
                              }
                         }";
             var originalJToken = JToken.Parse(json);
-            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, JsonSettings);
+            var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
 
             messageExtras.Delta.Should().NotBeNull();
             messageExtras.Delta.From.Should().Be("1");
             messageExtras.Delta.Format.Should().Be("best");
 
-            var serialized = JsonConvert.SerializeObject(messageExtras, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(messageExtras, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
             JAssert.DeepEquals(serializedJToken, originalJToken, _testOutputHelper).Should().Be(true);
         }
@@ -108,9 +108,9 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
                             'extras': null
                         }";
 
-            var messageObject = JsonConvert.DeserializeObject<Message>(json, JsonSettings);
+            var messageObject = JsonConvert.DeserializeObject<Message>(json, _jsonSettings);
             messageObject.Extras.Should().BeNull();
-            var serialized = JsonConvert.SerializeObject(messageObject, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(messageObject, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
             serializedJToken.Contains("extras").Should().Be(false);
         }
@@ -129,10 +129,10 @@ namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
                             'encoding':'encoding'
                         }";
 
-            var messageObject = JsonConvert.DeserializeObject<Message>(json, JsonSettings);
+            var messageObject = JsonConvert.DeserializeObject<Message>(json, _jsonSettings);
             messageObject.Extras.Delta.Should().BeNull();
             messageObject.Extras.ToJson().ToString().Should().Be("extraData");
-            var serialized = JsonConvert.SerializeObject(messageObject, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(messageObject, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
             serializedJToken.Contains("extras").Should().Be(false);
         }
