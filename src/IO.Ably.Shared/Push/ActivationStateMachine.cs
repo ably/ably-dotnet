@@ -79,10 +79,19 @@ namespace IO.Ably.Push
                 Debug("Failed to acquire HandleEvent lock.");
             }
 
-            async Task<State> GetNextState(State currentState, Event @eventToProcess)
+            // I've not made these static because it make it easier to access the debug and error logging methods
+            async Task<State> GetNextState(State currentState, Event eventToProcess, Queue<Event> pendingQueue)
             {
                 if (eventToProcess is null)
                 {
+                    return currentState;
+                }
+
+                if (currentState.CanHandleEvent(eventToProcess) == false)
+                {
+                    Debug("No next state returned. Queuing event for later execution.");
+
+                    pendingQueue.Enqueue(eventToProcess);
                     return currentState;
                 }
 
@@ -100,42 +109,35 @@ namespace IO.Ably.Push
                     return nextState;
                 }
 
-                return await GetNextState(nextState, nextEvent);
+                return await GetNextState(nextState, nextEvent, pendingQueue);
             }
 
             async Task HandleInner()
             {
-                if (CurrentState.CanHandleEvent(@event) == false)
-                {
-                    Debug("No next state returned. Queuing event for later execution.");
-                    PendingEvents.Enqueue(@event);
-                    return;
-                }
-
-                CurrentState = await GetNextState(CurrentState, @event);
+                CurrentState = await GetNextState(CurrentState, @event, PendingEvents);
 
                 // Once we have updated the state we can get the next event which came from the Update
                 // and try to transition the state again.
                 while (PendingEvents.Any())
                 {
-                    Event pending = PendingEvents.Peek();
-                    if (pending is null)
+                    Event pendingEvent = PendingEvents.Peek();
+                    if (pendingEvent is null)
                     {
                         break;
                     }
 
-                    if (CurrentState.CanHandleEvent(pending))
+                    if (CurrentState.CanHandleEvent(pendingEvent))
                     {
-                        Debug($"Processing pending event ({pending.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+                        Debug($"Processing pending event ({pendingEvent.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
 
                         // Update the current state based on the event we got.
-                        CurrentState = await GetNextState(CurrentState, pending);
+                        CurrentState = await GetNextState(CurrentState, pendingEvent, PendingEvents);
                         _ = PendingEvents.Dequeue(); // Remove the message from the queue.
                     }
                     else
                     {
                         Debug(
-                            $"({pending.GetType().Name} can't be handled by currentState: {CurrentState.GetType().Name}");
+                            $"({pendingEvent.GetType().Name} can't be handled by currentState: {CurrentState.GetType().Name}");
                         break;
                     }
                 }
