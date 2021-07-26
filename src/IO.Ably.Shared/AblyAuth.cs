@@ -537,7 +537,7 @@ namespace IO.Ably
 
             if (string.IsNullOrEmpty(authOptions.Key))
             {
-                throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
+                throw new AblyException("No key specified", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
             }
 
             await SetTokenParamsTimestamp(authOptions, tokenParams);
