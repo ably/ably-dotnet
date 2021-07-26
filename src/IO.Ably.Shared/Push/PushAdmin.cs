@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using IO.Ably;
-using IO.Ably.MessageEncoders;
-using IO.Ably.Push;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,17 +14,18 @@ namespace IO.Ably.Push
     /// </summary>
     public class PushAdmin : IPushChannelSubscriptions, IDeviceRegistrations
     {
-        private readonly AblyRest _restClient;
-
-        private ClientOptions Options => _restClient.Options;
+        private const string ChannelSubUrl = "/push/channelSubscriptions";
 
         private readonly ILogger _logger;
+        private readonly AblyRest _restClient;
 
         internal PushAdmin(AblyRest restClient, ILogger logger)
         {
             _restClient = restClient;
             _logger = logger;
         }
+
+        private ClientOptions Options => _restClient.Options;
 
         /// <summary>
         /// Exposes channel subscriptions apis.
@@ -191,7 +189,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var request = _restClient.CreatePostRequest("/push/channelSubscriptions");
+            var request = _restClient.CreatePostRequest(ChannelSubUrl);
             AddFullWaitIfNecessary(request);
 
             if (subscription.DeviceId.IsNotEmpty() && subscription.DeviceId == _restClient.Device?.Id)
@@ -220,16 +218,14 @@ namespace IO.Ably.Push
         /// <inheritdoc />
         async Task<PaginatedResult<PushChannelSubscription>> IPushChannelSubscriptions.ListAsync(ListSubscriptionsRequest requestFilter)
         {
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateGetRequest(url);
+            var request = _restClient.CreateGetRequest(ChannelSubUrl);
             request.AddQueryParameters(requestFilter.ToQueryParams());
 
             return await _restClient.ExecutePaginatedRequest(request, ListChannelSubscriptions);
 
             async Task<PaginatedResult<PushChannelSubscription>> ListChannelSubscriptions(PaginatedRequestParams requestParams)
             {
-                var paginatedRequest = _restClient.CreateGetRequest(url);
+                var paginatedRequest = _restClient.CreateGetRequest(ChannelSubUrl);
                 paginatedRequest.AddQueryParameters(requestParams.GetParameters());
                 return await _restClient.ExecutePaginatedRequest(paginatedRequest, ListChannelSubscriptions);
             }
@@ -240,9 +236,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            var request = _restClient.CreateRequest(ChannelSubUrl, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
             request.AddQueryParameters(GetQueryParams());
 
@@ -288,9 +282,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var url = "/push/channelSubscriptions";
-
-            var request = _restClient.CreateRequest(url, HttpMethod.Delete);
+            var request = _restClient.CreateRequest(ChannelSubUrl, HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
             request.AddQueryParameters(removeParams);
 
