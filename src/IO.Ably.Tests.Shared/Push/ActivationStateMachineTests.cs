@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -49,27 +51,196 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 localDevice.RegistrationToken.Token.Should().Be(token);
             }
 
+            [Fact]
+            [Trait("spec", "RSH4")]
+            public async Task HandleEvent_WhenStateCannotHandleEvent_ShouldPutEventOnAQueue()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                var fakeState = new FakeState(machine, "FakeState");
+                fakeState.CanHandleEventFunc = e => false;
+                machine.CurrentState = fakeState;
+
+                // Act
+                machine.HandleEvent(new FakeEvent("Event"));
+
+                // Assert
+                machine.PendingEvents.Should().HaveCount(1);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH4")]
+            public async Task HandleEvent_WhenTransitionReturnsNewState_ShouldUpdateCurrentStateToNewState()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                var fakeState = new FakeState(machine, "FakeState");
+                machine.CurrentState = fakeState;
+                var fakeEvent = new FakeEvent("FakeEvent");
+                fakeEvent.NextState = new ActivationStateMachine.NotActivated(machine);
+
+                // Act
+                machine.HandleEvent(fakeEvent);
+
+                // Assert
+                machine.CurrentState.Should().BeSameAs(fakeEvent.NextState);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH4")]
+            public async Task HandleEvent_WhenTransitionReturnsANewEvent_ShouldTransitionStateAndProcessNextEvent()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                var fakeState = new FakeState(machine, "FakeState1");
+                var fakeState2 = new FakeState(machine, "FakeState2");
+
+                machine.CurrentState = fakeState;
+                var fakeEvent2 = new FakeEvent("FakeEvent2");
+                fakeEvent2.NextState = new ActivationStateMachine.NotActivated(machine);
+                var fakeEvent1 = new FakeEvent("FakeEvent1");
+                fakeEvent1.NextState = fakeState2;
+                fakeEvent1.GetNextEventFunc = async () => fakeEvent2;
+
+                // Act
+                await machine.HandleEvent(fakeEvent1);
+
+                // Assert
+                machine.CurrentState.Should().BeSameAs(fakeEvent2.NextState);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH4")]
+            public async Task HandleEvent_WhenTransitionReturnsANewEvent_ShouldTransitionStateAndProcessNextEventAndQueueItIfNotHandled()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                var fakeState = new FakeState(machine, "FakeState1");
+                var fakeState2 = new FakeState(machine, "FakeState2");
+                fakeState2.CanHandleEventFunc = _ => false;
+
+                machine.CurrentState = fakeState;
+                var fakeEvent2 = new FakeEvent("FakeEvent2");
+                fakeEvent2.NextState = new ActivationStateMachine.NotActivated(machine);
+                var fakeEvent1 = new FakeEvent("FakeEvent1");
+                fakeEvent1.NextState = fakeState2;
+                fakeEvent1.GetNextEventFunc = async () => fakeEvent2;
+
+                // Act
+                await machine.HandleEvent(fakeEvent1);
+
+                // Assert
+                machine.CurrentState.Should().BeSameAs(fakeState2);
+
+                // The second fake event should be queued because fakeState2 can't handle any events
+                machine.PendingEvents.Should().HaveCount(1);
+                machine.PendingEvents.Dequeue().Should().BeSameAs(fakeEvent2);
+            }
+
+            [Fact]
+            [Trait("spec", "RSH4")]
+            public async Task HandleEvent_WhenThereArePendingEvents_ShouldProcessCurrentEventFollowedByPendingEvents()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                var fakeState = new FakeState(machine, "FakeState1");
+                var fakeState2 = new FakeState(machine, "FakeState2");
+
+                machine.CurrentState = fakeState;
+                var fakeEvent2 = new FakeEvent("FakeEvent1");
+                fakeEvent2.NextState = new ActivationStateMachine.NotActivated(machine);
+                var fakeEvent1 = new FakeEvent("FakeEvent2");
+                fakeEvent1.NextState = fakeState2;
+                machine.PendingEvents.Enqueue(fakeEvent2);
+
+                // Act
+                await machine.HandleEvent(fakeEvent1);
+
+                // Assert
+                machine.CurrentState.Should().BeOfType<ActivationStateMachine.NotActivated>();
+            }
+
+            [Fact(DisplayName = "With two events, the first one is initially put in the pending queue and is processed after the second one has caused a transition")]
+            [Trait("spec", "RSH5")]
+            public async Task HandleEvent_WithTwoEvents_ShouldBeProcessedSequentially()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+
+                // the initial state can only handle the event which will transition to the secondState
+                // the second state can handle any event and will happily handle ToSecondState event
+                // which will come from the PendingEvents queue because InitialState will put it there.
+                var initialState = new FakeState(machine, "InitialState");
+                initialState.CanHandleEventFunc = @event => ((FakeEvent)@event).Name == "ToSecondState";
+                var secondState = new FakeState(machine, "SecondState");
+                var finalState = new FakeState(machine, "FinalState");
+
+                // events
+                var transitionToSecondStateEvent = new FakeEvent("ToSecondState");
+                transitionToSecondStateEvent.NextState = secondState;
+                var toFinalState = new FakeEvent("ToFinalState");
+                toFinalState.NextState = finalState;
+
+                machine.CurrentState = initialState;
+
+                // Act
+                await machine.HandleEvent(toFinalState);
+                await machine.HandleEvent(transitionToSecondStateEvent);
+
+                // Assert
+                machine.CurrentState.Should().BeSameAs(finalState);
+            }
+
             public GeneralTests(ITestOutputHelper output)
                 : base(output)
             {
+                RestClient = GetRestClient();
+                MobileDevice = new FakeMobileDevice();
             }
 
+            public AblyRest RestClient { get; }
+
+            public FakeMobileDevice MobileDevice { get; }
+
+            private ActivationStateMachine GetStateMachine(AblyRest restClient = null)
+            {
+                var stateMachine = new ActivationStateMachine(restClient ?? RestClient, MobileDevice, (restClient ?? RestClient).Logger);
+                return stateMachine;
+            }
+
+            [DebuggerDisplay("FakeState - {Name}")]
             private class FakeEvent : ActivationStateMachine.Event
             {
+                public string Name { get; }
+
                 public ActivationStateMachine.State NextState { get; set; }
 
                 public Func<Task<ActivationStateMachine.Event>> GetNextEventFunc { get; set; } = async () => null;
+
+                public FakeEvent(string name)
+                {
+                    Name = name;
+                }
+
+                public override string ToString()
+                {
+                    return $"FakeEvent - {Name}";
+                }
             }
 
+            [DebuggerDisplay("FakeState - {Name}")]
             private class FakeState : ActivationStateMachine.State
             {
-                public FakeState(ActivationStateMachine machine, bool persist = true)
+                public FakeState(ActivationStateMachine machine, string name, bool persist = true)
                     : base(machine)
                 {
+                    Name = name;
                     Persist = persist;
                 }
 
                 public Func<ActivationStateMachine.Event, bool> CanHandleEventFunc = @event => true;
+
+                public string Name { get; }
 
                 public override bool Persist { get; }
 
@@ -87,6 +258,11 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                         default:
                             throw new AblyException("This is a fake state and can only handle fake events.");
                     }
+                }
+
+                public override string ToString()
+                {
+                    return $"FakeState - {Name}";
                 }
             }
         }
