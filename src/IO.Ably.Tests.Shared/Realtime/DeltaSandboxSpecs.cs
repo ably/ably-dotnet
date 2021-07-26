@@ -6,14 +6,13 @@ using FluentAssertions;
 using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Realtime
+namespace IO.Ably.Tests.Realtime
 {
     [Collection("SandBox Connection")]
     [Trait("type", "integration")]

@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.CustomSerializers
+namespace IO.Ably.Tests.CustomSerializers
 {
     public class MessageExtrasConverterTests
     {
