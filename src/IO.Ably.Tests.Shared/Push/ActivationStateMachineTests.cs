@@ -25,17 +25,17 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 var stateMachine = new ActivationStateMachine(GetRestClient(), mobileDevice);
 
                 var deviceId = "deviceId";
-                SetSetting(PersistKeys.Device.DEVICE_ID, deviceId);
+                SetSetting(PersistKeys.Device.DeviceId, deviceId);
                 var clientid = "clientId";
-                SetSetting(PersistKeys.Device.CLIENT_ID, clientid);
+                SetSetting(PersistKeys.Device.ClientId, clientid);
                 var deviceSecret = "secret";
-                SetSetting(PersistKeys.Device.DEVICE_SECRET, deviceSecret);
+                SetSetting(PersistKeys.Device.DeviceSecret, deviceSecret);
                 var identityToken = "token";
-                SetSetting(PersistKeys.Device.DEVICE_TOKEN, identityToken);
+                SetSetting(PersistKeys.Device.DeviceToken, identityToken);
                 var tokenType = "fcm";
-                SetSetting(PersistKeys.Device.TOKEN_TYPE, tokenType);
+                SetSetting(PersistKeys.Device.TokenType, tokenType);
                 var token = "registration_token";
-                SetSetting(PersistKeys.Device.TOKEN, token);
+                SetSetting(PersistKeys.Device.Token, token);
 
                 var localDevice = stateMachine.LoadPersistedLocalDevice();
                 localDevice.Platform.Should().Be(mobileDevice.DevicePlatform);
@@ -190,13 +190,13 @@ namespace IO.Ably.Tests.DotNetCore20.Push
 
                 await state.Transition(new ActivationStateMachine.CalledActivate());
 
-                MobileDevice.GetPreference(PersistKeys.Device.DEVICE_ID, PersistKeys.Device.SharedName)
+                MobileDevice.GetPreference(PersistKeys.Device.DeviceId, PersistKeys.Device.SharedName)
                     .Should().NotBeEmpty();
 
-                MobileDevice.GetPreference(PersistKeys.Device.CLIENT_ID, PersistKeys.Device.SharedName)
+                MobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName)
                     .Should().NotBeEmpty();
 
-                MobileDevice.GetPreference(PersistKeys.Device.DEVICE_SECRET, PersistKeys.Device.SharedName)
+                MobileDevice.GetPreference(PersistKeys.Device.DeviceSecret, PersistKeys.Device.SharedName)
                     .Should().NotBeEmpty();
             }
 
@@ -506,7 +506,7 @@ namespace IO.Ably.Tests.DotNetCore20.Push
                 // (RSH3c2a)
                 machine.LocalDevice.DeviceIdentityToken.Should().Be("token");
                 // Check it was saved in device storage as well
-                MobileDevice.GetPreference(PersistKeys.Device.DEVICE_TOKEN, PersistKeys.Device.SharedName).Should()
+                MobileDevice.GetPreference(PersistKeys.Device.DeviceToken, PersistKeys.Device.SharedName).Should()
                     .Be("token");
             }
 
