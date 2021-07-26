@@ -18,9 +18,25 @@ namespace IO.Ably.Push
 
         public string ClientId { get; }
 
-        public State CurrentState { get; private set; }
+        public Action<string, string> StateChangeHandler = (currentState, newState) => { };
 
-        private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
+        private State _currentState;
+
+        public State CurrentState
+        {
+            get => _currentState;
+            internal set
+            {
+                if (value != null && ReferenceEquals(value, _currentState) == false)
+                {
+                    StateChangeHandler(_currentState?.GetType().Name, value.GetType().Name);
+                }
+
+                _currentState = value;
+            }
+        }
+
+        internal Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
         internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger = null)
         {
