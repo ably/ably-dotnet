@@ -16,7 +16,7 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
         internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", 80002);
         internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", 80000);
-        internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", 40100);
+        internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", ErrorCodes.Unauthorized);
         internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", 40000);
         internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", 80002);
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);

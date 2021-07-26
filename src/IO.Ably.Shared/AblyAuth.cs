@@ -177,7 +177,7 @@ namespace IO.Ably
                 var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (currentValidToken == null)
                 {
-                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
+                    throw new AblyException("Invalid token credentials: " + CurrentToken, ErrorCodes.Unauthorized, HttpStatusCode.Unauthorized);
                 }
 
                 request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
