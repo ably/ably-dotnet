@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Realtime
+namespace IO.Ably.Tests.Realtime
 {
     public class DeltaSpecs : AblyRealtimeSpecs
     {

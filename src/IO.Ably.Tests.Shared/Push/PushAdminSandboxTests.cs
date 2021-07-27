@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Push
+namespace IO.Ably.Tests.Push
 {
     public static class PushAdminSandboxTests
     {

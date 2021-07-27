@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Push;
 
-namespace IO.Ably.Tests.DotNetCore20.Push
+namespace IO.Ably.Tests.Push
 {
     public class FakeMobileDevice : IMobileDevice
     {

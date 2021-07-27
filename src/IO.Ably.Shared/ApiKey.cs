@@ -44,7 +44,7 @@ namespace IO.Ably
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new AblyException("Ably key was empty. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
+                throw new AblyException("Ably key was empty. Ably key must be in the following format [AppId].[keyId]:[keyValue]", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
             }
 
             var trimmedKey = key.Trim();
@@ -65,7 +65,7 @@ namespace IO.Ably
                 }
             }
 
-            throw new AblyException("Invalid Ably key. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
+            throw new AblyException("Invalid Ably key. Ably key must be in the following format [AppId].[keyId]:[keyValue]", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
         }
 
         internal static bool IsValidFormat(string key)

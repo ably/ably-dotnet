@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace IO.Ably.Tests.DotNetCore20.Extensions
+namespace IO.Ably.Tests.Extensions
 {
     public class StringExtensionsTests
     {

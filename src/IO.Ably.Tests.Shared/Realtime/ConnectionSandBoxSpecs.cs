@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -349,7 +348,7 @@ namespace IO.Ably.Tests.Realtime
 
             // this assertion shows that we are picking up a client side validation error
             // if this key is passed to the server we would get an error with a 40005 code
-            client.Connection.ErrorReason.Code.Should().Be(40101);
+            client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.InvalidCredentials);
         }
 
         [Theory]
