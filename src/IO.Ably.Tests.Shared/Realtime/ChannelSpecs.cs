@@ -384,7 +384,7 @@ namespace IO.Ably.Tests.Realtime
                     /* RTL2d */
                     s.Error.Should().NotBeNull();
                     s.Error.Message.Should().StartWith("Channel didn't attach within");
-                    s.Error.Code.Should().Be(90007);
+                    s.Error.Code.Should().Be(ErrorCodes.ChannelOperationFailedNoServerResponse);
                     tsc.SetCompleted();
                 });
 
