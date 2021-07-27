@@ -1743,7 +1743,7 @@ namespace IO.Ably.Tests.Realtime
                         if (result.IsFailure)
                         {
                             didError = true;
-                            result.Error.Code.Should().Be(91001);
+                            result.Error.Code.Should().Be(ErrorCodes.UnableToEnterPresenceChannelInvalidState);
                             errCount++;
                         }
 
@@ -1800,7 +1800,7 @@ namespace IO.Ably.Tests.Realtime
                         if (result.IsFailure)
                         {
                             didError = true;
-                            result.Error.Code.Should().Be(91001);
+                            result.Error.Code.Should().Be(ErrorCodes.UnableToEnterPresenceChannelInvalidState);
                             errCount++;
                         }
 
