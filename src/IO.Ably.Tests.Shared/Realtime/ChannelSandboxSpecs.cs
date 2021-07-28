@@ -111,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
-            result.Error.Code.Should().Be(40160);
+            result.Error.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
             result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 

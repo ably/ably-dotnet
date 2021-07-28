@@ -216,7 +216,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 // bar should fail
                 b.Should().BeFalse();
-                info.Code.Should().Be(40160);
+                info.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
                 barFailAwaiter.SetCompleted();
             });
             barChannel.Attach();
@@ -277,7 +277,7 @@ namespace IO.Ably.Tests.Realtime
             await failedAwaiter.Task;
 
             stateChange.Should().NotBeNull("channel should have failed");
-            stateChange.Error.Code.Should().Be(40160);
+            stateChange.Error.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
             stateChange.Error.Message.Should().Contain("Channel denied access");
 
             async Task DowngradeCapability(AblyRealtime rt)
