@@ -18,7 +18,6 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN15")]
     public class ConnectionFailuresOnceConnectedSpecs : AblyRealtimeSpecs
     {
-        private const int TokenErrorCode = 40140;
         private const int FailedRenewalErrorCode = 1234;
 
         private readonly TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
@@ -33,7 +32,7 @@ namespace IO.Ably.Tests.Realtime
             SetNowFunc(() => DateTimeOffset.UtcNow);
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
-            _tokenErrorInfo = new ErrorInfo { Code = TokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
+            _tokenErrorInfo = new ErrorInfo { Code = ErrorCodes.TokenError, StatusCode = HttpStatusCode.Unauthorized };
         }
 
         [Fact]
@@ -141,7 +140,7 @@ namespace IO.Ably.Tests.Realtime
 
             errors.Should().NotBeEmpty();
             errors.Should().HaveCount(2);
-            errors[0].Code.Should().Be(40140);
+            errors[0].Code.Should().Be(ErrorCodes.TokenError);
             errors[1].Code.Should().Be(FailedRenewalErrorCode);
         }
 
