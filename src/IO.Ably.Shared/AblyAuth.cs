@@ -218,7 +218,7 @@ namespace IO.Ably
                     return token;
                 }
 
-                throw new AblyException("Token is invalid: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
+                throw new AblyException("Token is invalid: " + CurrentToken, ErrorCodes.TokenExpired, HttpStatusCode.Unauthorized);
             }
 
             throw new AblyException(ErrorInfo.NonRenewableToken);

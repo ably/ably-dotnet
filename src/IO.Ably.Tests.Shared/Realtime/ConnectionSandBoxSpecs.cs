@@ -764,7 +764,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
                            {
-                               change.Reason.Code.Should().Be(40142);
+                               change.Reason.Code.Should().Be(ErrorCodes.TokenExpired);
                            });
             await client.WaitForState(ConnectionState.Disconnected);
             await client.WaitForState(ConnectionState.Connected);
@@ -864,7 +864,7 @@ namespace IO.Ably.Tests.Realtime
 
             stateChanges.Should().HaveCount(3);
             stateChanges[0].HasError.Should().BeTrue();
-            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[0].Reason.Code.Should().Be(ErrorCodes.TokenExpired);
             stateChanges[1].HasError.Should().BeFalse();
             stateChanges[2].HasError.Should().BeFalse();
         }
@@ -921,7 +921,7 @@ namespace IO.Ably.Tests.Realtime
                                                                             });
 
             stateChanges[0].HasError.Should().BeTrue();
-            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[0].Reason.Code.Should().Be(ErrorCodes.TokenExpired);
             stateChanges[1].HasError.Should().BeFalse();
             stateChanges[2].HasError.Should().BeTrue();
             stateChanges[2].Reason.Code.Should().Be(80019);
