@@ -166,7 +166,7 @@ namespace IO.Ably.Realtime.Workflow
                                     }
                                     catch (Exception e)
                                     {
-                                        Logger.Error("Error Processing command: " + cmdsToExecute, e);
+                                        Logger.Error($"Error Processing command: {cmdsToExecute}", e);
                                     }
                                 }
 
