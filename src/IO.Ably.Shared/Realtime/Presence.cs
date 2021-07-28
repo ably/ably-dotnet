@@ -472,7 +472,7 @@ namespace IO.Ably.Realtime
                 default:
                     var error = new ErrorInfo(
                         $"Unable to enter presence channel when connection is in a ${_connection.Connection.State} state.",
-                        91001,
+                        ErrorCodes.UnableToEnterPresenceChannelInvalidState,
                         HttpStatusCode.BadRequest);
                     Logger.Warning(error.ToString());
                     ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
@@ -498,7 +498,7 @@ namespace IO.Ably.Realtime
                     _connection.Send(message, callback);
                     break;
                 default:
-                    var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", 91001);
+                    var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", ErrorCodes.UnableToEnterPresenceChannelInvalidState);
                     Logger.Warning(error.ToString());
                     ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
                     return;
