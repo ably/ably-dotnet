@@ -6,7 +6,6 @@
         {
             public const string SharedName = "Ably_StateMachine";
             public const string CurrentState = "ABLY_PUSH_CURRENT_STATE";
-            public const string PendingEventsLength = "ABLY_PUSH_PENDING_EVENTS_LENGTH";
             public const string PendingEvents = "ABLY_PUSH_PENDING_EVENTS";
             public const string PushCustomRegistrar = "ABLY_PUSH_REGISTRATION_HANDLER";
         }

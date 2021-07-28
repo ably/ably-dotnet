@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Utils;
 
@@ -9,15 +10,33 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
+        private SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
+
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
 
         public string ClientId { get; }
 
-        public State CurrentState { get; private set; }
+        public Action<string, string> StateChangeHandler = (currentState, newState) => { };
 
-        private Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
+        private State _currentState;
+
+        public State CurrentState
+        {
+            get => _currentState;
+            internal set
+            {
+                if (value != null && ReferenceEquals(value, _currentState) == false)
+                {
+                    StateChangeHandler(_currentState?.GetType().Name, value.GetType().Name);
+                }
+
+                _currentState = value;
+            }
+        }
+
+        internal Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
         internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger = null)
         {
@@ -28,6 +47,118 @@ namespace IO.Ably.Push
         }
 
         public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+
+        public async Task HandleEvent(Event @event)
+        {
+            // Handle current event and any consequent events
+            // if current event didn't change state put it in pending queue and return
+            // finally check the pending event queue and process it following the above rules
+            // finally finally - preserve the state
+            Debug($"Handling event ({@event.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+
+            var canEnter = await _handleEventsLock.WaitAsync(2000); // Arbitrary number = 2 second
+            if (canEnter)
+            {
+                try
+                {
+                    await HandleInner();
+                    PersistState();
+                }
+                catch (Exception exception)
+                {
+                    _logger.Error("Error processing handle event.", exception);
+                    throw;
+                }
+                finally
+                {
+                    _handleEventsLock.Release();
+                }
+            }
+            else
+            {
+                Debug("Failed to acquire HandleEvent lock.");
+            }
+
+            // I've not made these static because it make it easier to access the debug and error logging methods
+            async Task<State> GetNextState(State currentState, Event eventToProcess, Queue<Event> pendingQueue)
+            {
+                if (eventToProcess is null)
+                {
+                    return currentState;
+                }
+
+                if (currentState.CanHandleEvent(eventToProcess) == false)
+                {
+                    Debug("No next state returned. Queuing event for later execution.");
+
+                    pendingQueue.Enqueue(eventToProcess);
+                    return currentState;
+                }
+
+                var (nextState, nextEventFunc) = await currentState.Transition(@eventToProcess);
+
+                if (nextState == null || ReferenceEquals(nextState, currentState))
+                {
+                    return currentState;
+                }
+
+                var nextEvent = await nextEventFunc();
+
+                if (nextEvent is null)
+                {
+                    return nextState;
+                }
+
+                return await GetNextState(nextState, nextEvent, pendingQueue);
+            }
+
+            async Task HandleInner()
+            {
+                CurrentState = await GetNextState(CurrentState, @event, PendingEvents);
+
+                // Once we have updated the state we can get the next event which came from the Update
+                // and try to transition the state again.
+                while (PendingEvents.Any())
+                {
+                    Event pendingEvent = PendingEvents.Peek();
+                    if (pendingEvent is null)
+                    {
+                        break;
+                    }
+
+                    if (CurrentState.CanHandleEvent(pendingEvent))
+                    {
+                        Debug($"Processing pending event ({pendingEvent.GetType().Name}. CurrentState: {CurrentState.GetType().Name}");
+
+                        // Update the current state based on the event we got.
+                        CurrentState = await GetNextState(CurrentState, pendingEvent, PendingEvents);
+                        _ = PendingEvents.Dequeue(); // Remove the message from the queue.
+                    }
+                    else
+                    {
+                        Debug(
+                            $"({pendingEvent.GetType().Name} can't be handled by currentState: {CurrentState.GetType().Name}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void PersistState()
+        {
+            Debug(
+                $"Persisting State and PendingQueue. State: {CurrentState.GetType().Name}. Queue: {PendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}");
+
+            if (CurrentState != null && CurrentState.Persist)
+            {
+                _mobileDevice.SetPreference(PersistKeys.StateMachine.CurrentState, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
+            }
+
+            var events = PendingEvents.ToList();
+
+            // Saves pending events as a pipe separated list.
+            _mobileDevice.SetPreference(PersistKeys.StateMachine.PendingEvents, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
+        }
 
         private void TriggerDeactivatedCallback(ErrorInfo reason = null)
         {
