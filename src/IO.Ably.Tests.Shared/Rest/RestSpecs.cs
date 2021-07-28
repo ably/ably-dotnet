@@ -207,7 +207,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenErrorCodeIsNotTokenSpecific_ShouldThrow()
             {
-                var client = GetConfiguredRestClient(40100, null);
+                var client = GetConfiguredRestClient(ErrorCodes.Unauthorized, null);
 
                 await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
