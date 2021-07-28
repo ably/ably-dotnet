@@ -325,7 +325,7 @@ namespace IO.Ably.Realtime
             }
 
             // RTL4f
-            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", 90007, HttpStatusCode.RequestTimeout));
+            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", ErrorCodes.ChannelOperationFailedNoServerResponse, HttpStatusCode.RequestTimeout));
         }
 
         private void OnDetachTimeout()
