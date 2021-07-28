@@ -99,7 +99,7 @@ namespace IO.Ably.Realtime
             // RTP11b
             if (_channel.State == ChannelState.Failed || _channel.State == ChannelState.Detached)
             {
-                throw new AblyException(new ErrorInfo($"channel operation failed. Invalid channel state ({_channel.State})", 90001));
+                throw new AblyException(new ErrorInfo($"channel operation failed. Invalid channel state ({_channel.State})", ErrorCodes.ChannelOperationFailedWithInvalidState));
             }
 
             if (_channel.State == ChannelState.Initialized)
@@ -218,7 +218,7 @@ namespace IO.Ably.Realtime
                 else
                 {
                     /* RTP11b */
-                    errorCode = 90001;
+                    errorCode = ErrorCodes.ChannelOperationFailedWithInvalidState;
                     errorMessage = $"Channel {_channel.Name}: cannot get presence state when the channel is in a {_channel.State} state.";
                 }
 
