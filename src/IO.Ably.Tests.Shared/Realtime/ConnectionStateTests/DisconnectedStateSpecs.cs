@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
             _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
-        private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
+        private ConnectionDisconnectedState GetState(ErrorInfo error = null)
         {
             return new ConnectionDisconnectedState(_context, error, _timer, Logger);
         }
