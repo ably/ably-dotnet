@@ -168,7 +168,7 @@ namespace IO.Ably.Tests.Realtime
             catch (AblyException e)
             {
                 e.Should().BeOfType<AblyException>();
-                e.ErrorInfo.Code.Should().Be(40140);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.TokenError);
             }
         }
 

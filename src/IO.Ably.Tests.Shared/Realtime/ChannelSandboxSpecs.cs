@@ -992,7 +992,7 @@ namespace IO.Ably.Tests.Realtime
 
                 client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
-                    Error = new ErrorInfo("test", 40140)
+                    Error = new ErrorInfo("test", ErrorCodes.TokenError)
                 });
             });
 
