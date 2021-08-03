@@ -948,22 +948,6 @@ namespace IO.Ably.Tests
                 return restClient;
             }
 
-            public async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
-            {
-                var restClient = await Specs.GetRestClient(protocol, optionsAction);
-
-                // intercept http calls to demostrate that the
-                // client did not attempt to request a new token
-                var execute = restClient.ExecuteHttpRequest;
-                restClient.ExecuteHttpRequest = request =>
-                {
-                    Requests.Add(request);
-                    return execute.Invoke(request);
-                };
-
-                return restClient;
-            }
-
             public async Task<AblyRealtime> GetRealTimeClientWithRequests(Protocol protocol, TokenDetails token, bool invalidateKey, Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
             {
                 var restClient = await GetRestClientWithRequests(protocol, token, invalidateKey);
@@ -985,32 +969,6 @@ namespace IO.Ably.Tests
 
                 var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, options => restClient);
                 return realtimeClient;
-            }
-
-            public async Task<AblyRealtime> GetRealtimeClient(Protocol protocol, Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
-            {
-                var client = await Specs.GetRealtimeClient(protocol, optionsAction);
-                var execHttp = client.RestClient.ExecuteHttpRequest;
-                client.RestClient.ExecuteHttpRequest = request =>
-                {
-                    Requests.Add(request);
-                    return execHttp(request);
-                };
-                return client;
-            }
-
-            public Task<AblyResponse> AblyResponseWith401Status(AblyRequest request)
-            {
-                Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
-                throw AblyException.FromResponse(r);
-            }
-
-            public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
-            {
-                Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
-                throw AblyException.FromResponse(r);
             }
 
             public Task<AblyResponse> AblyResponseWith500Status(AblyRequest request)
