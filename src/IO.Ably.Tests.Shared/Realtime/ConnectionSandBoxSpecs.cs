@@ -1037,7 +1037,7 @@ namespace IO.Ably.Tests.Realtime
 
             var dummyError = new ErrorInfo
             {
-                Code = 40130,
+                Code = ErrorCodes.KeyError,
                 StatusCode = HttpStatusCode.Unauthorized,
                 Message = "fake error"
             };
