@@ -414,8 +414,8 @@ namespace IO.Ably.Tests
 
                 _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
 
-                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
-                stateChanged.Should().BeFalse();
+                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected, because: context);
+                stateChanged.Should().BeFalse(because: context);
             }
 
             await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
