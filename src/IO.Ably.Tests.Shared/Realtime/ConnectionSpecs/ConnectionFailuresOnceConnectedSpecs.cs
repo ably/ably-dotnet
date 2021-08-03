@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h2")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToDisconnectedAndEmitError()
         {
-            var client = await SetupConnectedClient(true);
+            var client = await SetupConnectedClient(failRenewal: true);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
