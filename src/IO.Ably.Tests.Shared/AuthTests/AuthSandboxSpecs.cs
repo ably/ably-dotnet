@@ -603,7 +603,7 @@ namespace IO.Ably.Tests
             var error =
                 await
                     Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
-            error.ErrorInfo.Code.Should().Be(40160);
+            error.ErrorInfo.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
