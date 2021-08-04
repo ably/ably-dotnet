@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
             public void ShouldAllowAccessToChannelsObject()
             {
                 _client.Channels.Should().NotBeNull();
-                (_client.Channels is IChannels<IRealtimeChannel>).Should().BeTrue();
+                _client.Channels.Should().BeAssignableTo<IChannels<IRealtimeChannel>>();
             }
 
             [Fact]
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RTC5b")]
             public void ShouldImplementTheSameStatsInterfaceAsTheRestClient()
             {
-                (_client is IStatsCommands).Should().BeTrue();
+                _client.Should().BeAssignableTo<IStatsCommands>();
             }
 
             [Fact]
