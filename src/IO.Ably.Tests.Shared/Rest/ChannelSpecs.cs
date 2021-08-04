@@ -81,7 +81,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var options = new ChannelOptions();
                 var channel = _client.Channels.Get("test", options);
-                (channel as RestChannel).Options.Should().BeEquivalentTo(options);
+                ((RestChannel)channel).Options.Should().BeEquivalentTo(options);
             }
 
             [Fact]
@@ -89,10 +89,9 @@ namespace IO.Ably.Tests.Rest
             public void WhenAccessingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
             {
                 var channel = _client.Channels.Get("test");
-                var initialOptions = (channel as RestChannel).Options;
                 var newOptions = new ChannelOptions(true);
                 var secondTime = _client.Channels.Get("test", newOptions);
-                (secondTime as RestChannel).Options.Should().BeEquivalentTo(newOptions);
+                ((RestChannel)secondTime).Options.Should().BeEquivalentTo(newOptions);
             }
         }
 
