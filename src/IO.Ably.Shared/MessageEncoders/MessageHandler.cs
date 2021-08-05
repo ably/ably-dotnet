@@ -198,7 +198,7 @@ namespace IO.Ably.MessageEncoders
             var testType = GetNullableType(dataType) ?? dataType;
             if (UnsupportedTypes.Contains(testType))
             {
-                throw new AblyException("Unsupported payload type. Only string, binarydata (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
+                throw new AblyException("Unsupported payload type. Only string, binary data (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
             }
 
             Type GetNullableType(Type type)
