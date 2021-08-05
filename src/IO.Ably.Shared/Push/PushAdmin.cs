@@ -429,7 +429,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var request = _restClient.CreateRequest($"/push/deviceRegistrations", HttpMethod.Delete);
+            var request = _restClient.CreateRequest("/push/deviceRegistrations", HttpMethod.Delete);
             AddFullWaitIfNecessary(request);
             request.AddQueryParameters(deleteFilter);
 
