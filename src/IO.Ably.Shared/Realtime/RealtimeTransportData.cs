@@ -58,7 +58,7 @@ namespace IO.Ably.Realtime
         {
             if (IsBinary)
             {
-                return $"Binary message with length: " + Length;
+                return $"Binary message with length: {Length}";
             }
 
             return Text;
