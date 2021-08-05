@@ -60,7 +60,7 @@ namespace IO.Ably
 
         /* 500 codes */
         public const int InternalError = 50000;
-        public const int InternallChannelError = 50001;
+        public const int InternalChannelError = 50001;
         public const int InternalConnectionError = 50002;
         public const int TimeoutError = 50003;
 
