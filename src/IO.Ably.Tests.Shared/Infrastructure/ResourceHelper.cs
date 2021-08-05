@@ -17,10 +17,8 @@ namespace IO.Ably.Tests
                 throw new Exception("Resource not found: " + resName);
             }
 
-            using (var reader = new StreamReader(resourceStream))
-            {
-                return reader.ReadToEnd();
-            }
+            using var reader = new StreamReader(resourceStream);
+            return reader.ReadToEnd();
         }
 
         public static byte[] GetBinaryResource(string localResName)
@@ -28,17 +26,15 @@ namespace IO.Ably.Tests
             Assembly ass = typeof(ResourceHelper).Assembly;
             string defaultNamespace = ass.GetName().Name;
             string resName = $"{defaultNamespace}.{localResName}";
-            using (Stream resourceStream = ass.GetManifestResourceStream(resName))
+            using Stream resourceStream = ass.GetManifestResourceStream(resName);
+            if (resourceStream == null)
             {
-                if (resourceStream == null)
-                {
-                    throw new Exception("Resource not found: " + resName);
-                }
-
-                byte[] data = new byte[resourceStream.Length];
-                resourceStream.Read(data, 0, data.Length);
-                return data;
+                throw new Exception("Resource not found: " + resName);
             }
+
+            byte[] data = new byte[resourceStream.Length];
+            resourceStream.Read(data, 0, data.Length);
+            return data;
         }
     }
 }
