@@ -18,7 +18,7 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { new[] { new Message() } }; // 1 empty message
                 yield return new object[] { new[] { new Message(), new Message() } }; // 2 empty messages
-                yield return new object[] { new[] { new Message(), new Message("test", null) } }; // 1 empty, 1 mesage
+                yield return new object[] { new[] { new Message(), new Message("test", null) } }; // 1 empty, 1 message
                 yield return new object[] { new[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
             }
         }

@@ -903,7 +903,7 @@ namespace IO.Ably.Tests
         }
 
         /// <summary>
-        /// Helper methods that return an AblyRest or AblyRealitme instance and a list of AblyRequest that
+        /// Helper methods that return an AblyRest or AblyRealtime instance and a list of AblyRequest that
         /// will contain all the HTTP requests the client attempts
         /// </summary>
         private class RSA4Helper
@@ -936,8 +936,7 @@ namespace IO.Ably.Tests
 
                 var restClient = await Specs.GetRestClient(protocol, optionsAction);
 
-                // intercept http calls to demostrate that the
-                // client did not attempt to request a new token
+                // intercept http calls to demonstrate that the client did not attempt to request a new token
                 var execute = restClient.ExecuteHttpRequest;
                 restClient.ExecuteHttpRequest = request =>
                 {

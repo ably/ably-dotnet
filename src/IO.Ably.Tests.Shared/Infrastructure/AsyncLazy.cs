@@ -34,7 +34,7 @@ namespace IO.Ably.Tests
         }
 
         /// <summary>
-        /// Asynchronous infrastructure support. This method permits instances of <see cref="AsyncLazy&lt;T&gt;"/> to be await'ed.
+        /// Asynchronous infrastructure support. This method permits instances of <see cref="AsyncLazy&lt;T&gt;"/> to be awaited.
         /// </summary>
         public TaskAwaiter<T> GetAwaiter()
         {

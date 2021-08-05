@@ -82,7 +82,7 @@ namespace IO.Ably.Tests
             // Act
             _state.Connect();
 
-            // Asser
+            // Assert
             _context.ShouldHaveNotChangedState();
         }
 

@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.Realtime
             {
             }
 
-            // TODO: Add tests to makes sure Presense messages id, timestamp and connectionId are set
+            // TODO: Add tests to makes sure Presence messages id, timestamp and connectionId are set
             [Theory(Skip = "Keeps failing")]
             [ProtocolData]
             [Trait("spec", "RTP1")]
@@ -793,7 +793,7 @@ namespace IO.Ably.Tests.Realtime
                     new PresenceMessage(PresenceAction.Enter, "3"),
                     /* client 4 enters and leaves */
                     new PresenceMessage(PresenceAction.Enter, "4"),
-                    new PresenceMessage(PresenceAction.Leave, "4"), /* geting dupe */
+                    new PresenceMessage(PresenceAction.Leave, "4"), /* getting dupe */
                     /* client 1 is eliminated from the presence map because the first portion of SYNC is discarded */
                     new PresenceMessage(PresenceAction.Leave, "1"),
                 };
