@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Realtime
                     {
                         new Message
                         {
-                            Id = "badMessage", Encoding = "vcdiff", Data = new byte[0]
+                            Id = "badMessage", Encoding = "vcdiff", Data = Array.Empty<byte>()
                         },
                     },
                 }));

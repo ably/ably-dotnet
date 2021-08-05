@@ -1,3 +1,5 @@
+using System;
+using System.Security.Cryptography;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
@@ -20,7 +22,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Binary data.
         /// </summary>
-        public byte[] Data { get; } = new byte[0];
+        public byte[] Data { get; } = Array.Empty<byte>();
 
         /// <summary>
         /// Text data.
