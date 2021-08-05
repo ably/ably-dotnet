@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.Rest
         public void ChannelsIsACollectionOfChannelObjects()
         {
             var client = GetRestClient();
-            (client.Channels is IEnumerable<IRestChannel>).Should().BeTrue();
+            client.Channels.Should().BeAssignableTo<IEnumerable<IRestChannel>>();
         }
 
         [Fact]
