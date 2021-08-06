@@ -26,7 +26,7 @@ namespace IO.Ably.MessageEncoders
             }
 
             var cipherType = GetCipherType(currentEncoding);
-            if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
+            if (!string.Equals(cipherType, options.CipherParams.CipherType, StringComparison.CurrentCultureIgnoreCase))
             {
                 logger.Error(
                     $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
