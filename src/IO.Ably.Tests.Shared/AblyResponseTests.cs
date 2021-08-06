@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests
             // Arrange
 
             // Act
-            var response = new AblyResponse(string.Empty, type, new byte[0]);
+            var response = new AblyResponse(string.Empty, type, Array.Empty<byte>());
 
             // Assert
             ((ResponseType)responseType).Should().Be(response.Type);
@@ -28,7 +29,7 @@ namespace IO.Ably.Tests
             // Arrange
 
             // Act
-            var response = new AblyResponse(encoding, string.Empty, new byte[0]);
+            var response = new AblyResponse(encoding, string.Empty, Array.Empty<byte>());
 
             // Assert
             expected.Should().Be(response.Encoding);
