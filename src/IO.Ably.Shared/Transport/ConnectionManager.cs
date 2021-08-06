@@ -268,7 +268,7 @@ namespace IO.Ably.Transport
         }
 
         void ITransportListener.OnTransportEvent(Guid transportId, TransportState transportState, Exception ex)
-            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
+            => ExecuteCommand(HandleTransportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {

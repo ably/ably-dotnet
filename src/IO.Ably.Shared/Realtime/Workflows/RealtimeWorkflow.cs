@@ -460,7 +460,7 @@ namespace IO.Ably.Realtime.Workflow
                             .TriggeredBy(cmd);
                     }
 
-                case HandleTrasportEventCommand cmd:
+                case HandleTransportEventCommand cmd:
 
                     if (ConnectionManager.Transport != null
                         && ConnectionManager.Transport.Id != cmd.TransportId)
