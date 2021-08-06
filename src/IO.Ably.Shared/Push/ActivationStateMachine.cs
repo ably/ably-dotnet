@@ -95,7 +95,7 @@ namespace IO.Ably.Push
                     return currentState;
                 }
 
-                var (nextState, nextEventFunc) = await currentState.Transition(@eventToProcess);
+                var (nextState, nextEventFunc) = await currentState.Transition(eventToProcess);
 
                 if (nextState == null || ReferenceEquals(nextState, currentState))
                 {
