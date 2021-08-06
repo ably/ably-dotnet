@@ -135,7 +135,7 @@ namespace IO.Ably.Tests.AuthTests
                 return exFunc(request);
             };
 
-            // demonstrate that we don't need Querytime set to get a server time offset
+            // demonstrate that we don't need QueryTime set to get a server time offset
             testAblyAuth.Options.QueryTime = false;
             await testAblyAuth.AuthorizeAsync(tokenParams);
 

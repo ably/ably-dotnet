@@ -105,7 +105,7 @@ namespace IO.Ably.Tests.Shared
 
                     var diffrence = Differentiate(firstsItem, secondsItem);
 
-                    if (diffrence != null /*&& diffrence.Count() > 0*/)
+                    if (diffrence != null)
                     {
                         difference[$"{mode}{property}"] = diffrence;
                     }

@@ -15,7 +15,7 @@ namespace IO.Ably.Tests
                     Namespace = "IO.Ably.CustomSerialisers",
                     OutputDirectory = "../../../IO.Ably/CustomSerialisers/GeneratedSerializers",
                     EnumSerializationMethod = EnumSerializationMethod.ByName, // You can tweak it to use ByUnderlyingValue as you like.
-                IsRecursive = true, // Set depenendent serializers are also generated.
+                IsRecursive = true, // Set dependent serializers are also generated.
                 PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
                 SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
             },
@@ -37,7 +37,7 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { new Message[] { new Message() } }; // 1 empty message
                 yield return new object[] { new Message[] { new Message(), new Message() } }; // 2 empty messages
-                yield return new object[] { new Message[] { new Message(), new Message("test", null) } }; // 1 empty, 1 mesage
+                yield return new object[] { new Message[] { new Message(), new Message("test", null) } }; // 1 empty, 1 message
                 yield return new object[] { new Message[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
             }
         }
@@ -48,7 +48,7 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage() } }; // 2 empty messages
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceAction.Enter, "test") } }; // 1 empty, 1 mesage
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceAction.Enter, "test") } }; // 1 empty, 1 message
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } }; // 2 messages
             }
         }
@@ -163,7 +163,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            
+
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -439,7 +439,7 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Flags(int flags)
         {
             // Arrange
-            
+
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("flags"));
