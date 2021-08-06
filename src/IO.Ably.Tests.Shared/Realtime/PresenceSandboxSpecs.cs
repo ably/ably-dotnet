@@ -1546,8 +1546,6 @@ namespace IO.Ably.Tests.Realtime
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
-                    Presence.QueuedPresenceMessage[] presenceMessages = null;
-
                     var tsc = new TaskCompletionAwaiter();
                     ErrorInfo err = null;
                     bool? success = null;
@@ -1557,7 +1555,7 @@ namespace IO.Ably.Tests.Realtime
                         err = info;
                         tsc.SetCompleted();
                     });
-                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);
 
@@ -1696,12 +1694,9 @@ namespace IO.Ably.Tests.Realtime
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
-                    List<int> queueCounts = new List<int>();
-                    Presence.QueuedPresenceMessage[] presenceMessages = null;
-
                     channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
 
-                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);
 
@@ -1772,14 +1767,13 @@ namespace IO.Ably.Tests.Realtime
                 public async Task ChannelStateCondition_WhenChannelStateIsInvalid_MessageAreNotPublishedAndExceptionIsThrown(Protocol protocol)
                 {
                     var client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
-                    int errCount = 0;
 
                     /*
                      * Test Channel States
                      * Detached, Detaching, Failed and Suspended states should result in an error
                      */
 
-                    errCount = 0;
+                    int errCount = 0;
                     async Task TestWithChannelState(ChannelState state)
                     {
                         var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
