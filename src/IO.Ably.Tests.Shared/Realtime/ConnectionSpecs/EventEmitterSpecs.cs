@@ -408,13 +408,13 @@ namespace IO.Ably.Tests.Realtime
 
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
 
-            TestEventEmitterArgs listener1args = null;
+            TestEventEmitterArgs listener1Args = null;
             void Listener1(TestEventEmitterArgs args)
             {
                 callList.Add(1);
                 em.Off(1, Listener2);
                 em.On(1, Listener4);
-                listener1args = args;
+                listener1Args = args;
             }
 
             void Listener2(TestEventEmitterArgs args)
@@ -456,7 +456,7 @@ namespace IO.Ably.Tests.Realtime
             callList[1].Should().Be(2);
             callList[2].Should().Be(3);
             callList[3].Should().Be(5);
-            listener1args.Message.Should().Be("emit1");
+            listener1Args.Message.Should().Be("emit1");
 
             callList = new List<int>();
 
@@ -469,7 +469,7 @@ namespace IO.Ably.Tests.Realtime
             callList.Count.Should().Be(2);
             callList[0].Should().Be(1);
             callList[1].Should().Be(4);
-            listener1args.Message.Should().Be("emit2");
+            listener1Args.Message.Should().Be("emit2");
 
             callList = new List<int>();
 
@@ -486,14 +486,14 @@ namespace IO.Ably.Tests.Realtime
             callList[1].Should().Be(4);
             callList[2].Should().Be(4);
             callList[3].Should().Be(6);
-            listener1args.Message.Should().Be("emit3");
+            listener1Args.Message.Should().Be("emit3");
 
             callList = new List<int>();
 
             // Listener6 removed all listeners
             em.DoDummyEmit(1, "emit4");
             callList.Count.Should().Be(0);
-            listener1args.Message.Should().Be("emit3");
+            listener1Args.Message.Should().Be("emit3");
         }
 
         [Fact]
