@@ -23,7 +23,7 @@ namespace IO.Ably.Realtime
         private string _currentSyncChannelSerial;
         private bool _initialSyncCompleted = false;
 
-        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
@@ -31,7 +31,7 @@ namespace IO.Ably.Realtime
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
-            _clientId = cliendId;
+            _clientId = clientId;
         }
 
         private event EventHandler InitialSyncCompleted;
