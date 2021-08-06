@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Push;
 using IO.Ably.Tests.Infrastructure;
+
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using Xunit;
 using Xunit.Abstractions;
 
