@@ -40,7 +40,7 @@ namespace IO.Ably
         /// <returns>the timespan as a string.</returns>
         public static string TimeToString(this TimeSpan timeSpan)
         {
-            return string.Format("{0}h:{1}m:{2}s.{3}ms", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+            return $"{timeSpan.Hours}h:{timeSpan.Minutes}m:{timeSpan.Seconds}s.{timeSpan.Milliseconds}ms";
         }
     }
 }
