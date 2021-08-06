@@ -191,7 +191,7 @@ namespace IO.Ably.Transport
                 {
                     Logger.Error("Error in AuthUpdated handler", e);
                     throw new AblyException(
-                        new ErrorInfo($"Error while waiting for connection to update after updating Auth"), e);
+                        new ErrorInfo("Error while waiting for connection to update after updating Auth"), e);
                 }
             }
         }
