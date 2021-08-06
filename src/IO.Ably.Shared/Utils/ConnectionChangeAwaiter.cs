@@ -17,11 +17,6 @@ namespace IO.Ably.Utils
             _currentState = _connection.State;
         }
 
-        public Task<(bool, ConnectionState?)> Wait()
-        {
-            return Wait(TimeSpan.FromSeconds(16));
-        }
-
         public async Task<(bool, ConnectionState?)> Wait(TimeSpan timeout)
         {
             if (DefaultLogger.IsDebug)
