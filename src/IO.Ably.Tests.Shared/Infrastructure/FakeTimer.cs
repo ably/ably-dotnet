@@ -10,8 +10,6 @@ namespace IO.Ably.Tests
 
         public Func<Task> OnTimeOutFunc { get; private set; }
 
-        public bool AutoRest { get; set; }
-
         public TimeSpan LastDelay { get; set; }
 
         public bool StartedWithAction { get; set; }
