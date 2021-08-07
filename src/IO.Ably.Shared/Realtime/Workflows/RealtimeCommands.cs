@@ -29,8 +29,6 @@ namespace IO.Ably.Realtime.Workflow
         {
         }
 
-        public static InitCommand Create() => new InitCommand();
-
         protected override string ExplainData()
         {
             return DateTimeOffset.UtcNow.ToString();
