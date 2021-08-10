@@ -41,7 +41,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeHttpMessageHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeResponseHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTimer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransportFactory.cs" />
