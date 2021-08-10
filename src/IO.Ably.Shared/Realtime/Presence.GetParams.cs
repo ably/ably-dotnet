@@ -3,7 +3,7 @@
     /// <summary>
     /// A class that provides access to presence operations and state for the associated Channel.
     /// </summary>
-    public partial class Presence
+    public sealed partial class Presence
     {
         /// <summary>
         /// Class used to pass parameters when using Presence.GetAsync method.

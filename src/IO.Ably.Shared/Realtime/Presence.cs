@@ -14,7 +14,7 @@ namespace IO.Ably.Realtime
     /// <summary>
     /// A class that provides access to presence operations and state for the associated Channel.
     /// </summary>
-    public partial class Presence
+    public sealed partial class Presence
     {
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -863,15 +863,6 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable SA1600 // Elements should be documented
-        protected virtual void OnInitialSyncCompleted()
-        {
-            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
-        }
-#pragma warning restore SA1600 // Elements should be documented
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
         internal void OnSyncCompleted()
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
@@ -883,5 +874,10 @@ namespace IO.Ably.Realtime
             ["members"] = Map.GetState(),
             ["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message))),
         };
+
+        private void OnInitialSyncCompleted()
+        {
+            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
