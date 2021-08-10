@@ -906,7 +906,7 @@ namespace IO.Ably.Tests.Realtime
                 var localMessage = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
-                    Id = s"local:0:0",
+                    Id = "local:0:0",
                     Timestamp = DateTimeOffset.UtcNow,
                     ClientId = "local".AddRandomSuffix(),
                     ConnectionId = "local",
