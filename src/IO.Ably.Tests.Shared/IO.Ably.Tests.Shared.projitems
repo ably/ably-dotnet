@@ -37,7 +37,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySandboxFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AsyncLazy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConditionalAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAuth.cs" />
