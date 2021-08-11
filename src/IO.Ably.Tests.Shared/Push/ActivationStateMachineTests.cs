@@ -1297,7 +1297,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH3g2c")]
             public async Task WithDeregistered_ShouldClearLocalDeviceAndTransitionToNotActivated()
             {
-                var (state, machine) = GetStateAndStateMachine(machine => new ActivationStateMachine.NotActivated(machine));
+                var (state, machine) = GetStateAndStateMachine(stateMachine => new ActivationStateMachine.NotActivated(stateMachine));
                 var machineLocalDevice = LocalDevice.Create();
                 machine.LocalDevice = machineLocalDevice;
                 machine.PersistLocalDevice(machine.LocalDevice);
