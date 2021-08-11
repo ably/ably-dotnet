@@ -7,6 +7,33 @@ namespace IO.Ably.Tests
 {
     public static class TestExtensions
     {
+        /// <summary>
+        /// This method yields the current thread and waits until the whole command queue is processed.
+        /// </summary>
+        /// <returns></returns>
+        public static async Task ProcessCommands(this IRealtimeClient client)
+        {
+            var realtime = (AblyRealtime)client;
+            var taskAwaiter = new TaskCompletionAwaiter();
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(50);
+
+                    if (realtime.Workflow.IsProcessingCommands() == false)
+                    {
+                        taskAwaiter.SetCompleted();
+                    }
+                }
+            });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+            await taskAwaiter.Task;
+        }
+
         internal static TestTransportWrapper GetTestTransport(this IRealtimeClient client)
         {
             return ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
@@ -14,7 +41,7 @@ namespace IO.Ably.Tests
 
         internal static void SetOnTransportCreated(this IRealtimeClient client, Action<TestTransportWrapper> onCreated)
         {
-            var factory = ((AblyRealtime)client).Options.TransportFactory as TestTransportFactory;
+            var factory = GetTestTransportFactory(client);
             factory.OnTransportCreated = onCreated;
         }
 
@@ -53,34 +80,19 @@ namespace IO.Ably.Tests
         internal static void AfterProtocolMessageProcessed(this AblyRealtime client, Action<ProtocolMessage> action)
         {
             client.GetTestTransport().AfterDataReceived = action;
-            (client.Options.TransportFactory as TestTransportFactory).AfterDataReceived = action;
+            var factory = GetTestTransportFactory(client);
+            factory.AfterDataReceived = action;
         }
 
-        /// <summary>
-        /// This method yields the current thread and waits until the whole command queue is processed.
-        /// </summary>
-        /// <returns></returns>
-        public static async Task ProcessCommands(this IRealtimeClient client)
+        private static TestTransportFactory GetTestTransportFactory(IRealtimeClient client)
         {
-            var realtime = client as AblyRealtime;
-            var taskAwaiter = new TaskCompletionAwaiter();
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            _ = Task.Run(async () =>
+            var factory = ((AblyRealtime)client).Options.TransportFactory as TestTransportFactory;
+            if (factory is null)
             {
-                while (true)
-                {
-                    await Task.Delay(50);
+                throw new Exception("Client is not using the 'TestTransportFactory'");
+            }
 
-                    if (realtime.Workflow.IsProcessingCommands() == false)
-                    {
-                        taskAwaiter.SetCompleted();
-                    }
-                }
-            });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-            await taskAwaiter.Task;
+            return factory;
         }
     }
 }
