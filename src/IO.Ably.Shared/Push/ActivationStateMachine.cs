@@ -10,17 +10,14 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
-        private SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
-
+        private readonly SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
         private readonly AblyRest _restClient;
         private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
+        private readonly Action<string, string> _stateChangeHandler = (currentState, newState) => { };
+        private State _currentState;
 
         public string ClientId { get; }
-
-        public Action<string, string> StateChangeHandler = (currentState, newState) => { };
-
-        private State _currentState;
 
         public State CurrentState
         {
@@ -29,7 +26,7 @@ namespace IO.Ably.Push
             {
                 if (value != null && ReferenceEquals(value, _currentState) == false)
                 {
-                    StateChangeHandler(_currentState?.GetType().Name, value.GetType().Name);
+                    _stateChangeHandler(_currentState?.GetType().Name, value.GetType().Name);
                 }
 
                 _currentState = value;
