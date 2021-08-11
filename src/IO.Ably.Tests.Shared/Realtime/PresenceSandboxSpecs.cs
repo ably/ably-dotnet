@@ -906,7 +906,7 @@ namespace IO.Ably.Tests.Realtime
                 var localMessage = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
-                    Id = $"local:0:0",
+                    Id = "local:0:0",
                     Timestamp = DateTimeOffset.UtcNow,
                     ClientId = "local".AddRandomSuffix(),
                     ConnectionId = "local",
@@ -975,7 +975,7 @@ namespace IO.Ably.Tests.Realtime
                 var localMessage1 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
-                    Id = $"local:0:1",
+                    Id = "local:0:1",
                     Timestamp = DateTimeOffset.UtcNow,
                     ClientId = "local".AddRandomSuffix(),
                     ConnectionId = "local",
@@ -985,7 +985,7 @@ namespace IO.Ably.Tests.Realtime
                 var localMessage2 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
-                    Id = $"local:0:2",
+                    Id = "local:0:2",
                     Timestamp = DateTimeOffset.UtcNow,
                     ClientId = "local".AddRandomSuffix(),
                     ConnectionId = "local",
