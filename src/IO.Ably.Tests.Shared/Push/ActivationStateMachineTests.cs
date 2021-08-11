@@ -26,17 +26,17 @@ namespace IO.Ably.Tests.Push
 
                 var stateMachine = new ActivationStateMachine(GetRestClient(), mobileDevice);
 
-                var deviceId = "deviceId";
+                const string deviceId = "deviceId";
                 SetSetting(PersistKeys.Device.DeviceId, deviceId);
-                var clientid = "clientId";
-                SetSetting(PersistKeys.Device.ClientId, clientid);
-                var deviceSecret = "secret";
+                const string clientId = "clientId";
+                SetSetting(PersistKeys.Device.ClientId, clientId);
+                const string deviceSecret = "secret";
                 SetSetting(PersistKeys.Device.DeviceSecret, deviceSecret);
-                var identityToken = "token";
+                const string identityToken = "token";
                 SetSetting(PersistKeys.Device.DeviceToken, identityToken);
-                var tokenType = "fcm";
+                const string tokenType = "fcm";
                 SetSetting(PersistKeys.Device.TokenType, tokenType);
-                var token = "registration_token";
+                const string token = "registration_token";
                 SetSetting(PersistKeys.Device.Token, token);
 
                 var localDevice = stateMachine.LoadPersistedLocalDevice();
@@ -44,7 +44,7 @@ namespace IO.Ably.Tests.Push
                 localDevice.FormFactor.Should().Be(mobileDevice.FormFactor);
 
                 localDevice.Id.Should().Be(deviceId);
-                localDevice.ClientId.Should().Be(clientid);
+                localDevice.ClientId.Should().Be(clientId);
                 localDevice.DeviceSecret.Should().Be(deviceSecret);
                 localDevice.DeviceIdentityToken.Should().Be(identityToken);
                 localDevice.RegistrationToken.Type.Should().Be(tokenType);
