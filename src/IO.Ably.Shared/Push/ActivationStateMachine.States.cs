@@ -6,13 +6,13 @@ namespace IO.Ably.Push
 {
     internal partial class ActivationStateMachine
     {
-        internal static readonly Func<Task<Event>> EmptyNextEventFunc =
+        private static readonly Func<Task<Event>> EmptyNextEventFunc =
             () => Task.FromResult((Event)null);
 
-        internal static Func<Task<Event>> ToNextEventFunc(Func<Task<Event>> singleEventFunc)
+        private static Func<Task<Event>> ToNextEventFunc(Func<Task<Event>> singleEventFunc)
             => async () => await singleEventFunc();
 
-        internal static Func<Task<Event>> ToNextEventFunc(Event nextEvent)
+        private static Func<Task<Event>> ToNextEventFunc(Event nextEvent)
         {
             if (nextEvent is null)
             {
