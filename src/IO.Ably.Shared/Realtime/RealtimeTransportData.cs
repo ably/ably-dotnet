@@ -1,5 +1,4 @@
 using System;
-using System.Security.Cryptography;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
