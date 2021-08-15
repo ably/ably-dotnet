@@ -5,12 +5,6 @@ namespace IO.Ably.Transport
 {
     internal sealed class AttemptFailedState
     {
-        public ErrorInfo Error { get; private set; }
-
-        public Exception Exception { get; private set; }
-
-        public ConnectionState State { get; private set; }
-
         public AttemptFailedState(ConnectionState state, ErrorInfo error)
         {
             State = state;
@@ -22,6 +16,12 @@ namespace IO.Ably.Transport
             State = state;
             Exception = ex;
         }
+
+        public ErrorInfo Error { get; }
+
+        public Exception Exception { get; }
+
+        public ConnectionState State { get; }
 
         public bool ShouldUseFallback()
         {
