@@ -31,11 +31,31 @@ namespace IO.Ably.Push
         public string DeviceId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListSubscriptionsRequest"/> class.
+        /// Creates a Request to filter channel subscriptions by deviceId and channel.
         /// </summary>
-        public ListSubscriptionsRequest()
-        {
-        }
+        /// <param name="channel">Optional channel filter.</param>
+        /// <param name="deviceId">DeviceId filter.</param>
+        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
+        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
+        public static ListSubscriptionsRequest WithDeviceId(string channel = null, string deviceId = null, int? limit = null) =>
+            new ListSubscriptionsRequest(channel: channel, deviceId: deviceId, limit: limit);
+
+        /// <summary>
+        /// Creates a Request to filter channel subscriptions by clientId and channel.
+        /// </summary>
+        /// <param name="channel">Optional channel filter.</param>
+        /// <param name="clientId">The clientId used to filter devices.</param>
+        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
+        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
+        public static ListSubscriptionsRequest WithClientId(string channel = null, string clientId = null, int? limit = null) =>
+            new ListSubscriptionsRequest(channel: channel, clientId: clientId, limit: limit);
+
+        /// <summary>
+        /// Empty filter.
+        /// </summary>
+        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
+        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
+        public static ListSubscriptionsRequest Empty(int? limit = null) => new ListSubscriptionsRequest(limit: limit);
 
         internal Dictionary<string, string> ToQueryParams()
         {
@@ -62,32 +82,5 @@ namespace IO.Ably.Push
 
             return queryParams;
         }
-
-        /// <summary>
-        /// Creates a Request to filter channel subscriptions by deviceId and channel.
-        /// </summary>
-        /// <param name="channel">Optional channel filter.</param>
-        /// <param name="deviceId">DeviceId filter.</param>
-        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
-        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
-        public static ListSubscriptionsRequest WithDeviceId(string channel = null, string deviceId = null, int? limit = null) =>
-            new ListSubscriptionsRequest(channel: channel, deviceId: deviceId, limit: limit);
-
-        /// <summary>
-        /// Creates a Request to filter channel subscriptions by clientId and channel.
-        /// </summary>
-        /// <param name="channel">Optional channel filter.</param>
-        /// <param name="clientId">The clientId used to filter devices.</param>
-        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
-        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
-        public static ListSubscriptionsRequest WithClientId(string channel = null, string clientId = null, int? limit = null) =>
-            new ListSubscriptionsRequest(channel: channel, clientId: clientId, limit: limit);
-
-        /// <summary>
-        /// Empty filter.
-        /// </summary>
-        /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
-        /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
-        public static ListSubscriptionsRequest Empty(int? limit = null) => new ListSubscriptionsRequest(limit: limit);
     }
 }
