@@ -258,7 +258,7 @@ namespace IO.Ably.Push
             _mobileDevice.RequestRegistrationToken(UpdateRegistrationToken);
         }
 
-        public void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
+        private void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
         {
             throw new NotImplementedException();
         }
