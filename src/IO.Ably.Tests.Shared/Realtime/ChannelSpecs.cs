@@ -1336,7 +1336,9 @@ namespace IO.Ably.Tests.Realtime
 
                 receivedMessages.Should().HaveCount(3);
                 receivedMessages.Select(x => x.Id).Should().BeEquivalentTo(
-                    new[] { $"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2" });
+                    $"{protocolMessage.Id}:0",
+                    $"{protocolMessage.Id}:1",
+                    $"{protocolMessage.Id}:2");
             }
 
             [Fact]

@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.Rest
             var channel2 = client.Channels.Get("test1");
 
             client.Channels.Should().HaveCount(2);
-            client.Channels.Should().BeEquivalentTo(new[] { channel1, channel2 });
+            client.Channels.Should().BeEquivalentTo(channel1, channel2);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace IO.Ably.Tests.Rest
                 LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
                 var postedMessages = LastRequest.PostData as List<Message>;
                 postedMessages.Should().HaveCount(3);
-                postedMessages.Should().BeEquivalentTo(new[] { message, message1, message2 });
+                postedMessages.Should().BeEquivalentTo(message, message1, message2);
             }
 
             [Fact]
