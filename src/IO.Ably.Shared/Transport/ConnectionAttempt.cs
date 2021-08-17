@@ -5,13 +5,13 @@ namespace IO.Ably.Transport
 {
     internal sealed class ConnectionAttempt
     {
-        public DateTimeOffset Time { get; }
-
-        public List<AttemptFailedState> FailedStates { get; private set; } = new List<AttemptFailedState>();
-
         public ConnectionAttempt(DateTimeOffset time)
         {
             Time = time;
         }
+
+        public DateTimeOffset Time { get; }
+
+        public List<AttemptFailedState> FailedStates { get; } = new List<AttemptFailedState>();
     }
 }
