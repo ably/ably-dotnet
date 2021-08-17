@@ -27,7 +27,7 @@ namespace IO.Ably
         /// <param name="source">source collection.</param>
         /// <param name="rng">random seed.</param>
         /// <returns>returns a shuffled collection.</returns>
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
+        private static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
         {
             if (source == null)
             {
