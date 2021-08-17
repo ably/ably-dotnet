@@ -35,7 +35,7 @@ namespace IO.Ably.MessageEncoders
                 return string.Empty;
             }
 
-            var encodings = payload.Encoding.Split(new[] { '/' });
+            var encodings = payload.Encoding.Split('/');
             return string.Join("/", encodings.Take(encodings.Length - 1));
         }
 

@@ -20,8 +20,7 @@ namespace IO.Ably.Tests.Realtime
         public void EmittedEventTypesShouldBe()
         {
             var states = Enum.GetNames(typeof(ConnectionEvent));
-            states.Should().BeEquivalentTo(new[]
-            {
+            states.Should().BeEquivalentTo(
                 "Initialized",
                 "Connecting",
                 "Connected",
@@ -30,8 +29,7 @@ namespace IO.Ably.Tests.Realtime
                 "Closing",
                 "Closed",
                 "Failed",
-                "Update"
-            });
+                "Update");
         }
 
         [Fact]

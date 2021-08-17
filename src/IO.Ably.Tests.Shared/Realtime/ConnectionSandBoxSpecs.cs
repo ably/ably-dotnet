@@ -1047,10 +1047,7 @@ namespace IO.Ably.Tests.Realtime
                 Error = dummyError
             });
 
-            states.Should().Equal(new[]
-            {
-                ConnectionState.Failed
-            });
+            states.Should().Equal(ConnectionState.Failed);
 
             errors.Should().HaveCount(1);
             errors[0].Should().Be(dummyError);
