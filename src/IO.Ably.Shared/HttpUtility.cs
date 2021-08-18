@@ -116,10 +116,15 @@ namespace IO.Ably
             }
         }
 
-        private void FillFromString(string query, bool urlencoded)
+        private void FillFromString(string query, bool urlEncoded)
         {
+            if (query is null)
+            {
+                return;
+            }
+
             // http://stackoverflow.com/a/20284635/126995
-            int num = (query != null) ? query.Length : 0;
+            int num = query.Length;
             for (int i = 0; i < num; i++)
             {
                 int startIndex = i;
@@ -155,7 +160,7 @@ namespace IO.Ably
                     str2 = query.Substring(startIndex, i - startIndex);
                 }
 
-                if (urlencoded)
+                if (urlEncoded)
                 {
                     Add(Uri.UnescapeDataString(str), Uri.UnescapeDataString(str2));
                 }
