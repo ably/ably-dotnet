@@ -118,7 +118,7 @@ namespace IO.Ably
 
         private void FillFromString(string query, bool urlEncoded)
         {
-            if (query == null)
+            if (query is null)
             {
                 return;
             }
