@@ -812,7 +812,6 @@ namespace IO.Ably.Tests
             var ablyRest = await GetRestClient(protocol);
             var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
-            var tokenJson = token.ToJson();
             var incorrectJson = $"[{token.ToJson()}]";
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
 
