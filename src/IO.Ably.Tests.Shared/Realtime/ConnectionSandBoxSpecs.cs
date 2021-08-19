@@ -127,7 +127,7 @@ namespace IO.Ably.Tests.Realtime
 
             // capture initial values
             var initialConnection = client.Connection;
-            var initialConnectionId = client.Connection.Id;
+            var initialConnectionId = initialConnection.Id;
             var initialTransport = client.ConnectionManager.Transport;
 
             // The close timeout is 1000ms, so 3000ms is enough time to wait
