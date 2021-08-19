@@ -41,7 +41,6 @@ namespace IO.Ably.Tests.AuthTests
 
             var tokenParams = new TokenParams { Capability = cap };
 
-            var token = new TokenDetails();
             var authOptions = new AuthOptions(fakeApiKey);
             var result = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
 
