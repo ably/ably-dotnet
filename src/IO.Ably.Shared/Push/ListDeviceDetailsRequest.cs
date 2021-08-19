@@ -15,13 +15,6 @@ namespace IO.Ably.Push
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListDeviceDetailsRequest"/> class.
-        /// </summary>
-        public ListDeviceDetailsRequest()
-        {
-        }
-
-        /// <summary>
         /// ClientId filter.
         /// </summary>
         public string ClientId { get; }
@@ -33,7 +26,7 @@ namespace IO.Ably.Push
 
         internal Dictionary<string, string> ToQueryParams()
         {
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            var queryParams = new Dictionary<string, string>();
             if (ClientId.IsNotEmpty())
             {
                 queryParams.Add("clientId", ClientId);
