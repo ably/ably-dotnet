@@ -1428,7 +1428,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL16")]
             public async Task SetChannelOptions_ShouldUpdateStoreOptionsOnTheChannel()
             {
-                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
+                var (_, channel) = await GetClientAndChannel(_switchBinaryOff);
                 var newOptions = new ChannelOptions(true);
                 channel.Options.Should().NotBeSameAs(newOptions);
 
@@ -1441,7 +1441,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL16a")]
             public async Task SetChannelOptionsWithoutModesOrParams_ShouldIndicateSuccessImmediately()
             {
-                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
+                var (_, channel) = await GetClientAndChannel(_switchBinaryOff);
                 var newOptions = new ChannelOptions(true);
                 channel.Options.Should().NotBeSameAs(newOptions);
                 var states = new List<ChannelState>();
