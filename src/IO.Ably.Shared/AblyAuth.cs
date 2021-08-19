@@ -298,9 +298,11 @@ namespace IO.Ably
 
                     throw new AblyException(
                         new ErrorInfo(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.",
-                        80019,
-                        statusCode), ex);
+                            "Error calling AuthCallback, token request failed. See inner exception for details.",
+                            80019,
+                            statusCode,
+                            ex),
+                        ex);
                 }
             }
             else if (authOptions.AuthUrl.IsNotEmpty())
