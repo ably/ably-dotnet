@@ -150,7 +150,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await SetupConnectedClient(renewable: false);
 
-            ConcurrentBag<ConnectionState> states = new ConcurrentBag<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
             {
