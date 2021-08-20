@@ -267,7 +267,7 @@ namespace IO.Ably
 
                     if (callbackResult == null)
                     {
-                        throw new AblyException("AuthCallback returned null", 80019);
+                        throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
                     }
 
                     if (callbackResult is TokenDetails)
@@ -283,7 +283,7 @@ namespace IO.Ably
                     else
                     {
                         shouldCatch = false;
-                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019, HttpStatusCode.BadRequest);
+                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", ErrorCodes.ClientAuthProviderRequestFailed, HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
@@ -299,7 +299,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             "Error calling AuthCallback, token request failed. See inner exception for details.",
-                            80019,
+                            ErrorCodes.ClientAuthProviderRequestFailed,
                             statusCode,
                             ex),
                         ex);
@@ -340,7 +340,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
-                            80019,
+                            ErrorCodes.ClientAuthProviderRequestFailed,
                             statusCode,
                             ex),
                         ex);
@@ -359,7 +359,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             reason,
-                            80019,
+                            ErrorCodes.ClientAuthProviderRequestFailed,
                             HttpStatusCode.InternalServerError,
                             ex),
                         ex);
@@ -369,7 +369,7 @@ namespace IO.Ably
             {
                 if (keyId.IsEmpty() || keyValue.IsEmpty())
                 {
-                    throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
+                    throw new AblyException("TokenAuth is on but there is no way to generate one", ErrorCodes.ClientAuthProviderRequestFailed);
                 }
 
                 postData = new TokenRequest(Now).Populate(tokenParams, keyId, keyValue);
@@ -381,7 +381,7 @@ namespace IO.Ably
 
             if (result == null)
             {
-                throw new AblyException("Invalid token response returned", 80019);
+                throw new AblyException("Invalid token response returned", ErrorCodes.ClientAuthProviderRequestFailed);
             }
 
             return result;
