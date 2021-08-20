@@ -5,13 +5,8 @@
     /// </summary>
     public class PushRest
     {
-        private readonly AblyRest _rest;
-        private readonly ILogger _logger;
-
         internal PushRest(AblyRest rest, ILogger logger)
         {
-            _rest = rest;
-            _logger = logger;
             Admin = new PushAdmin(rest, logger);
         }
 
