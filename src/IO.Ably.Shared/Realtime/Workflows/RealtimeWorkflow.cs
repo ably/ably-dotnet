@@ -639,7 +639,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
                     {
-                        (channel as RealtimeChannel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
+                        ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
                     }
                 }
             }
