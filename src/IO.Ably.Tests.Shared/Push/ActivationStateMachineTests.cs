@@ -450,7 +450,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH3a3a")]
             public async Task WithGotPushDeviceDetails_ShouldReturnTheSameStateWithoutAnyFurtherEvents()
             {
-                var (state, stateMachine) = GetStateAndStateMachine();
+                var state = GetState();
 
                 var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.GotPushDeviceDetails());
 
