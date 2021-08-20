@@ -833,7 +833,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         break;
 
-                    case SetClosingStateCommand cmd:
+                    case SetClosingStateCommand _:
                         var transport = ConnectionManager.Transport;
                         var connectedTransport = transport?.State == TransportState.Connected;
 
