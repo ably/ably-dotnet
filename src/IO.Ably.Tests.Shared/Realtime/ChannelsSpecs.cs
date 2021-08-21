@@ -238,7 +238,7 @@ namespace IO.Ably.Tests.Realtime
             var (client, channel) = await GetClientAndChannel();
 
             // Act
-            IEnumerator<IRealtimeChannel> enumerator = (client.Channels as IEnumerable<IRealtimeChannel>).GetEnumerator();
+            using var enumerator = ((IEnumerable<IRealtimeChannel>)client.Channels).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert
