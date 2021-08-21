@@ -136,8 +136,6 @@ namespace IO.Ably.Tests.Shared
                     {
                         difference[$"{mode}{property}"] = differences;
                     }
-
-                    continue;
                 }
             }
 
