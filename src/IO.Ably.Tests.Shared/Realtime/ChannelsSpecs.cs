@@ -308,7 +308,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.WaitForState(ChannelState.Attaching);
             var ex = Assert.Throws<AblyException>(() => client.Channels.Get("Test", channelOptions2));
 
-            ex.ErrorInfo.Code.Should().Be(40000);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
             ex.Message.Should().Contain("SetOptions");
         }
 
