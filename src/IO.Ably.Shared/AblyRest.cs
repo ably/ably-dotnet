@@ -229,7 +229,7 @@ namespace IO.Ably
                 }
             }
 
-            return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
+            return MessageHandler.ParsePaginatedResponse(request, response, executeDataQueryRequest);
         }
 
         internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
