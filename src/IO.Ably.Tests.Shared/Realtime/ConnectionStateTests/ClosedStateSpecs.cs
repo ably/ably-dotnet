@@ -15,15 +15,13 @@ namespace IO.Ably.Tests
         private readonly ConnectionClosedState _state;
         private readonly DefaultLogger.InternalLogger _logger;
 
-        private FakeConnectionContext _context;
-
         public ClosedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
             var sink = new TestLoggerSink();
             _logger = new DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, sink);
-            _context = new FakeConnectionContext();
-            _state = new ConnectionClosedState(_context, _logger);
+            var context = new FakeConnectionContext();
+            _state = new ConnectionClosedState(context, _logger);
         }
 
         [Fact]
