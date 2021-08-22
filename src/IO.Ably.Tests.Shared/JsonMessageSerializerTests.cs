@@ -305,7 +305,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
+            Assert.Equal(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
         }
 
         [Theory]
@@ -325,7 +325,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count.Value);
+            Assert.Equal(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count.Value);
         }
 
         [Theory]
@@ -345,7 +345,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
+            Assert.Equal(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
         }
 
         [Theory]
@@ -365,7 +365,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal<byte>(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
+            Assert.Equal(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
         }
 
         [Theory]
@@ -382,7 +382,7 @@ namespace IO.Ably.Tests
             // Assert
             target.Should().NotBeNull();
             target.Messages.Should().NotBeNull();
-            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
+            Assert.Equal(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
@@ -404,7 +404,7 @@ namespace IO.Ably.Tests
             // Assert
             target.Should().NotBeNull();
             target.Presence.Should().NotBeNull();
-            Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
+            Assert.Equal(expectedMessages.Length, target.Presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].ClientId, target.Presence[i].ClientId);
