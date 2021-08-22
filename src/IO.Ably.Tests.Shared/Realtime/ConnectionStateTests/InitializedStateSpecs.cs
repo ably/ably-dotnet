@@ -13,13 +13,11 @@ namespace IO.Ably.Tests
     {
         private readonly ConnectionInitializedState _state;
 
-        private FakeConnectionContext _context;
-
         public InitializedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
-            _context = new FakeConnectionContext();
-            _state = new ConnectionInitializedState(_context, Logger);
+            var context = new FakeConnectionContext();
+            _state = new ConnectionInitializedState(context, Logger);
         }
 
         [Fact]
