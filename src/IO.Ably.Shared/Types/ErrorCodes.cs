@@ -23,6 +23,7 @@ namespace IO.Ably
         public const int ResourceDisposed = 40014;
         public const int VCDiffDecodeError = 40018;
         public const int BatchError = 40020;
+        public const int InvalidPublishRequestInvalidClientSpecifiedId = 40031;
 
         /* 401 codes */
         public const int Unauthorized = 40100;
