@@ -28,7 +28,7 @@ namespace AblyPlatform.Cryptography
             if( string.Equals( p.Algorithm, Crypto.DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase ) )
                 return new AesCipher( p );
 
-            throw new AblyException( "Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError );
+            throw new AblyException( "Currently only the AES encryption algorithm is supported", ErrorCodes.InternalError, HttpStatusCode.InternalServerError );
         }
 
         CipherParams ICrypto.GetDefaultParams()

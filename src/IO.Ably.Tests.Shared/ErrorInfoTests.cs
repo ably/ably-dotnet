@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
 
             // Assert
             errorInfo.Message.Should().Be("Unknown error");
-            errorInfo.Code.Should().Be(50000);
+            errorInfo.Code.Should().Be(ErrorCodes.InternalError);
             errorInfo.StatusCode.Should().Be(response.StatusCode);
         }
 

@@ -335,7 +335,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
             }
 
-            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", ErrorCodes.InternalError));
         }
 
         public void Detach(Action<bool, ErrorInfo> callback = null)
@@ -634,10 +634,10 @@ namespace IO.Ably.Realtime
             switch (state)
             {
                 case ChannelState.Attaching:
-                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", 50000));
+                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", ErrorCodes.InternalError));
                     break;
                 case ChannelState.Detaching:
-                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", ErrorCodes.InternalError));
                     AttachResume = false;
                     break;
                 case ChannelState.Attached:
