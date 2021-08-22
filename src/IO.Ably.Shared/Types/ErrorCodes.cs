@@ -29,6 +29,7 @@ namespace IO.Ably
         public const int InvalidCredentials = 40101;
         public const int IncompatibleCredentials = 40102;
         public const int InvalidUseOfBasicAuthOverNonTlsTransport = 40103;
+        public const int UnableToObtainCredentialsFromGivenParameters = 40106;
         public const int AccountDisabled = 40110;
         public const int AccountBlockedConnectionLimitExceeded = 40111;
         public const int AccountBlockedMessageLimitExceeded = 40112;

@@ -165,7 +165,7 @@ namespace IO.Ably.Tests
             public void WithoutTokenAuthAndNoKey_ShouldThrow()
             {
                 var error = Assert.Throws<AblyException>(() => new AblyRest(new ClientOptions()));
-                error.ErrorInfo.Code.Should().Be(40106);
+                error.ErrorInfo.Code.Should().Be(ErrorCodes.UnableToObtainCredentialsFromGivenParameters);
             }
         }
 
