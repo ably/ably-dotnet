@@ -90,44 +90,46 @@ namespace IO.Ably.Realtime
         /// <inheritdoc/>
         public bool Release(string name)
         {
-            if (Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
-            RealtimeChannel channel = null;
-            if (Channels.TryGetValue(name, out channel))
+            if (Logger.IsDebug)
             {
-                EventHandler<ChannelStateChange> eventHandler = null;
-                eventHandler = (s, args) =>
-                {
-                    var detachedChannel = (RealtimeChannel)s;
-                    if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
-                        }
-
-                        detachedChannel.InternalStateChanged -= eventHandler;
-
-                        RealtimeChannel removedChannel;
-                        if (Channels.TryRemove(name, out removedChannel))
-                        {
-                            removedChannel.RemoveAllListeners();
-                        }
-                    }
-                    else
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
-                        }
-                    }
-                };
-
-                channel.InternalStateChanged += eventHandler;
-                channel.Detach();
-                return true;
+                Logger.Debug($"Releasing channel #{name}");
             }
 
-            return false;
+            if (!Channels.TryGetValue(name, out RealtimeChannel channel))
+            {
+                return false;
+            }
+
+            EventHandler<ChannelStateChange> eventHandler = null;
+            eventHandler = (s, args) =>
+            {
+                if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
+                    }
+
+                    var detachedChannel = (RealtimeChannel)s;
+                    detachedChannel.InternalStateChanged -= eventHandler;
+
+                    if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
+                    {
+                        removedChannel.RemoveAllListeners();
+                    }
+                }
+                else
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
+                    }
+                }
+            };
+
+            channel.InternalStateChanged += eventHandler;
+            channel.Detach();
+            return true;
         }
 
         /// <inheritdoc/>
