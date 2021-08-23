@@ -758,7 +758,7 @@ namespace IO.Ably.Realtime.Workflow
                             Logger.Error("Error setting connecting state", ex);
 
                             // RSA4c2 & RSA4d
-                            if (ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                            if (ex.ErrorInfo.Code == ErrorCodes.ClientAuthProviderRequestFailed & !ex.ErrorInfo.IsForbiddenError)
                             {
                                 return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }

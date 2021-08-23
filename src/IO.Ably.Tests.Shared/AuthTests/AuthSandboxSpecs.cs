@@ -179,7 +179,7 @@ namespace IO.Ably.Tests
 
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -219,7 +219,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -253,7 +253,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -343,7 +343,7 @@ namespace IO.Ably.Tests
                 realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
-                    change.Reason.Code.Should().Be(80019);
+                    change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                     tca.SetCompleted();
                 });
 
@@ -464,8 +464,8 @@ namespace IO.Ably.Tests
                 };
             }
 
-            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019, optionsAction: AuthUrlOptions);
-            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: 80019, optionsAction: AuthCallbackOptions);
+            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthUrlOptions);
+            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthCallbackOptions);
         }
 
         [Theory]
@@ -481,8 +481,8 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
             {
                 change.Previous.Should().Be(ConnectionState.Connected);
-                change.Reason.Code.Should().Be(80019);
-                realtimeClient.Connection.ErrorReason.Code.Should().Be(80019);
+                change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
                 failedAwaiter.SetCompleted();
             });
@@ -518,7 +518,7 @@ namespace IO.Ably.Tests
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.RequestTokenAsync(null, authOptions));
             ex.Should().BeOfType<AblyException>();
-            ex.ErrorInfo.Code.Should().Be(80019);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
             ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             await Task.Delay(1000);
 
