@@ -11,12 +11,12 @@ namespace IO.Ably.MessageEncoders
     internal class VcdiffErrorInfo : ErrorInfo
     {
         public VcdiffErrorInfo(string reason)
-            : base(reason, ErrorCodes.VCDiffDecodeError)
+            : base(reason, ErrorCodes.VcDiffDecodeError)
         {
         }
 
         public VcdiffErrorInfo(string reason, Exception innerException)
-            : base(reason, ErrorCodes.VCDiffDecodeError, HttpStatusCode.BadRequest, innerException)
+            : base(reason, ErrorCodes.VcDiffDecodeError, HttpStatusCode.BadRequest, innerException)
         {
         }
     }

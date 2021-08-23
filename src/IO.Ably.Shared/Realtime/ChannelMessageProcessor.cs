@@ -94,7 +94,7 @@ namespace IO.Ably.Realtime
                     {
                         var message =
                             "Delta message decode failure. Previous message id does not equal expected message id.";
-                        var reason = new ErrorInfo(message, ErrorCodes.VCDiffDecodeError);
+                        var reason = new ErrorInfo(message, ErrorCodes.VcDiffDecodeError);
                         channel.StartDecodeFailureRecovery(reason);
                         return TaskConstants.BooleanTrue;
                     }
