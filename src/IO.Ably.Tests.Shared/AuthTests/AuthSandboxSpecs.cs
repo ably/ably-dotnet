@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                 // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().Be(40171);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             }
 
             // did not retry the request
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -149,7 +149,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -584,7 +584,7 @@ namespace IO.Ably.Tests
             });
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => ably.StatsAsync());
-            ex.ErrorInfo.Code.Should().Be(40171);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
         }
 
         [Theory]
