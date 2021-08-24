@@ -15,13 +15,6 @@ namespace AblyPlatform.Cryptography
     {
         private readonly CipherParams _params;
 
-        /// <summary>Create a new instance of AesCipher.</summary>
-        /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm.</param>
-        public AesCipher(CipherParams @params)
-        {
-            _params = @params;
-        }
-
         private static readonly Dictionary<CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<CipherMode, System.Security.Cryptography.CipherMode>
         {
             { CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
@@ -29,15 +22,14 @@ namespace AblyPlatform.Cryptography
             { CipherMode.CTS, System.Security.Cryptography.CipherMode.CTS }
         };
 
-        public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
+        /// <summary>Create a new instance of AesCipher.</summary>
+        /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm.</param>
+        public AesCipher(CipherParams @params)
         {
-            if (mode == null)
-            {
-                return System.Security.Cryptography.CipherMode.CBC;
-            }
-
-            return ModesMap[mode.Value];
+            _params = @params;
         }
+
+        public string Algorithm => "AES";
 
         public static byte[] GenerateKey(CipherMode? mode, int? keyLength)
         {
@@ -49,6 +41,46 @@ namespace AblyPlatform.Cryptography
                 aes.BlockSize = Crypto.DefaultBlocklength * 8;
                 aes.GenerateKey();
                 return aes.Key;
+            }
+        }
+
+        private static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
+        {
+            if (mode == null)
+            {
+                return System.Security.Cryptography.CipherMode.CBC;
+            }
+
+            return ModesMap[mode.Value];
+        }
+
+        /// <summary>Encrypt a byte[] using the CipherParams provided in the constructor.</summary>
+        /// <param name="input">byte[] to be encrypted.</param>
+        /// <returns>Encrypted result.</returns>
+        public byte[] Encrypt(byte[] input)
+        {
+            try
+            {
+                return Encrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode], _params.Iv);
+            }
+            catch (Exception ex)
+            {
+                throw new AblyException(ex);
+            }
+        }
+
+        /// <summary>Decrypt an encrypted byte[] using the CipherParams provided in the constructor.</summary>
+        /// <param name="input">encrypted byte[].</param>
+        /// <returns>decrypted byte[].</returns>
+        public byte[] Decrypt(byte[] input)
+        {
+            try
+            {
+                return Decrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode]);
+            }
+            catch (Exception ex)
+            {
+                throw new AblyException(ex);
             }
         }
 
@@ -96,38 +128,6 @@ namespace AblyPlatform.Cryptography
                 ICryptoTransform decrypt = aesEncryption.CreateDecryptor();
                 var encryptedBuffer = input.Skip(Crypto.DefaultBlocklength).ToArray();
                 return decrypt.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
-            }
-        }
-
-        public string Algorithm => "AES";
-
-        /// <summary>Encrypt a byte[] using the CipherParams provided in the constructor.</summary>
-        /// <param name="input">byte[] to be encrypted.</param>
-        /// <returns>Encrypted result.</returns>
-        public byte[] Encrypt(byte[] input)
-        {
-            try
-            {
-                return Encrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode], _params.Iv);
-            }
-            catch (Exception ex)
-            {
-                throw new AblyException(ex);
-            }
-        }
-
-        /// <summary>Decrypt an encrypted byte[] using the CipherParams provided in the constructor.</summary>
-        /// <param name="input">encrypted byte[].</param>
-        /// <returns>decrypted byte[].</returns>
-        public byte[] Decrypt(byte[] input)
-        {
-            try
-            {
-                return Decrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode]);
-            }
-            catch (Exception ex)
-            {
-                throw new AblyException(ex);
             }
         }
     }
