@@ -46,13 +46,7 @@ namespace IO.Ably.MessageEncoders
 
         protected static string AddEncoding(IPayload payload, string encoding)
         {
-            var encodingToAdd = encoding;
-            if (payload.Encoding.IsEmpty())
-            {
-                return encodingToAdd;
-            }
-
-            return payload.Encoding + "/" + encodingToAdd;
+            return payload.Encoding.IsEmpty() ? encoding : $"{payload.Encoding}/{encoding}";
         }
     }
 }
