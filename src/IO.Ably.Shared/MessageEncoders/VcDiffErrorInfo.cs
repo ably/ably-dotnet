@@ -4,18 +4,18 @@ using System.Net;
 namespace IO.Ably.MessageEncoders
 {
     /// <summary>
-    /// Specific error class that is used to distinguish a critical vcdiff error
+    /// Specific error class that is used to distinguish a critical VcDiff error
     /// and a normal decoding error which could be caused by a bad encoding string or
     /// a bad cipher.
     /// </summary>
-    internal class VcdiffErrorInfo : ErrorInfo
+    internal class VcDiffErrorInfo : ErrorInfo
     {
-        public VcdiffErrorInfo(string reason)
+        public VcDiffErrorInfo(string reason)
             : base(reason, ErrorCodes.VCDiffDecodeError)
         {
         }
 
-        public VcdiffErrorInfo(string reason, Exception innerException)
+        public VcDiffErrorInfo(string reason, Exception innerException)
             : base(reason, ErrorCodes.VCDiffDecodeError, HttpStatusCode.BadRequest, innerException)
         {
         }

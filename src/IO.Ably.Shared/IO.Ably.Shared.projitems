@@ -21,7 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\ProcessedPayload.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\DecodingContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcdiffErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcDiffErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.Events.cs" />
