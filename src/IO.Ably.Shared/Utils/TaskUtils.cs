@@ -46,8 +46,14 @@ namespace IO.Ably
         private static readonly Action<Task> DefaultErrorContinuation =
             t =>
             {
-                try { t.Wait(); }
-                catch { }
+                try
+                {
+                    t.Wait();
+                }
+                catch
+                {
+                    // ignored
+                }
             };
 
         /// <summary>
