@@ -34,38 +34,6 @@ namespace IO.Ably.Tests
                 ConnectionSerial = 100
             };
 
-        public void WaitOne()
-        {
-            var result = _signal.WaitOne(2000);
-            result.Should().BeTrue("Result was not returned within 2000ms");
-        }
-
-        public void Done()
-        {
-            _signal.Set();
-        }
-
-        public AblyRealtime GetDisconnectedClient(ClientOptions options = null)
-        {
-            var clientOptions = options ?? new ClientOptions(ValidKey);
-
-            clientOptions.AutoConnect = false;
-
-            return GetRealtimeClient(clientOptions);
-        }
-
-        public IDisposable EnableDebugLogging()
-        {
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-            Logger.LogLevel = LogLevel.Debug;
-
-            return new ActionOnDispose(() =>
-            {
-                Logger.LoggerSink = new DefaultLoggerSink();
-                Logger.LogLevel = LogLevel.Warning;
-            });
-        }
-
         public void Dispose()
         {
             foreach (var client in RealtimeClients)
@@ -138,6 +106,38 @@ namespace IO.Ably.Tests
             client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
             await client.WaitForState(ConnectionState.Connected);
             return client;
+        }
+
+        protected void WaitOne()
+        {
+            var result = _signal.WaitOne(2000);
+            result.Should().BeTrue("Result was not returned within 2000ms");
+        }
+
+        protected void Done()
+        {
+            _signal.Set();
+        }
+
+        protected AblyRealtime GetDisconnectedClient(ClientOptions options = null)
+        {
+            var clientOptions = options ?? new ClientOptions(ValidKey);
+
+            clientOptions.AutoConnect = false;
+
+            return GetRealtimeClient(clientOptions);
+        }
+
+        protected IDisposable EnableDebugLogging()
+        {
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
+
+            return new ActionOnDispose(() =>
+            {
+                Logger.LoggerSink = new DefaultLoggerSink();
+                Logger.LogLevel = LogLevel.Warning;
+            });
         }
 
         protected Task<IRealtimeChannel> GetChannel(Action<ClientOptions> optionsAction = null) => GetConnectedClient(optionsAction).MapAsync(client => client.Channels.Get("test"));
