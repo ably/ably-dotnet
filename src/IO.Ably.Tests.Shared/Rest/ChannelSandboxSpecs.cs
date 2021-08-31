@@ -657,19 +657,17 @@ namespace IO.Ably.Tests.Rest
             message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
         }
 
-        private object DecodeData(string data, string encoding)
+        private static object DecodeData(string data, string encoding)
         {
-            if (encoding == "json")
+            switch (encoding)
             {
-                return JsonHelper.Deserialize(data);
+                case "json":
+                    return JsonHelper.Deserialize(data);
+                case "base64":
+                    return data.FromBase64();
+                default:
+                    return data;
             }
-
-            if (encoding == "base64")
-            {
-                return data.FromBase64();
-            }
-
-            return data;
         }
     }
 }
