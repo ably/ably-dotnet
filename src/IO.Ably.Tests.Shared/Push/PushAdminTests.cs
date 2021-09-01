@@ -218,7 +218,7 @@ namespace IO.Ably.Tests.Push
                         var client = GetRestClient(request =>
                         {
                             currentRequest = request;
-                            return Task.FromResult<AblyResponse>(new AblyResponse() { StatusCode = HttpStatusCode.OK });
+                            return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                         });
 
                         await client.Push.Admin.DeviceRegistrations.List(query);
@@ -412,7 +412,7 @@ namespace IO.Ably.Tests.Push
                 var rest = GetRestClient(r =>
                 {
                     request = r;
-                    return Task.FromResult<AblyResponse>(new AblyResponse() { TextResponse = string.Empty });
+                    return Task.FromResult(new AblyResponse() { TextResponse = string.Empty });
                 });
 
                 await rest.Push.Admin.ChannelSubscriptions.ListAsync(ListSubscriptionsRequest.Empty());
