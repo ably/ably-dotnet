@@ -165,7 +165,7 @@ namespace IO.Ably.Encryption
                 return new AesCipher(cipherParams);
             }
 
-            throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
+            throw new AblyException("Currently only the AES encryption algorithm is supported", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
         }
 
         /// <summary>

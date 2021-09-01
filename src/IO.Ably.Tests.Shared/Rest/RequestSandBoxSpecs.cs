@@ -260,7 +260,7 @@ namespace IO.Ably.Tests
             }
             catch (AblyException e)
             {
-                e.ErrorInfo.Code.Should().Be(50000);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.InternalError);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
                 e.ErrorInfo.Message.Should().Contain("Invalid URI: Invalid port specified.");
             }
