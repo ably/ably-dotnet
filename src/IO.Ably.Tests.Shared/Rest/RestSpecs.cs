@@ -87,7 +87,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC2")]
         public void DefaultLoggerSinkShouldBeSetup()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             logger.LoggerSink.Should().BeOfType<DefaultLoggerSink>();
         }
 
@@ -95,7 +95,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC3")]
         public void DefaultLogLevelShouldBeWarning()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             logger.LogLevel.Should().Be(LogLevel.Warning);
         }
 
@@ -103,7 +103,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC4")]
         public void ACustomLoggerCanBeProvided()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             var sink = new TestLoggerSink();
             logger.LoggerSink = sink;
             logger.Error("Boo");

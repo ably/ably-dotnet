@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
     public class ClosedStateSpecs : AblySpecs
     {
         private readonly ConnectionClosedState _state;
-        private readonly DefaultLogger.InternalLogger _logger;
+        private readonly IInternalLogger _logger;
 
         private FakeConnectionContext _context;
 
@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
             : base(output)
         {
             var sink = new TestLoggerSink();
-            _logger = new DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, sink);
+            _logger = InternalLogger.Create(Defaults.DefaultLogLevel, sink);
             _context = new FakeConnectionContext();
             _state = new ConnectionClosedState(_context, _logger);
         }
