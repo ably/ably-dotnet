@@ -924,7 +924,7 @@ namespace IO.Ably.Tests.Realtime
             stateChanges[0].Reason.Code.Should().Be(ErrorCodes.TokenExpired);
             stateChanges[1].HasError.Should().BeFalse();
             stateChanges[2].HasError.Should().BeTrue();
-            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
         }
 
         [Theory]
