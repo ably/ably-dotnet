@@ -480,7 +480,7 @@ namespace IO.Ably.Realtime.Workflow
                                 AblyException ablyException = null;
                                 if (cmd.Exception != null)
                                 {
-                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.ServiceUnavailable);
+                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, ErrorCodes.ConnectionFailed, HttpStatusCode.ServiceUnavailable);
                                 }
 
                                 return HandleConnectingErrorCommand.Create(null, ablyException, false).TriggeredBy(cmd);
