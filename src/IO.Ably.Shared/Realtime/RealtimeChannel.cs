@@ -656,14 +656,23 @@ namespace IO.Ably.Realtime
                             // SetChannelState(ChannelState.Detached, error, protocolMessage);
                             Reattach(error, protocolMessage);
                             break;
+
                         case ChannelState.Attaching:
                             /* RTL13b says we need to become suspended, but continue to retry */
                             Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
                             SetChannelState(ChannelState.Suspended, error, protocolMessage);
                             ReattachAfterTimeout(error, protocolMessage);
                             break;
-                        default:
+
+                        case ChannelState.Initialized:
+                        case ChannelState.Detaching:
+                        case ChannelState.Detached:
+                        case ChannelState.Failed:
+                            // Nothing to do here.
                             break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
 
                     Presence.ChannelDetachedOrFailed(error);
