@@ -47,6 +47,7 @@ namespace IO.Ably
         public const int ConnectionBlockedLimitsExceeded = 40150;
         public const int OperationNotPermittedWithCapability = 40160;
         public const int ClientCallbackError = 40170;
+        public const int NoMeansProvidedToRenewAuthToken = 40171;
 
         /* 403 codes */
         public const int Forbidden = 40300;
