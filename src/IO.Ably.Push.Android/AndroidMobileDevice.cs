@@ -100,7 +100,7 @@ namespace IO.Ably.Push.Android
                     // TODO: Log
                     var exception = task.Exception;
                     var errorInfo = new ErrorInfo($"Failed to return valid AndroidToken. Error: {exception?.Message}.",
-                        50000, HttpStatusCode.InternalServerError, exception);
+                        ErrorCodes.InternalError, HttpStatusCode.InternalServerError, exception);
                     _callback(Result.Fail<string>(errorInfo));
                 }
             }

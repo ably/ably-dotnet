@@ -74,7 +74,7 @@ namespace IO.Ably.Realtime
                 {
                     if (result.ShouldReAttach(options))
                     {
-                        throw new AblyException(new ErrorInfo("Channels.Get() cannot be used to set channel options that would cause the channel to reattach. Please, use Channel.SetOptions() instead.", 40000, HttpStatusCode.BadRequest));
+                        throw new AblyException(new ErrorInfo("Channels.Get() cannot be used to set channel options that would cause the channel to reattach. Please, use Channel.SetOptions() instead.", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
                     }
 
                     result.SetOptions(options);

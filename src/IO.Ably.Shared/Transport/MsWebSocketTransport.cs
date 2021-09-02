@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
@@ -29,16 +32,13 @@ namespace IO.Ably.Transport
     public class MsWebSocketTransport : ITransport
     {
         private readonly MsWebSocketOptions _socketOptions;
+        private bool _disposed = false;
+        private readonly CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
+        private MsWebSocketConnection _socket;
 
         /// <inheritdoc />
         public class TransportFactory : ITransportFactory
         {
-            /// <summary>
-            /// Custom <see cref="MsWebSocketOptions"/> passed to the MsWebsocket transport and then
-            /// <see cref="MsWebSocketConnection"/>.
-            /// </summary>
-            public MsWebSocketOptions SocketOptions { get; }
-
             /// <summary>
             /// Initializes a new instance of the <see cref="TransportFactory"/> class.
             /// </summary>
@@ -56,19 +56,18 @@ namespace IO.Ably.Transport
                 SocketOptions = socketOptions;
             }
 
+            /// <summary>
+            /// Custom <see cref="MsWebSocketOptions"/> passed to the MsWebsocket transport and then
+            /// <see cref="MsWebSocketConnection"/>.
+            /// </summary>
+            public MsWebSocketOptions SocketOptions { get; }
+
             /// <inheritdoc/>
             public ITransport CreateTransport(TransportParams parameters)
             {
                 return new MsWebSocketTransport(parameters, SocketOptions);
             }
         }
-
-        private bool _disposed = false;
-
-        private ILogger Logger { get; set; }
-
-        internal MsWebSocketConnection _socket;
-        private readonly CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MsWebSocketTransport"/> class.
@@ -103,6 +102,8 @@ namespace IO.Ably.Transport
 
         /// <inheritdoc cref="ITransport" />
         public ITransportListener Listener { get; set; }
+
+        private ILogger Logger { get; set; }
 
         /// <inheritdoc cref="ITransport" />
         public void Connect()
@@ -351,6 +352,11 @@ namespace IO.Ably.Transport
         ~MsWebSocketTransport()
         {
             Dispose(false);
+        }
+
+        internal void ReleaseClientWebSocket()
+        {
+            _socket.ClientWebSocket = null;
         }
     }
 }

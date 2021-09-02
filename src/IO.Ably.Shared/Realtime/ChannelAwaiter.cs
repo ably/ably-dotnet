@@ -129,7 +129,7 @@ namespace IO.Ably.Realtime
 
             _onTimeout?.Invoke();
 
-            InvokeCallbacks(false, new ErrorInfo("Timeout exceeded for " + _name, 50000));
+            InvokeCallbacks(false, new ErrorInfo("Timeout exceeded for " + _name, ErrorCodes.InternalError));
         }
 
         private void AttachListener()

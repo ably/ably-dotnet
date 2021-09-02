@@ -86,7 +86,7 @@ namespace IO.Ably.Tests.Realtime
             await awaiter.Task;
 
             stateChange.Current.Should().Be(ChannelState.Attaching);
-            stateChange.Error.Code.Should().Be(ErrorCodes.VCDiffDecodeError);
+            stateChange.Error.Code.Should().Be(ErrorCodes.VcDiffDecodeError);
         }
 
         [Fact]

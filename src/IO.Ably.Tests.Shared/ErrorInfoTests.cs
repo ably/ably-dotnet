@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
 
             // Assert
             errorInfo.Message.Should().Be("Unknown error");
-            errorInfo.Code.Should().Be(50000);
+            errorInfo.Code.Should().Be(ErrorCodes.InternalError);
             errorInfo.StatusCode.Should().Be(response.StatusCode);
         }
 
@@ -28,10 +28,9 @@ namespace IO.Ably.Tests
         {
             // Arrange
             var reason = "test";
-            var code = 40400;
             var response = new AblyResponse
             {
-                TextResponse = $"{{ \"error\": {{ \"code\":{code}, \"message\":\"{reason}\" }} }}",
+                TextResponse = $"{{ \"error\": {{ \"code\":{ErrorCodes.NotFound}, \"message\":\"{reason}\" }} }}",
                 Type = ResponseType.Json,
                 StatusCode = (HttpStatusCode)500
             };
@@ -41,7 +40,7 @@ namespace IO.Ably.Tests
 
             // Assert
             errorInfo.Message.Should().Be(reason);
-            errorInfo.Code.Should().Be(code);
+            errorInfo.Code.Should().Be(ErrorCodes.NotFound);
         }
 
         [Fact]

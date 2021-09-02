@@ -15,9 +15,9 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
         internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
         internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", ErrorCodes.ConnectionSuspended);
-        internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", 80000);
+        internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", ErrorCodes.ConnectionFailed);
         internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", ErrorCodes.Unauthorized);
-        internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", 40000);
+        internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", ErrorCodes.BadRequest);
         internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", ErrorCodes.ConnectionSuspended);
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
         internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
@@ -175,7 +175,7 @@ namespace IO.Ably
         {
             // RSA4d, if we have 403 response default to code 40300, this may be overwritten
             // if the response has a usable JSON body
-            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : 50000;
+            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : ErrorCodes.InternalError;
             string reason = string.Empty;
 
             if (response.Type == ResponseType.Json)

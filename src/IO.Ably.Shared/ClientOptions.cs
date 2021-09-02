@@ -230,13 +230,13 @@ namespace IO.Ably
                 if (_fallbackHosts != null)
                 {
                     const string msg = "fallbackHosts and fallbackHostsUseDefault cannot both be set";
-                    throw new AblyException(new ErrorInfo(msg, 40000));
+                    throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
                 }
 
                 if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
                 {
                     const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
-                    throw new AblyException(new ErrorInfo(msg, 40000));
+                    throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
                 }
 
                 if (Environment.IsNotEmpty())
