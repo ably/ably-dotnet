@@ -29,6 +29,12 @@ namespace IO.Ably.Tests.Shared.Realtime
         }
 
         [Fact]
+        public void ProtocolMessageHasFlagCorrectForNull()
+        {
+            ProtocolMessage.HasFlag(null, ProtocolMessage.Flag.HasPresence).Should().BeFalse();
+        }
+
+        [Fact]
         [Trait("spec", "TR4")]
         [Trait("spec", "AD1")]
         public void ShouldHaveCorrectProperties_FlagsShouldContainBitFlags()
