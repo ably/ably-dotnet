@@ -96,15 +96,8 @@ namespace IO.Ably.Tests
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
-        public class IsRetriableResponseSpecs
+        public class IsRetryableResponseSpecs
         {
-            private AblyHttpClient _client;
-
-            public IsRetriableResponseSpecs()
-            {
-                _client = new AblyHttpClient(new AblyHttpOptions());
-            }
-
             [Fact]
             public void IsRetryableError_WithTaskCancellationException_ShouldBeTrue()
             {
@@ -116,7 +109,7 @@ namespace IO.Ably.Tests
             [InlineData(WebExceptionStatus.ConnectFailure)]
             [InlineData(WebExceptionStatus.NameResolutionFailure)]
             [Trait("spec", "RSC15d")]
-            public void IsRetyableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
+            public void IsRetryableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
             {
                 var exception = new HttpRequestException("Error", new WebException("boo", status));
                 AblyHttpClient.IsRetryableError(exception).Should().BeTrue();
@@ -131,7 +124,6 @@ namespace IO.Ably.Tests
             [InlineData(HttpStatusCode.NoContent, false)]
             [InlineData(HttpStatusCode.NotFound, false)]
             [Trait("spec", "RSC15d")]
-
             public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(
                 HttpStatusCode statusCode,
                 bool expected)
