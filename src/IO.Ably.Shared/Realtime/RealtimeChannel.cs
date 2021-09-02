@@ -555,12 +555,12 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Suspended || State == ChannelState.Failed)
             {
-                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             if (!Connection.CanPublishMessages)
             {
-                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)

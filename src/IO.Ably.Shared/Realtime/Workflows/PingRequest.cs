@@ -5,7 +5,7 @@ namespace IO.Ably.Realtime.Workflow
 {
     internal class PingRequest
     {
-        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000, HttpStatusCode.BadRequest);
+        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", ErrorCodes.BadRequest, HttpStatusCode.BadRequest);
 
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
