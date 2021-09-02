@@ -12,7 +12,7 @@ namespace IO.Ably.AcceptanceTests
             var sink = new TestLoggerSink();
             var logger = InternalLogger.Create();
 
-            using (logger.SetTempDestination(null))
+            using (logger.CreateDisposableLoggingContext(null))
             {
                 sink.LastLevel.Should().BeNull();
                 sink.LastMessage.Should().BeNull();

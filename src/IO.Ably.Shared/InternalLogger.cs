@@ -38,7 +38,7 @@ namespace IO.Ably
 
         private Func<DateTimeOffset> Now { get; }
 
-        public IDisposable SetTempDestination(ILoggerSink loggerSink)
+        public IDisposable CreateDisposableLoggingContext(ILoggerSink loggerSink)
         {
             ILoggerSink oldLoggerSink = LoggerSink;
             LoggerSink = loggerSink;
