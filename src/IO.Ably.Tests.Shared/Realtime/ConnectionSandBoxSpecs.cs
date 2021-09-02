@@ -1163,9 +1163,13 @@ namespace IO.Ably.Tests.Realtime
 
             var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
             transportWrapper.Should().NotBe(null);
+
+            Debug.Assert(transportWrapper != null, nameof(transportWrapper) + " != null");
             var wsTransport = transportWrapper.WrappedTransport as MsWebSocketTransport;
             wsTransport.Should().NotBe(null);
-            wsTransport._socket.ClientWebSocket = null;
+
+            Debug.Assert(wsTransport != null, nameof(wsTransport) + " != null");
+            wsTransport.ReleaseClientWebSocket();
 
             var tca = new TaskCompletionAwaiter();
             client.Connection.On(s =>
