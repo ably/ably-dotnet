@@ -11,17 +11,10 @@ namespace IO.Ably.Transport
         private readonly ConnectionManager _manager;
         private readonly ILogger _logger;
 
-        private DateTimeOffset Now => _manager.Now();
-
         public ConnectionHeartbeatHandler(ConnectionManager manager, ILogger logger)
         {
             _manager = manager;
             _logger = logger;
-        }
-
-        public static bool CanHandleMessage(ProtocolMessage message)
-        {
-            return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
         public Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
@@ -41,6 +34,11 @@ namespace IO.Ably.Transport
             return Task.FromResult(canHandle);
         }
 
+        private static bool CanHandleMessage(ProtocolMessage message)
+        {
+            return message.Action == ProtocolMessage.MessageAction.Heartbeat;
+        }
+
         private void TryCallback(Action<TimeSpan?, ErrorInfo> action, TimeSpan? elapsed, ErrorInfo error)
         {
             try
@@ -55,7 +53,8 @@ namespace IO.Ably.Transport
 
         private TimeSpan? GetElapsedTime(PingRequest pingRequest)
         {
-            return Now - pingRequest.Created;
+            var now = _manager.Now();
+            return now - pingRequest.Created;
         }
     }
 }
