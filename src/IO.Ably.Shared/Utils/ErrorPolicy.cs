@@ -8,7 +8,7 @@ namespace IO.Ably.Utils
     internal static class ErrorPolicy
     {
         /// <summary>
-        /// Upon receiving an *unexpected* exception where no course of action should be taken defer to this method.
+        /// Upon receiving an *unexpected* exception and local policy is unclear, defer to this method.
         /// </summary>
         /// <param name="e">The unexpected exception.</param>
         /// <param name="logger">Logger to report to.</param>
