@@ -1065,9 +1065,9 @@ namespace IO.Ably.Realtime.Workflow
                     return true;
                 }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                ErrorPolicy.HandleUnexpected(e, Logger);
             }
 
             count = default(int);
