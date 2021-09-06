@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -305,7 +307,8 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
+            Debug.Assert(target.ConnectionSerial.HasValue, $"'{nameof(target)}' should have a value");
+            target.ConnectionSerial.Value.Should().Be(ToLong(connectionSerial));
         }
 
         [Theory]
@@ -325,7 +328,8 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count.Value);
+            Debug.Assert(target.Count.HasValue, $"'{nameof(target)}' should have a value");
+            target.Count.Value.Should().Be(ToInt(count));
         }
 
         [Theory]
@@ -345,7 +349,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
+            target.MsgSerial.Should().Be(ToLong(serial));
         }
 
         [Theory]
@@ -365,7 +369,8 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Assert.Equal(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
+            Debug.Assert(target.Flags.HasValue, $"'{nameof(target)}' should have a value");
+            ((byte)target.Flags).Should().Be(ToByte(flags));
         }
 
         [Theory]
@@ -382,7 +387,7 @@ namespace IO.Ably.Tests
             // Assert
             target.Should().NotBeNull();
             target.Messages.Should().NotBeNull();
-            Assert.Equal(expectedMessages.Length, target.Messages.Length);
+            target.Messages.Length.Should().Be(expectedMessages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
@@ -404,7 +409,7 @@ namespace IO.Ably.Tests
             // Assert
             target.Should().NotBeNull();
             target.Presence.Should().NotBeNull();
-            Assert.Equal(expectedMessages.Length, target.Presence.Length);
+            target.Presence.Length.Should().Be(expectedMessages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].ClientId, target.Presence[i].ClientId);
@@ -414,6 +419,31 @@ namespace IO.Ably.Tests
                 Assert.Equal(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
                 Assert.Equal(expectedMessages[i].Data, target.Presence[i].Data);
             }
+        }
+
+        private static string ToString(object value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return value.ToString();
+        }
+
+        private static long ToLong(object value)
+        {
+            return long.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
+        }
+
+        private static int ToInt(object value)
+        {
+            return int.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
+        }
+
+        private static byte ToByte(object value)
+        {
+            return byte.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
         }
     }
 }
