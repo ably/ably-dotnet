@@ -12,14 +12,14 @@ namespace IO.Ably.AcceptanceTests
     {
         public class WithBase64Message
         {
-            private string _stringData;
             private byte[] _binaryData;
             private string _base64Data;
 
             public WithBase64Message()
             {
-                _stringData = "random-string";
-                _binaryData = _stringData.GetBytes();
+                const string stringData = "random-string";
+
+                _binaryData = stringData.GetBytes();
                 _base64Data = _binaryData.ToBase64();
             }
 

@@ -924,7 +924,7 @@ namespace IO.Ably.Tests.Realtime
             stateChanges[0].Reason.Code.Should().Be(ErrorCodes.TokenExpired);
             stateChanges[1].HasError.Should().BeFalse();
             stateChanges[2].HasError.Should().BeTrue();
-            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
         }
 
         [Theory]
@@ -1163,9 +1163,13 @@ namespace IO.Ably.Tests.Realtime
 
             var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
             transportWrapper.Should().NotBe(null);
+
+            Debug.Assert(transportWrapper != null, nameof(transportWrapper) + " != null");
             var wsTransport = transportWrapper.WrappedTransport as MsWebSocketTransport;
             wsTransport.Should().NotBe(null);
-            wsTransport._socket.ClientWebSocket = null;
+
+            Debug.Assert(wsTransport != null, nameof(wsTransport) + " != null");
+            wsTransport.ReleaseClientWebSocket();
 
             var tca = new TaskCompletionAwaiter();
             client.Connection.On(s =>

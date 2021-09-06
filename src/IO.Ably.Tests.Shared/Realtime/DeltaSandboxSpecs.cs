@@ -283,7 +283,7 @@ namespace IO.Ably.Tests.Realtime
                 received.Should().NotContain(x => x.Id == "badMessage");
 
                 bool hasVcdiffErrorMessage = testSink.Messages.Any(x => x.StartsWith(LogLevel.Error.ToString())
-                                                                        && x.Contains(ErrorCodes.VCDiffDecodeError
+                                                                        && x.Contains(ErrorCodes.VcDiffDecodeError
                                                                             .ToString()));
 
                 hasVcdiffErrorMessage.Should().BeTrue();

@@ -139,7 +139,8 @@ namespace IO.Ably.Transport
                             }
                             catch (Exception e)
                             {
-                                logger.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+                                logger?.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+
                                 return string.Empty;
                             }
                     }

@@ -86,6 +86,8 @@ namespace IO.Ably.Encryption
     /// </summary>
     public static class Crypto
     {
+        private static readonly RNGCryptoServiceProvider SecureRandom = new RNGCryptoServiceProvider();
+
         private const int IdempotentGeneratedIdLength = 9;
 
         /// <summary>
@@ -165,7 +167,7 @@ namespace IO.Ably.Encryption
                 return new AesCipher(cipherParams);
             }
 
-            throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
+            throw new AblyException("Currently only the AES encryption algorithm is supported", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
         }
 
         /// <summary>
@@ -201,16 +203,14 @@ namespace IO.Ably.Encryption
             return AesCipher.GenerateKey(mode, keyLength);
         }
 
-        private static readonly RNGCryptoServiceProvider _secureRandom = new RNGCryptoServiceProvider();
-
         /// <summary>
         /// Generates a cryptographically random message id.
         /// </summary>
         /// <returns>base64 encoded random array of 9 bytes.</returns>
         public static string GetRandomMessageId()
         {
-            byte[] bytes = new byte[IdempotentGeneratedIdLength];
-            _secureRandom.GetBytes(bytes);
+            var bytes = new byte[IdempotentGeneratedIdLength];
+            SecureRandom.GetBytes(bytes);
             return bytes.ToBase64();
         }
 
@@ -220,7 +220,7 @@ namespace IO.Ably.Encryption
         /// <returns>Returns a random string.</returns>
         internal static string GenerateSecret()
         {
-            byte[] entropy = new byte[64];
+            var entropy = new byte[64];
             var rnd = RandomNumberGenerator.Create();
             rnd.GetNonZeroBytes(entropy);
 

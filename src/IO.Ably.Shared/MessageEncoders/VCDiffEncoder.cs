@@ -3,7 +3,7 @@ using IO.Ably.DeltaCodec;
 
 namespace IO.Ably.MessageEncoders
 {
-    internal class VCDiffEncoder : MessageEncoder
+    internal class VcDiffEncoder : MessageEncoder
     {
         private const string EncodingNameStr = "vcdiff";
 

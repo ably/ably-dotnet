@@ -21,14 +21,16 @@ namespace IO.Ably
         public const int InvalidClientId = 40012;
         public const int InvalidMessageDataOrEncoding = 40013;
         public const int ResourceDisposed = 40014;
-        public const int VCDiffDecodeError = 40018;
+        public const int VcDiffDecodeError = 40018;
         public const int BatchError = 40020;
+        public const int InvalidPublishRequestInvalidClientSpecifiedId = 40031;
 
         /* 401 codes */
         public const int Unauthorized = 40100;
         public const int InvalidCredentials = 40101;
         public const int IncompatibleCredentials = 40102;
         public const int InvalidUseOfBasicAuthOverNonTlsTransport = 40103;
+        public const int UnableToObtainCredentialsFromGivenParameters = 40106;
         public const int AccountDisabled = 40110;
         public const int AccountBlockedConnectionLimitExceeded = 40111;
         public const int AccountBlockedMessageLimitExceeded = 40112;
@@ -45,6 +47,7 @@ namespace IO.Ably
         public const int ConnectionBlockedLimitsExceeded = 40150;
         public const int OperationNotPermittedWithCapability = 40160;
         public const int ClientCallbackError = 40170;
+        public const int NoMeansProvidedToRenewAuthToken = 40171;
 
         /* 403 codes */
         public const int Forbidden = 40300;

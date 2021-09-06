@@ -8,6 +8,8 @@ namespace IO.Ably.Tests
 {
     public class RestInitSpecs : AblySpecs
     {
+        private const string NoMeansProvidedToRenewAuthToken = "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help";
+
         [Fact]
         [Trait("spec", "RSA2")]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
@@ -40,9 +42,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA4a1")]
             public void WithTokenButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
-                var testLogger =
-                    new TestLogger(
-                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
                 var client = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
@@ -51,9 +51,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA4a1")]
             public void WithTokenDetailsButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
-                var testLogger =
-                    new TestLogger(
-                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
                 var client = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
@@ -165,7 +163,7 @@ namespace IO.Ably.Tests
             public void WithoutTokenAuthAndNoKey_ShouldThrow()
             {
                 var error = Assert.Throws<AblyException>(() => new AblyRest(new ClientOptions()));
-                error.ErrorInfo.Code.Should().Be(40106);
+                error.ErrorInfo.Code.Should().Be(ErrorCodes.UnableToObtainCredentialsFromGivenParameters);
             }
         }
 
