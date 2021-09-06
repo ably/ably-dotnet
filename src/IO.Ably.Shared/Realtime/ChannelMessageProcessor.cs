@@ -107,7 +107,7 @@ namespace IO.Ably.Realtime
                     if (result.IsFailure)
                     {
                         Logger.Error($"{channel.Name} - failed to decode message. ErrorCode: {result.Error.Code}, Message: {result.Error.Message}");
-                        if (result.Error is VcdiffErrorInfo)
+                        if (result.Error is VcDiffErrorInfo)
                         {
                             channel.StartDecodeFailureRecovery(result.Error);
 
