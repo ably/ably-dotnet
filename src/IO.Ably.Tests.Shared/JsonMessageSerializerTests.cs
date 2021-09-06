@@ -307,7 +307,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Debug.Assert(target.ConnectionSerial.HasValue, $"'{nameof(target)}' should have a value");
+            Debug.Assert(target.ConnectionSerial.HasValue, $"'{nameof(target.ConnectionSerial)}' should have a value");
             target.ConnectionSerial.Value.Should().Be(ToLong(connectionSerial));
         }
 
@@ -328,7 +328,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Debug.Assert(target.Count.HasValue, $"'{nameof(target)}' should have a value");
+            Debug.Assert(target.Count.HasValue, $"'{nameof(target.Count)}' should have a value");
             target.Count.Value.Should().Be(ToInt(count));
         }
 
@@ -369,7 +369,7 @@ namespace IO.Ably.Tests
 
             // Assert
             target.Should().NotBeNull();
-            Debug.Assert(target.Flags.HasValue, $"'{nameof(target)}' should have a value");
+            Debug.Assert(target.Flags.HasValue, $"'{nameof(target.Flags)}' should have a value");
             ((byte)target.Flags).Should().Be(ToByte(flags));
         }
 
