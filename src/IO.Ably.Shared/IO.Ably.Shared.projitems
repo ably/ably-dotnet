@@ -16,7 +16,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultLoggerSink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChannelModeExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IInternalLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILoggerSink.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InternalLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\PayloadCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\ProcessedPayload.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />

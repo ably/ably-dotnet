@@ -137,6 +137,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)StatsParsingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskUtilsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestLoggerSink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetailsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPopulateTests.cs" />
