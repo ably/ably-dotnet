@@ -335,7 +335,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
             }
 
-            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", ErrorCodes.InternalError));
         }
 
         public void Detach(Action<bool, ErrorInfo> callback = null)
@@ -555,12 +555,12 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Suspended || State == ChannelState.Failed)
             {
-                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             if (!Connection.CanPublishMessages)
             {
-                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
@@ -634,10 +634,10 @@ namespace IO.Ably.Realtime
             switch (state)
             {
                 case ChannelState.Attaching:
-                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", 50000));
+                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", ErrorCodes.InternalError));
                     break;
                 case ChannelState.Detaching:
-                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", ErrorCodes.InternalError));
                     AttachResume = false;
                     break;
                 case ChannelState.Attached:
@@ -656,14 +656,23 @@ namespace IO.Ably.Realtime
                             // SetChannelState(ChannelState.Detached, error, protocolMessage);
                             Reattach(error, protocolMessage);
                             break;
+
                         case ChannelState.Attaching:
                             /* RTL13b says we need to become suspended, but continue to retry */
                             Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
                             SetChannelState(ChannelState.Suspended, error, protocolMessage);
                             ReattachAfterTimeout(error, protocolMessage);
                             break;
-                        default:
+
+                        case ChannelState.Initialized:
+                        case ChannelState.Detaching:
+                        case ChannelState.Detached:
+                        case ChannelState.Failed:
+                            // Nothing to do here.
                             break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
 
                     Presence.ChannelDetachedOrFailed(error);

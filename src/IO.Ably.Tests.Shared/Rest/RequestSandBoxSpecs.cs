@@ -235,7 +235,7 @@ namespace IO.Ably.Tests
             var response = await client.Request(HttpMethod.Post, "/does-not-exist");
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             response.Success.Should().BeFalse();
-            response.ErrorCode.Should().Be(40400);
+            response.ErrorCode.Should().Be(ErrorCodes.NotFound);
             response.ErrorMessage.Should().NotBeNullOrEmpty();
             response.Response.ContentType.Should().Be("application/json");
         }
@@ -260,7 +260,7 @@ namespace IO.Ably.Tests
             }
             catch (AblyException e)
             {
-                e.ErrorInfo.Code.Should().Be(50000);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.InternalError);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
                 e.ErrorInfo.Message.Should().Contain("Invalid URI: Invalid port specified.");
             }

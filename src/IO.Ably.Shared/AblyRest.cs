@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Push;
@@ -229,7 +228,7 @@ namespace IO.Ably
                 }
             }
 
-            return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
+            return MessageHandler.ParsePaginatedResponse(request, response, executeDataQueryRequest);
         }
 
         internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)

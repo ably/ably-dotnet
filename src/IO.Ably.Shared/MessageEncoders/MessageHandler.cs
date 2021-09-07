@@ -16,7 +16,7 @@ namespace IO.Ably.MessageEncoders
 
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VCDiffEncoder(), Base64Encoder,
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
         };
 
         private static readonly Type[] UnsupportedTypes =

@@ -3,7 +3,7 @@ using IO.Ably.DeltaCodec;
 
 namespace IO.Ably.MessageEncoders
 {
-    internal class VCDiffEncoder : MessageEncoder
+    internal class VcDiffEncoder : MessageEncoder
     {
         private const string EncodingNameStr = "vcdiff";
 
@@ -34,7 +34,7 @@ namespace IO.Ably.MessageEncoders
                 var previousPayload = context.PreviousPayload?.GetBytes();
                 if (previousPayload is null)
                 {
-                    return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Missing previous payload"));
+                    return Result.Fail<ProcessedPayload>(new VcDiffErrorInfo("Missing previous payload"));
                 }
 
                 var result = DeltaDecoder.ApplyDelta(previousPayload, payloadBytes);
@@ -51,7 +51,7 @@ namespace IO.Ably.MessageEncoders
                     $"Payload Encoding: {payload.Encoding}. Payload data: {GetPayloadString()}";
                 logger.Error("Error decoding vcdiff message: " + error, ex);
 
-                return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Failed to decode vcdiff message", ex));
+                return Result.Fail<ProcessedPayload>(new VcDiffErrorInfo("Failed to decode vcdiff message", ex));
             }
 
             string GetPayloadString()

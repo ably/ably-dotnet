@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                 // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().Be(40171);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             }
 
             // did not retry the request
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -149,7 +149,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests
 
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -219,7 +219,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -253,7 +253,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -343,7 +343,7 @@ namespace IO.Ably.Tests
                 realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
-                    change.Reason.Code.Should().Be(80019);
+                    change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                     tca.SetCompleted();
                 });
 
@@ -464,8 +464,8 @@ namespace IO.Ably.Tests
                 };
             }
 
-            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019, optionsAction: AuthUrlOptions);
-            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: 80019, optionsAction: AuthCallbackOptions);
+            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthUrlOptions);
+            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthCallbackOptions);
         }
 
         [Theory]
@@ -481,8 +481,8 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
             {
                 change.Previous.Should().Be(ConnectionState.Connected);
-                change.Reason.Code.Should().Be(80019);
-                realtimeClient.Connection.ErrorReason.Code.Should().Be(80019);
+                change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
                 failedAwaiter.SetCompleted();
             });
@@ -518,7 +518,7 @@ namespace IO.Ably.Tests
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.RequestTokenAsync(null, authOptions));
             ex.Should().BeOfType<AblyException>();
-            ex.ErrorInfo.Code.Should().Be(80019);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
             ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             await Task.Delay(1000);
 
@@ -584,7 +584,7 @@ namespace IO.Ably.Tests
             });
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => ably.StatsAsync());
-            ex.ErrorInfo.Code.Should().Be(40171);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
         }
 
         [Theory]

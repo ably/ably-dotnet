@@ -32,14 +32,6 @@
             }
         }
 
-        public sealed class GettingPushDeviceDetailsFailed : ErrorEvent
-        {
-            public GettingPushDeviceDetailsFailed(ErrorInfo reason)
-                : base(reason)
-            {
-            }
-        }
-
         public sealed class RegistrationSynced : Event
         {
         }

@@ -476,14 +476,16 @@ namespace IO.Ably.Realtime.Workflow
                         {
                             case ConnectionState.Closing:
                                 return SetClosedStateCommand.Create(exception: cmd.Exception).TriggeredBy(cmd);
+
                             case ConnectionState.Connecting:
                                 AblyException ablyException = null;
                                 if (cmd.Exception != null)
                                 {
-                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.ServiceUnavailable);
+                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, ErrorCodes.ConnectionFailed, HttpStatusCode.ServiceUnavailable);
                                 }
 
                                 return HandleConnectingErrorCommand.Create(null, ablyException, false).TriggeredBy(cmd);
+
                             case ConnectionState.Connected:
                                 var errorInfo =
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
@@ -491,8 +493,17 @@ namespace IO.Ably.Realtime.Workflow
                                     errorInfo,
                                     retryInstantly: Connection.ConnectionResumable,
                                     exception: cmd.Exception).TriggeredBy(cmd);
-                            default:
+
+                            case ConnectionState.Initialized:
+                            case ConnectionState.Disconnected:
+                            case ConnectionState.Suspended:
+                            case ConnectionState.Closed:
+                            case ConnectionState.Failed:
+                                // Nothing to do here.
                                 break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
                     }
 
@@ -758,7 +769,7 @@ namespace IO.Ably.Realtime.Workflow
                             Logger.Error("Error setting connecting state", ex);
 
                             // RSA4c2 & RSA4d
-                            if (ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                            if (ex.ErrorInfo.Code == ErrorCodes.ClientAuthProviderRequestFailed & !ex.ErrorInfo.IsForbiddenError)
                             {
                                 return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }
