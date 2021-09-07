@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Utils;
 
 namespace IO.Ably.Transport
 {
@@ -386,9 +387,9 @@ namespace IO.Ably.Transport
                     return true;
                 }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                ErrorPolicy.HandleUnexpected(e, Logger);
             }
 
             count = default(int);

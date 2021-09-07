@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably.Utils;
 
 namespace IO.Ably
 {
@@ -38,9 +39,9 @@ namespace IO.Ably
                 {
                     t.Wait();
                 }
-                catch
+                catch (Exception e)
                 {
-                    // ignored
+                    ErrorPolicy.HandleUnexpected(e, DefaultLogger.LoggerInstance);
                 }
             };
 
