@@ -213,15 +213,18 @@ namespace IO.Ably.Transport
                 message.ConnectionId = null;
             }
 
-            var result = VerifyMessageHasCompatibleClientId(message);
+            Result result = VerifyMessageHasCompatibleClientId(message);
             if (result.IsFailure)
             {
                 callback?.Invoke(false, result.Error);
                 return;
             }
 
-            // TODO: What happens if a message fails encoding before being sent.
-            var encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext());
+            Result encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext());
+            if (encodingResult.IsFailure)
+            {
+                Logger.Error($"Failed to encode protocol message: {encodingResult.Error.Message}");
+            }
 
             if (State.CanSend == false && State.CanQueue == false)
             {
