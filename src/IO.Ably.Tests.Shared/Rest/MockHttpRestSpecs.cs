@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
 
         internal List<AblyRequest> Requests { get; } = new List<AblyRequest>();
 
-        internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc, ClientOptions options)
+        internal AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc, ClientOptions options)
         {
             var client = new AblyRest(options);
             client.ExecuteHttpRequest = request =>
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
             return client;
         }
 
-        internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
+        internal AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
         {
             var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false };
             setOptionsAction?.Invoke(options);
