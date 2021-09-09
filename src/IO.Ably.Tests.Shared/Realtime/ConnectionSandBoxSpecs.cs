@@ -1162,11 +1162,11 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connected);
 
             var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
-            transportWrapper.Should().NotBe(null);
+            transportWrapper.Should().NotBeNull();
 
             Debug.Assert(transportWrapper != null, nameof(transportWrapper) + " != null");
             var wsTransport = transportWrapper.WrappedTransport as MsWebSocketTransport;
-            wsTransport.Should().NotBe(null);
+            wsTransport.Should().NotBeNull();
 
             Debug.Assert(wsTransport != null, nameof(wsTransport) + " != null");
             wsTransport.ReleaseClientWebSocket();
