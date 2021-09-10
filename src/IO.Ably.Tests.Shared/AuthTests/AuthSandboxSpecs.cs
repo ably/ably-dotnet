@@ -965,7 +965,7 @@ namespace IO.Ably.Tests
                     optionsAction = DefaultOptionsAction;
                 }
 
-                var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, options => restClient);
+                var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, (options, device) => restClient);
                 return realtimeClient;
             }
 

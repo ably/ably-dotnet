@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using Xunit;
@@ -86,7 +87,7 @@ namespace IO.Ably.Tests
         protected async Task<AblyRealtime> GetRealtimeClient(
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction,
-            Func<ClientOptions, AblyRest> createRestFunc)
+            Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc)
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
