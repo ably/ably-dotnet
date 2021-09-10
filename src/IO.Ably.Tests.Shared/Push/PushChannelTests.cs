@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
+using IO.Ably.Tests.Infrastructure;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -94,6 +97,65 @@ namespace IO.Ably.Tests.Push
             }
 
             public WhenPlatformDoesNotSupportPushNotifications(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+        }
+
+        public class GeneralTests : MockHttpRestSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSH7a")]
+            [Trait("spec", "RSH7a1")]
+            public void SubscribeDevice_ShouldThrowWhenLocalDeviceIsMissingDeviceIdentityToken()
+            {
+                var client = GetRestClient(mobileDevice: new FakeMobileDevice());
+                client.Device = new LocalDevice();
+                var pushChannel = client.Channels.Get("test").Push;
+
+                Func<Task> subscribeFunc = () => pushChannel.SubscribeDevice();
+
+                subscribeFunc.Should().ThrowAsync<AblyException>().WithMessage("Cannot Subscribe device to channel*");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH7a")]
+            [Trait("spec", "RSH7a2")]
+            public async Task SubscribeDevice_ShouldSendARequestTo_PushChannelSubscriptions_WithCorrectParameters()
+            {
+                const string channelName = "testChannel";
+                const string deviceId = "deviceId";
+
+                var taskAwaiter = new TaskCompletionAwaiter();
+
+                async Task<AblyResponse> RequestHandler(AblyRequest request)
+                {
+                    request.Url.Should().Be("/push/channelSubscriptions");
+                    var postData = (PushChannelSubscription)request.PostData;
+                    postData.Should().NotBeNull();
+                    postData.Channel.Should().Be(channelName);
+                    postData.DeviceId.Should().Be(deviceId);
+                    postData.ClientId.Should().BeNullOrEmpty();
+
+                    taskAwaiter.SetCompleted();
+                    return new AblyResponse() { TextResponse = JsonConvert.SerializeObject(new PushChannelSubscription()) };
+                }
+
+                var client = GetRestClient(RequestHandler, mobileDevice: new FakeMobileDevice());
+
+                client.Device = new LocalDevice()
+                {
+                    Id = deviceId,
+                    DeviceIdentityToken = "identityToken"
+                };
+                var pushChannel = client.Channels.Get(channelName).Push;
+
+                await pushChannel.SubscribeDevice();
+
+                (await taskAwaiter).Should().BeTrue("Didn't validate function");
+            }
+
+            public GeneralTests(ITestOutputHelper output)
                 : base(output)
             {
             }
