@@ -155,6 +155,38 @@ namespace IO.Ably.Tests.Push
                 (await taskAwaiter).Should().BeTrue("Didn't validate function");
             }
 
+            [Fact]
+            [Trait("spec", "RSH7a")]
+            [Trait("spec", "RSH7a3")]
+            public async Task SubscribeDevice_ShouldUsePushDeviceAuthentication()
+            {
+                const string deviceIdentityToken = "identityToken";
+                var taskAwaiter = new TaskCompletionAwaiter();
+
+                async Task<AblyResponse> RequestHandler(AblyRequest request)
+                {
+                    request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should()
+                        .Be(deviceIdentityToken);
+
+                    taskAwaiter.SetCompleted();
+                    return new AblyResponse() { TextResponse = JsonConvert.SerializeObject(new PushChannelSubscription()) };
+                }
+
+                var client = GetRestClient(RequestHandler, mobileDevice: new FakeMobileDevice());
+
+                client.Device = new LocalDevice()
+                {
+                    Id = "id",
+                    DeviceIdentityToken = deviceIdentityToken
+                };
+
+                var pushChannel = client.Channels.Get("test").Push;
+
+                await pushChannel.SubscribeDevice();
+
+                (await taskAwaiter).Should().BeTrue("Didn't validate function");
+            }
+
             public GeneralTests(ITestOutputHelper output)
                 : base(output)
             {
