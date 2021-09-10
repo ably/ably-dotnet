@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 
 namespace IO.Ably.Realtime
 {
@@ -52,6 +53,12 @@ namespace IO.Ably.Realtime
         /// <see cref="ChannelProperties"/>.
         /// </summary>
         ChannelProperties Properties { get; }
+
+        /// <summary>
+        /// A convenient set of methods that help with managing subscriptions to a push channel.
+        /// <see cref="PushChannel"/>.
+        /// </summary>
+        PushChannel Push { get; }
 
         /// <summary>
         /// EventHandler for notifying Clients with channel state changes.
