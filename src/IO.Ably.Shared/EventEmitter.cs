@@ -405,7 +405,7 @@ namespace IO.Ably
             foreach (var emitter in emitters)
             {
                 var current = emitter;
-                NotifyClient(delegate
+                NotifyClient(() =>
                 {
                     try
                     {
