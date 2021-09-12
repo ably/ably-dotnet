@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
 {
-    public class PushChannelTests
+    public static class PushChannelTests
     {
         [Trait("spec", "RSH7")]
         public class WhenPlatformSupportsPushNotifications : AblyRealtimeSpecs
@@ -169,7 +169,8 @@ namespace IO.Ably.Tests.Push
                         .Be(deviceIdentityToken);
 
                     taskAwaiter.SetCompleted();
-                    return new AblyResponse() { TextResponse = JsonConvert.SerializeObject(new PushChannelSubscription()) };
+                    return new AblyResponse()
+                        { TextResponse = JsonConvert.SerializeObject(new PushChannelSubscription()) };
                 }
 
                 var client = GetRestClient(RequestHandler, mobileDevice: new FakeMobileDevice());
@@ -183,6 +184,72 @@ namespace IO.Ably.Tests.Push
                 var pushChannel = client.Channels.Get("test").Push;
 
                 await pushChannel.SubscribeDevice();
+
+                (await taskAwaiter).Should().BeTrue("Didn't validate function");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH7b")]
+            [Trait("spec", "RSH7b1")]
+            public void SubscribeClient_ShouldThrowWhenLocalDeviceIsMissingDeviceIdentityToken()
+            {
+                var client = GetRestClient(mobileDevice: new FakeMobileDevice());
+                client.Device = new LocalDevice();
+                var pushChannel = client.Channels.Get("test").Push;
+
+                Func<Task> subscribeFunc = () => pushChannel.SubscribeClient();
+
+                subscribeFunc.Should().ThrowAsync<AblyException>().WithMessage("Cannot Subscribe device to channel*");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH7b")]
+            [Trait("spec", "RSH7b1")]
+            public void SubscribeClient_ShouldThrowWhenLocalDeviceIsMissingClientId()
+            {
+                var client = GetRestClient(mobileDevice: new FakeMobileDevice());
+                client.Device = new LocalDevice() { DeviceIdentityToken = "token" };
+                var pushChannel = client.Channels.Get("test").Push;
+
+                Func<Task> subscribeFunc = () => pushChannel.SubscribeClient();
+
+                subscribeFunc.Should().ThrowAsync<AblyException>()
+                    .WithMessage("Cannot Subscribe clientId to channel*");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH7b")]
+            [Trait("spec", "RSH7b2")]
+            public async Task SubscribeChannel_ShouldSendARequestTo_PushChannelSubscriptions_WithCorrectParameters()
+            {
+                const string channelName = "testChannel";
+                const string clientId = "client101";
+
+                var taskAwaiter = new TaskCompletionAwaiter();
+
+                async Task<AblyResponse> RequestHandler(AblyRequest request)
+                {
+                    request.Url.Should().Be("/push/channelSubscriptions");
+                    var postData = (PushChannelSubscription)request.PostData;
+                    postData.Should().NotBeNull();
+                    postData.Channel.Should().Be(channelName);
+                    postData.ClientId.Should().Be(clientId);
+                    postData.DeviceId.Should().BeNullOrEmpty();
+
+                    taskAwaiter.SetCompleted();
+                    return new AblyResponse() { TextResponse = JsonConvert.SerializeObject(new PushChannelSubscription()) };
+                }
+
+                var client = GetRestClient(RequestHandler, mobileDevice: new FakeMobileDevice());
+
+                client.Device = new LocalDevice()
+                {
+                    ClientId = clientId,
+                    DeviceIdentityToken = "identityToken"
+                };
+                var pushChannel = client.Channels.Get(channelName).Push;
+
+                await pushChannel.SubscribeClient();
 
                 (await taskAwaiter).Should().BeTrue("Didn't validate function");
             }
