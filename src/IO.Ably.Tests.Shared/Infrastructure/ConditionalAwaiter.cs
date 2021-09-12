@@ -11,18 +11,26 @@ namespace IO.Ably.Tests.Infrastructure
     {
         private readonly Func<bool> _condition;
         private readonly Func<string> _getError;
-        private Timer _timer = new Timer();
-        private TaskCompletionSource<bool> _completionSource;
-        private int _tickCount = 0;
+        private readonly Timer _timer;
+        private readonly TaskCompletionSource<bool> _completionSource;
+        private int _tickCount;
 
         public ConditionalAwaiter(Func<bool> condition, Func<string> getError = null)
         {
             _condition = condition;
             _getError = getError;
-            _timer.Enabled = true;
-            _timer.Interval = 100;
+            _timer = new Timer
+            {
+                Enabled = true,
+                Interval = 100,
+            };
             _timer.Elapsed += TimerOnElapsed;
             _completionSource = new TaskCompletionSource<bool>();
+        }
+
+        public TaskAwaiter<bool> GetAwaiter()
+        {
+            return _completionSource.Task.GetAwaiter();
         }
 
         private void TimerOnElapsed(object sender, ElapsedEventArgs e)
@@ -30,7 +38,13 @@ namespace IO.Ably.Tests.Infrastructure
             Interlocked.Increment(ref _tickCount);
             if (_tickCount > 100)
             {
-                _completionSource.SetException(new Exception("10 seconds elapsed. Giving up. Error: " + _getError?.Invoke()));
+                string message = "10 seconds elapsed. Giving up.";
+                if (_getError != null)
+                {
+                    message += " Error: " + _getError();
+                }
+
+                _completionSource.SetException(new Exception(message));
             }
 
             if (_condition() && _completionSource.Task.IsCompleted == false)
@@ -40,11 +54,6 @@ namespace IO.Ably.Tests.Infrastructure
                 _timer.Elapsed -= TimerOnElapsed;
                 _timer.Dispose();
             }
-        }
-
-        public TaskAwaiter<bool> GetAwaiter()
-        {
-            return _completionSource.Task.GetAwaiter();
         }
     }
 }
