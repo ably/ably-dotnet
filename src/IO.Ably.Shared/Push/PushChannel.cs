@@ -27,7 +27,7 @@ namespace IO.Ably.Push
         }
 
         /// <summary>
-        /// Subscribes the current channel to push notifications.
+        /// Subscribes the current device to receive push notifications from the current channel.
         /// </summary>
         /// <exception cref="AblyException">Throws an exception if the local device is not activated. Please make sure Push.Activate() has completed.</exception>
         /// <returns>Async operation.</returns>
@@ -47,7 +47,39 @@ namespace IO.Ably.Push
                 DeviceId = localDevice.Id
             });
 
-            _logger.Debug($"Successfully subscribed channel '{subscription.Channel}' to device with id '{subscription.DeviceId}'");
+            _logger.Debug(
+                $"Successfully subscribed channel '{subscription.Channel}' to device with id '{subscription.DeviceId}'");
+        }
+
+        /// <summary>
+        /// Subscribes the current clientId to receive push notifications from the current channel.
+        /// </summary>
+        /// <exception cref="AblyException">Throws an exception if the local device is not activated. Please make sure Push.Activate() has completed.</exception>
+        /// <exception cref="AblyException">Throws an exception if the local device does not have a clientId assigned.</exception>
+        /// <returns>Async operation.</returns>
+        public async Task SubscribeClient()
+        {
+            var localDevice = _rest.Device;
+            if (localDevice?.DeviceIdentityToken is null)
+            {
+                // TODO: What error code should we use here
+                throw new AblyException(
+                    $"Cannot Subscribe device to channel '{ChannelName}' because the device is missing deviceIdentityToken. Please call AblyRest.Push.Activate() and wait for it to complete");
+            }
+
+            if (localDevice.ClientId.IsEmpty())
+            {
+                throw new AblyException(
+                    $"Cannot Subscribe clientId to channel '{ChannelName}' because the device does not have an assigned clientId."); // TODO: Need to include info on how people come out of this.
+            }
+
+            var subscription = await _rest.Push.Admin.ChannelSubscriptions.SaveAsync(new PushChannelSubscription()
+            {
+                Channel = ChannelName,
+                ClientId = localDevice.ClientId
+            });
+
+            _logger.Debug($"Successfully subscribed channel '{subscription.Channel}' to clientId '{subscription.ClientId}");
         }
     }
 }
