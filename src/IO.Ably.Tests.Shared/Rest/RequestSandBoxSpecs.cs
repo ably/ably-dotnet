@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
         private readonly string _channelsPath;
         private readonly string _channelMessagesPath;
 
-        private AblyRequest _lastRequest = null;
+        private AblyRequest _lastRequest;
 
         public RequestSandBoxSpecs(ITestOutputHelper output)
             : base(new AblySandboxFixture(), output)
