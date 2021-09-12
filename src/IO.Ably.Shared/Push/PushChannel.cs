@@ -52,6 +52,31 @@ namespace IO.Ably.Push
         }
 
         /// <summary>
+        /// Unsubscribes the current device from receiving push notification from the current channel.
+        /// </summary>
+        /// <exception cref="AblyException">Throws an exception if the local device is not activated. Please make sure Push.Activate() has completed.</exception>
+        /// <returns>Async operation.</returns>
+        public async Task UnsubscribeDevice()
+        {
+            var localDevice = _rest.Device;
+            if (localDevice?.DeviceIdentityToken is null)
+            {
+                // TODO: What error code should we use here
+                throw new AblyException(
+                    $"Cannot Subscribe device to channel '{ChannelName}' because the device is missing deviceIdentityToken. Please call AblyRest.Push.Activate() and wait for it to complete");
+            }
+
+            await _rest.Push.Admin.ChannelSubscriptions.RemoveAsync(new PushChannelSubscription()
+            {
+                Channel = ChannelName,
+                DeviceId = localDevice.Id
+            });
+
+            _logger.Debug(
+                $"Successfully removed channel '{ChannelName}' to device with id '{localDevice.Id}'");
+        }
+
+        /// <summary>
         /// Subscribes the current clientId to receive push notifications from the current channel.
         /// </summary>
         /// <exception cref="AblyException">Throws an exception if the local device is not activated. Please make sure Push.Activate() has completed.</exception>
