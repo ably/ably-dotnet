@@ -8,33 +8,29 @@ namespace IO.Ably.Tests.Infrastructure
     /// </summary>
     internal class TaskCountAwaiter
     {
-        private TaskCompletionAwaiter _awaiter;
-
-        public int Start { get; } = 0;
-
-        public int Index { get; private set; } = 0;
+        private readonly TaskCompletionAwaiter _awaiter;
+        private int _index;
 
         public TaskCountAwaiter(int count, int timeoutMs = 10000)
         {
-            Start = count;
-            if (Start < 1)
+            if (count < 1)
             {
-                throw new Exception("count must be 1 or more");
+                throw new ArgumentOutOfRangeException(nameof(count), "Must be 1 or more");
             }
 
-            Index = count;
+            _index = count;
             _awaiter = new TaskCompletionAwaiter(timeoutMs);
         }
 
+        public Task<bool> Task => _awaiter.Task;
+
         public void Tick()
         {
-            Index--;
-            if (Index == 0)
+            _index--;
+            if (_index == 0)
             {
                 _awaiter.SetCompleted();
             }
         }
-
-        public Task<bool> Task => _awaiter.Task;
     }
 }
