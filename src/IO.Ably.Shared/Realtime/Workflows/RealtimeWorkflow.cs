@@ -283,13 +283,10 @@ namespace IO.Ably.Realtime.Workflow
         /// <param name="command">The current command that will be executed.</param>
         /// <returns>returns the next command that needs to be executed.</returns>
         /// <exception cref="AblyException">will throw an AblyException if anything goes wrong.</exception>
-        internal async Task<RealtimeCommand> ProcessCommandInner(RealtimeCommand command)
+        private async Task<RealtimeCommand> ProcessCommandInner(RealtimeCommand command)
         {
             switch (command)
             {
-                case InitCommand _:
-                    Logger.Debug("Workflow consumer has been initialised");
-                    break;
                 case ConnectCommand _:
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
