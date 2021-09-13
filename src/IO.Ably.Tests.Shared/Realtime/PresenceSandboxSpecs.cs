@@ -1370,8 +1370,6 @@ namespace IO.Ably.Tests.Realtime
                     List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
                     PresenceMessage updateMessage = null;
                     PresenceMessage enterMessage = null;
-                    bool? hasPresence = null;
-                    bool? resumed = null;
                     await WaitForMultiple(2, partialDone =>
                     {
                         presence.Subscribe(PresenceAction.Leave, message =>
@@ -1394,8 +1392,12 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (message.Action == ProtocolMessage.MessageAction.Attached)
                             {
-                                hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
-                                resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                bool hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
+                                hasPresence.Should().BeFalse();
+
+                                bool resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                resumed.Should().BeFalse();
+
                                 client.GetTestTransport().AfterDataReceived = _ => { };
                                 partialDone(); // 1 call
                             }
