@@ -23,18 +23,6 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    internal class InitCommand : RealtimeCommand
-    {
-        private InitCommand()
-        {
-        }
-
-        protected override string ExplainData()
-        {
-            return DateTimeOffset.UtcNow.ToString();
-        }
-    }
-
     internal class PingTimerCommand : RealtimeCommand
     {
         public string PingRequestId { get; }
