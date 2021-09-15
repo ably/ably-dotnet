@@ -557,7 +557,7 @@ namespace IO.Ably.Tests.Realtime
         {
         }
 
-        private class TestEventEmitterArgs : System.EventArgs
+        private class TestEventEmitterArgs : EventArgs
         {
             public string Message { get; set; }
         }
