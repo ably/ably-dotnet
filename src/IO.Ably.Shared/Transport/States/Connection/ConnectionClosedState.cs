@@ -18,7 +18,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Closed;
+        public override ConnectionState State => ConnectionState.Closed;
 
         public override RealtimeCommand Connect()
         {
