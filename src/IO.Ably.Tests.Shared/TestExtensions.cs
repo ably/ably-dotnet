@@ -39,12 +39,6 @@ namespace IO.Ably.Tests
             return ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
         }
 
-        internal static void SetOnTransportCreated(this IRealtimeClient client, Action<TestTransportWrapper> onCreated)
-        {
-            var factory = GetTestTransportFactory(client);
-            factory.OnTransportCreated = onCreated;
-        }
-
         internal static void BlockActionFromSending(this IRealtimeClient client, ProtocolMessage.MessageAction action)
         {
             var transport = ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
@@ -75,13 +69,6 @@ namespace IO.Ably.Tests
             {
                 f.BeforeDataProcessed = action;
             }
-        }
-
-        internal static void AfterProtocolMessageProcessed(this AblyRealtime client, Action<ProtocolMessage> action)
-        {
-            client.GetTestTransport().AfterDataReceived = action;
-            var factory = GetTestTransportFactory(client);
-            factory.AfterDataReceived = action;
         }
 
         private static TestTransportFactory GetTestTransportFactory(IRealtimeClient client)
