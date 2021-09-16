@@ -110,7 +110,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await taskAwaiter.Task;
 
-            stateChanges.Count().Should().BeGreaterThan(0);
+            stateChanges.Count.Should().BeGreaterThan(0);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.TokenError);
         }
