@@ -150,7 +150,7 @@ namespace IO.Ably
         /// <param name="token"><see cref="TokenDetails"/>.</param>
         /// <param name="now">the correct instance of now to compare with the token.</param>
         /// <returns>true / false.</returns>
-        public static bool IsExpired(this TokenDetails token, DateTimeOffset now)
+        private static bool IsExpired(this TokenDetails token, DateTimeOffset now)
         {
             return token.Expires < now;
         }
