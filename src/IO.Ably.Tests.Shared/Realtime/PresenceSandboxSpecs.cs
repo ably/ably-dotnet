@@ -1962,7 +1962,7 @@ namespace IO.Ably.Tests.Realtime
                 // all 250 members should be present in a Presence#get request
                 var messages = await channelB.Presence.GetAsync(new Presence.GetParams { WaitForSync = true });
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
-                messageList.Count().Should().Be(ExpectedEnterCount);
+                messageList.Count.Should().Be(ExpectedEnterCount);
                 foreach (var m in messageList)
                 {
                     presenceMessages.Any(x => x.ClientId == m.ClientId).Should().BeTrue();
