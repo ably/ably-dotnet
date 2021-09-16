@@ -66,7 +66,7 @@ namespace IO.Ably
 
         private bool HasApiKey => Options.Key.IsNotEmpty();
 
-        internal void Initialise()
+        private void Initialise()
         {
             AuthMethod = CheckAndGetAuthMethod();
 
@@ -549,7 +549,7 @@ namespace IO.Ably
             return JsonHelper.Serialize(request);
         }
 
-        internal TokenAuthMethod GetTokenAuthMethod()
+        private TokenAuthMethod GetTokenAuthMethod()
         {
             if (Options.AuthCallback != null)
             {
