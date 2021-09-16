@@ -9,12 +9,7 @@ namespace IO.Ably
 
         public ActionOnDispose(Action act)
         {
-            if (act == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            _action = act;
+            _action = act ?? throw new ArgumentNullException();
         }
 
         void IDisposable.Dispose()
