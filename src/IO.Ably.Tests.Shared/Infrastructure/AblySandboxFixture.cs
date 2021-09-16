@@ -101,7 +101,7 @@ namespace IO.Ably.Tests
             await SetupSampleStats(await GetSettings());
         }
 
-        public static async Task SetupSampleStats(TestEnvironmentSettings settings)
+        private static async Task SetupSampleStats(TestEnvironmentSettings settings)
         {
             var lastInterval = StartInterval;
             var interval1 = lastInterval - TimeSpan.FromMinutes(120);
