@@ -70,16 +70,5 @@ namespace IO.Ably.Tests
                 f.BeforeDataProcessed = action;
             }
         }
-
-        private static TestTransportFactory GetTestTransportFactory(IRealtimeClient client)
-        {
-            var factory = ((AblyRealtime)client).Options.TransportFactory as TestTransportFactory;
-            if (factory is null)
-            {
-                throw new Exception("Client is not using the 'TestTransportFactory'");
-            }
-
-            return factory;
-        }
     }
 }
