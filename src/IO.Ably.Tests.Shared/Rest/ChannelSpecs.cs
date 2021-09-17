@@ -43,6 +43,19 @@ namespace IO.Ably.Tests.Rest
             }
 
             [Fact]
+            public async Task ShouldUpdateOptionsWhenTwoThreadsTryToCreateTheSameChannelWithDifferentOptions()
+            {
+                var client = GetRestClient();
+                var options = new ChannelOptions(encrypted: true);
+                var task1 = Task.Run(() => client.Channels.Get("test"));
+                var task2 = Task.Run(() => client.Channels.Get("test", options));
+
+                await Task.WhenAll(task1, task2);
+                var channel2 = (RestChannel)client.Channels.Get("test");
+                channel2.Options.Should().BeSameAs(options);
+            }
+
+            [Fact]
             [Trait("spec", "RSN2")]
             public void ShouldBeAbleToCheckIsAChannelExists()
             {

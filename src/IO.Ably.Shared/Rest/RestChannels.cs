@@ -10,7 +10,8 @@ namespace IO.Ably.Rest
     /// </summary>
     public class RestChannels : IChannels<IRestChannel>
     {
-        private readonly ConcurrentDictionary<string, RestChannel> _channels = new ConcurrentDictionary<string, RestChannel>();
+        private readonly ConcurrentDictionary<string, RestChannel> _channels =
+            new ConcurrentDictionary<string, RestChannel>();
 
         private readonly AblyRest _ablyRest;
 
@@ -33,12 +34,9 @@ namespace IO.Ably.Rest
                 var channel = new RestChannel(_ablyRest, name, options);
                 result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
-                    if (options != null)
+                    if (options != null && realtimeChannel != null)
                     {
-                        if (result != null)
-                        {
-                            result.Options = options;
-                        }
+                        realtimeChannel.Options = options;
                     }
 
                     return realtimeChannel;
