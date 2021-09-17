@@ -99,16 +99,13 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData() => string.Empty;
     }
 
-    internal class SetInitStateCommand : RealtimeCommand
+    internal class ForceStateInitializationCommand : RealtimeCommand
     {
-        public string Recover { get; }
-
-        private SetInitStateCommand(string recover)
+        private ForceStateInitializationCommand()
         {
-            Recover = recover;
         }
 
-        public static SetInitStateCommand Create(string recover) => new SetInitStateCommand(recover);
+        public static ForceStateInitializationCommand Create() => new ForceStateInitializationCommand();
 
         protected override string ExplainData()
         {
