@@ -600,7 +600,7 @@ namespace IO.Ably.Realtime
             SetChannelState(state, protocolMessage?.Error, protocolMessage);
         }
 
-        internal void SetChannelState(ChannelState state, bool emitUpdate)
+        private void SetChannelState(ChannelState state, bool emitUpdate)
         {
             SetChannelState(state, null, null, emitUpdate);
         }

@@ -130,11 +130,6 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(timeoutMs, 1, done, onFail);
         }
 
-        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done, Action onFail = null)
-        {
-            await TestHelpers.WaitFor(timeoutMs, taskCount, done);
-        }
-
         protected async Task WaitForMultiple(int taskCount, Action<Action> done, Action onFail = null)
         {
             await TestHelpers.WaitFor(10000, taskCount, done, onFail);

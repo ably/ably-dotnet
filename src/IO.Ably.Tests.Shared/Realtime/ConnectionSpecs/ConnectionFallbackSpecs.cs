@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = await GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            var states = new List<ConnectionState>();
             client.Connection.On((args) =>
             {
                 states.Add(args.Current);
@@ -295,6 +295,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 await client.ProcessCommands();
             }
 
+            states.Count.Should().BeGreaterThan(0);
             retryHosts.Count.Should().BeGreaterOrEqualTo(3);
             retryHosts.Distinct().Count().Should().BeGreaterOrEqualTo(3);
         }

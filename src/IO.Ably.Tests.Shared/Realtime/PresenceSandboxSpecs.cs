@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,29 @@ namespace IO.Ably.Tests.Realtime
     [Trait("type", "integration")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
+        private PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
+        {
+        }
+
+        private static string GetTestChannelName(string id = "")
+        {
+            return $"presence-{id}".AddRandomSuffix();
+        }
+
+        private static RealtimeChannel GetRandomChannel(IRealtimeClient client, string channelNamePrefix)
+        {
+            return GetChannel(client, channelNamePrefix.AddRandomSuffix());
+        }
+
+        private static RealtimeChannel GetChannel(IRealtimeClient client, string channelName)
+        {
+            var channel = client.Channels.Get(channelName) as RealtimeChannel;
+            channel.Should().NotBeNull();
+            Debug.Assert(channel != null, "Previous call to 'Channels.Get' failed.");
+            return channel;
+        }
+
         [Trait("type", "integration")]
         public class GeneralPresenceSandBoxSpecs : PresenceSandboxSpecs
         {
@@ -53,7 +77,8 @@ namespace IO.Ably.Tests.Realtime
                 var testChannel = GetTestChannelName();
                 var client = await GetRealtimeClient(protocol);
                 var client2 = await GetRealtimeClient(protocol);
-                var channel = client.Channels.Get(testChannel);
+                var channel = GetChannel(client, testChannel);
+
                 List<Task> tasks = new List<Task>();
                 for (int count = 1; count < 10; count++)
                 {
@@ -62,8 +87,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await Task.WhenAll(tasks.ToArray());
 
-                var channel2 = client2.Channels.Get(testChannel) as RealtimeChannel;
-                channel2.Should().NotBeNull();
+                var channel2 = GetChannel(client2, testChannel);
 
                 int inSync = 0;
                 int syncComplete = 0;
@@ -212,7 +236,7 @@ namespace IO.Ably.Tests.Realtime
                     }
 
                     PresenceMessage factualMsg = n < presenceMessages.Count ? presenceMessages[n++] : null;
-                    factualMsg.Should().NotBe(null);
+                    factualMsg.Should().NotBeNull();
                     factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
                     factualMsg.Action.Should().BeEquivalentTo(testMsg.Action, "message was not emitted on the presence object with original action");
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
@@ -220,7 +244,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = testMsg.ClientId,
                         WaitForSync = false
                     });
-                    presentMessage.FirstOrDefault().Should().NotBe(null);
+                    presentMessage.FirstOrDefault().Should().NotBeNull();
                     presentMessage.FirstOrDefault()?.Action.Should().BeEquivalentTo(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
                 }
 
@@ -1209,9 +1233,9 @@ namespace IO.Ably.Tests.Realtime
 
             [Trait("spec", "RTP5")]
             [Trait("type", "integration")]
-            public class ChannelStatechangeSideEffects : PresenceSandboxSpecs
+            public class ChannelStateChangeSideEffects : PresenceSandboxSpecs
             {
-                public ChannelStatechangeSideEffects(AblySandboxFixture fixture, ITestOutputHelper output)
+                public ChannelStateChangeSideEffects(AblySandboxFixture fixture, ITestOutputHelper output)
                     : base(fixture, output)
                 {
                 }
@@ -1225,8 +1249,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = await GetRealtimeClient(protocol);
                     await client.WaitForState();
 
-                    var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP5a");
 
                     int initialCount = 0;
                     bool? success = null;
@@ -1252,9 +1275,15 @@ namespace IO.Ably.Tests.Realtime
                     });
 
                     initialCount.Should().Be(1, "a presence message should have been queued");
-                    success.Should().HaveValue("EnterClient callback should have executed");
+
+                    const string errorInvalidSuccess = "EnterClient callback should have executed";
+                    success.Should().HaveValue(errorInvalidSuccess);
+
+                    Debug.Assert(success != null, errorInvalidSuccess);
                     success.Value.Should().BeFalse("queued presence message should have failed immediately");
+
                     errInfo.Message.Should().Be("RTP5a test");
+
                     channel.Presence.PendingPresenceQueue.Should().HaveCount(0, "presence message queue should have been cleared");
 
                     client.Close();
@@ -1269,8 +1298,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = await GetRealtimeClient(protocol);
                     await client.WaitForState();
 
-                    var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP5a");
 
                     var result = await channel.Presence.EnterClientAsync("123", null);
                     result.IsSuccess.Should().BeTrue();
@@ -1342,8 +1370,6 @@ namespace IO.Ably.Tests.Realtime
                     List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
                     PresenceMessage updateMessage = null;
                     PresenceMessage enterMessage = null;
-                    bool? hasPresence = null;
-                    bool? resumed = null;
                     await WaitForMultiple(2, partialDone =>
                     {
                         presence.Subscribe(PresenceAction.Leave, message =>
@@ -1366,8 +1392,12 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (message.Action == ProtocolMessage.MessageAction.Attached)
                             {
-                                hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
-                                resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                bool hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
+                                hasPresence.Should().BeFalse();
+
+                                bool resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                resumed.Should().BeFalse();
+
                                 client.GetTestTransport().AfterDataReceived = _ => { };
                                 partialDone(); // 1 call
                             }
@@ -1450,8 +1480,7 @@ namespace IO.Ably.Tests.Realtime
                 public async Task ConnectionStateCondition_WhenConnectionIsConnected_AllPresenceMessageArePublishedImmediately(Protocol protocol)
                 {
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16a"; });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     ErrorInfo errInfo = null;
 
@@ -1489,8 +1518,7 @@ namespace IO.Ably.Tests.Realtime
                     /* tests channel initialized and attaching states */
 
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1539,8 +1567,7 @@ namespace IO.Ably.Tests.Realtime
                         options.ClientId = "RTP16b";
                         options.QueueMessages = false;
                     });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     await client.WaitForState(ConnectionState.Connected);
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
@@ -1582,8 +1609,7 @@ namespace IO.Ably.Tests.Realtime
                         options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
                     });
 
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1634,8 +1660,7 @@ namespace IO.Ably.Tests.Realtime
                     /* tests initialized and connecting states */
 
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1687,8 +1712,7 @@ namespace IO.Ably.Tests.Realtime
                         options.ClientId = "RTP16b";
                         options.QueueMessages = false;
                     });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-                    channel.Should().NotBeNull();
+                    var channel = GetRandomChannel(client, "RTP16a");
 
                     await client.WaitForState(ConnectionState.Connected);
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
@@ -1720,8 +1744,7 @@ namespace IO.Ably.Tests.Realtime
 
                     async Task TestWithConnectionState(ConnectionState state, RealtimeCommand changeStateCommand)
                     {
-                        var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
-                        channel.Should().NotBeNull();
+                        var channel = GetRandomChannel(client, "RTP16c");
 
                         await client.WaitForState(ConnectionState.Connected);
 
@@ -1776,8 +1799,7 @@ namespace IO.Ably.Tests.Realtime
                     int errCount = 0;
                     async Task TestWithChannelState(ChannelState state)
                     {
-                        var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
-                        channel.Should().NotBeNull();
+                        var channel = GetRandomChannel(client, "RTP16c");
 
                         await client.WaitForState(ConnectionState.Connected);
 
@@ -1940,7 +1962,7 @@ namespace IO.Ably.Tests.Realtime
                 // all 250 members should be present in a Presence#get request
                 var messages = await channelB.Presence.GetAsync(new Presence.GetParams { WaitForSync = true });
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
-                messageList.Count().Should().Be(ExpectedEnterCount);
+                messageList.Count.Should().Be(ExpectedEnterCount);
                 foreach (var m in messageList)
                 {
                     presenceMessages.Any(x => x.ClientId == m.ClientId).Should().BeTrue();
@@ -1950,7 +1972,7 @@ namespace IO.Ably.Tests.Realtime
                 clientB.Close();
             }
 
-            private string GetClientId(int count)
+            private static string GetClientId(int count)
             {
                 return "client:#" + count.ToString().PadLeft(3, '0');
             }
@@ -1961,17 +1983,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
-        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
-            : base(fixture, output)
-        {
-        }
-
-        protected string GetTestChannelName(string id = "")
-        {
-            return $"presence-{id}".AddRandomSuffix();
-        }
-
-        public class PresenceAwaiter
+        private class PresenceAwaiter
         {
             private IRealtimeChannel _channel;
             private TaskCompletionAwaiter _tsc;

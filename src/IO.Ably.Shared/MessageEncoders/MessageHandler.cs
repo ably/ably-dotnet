@@ -38,7 +38,7 @@ namespace IO.Ably.MessageEncoders
             _protocol = protocol;
         }
 
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
+        private IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
         {
             if (response.Type != ResponseType.Json)
             {
@@ -59,7 +59,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
+        private IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
         {
             if (response.Type == ResponseType.Json)
             {
@@ -95,7 +95,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public byte[] GetRequestBody(AblyRequest request)
+        private byte[] GetRequestBody(AblyRequest request)
         {
             if (request.PostData == null)
             {
@@ -147,17 +147,6 @@ namespace IO.Ably.MessageEncoders
             foreach (var payload in payloads)
             {
                 result = Result.Combine(result, EncodePayload(payload, context));
-            }
-
-            return result;
-        }
-
-        internal static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
-        {
-            var result = Result.Ok();
-            foreach (var payload in payloads)
-            {
-                result = Result.Combine(result, DecodePayload(payload, context, encoders));
             }
 
             return result;
@@ -307,12 +296,6 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
-        {
-            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
-            return res;
-        }
-
         public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             LogResponse(response);
@@ -358,6 +341,23 @@ namespace IO.Ably.MessageEncoders
             }
 #endif
             return JsonHelper.Deserialize<T>(responseText);
+        }
+
+        private static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
+        {
+            var result = Result.Ok();
+            foreach (var payload in payloads)
+            {
+                result = Result.Combine(result, DecodePayload(payload, context, encoders));
+            }
+
+            return result;
+        }
+
+        private static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        {
+            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
+            return res;
         }
 
         private void LogResponse(AblyResponse response)

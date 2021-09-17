@@ -8,11 +8,11 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionAttemptsInfo
     {
-        internal Func<DateTimeOffset> Now { get; set; }
+        private readonly Func<DateTimeOffset> _now;
 
         public ConnectionAttemptsInfo(Func<DateTimeOffset> now = null)
         {
-            Now = now ?? Defaults.NowFunc();
+            _now = now ?? Defaults.NowFunc();
         }
 
         internal List<ConnectionAttempt> Attempts { get; } = new List<ConnectionAttempt>();
@@ -27,25 +27,6 @@ namespace IO.Ably.Transport
         {
             Attempts.Clear();
             TriedToRenewToken = false;
-        }
-
-        public void RecordAttemptFailure(ConnectionState state, ErrorInfo error)
-        {
-            var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
-            attempt.FailedStates.Add(new AttemptFailedState(state, error));
-            if (Attempts.Count == 0)
-            {
-                Attempts.Add(attempt);
-            }
-        }
-
-        public void RecordAttemptFailure(ConnectionState state, Exception ex)
-        {
-            if (Attempts.Any())
-            {
-                var attempt = Attempts.Last();
-                attempt.FailedStates.Add(new AttemptFailedState(state, ex));
-            }
         }
 
         public void RecordTokenRetry()
@@ -65,7 +46,7 @@ namespace IO.Ably.Transport
             {
                 case ConnectionState.Connecting:
                     logger.Debug("Recording connection attempt.");
-                    Attempts.Add(new ConnectionAttempt(Now()));
+                    Attempts.Add(new ConnectionAttempt(_now()));
                     break;
                 case ConnectionState.Failed:
                 case ConnectionState.Closed:
@@ -86,6 +67,25 @@ namespace IO.Ably.Transport
                     }
 
                     break;
+            }
+        }
+
+        private void RecordAttemptFailure(ConnectionState state, ErrorInfo error)
+        {
+            var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(_now());
+            attempt.FailedStates.Add(new AttemptFailedState(state, error));
+            if (Attempts.Count == 0)
+            {
+                Attempts.Add(attempt);
+            }
+        }
+
+        private void RecordAttemptFailure(ConnectionState state, Exception ex)
+        {
+            if (Attempts.Any())
+            {
+                var attempt = Attempts.Last();
+                attempt.FailedStates.Add(new AttemptFailedState(state, ex));
             }
         }
     }

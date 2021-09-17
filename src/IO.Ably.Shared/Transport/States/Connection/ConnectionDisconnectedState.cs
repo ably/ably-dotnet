@@ -7,13 +7,6 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
-
-        public ConnectionDisconnectedState(IConnectionContext context, ILogger logger)
-            : this(context, null, new CountdownTimer("Disconnected state timer", logger), logger)
-        {
-        }
-
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error, ILogger logger)
             : this(context, error, new CountdownTimer("Disconnected state timer", logger), logger)
         {
@@ -26,6 +19,8 @@ namespace IO.Ably.Transport.States.Connection
             Error = error;
             RetryIn = context.RetryTimeout;
         }
+
+        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
 
         public bool RetryInstantly { get; set; }
 

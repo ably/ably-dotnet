@@ -10,7 +10,7 @@ namespace IO.Ably
     /// </summary>
     public class TokenRequest
     {
-        internal Func<DateTimeOffset> Now { get; set; }
+        private readonly Func<DateTimeOffset> _now;
 
         private DateTimeOffset? _timestamp;
 
@@ -23,7 +23,7 @@ namespace IO.Ably
 
         internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {
-            Now = nowFunc;
+            _now = nowFunc;
             Nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 
@@ -96,7 +96,7 @@ namespace IO.Ably
             KeyName = keyName;
             Capability = tokenParams.Capability ?? Capability.AllowAll;
             ClientId = tokenParams.ClientId;
-            var now = Now();
+            var now = _now();
 
             if (tokenParams.Nonce.IsNotEmpty())
             {

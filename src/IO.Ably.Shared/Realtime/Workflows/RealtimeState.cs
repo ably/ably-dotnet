@@ -18,8 +18,6 @@ namespace IO.Ably.Realtime.Workflow
 
             public List<string> FallbackHosts { get; }
 
-            public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
-
             public DateTimeOffset? ConfirmedAliveAt { get; private set; }
 
             /// <summary>

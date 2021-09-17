@@ -59,11 +59,6 @@ namespace IO.Ably.Tests.Push
             RequestRegistrationTokenCalled = true;
         }
 
-        public void RequestRegistrationToken(Action<Result<string>> callback)
-        {
-            throw new NotImplementedException();
-        }
-
         public PushCallbacks Callbacks { get; } = new PushCallbacks();
 
         public string DevicePlatform => "test";
