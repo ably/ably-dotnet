@@ -12,12 +12,13 @@ namespace IO.Ably.Push
     {
         private readonly SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
         private readonly AblyRest _restClient;
-        private readonly IMobileDevice _mobileDevice;
         private readonly ILogger _logger;
         private readonly Action<string, string> _stateChangeHandler = (currentState, newState) => { };
         private State _currentState;
 
         public string ClientId { get; }
+
+        public IMobileDevice MobileDevice => _restClient.MobileDevice;
 
         public State CurrentState
         {
@@ -35,15 +36,18 @@ namespace IO.Ably.Push
 
         internal Queue<Event> PendingEvents { get; set; } = new Queue<Event>();
 
-        internal ActivationStateMachine(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger = null)
+        internal ActivationStateMachine(AblyRest restClient, ILogger logger = null)
         {
             _restClient = restClient;
             ClientId = _restClient.Auth.ClientId;
-            _mobileDevice = mobileDevice;
             _logger = logger ?? restClient.Logger;
         }
 
-        public LocalDevice LocalDevice { get; set; } = new LocalDevice();
+        public LocalDevice LocalDevice
+        {
+            get => _restClient.Device;
+            internal set => _restClient.Device = value; // For testing purposes only
+        }
 
         public async Task HandleEvent(Event @event)
         {
@@ -148,42 +152,42 @@ namespace IO.Ably.Push
 
             if (CurrentState != null && CurrentState.Persist)
             {
-                _mobileDevice.SetPreference(PersistKeys.StateMachine.CurrentState, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
+                MobileDevice.SetPreference(PersistKeys.StateMachine.CurrentState, CurrentState.GetType().Name, PersistKeys.StateMachine.SharedName);
             }
 
             var events = PendingEvents.ToList();
 
             // Saves pending events as a pipe separated list.
-            _mobileDevice.SetPreference(PersistKeys.StateMachine.PendingEvents, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
+            MobileDevice.SetPreference(PersistKeys.StateMachine.PendingEvents, events.Select(x => x.GetType().Name).JoinStrings("|"), PersistKeys.StateMachine.SharedName);
         }
 
         private void TriggerDeactivatedCallback(ErrorInfo reason = null)
         {
-            if (_mobileDevice.Callbacks.DeactivatedCallback != null)
+            if (MobileDevice.Callbacks.DeactivatedCallback != null)
             {
                 _ = NotifyExternalClient(
-                    () => _mobileDevice.Callbacks.DeactivatedCallback(reason),
-                    nameof(_mobileDevice.Callbacks.DeactivatedCallback));
+                    () => MobileDevice.Callbacks.DeactivatedCallback(reason),
+                    nameof(MobileDevice.Callbacks.DeactivatedCallback));
             }
         }
 
         private void TriggerActivatedCallback(ErrorInfo reason = null)
         {
-            if (_mobileDevice.Callbacks.ActivatedCallback != null)
+            if (MobileDevice.Callbacks.ActivatedCallback != null)
             {
                 NotifyExternalClient(
-                    () => _mobileDevice.Callbacks.ActivatedCallback(reason),
-                    nameof(_mobileDevice.Callbacks.ActivatedCallback));
+                    () => MobileDevice.Callbacks.ActivatedCallback(reason),
+                    nameof(MobileDevice.Callbacks.ActivatedCallback));
             }
         }
 
         private void TriggerSyncRegistrationFailedCallback(ErrorInfo reason)
         {
-            if (_mobileDevice.Callbacks.SyncRegistrationFailedCallback != null)
+            if (MobileDevice.Callbacks.SyncRegistrationFailedCallback != null)
             {
                 NotifyExternalClient(
-                    () => _mobileDevice.Callbacks.SyncRegistrationFailedCallback(reason),
-                    nameof(_mobileDevice.Callbacks.SyncRegistrationFailedCallback));
+                    () => MobileDevice.Callbacks.SyncRegistrationFailedCallback(reason),
+                    nameof(MobileDevice.Callbacks.SyncRegistrationFailedCallback));
             }
         }
 
@@ -239,23 +243,14 @@ namespace IO.Ably.Push
 
         private void Error(string message, Exception ex) => _logger.Error($"ActivationStateMachine: {message}", ex);
 
-        internal void PersistLocalDevice(LocalDevice localDevice)
-        {
-            _mobileDevice.SetPreference(PersistKeys.Device.DeviceId, localDevice.Id, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DeviceSecret, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
-            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
-        }
-
         private void ResetDevice()
         {
-            _mobileDevice.ClearPreferences(PersistKeys.Device.SharedName);
-            LocalDevice = new LocalDevice();
+            LocalDevice.ResetDevice(MobileDevice);
         }
 
         private void GetRegistrationToken()
         {
-            _mobileDevice.RequestRegistrationToken(UpdateRegistrationToken);
+            MobileDevice.RequestRegistrationToken(UpdateRegistrationToken);
         }
 
         public void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
@@ -266,54 +261,7 @@ namespace IO.Ably.Push
         private void SetDeviceIdentityToken(string deviceIdentityToken)
         {
             LocalDevice.DeviceIdentityToken = deviceIdentityToken;
-            _mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, deviceIdentityToken, PersistKeys.Device.SharedName);
-        }
-
-        private LocalDevice EnsureLocalDeviceIsLoaded()
-        {
-            if (LocalDevice.IsCreated == false)
-            {
-                LocalDevice = LoadPersistedLocalDevice();
-            }
-
-            return LocalDevice;
-        }
-
-        internal LocalDevice LoadPersistedLocalDevice()
-        {
-            Debug("Loading Local Device persisted state.");
-            string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
-
-            var localDevice = new LocalDevice();
-            localDevice.Platform = _mobileDevice.DevicePlatform;
-            localDevice.FormFactor = _mobileDevice.FormFactor;
-            string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
-
-            localDevice.Id = id;
-            if (id.IsNotEmpty())
-            {
-                localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
-            }
-
-            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
-            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
-
-            var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
-
-            if (tokenType.IsNotEmpty())
-            {
-                string tokenString = GetDeviceSetting(PersistKeys.Device.Token);
-
-                if (tokenString.IsNotEmpty())
-                {
-                    var token = new RegistrationToken(tokenType, tokenString);
-                    localDevice.RegistrationToken = token;
-                }
-            }
-
-            Debug($"LocalDevice loaded: {localDevice.ToJson()}");
-
-            return localDevice;
+            MobileDevice.SetPreference(PersistKeys.Device.DeviceToken, deviceIdentityToken, PersistKeys.Device.SharedName);
         }
     }
 }

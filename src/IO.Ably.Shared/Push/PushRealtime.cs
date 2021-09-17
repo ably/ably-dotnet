@@ -8,12 +8,12 @@
         private readonly AblyRest _restClient;
         private readonly ActivationStateMachine _stateMachine;
 
-        internal PushRealtime(AblyRest restClient, IMobileDevice mobileDevice, ILogger logger)
+        internal PushRealtime(AblyRest restClient, ILogger logger)
         {
             _restClient = restClient;
-            if (mobileDevice != null)
+            if (_restClient.MobileDevice != null)
             {
-                _stateMachine = new ActivationStateMachine(restClient, mobileDevice, logger);
+                _stateMachine = new ActivationStateMachine(restClient, logger);
             }
         }
 
