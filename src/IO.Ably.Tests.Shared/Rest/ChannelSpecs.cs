@@ -32,9 +32,14 @@ namespace IO.Ably.Tests.Rest
                 var client = GetRestClient();
                 var channel1 = client.Channels.Get("test");
                 var channel2 = client.Channels.Get("test1");
+                _ = client.Channels.Get("test2");
+                var channel4 = client.Channels.Get("test3");
+                var channel5 = client.Channels.Get("test4");
+                var channel6 = client.Channels.Get("test5");
+                client.Channels.Release("test2");
+                var channel7 = client.Channels.Get("test7");
 
-                client.Channels.Should().HaveCount(2);
-                client.Channels.Should().BeEquivalentTo(channel1, channel2);
+                client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
             }
 
             [Fact]
