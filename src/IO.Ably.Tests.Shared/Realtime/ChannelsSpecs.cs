@@ -231,6 +231,23 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
+        public async Task AllowEnumerationAndReturnSameOrder()
+        {
+            // Arrange
+            var client = GetClientWithFakeTransport();
+
+            var channel1 = client.Channels.Get("test");
+            var channel2 = client.Channels.Get("test1");
+            var channel4 = client.Channels.Get("test3");
+            var channel5 = client.Channels.Get("test4");
+            var channel6 = client.Channels.Get("test5");
+            var channel7 = client.Channels.Get("test7");
+
+            client.Channels.Should().HaveCount(6);
+            client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
+        }
+
+        [Fact]
         [Trait("spec", "RTS4a")]
         public async Task AllowsGenericEnumeration()
         {

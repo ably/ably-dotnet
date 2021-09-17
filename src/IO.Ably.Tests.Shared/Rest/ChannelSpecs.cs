@@ -15,36 +15,73 @@ namespace IO.Ably.Tests.Rest
 {
     public class ChannelSpecs : MockHttpRestSpecs
     {
-        [Fact]
-        [Trait("spec", "RSN1")]
-        public void ChannelsIsACollectionOfChannelObjects()
+        public class General : ChannelSpecs
         {
-            var client = GetRestClient();
-            client.Channels.Should().BeAssignableTo<IEnumerable<IRestChannel>>();
+            [Fact]
+            [Trait("spec", "RSN1")]
+            public void ChannelsIsACollectionOfChannelObjects()
+            {
+                var client = GetRestClient();
+                client.Channels.Should().BeAssignableTo<IEnumerable<IRestChannel>>();
+            }
+
+            [Fact]
+            [Trait("spec", "RSN2")]
+            public void ShouldBeAbleToIterateThroughExistingChannels()
+            {
+                var client = GetRestClient();
+                var channel1 = client.Channels.Get("test");
+                var channel2 = client.Channels.Get("test1");
+                _ = client.Channels.Get("test2");
+                var channel4 = client.Channels.Get("test3");
+                var channel5 = client.Channels.Get("test4");
+                var channel6 = client.Channels.Get("test5");
+                client.Channels.Release("test2");
+                var channel7 = client.Channels.Get("test7");
+
+                client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
+            }
+
+            [Fact]
+            public async Task ShouldUpdateOptionsWhenTwoThreadsTryToCreateTheSameChannelWithDifferentOptions()
+            {
+                var client = GetRestClient();
+                var options = new ChannelOptions(encrypted: true);
+                var task1 = Task.Run(() => client.Channels.Get("test"));
+                var task2 = Task.Run(() => client.Channels.Get("test", options));
+
+                await Task.WhenAll(task1, task2);
+                var channel2 = (RestChannel)client.Channels.Get("test");
+                channel2.Options.Should().BeSameAs(options);
+            }
+
+            [Fact]
+            [Trait("spec", "RSN2")]
+            public void ShouldBeAbleToCheckIsAChannelExists()
+            {
+                var client = GetRestClient();
+                var channel1 = client.Channels.Get("test");
+                var channel2 = client.Channels.Get("test1");
+
+                client.Channels.Any(x => x.Name == "test").Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSN4a")]
+            public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
+            {
+                var client = GetRestClient();
+                var channel = client.Channels.Get("first");
+                client.Channels.Should().Contain(x => x.Name == "first");
+                client.Channels.Release("first");
+                client.Channels.Should().BeEmpty();
+            }
+
+            public General(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
-        [Fact]
-        [Trait("spec", "RSN2")]
-        public void ShouldBeAbleToIterateThroughExistingChannels()
-        {
-            var client = GetRestClient();
-            var channel1 = client.Channels.Get("test");
-            var channel2 = client.Channels.Get("test1");
-
-            client.Channels.Should().HaveCount(2);
-            client.Channels.Should().BeEquivalentTo(channel1, channel2);
-        }
-
-        [Fact]
-        [Trait("spec", "RSN2")]
-        public void ShouldBeAbleToCheckIsAChannelExists()
-        {
-            var client = GetRestClient();
-            var channel1 = client.Channels.Get("test");
-            var channel2 = client.Channels.Get("test1");
-
-            client.Channels.Any(x => x.Name == "test").Should().BeTrue();
-        }
 
         [Trait("spec", "RSN3")]
         public class GettingAChannel : ChannelSpecs
@@ -93,17 +130,6 @@ namespace IO.Ably.Tests.Rest
                 var secondTime = _client.Channels.Get("test", newOptions);
                 ((RestChannel)secondTime).Options.Should().BeEquivalentTo(newOptions);
             }
-        }
-
-        [Fact]
-        [Trait("spec", "RSN4a")]
-        public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
-        {
-            var client = GetRestClient();
-            var channel = client.Channels.Get("first");
-            client.Channels.Should().Contain(x => x.Name == "first");
-            client.Channels.Release("first");
-            client.Channels.Should().BeEmpty();
         }
 
         public class ChannelPublish : ChannelSpecs

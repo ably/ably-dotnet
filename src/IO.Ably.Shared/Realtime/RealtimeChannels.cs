@@ -19,6 +19,10 @@ namespace IO.Ably.Realtime
 
         private ConcurrentDictionary<string, RealtimeChannel> Channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
+        private readonly List<IRealtimeChannel> _orderedChannels = new List<IRealtimeChannel>();
+
+        private object _orderedListLock = new object();
+
         private readonly AblyRealtime _realtimeClient;
 
         internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection)
@@ -67,6 +71,7 @@ namespace IO.Ably.Realtime
 
                     return realtimeChannel;
                 });
+                AddToOrderedList(result);
             }
             else
             {
@@ -116,6 +121,7 @@ namespace IO.Ably.Realtime
                     if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
                     {
                         removedChannel.RemoveAllListeners();
+                        RemoveFromOrderedList(removedChannel);
                     }
                 }
                 else
@@ -153,6 +159,7 @@ namespace IO.Ably.Realtime
                     if (success)
                     {
                         channel.RemoveAllListeners();
+                        RemoveFromOrderedList(channel);
                     }
                 }
             }
@@ -171,13 +178,19 @@ namespace IO.Ably.Realtime
         /// <inheritdoc/>
         IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator()
         {
-            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
         }
 
         internal JArray GetCurrentState()
@@ -220,6 +233,31 @@ namespace IO.Ably.Realtime
                      * transitions all the channels to INITIALIZED */
                     channel.SetChannelState(ChannelState.Initialized);
                     break;
+            }
+        }
+
+        private void AddToOrderedList(RealtimeChannel channel)
+        {
+            if (_orderedChannels.Contains(channel) == false)
+            {
+                lock (_orderedListLock)
+                {
+                    if (_orderedChannels.Contains(channel) == false)
+                    {
+                        _orderedChannels.Add(channel);
+                    }
+                }
+            }
+        }
+
+        private void RemoveFromOrderedList(RealtimeChannel channel)
+        {
+            lock (_orderedListLock)
+            {
+                if (_orderedChannels.Contains(channel))
+                {
+                    _orderedChannels.Remove(channel);
+                }
             }
         }
     }

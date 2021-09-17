@@ -10,7 +10,11 @@ namespace IO.Ably.Rest
     /// </summary>
     public class RestChannels : IChannels<IRestChannel>
     {
-        private readonly ConcurrentDictionary<string, RestChannel> _channels = new ConcurrentDictionary<string, RestChannel>();
+        private readonly ConcurrentDictionary<string, RestChannel> _channels =
+            new ConcurrentDictionary<string, RestChannel>();
+
+        private readonly List<IRestChannel> _orderedChannels = new List<IRestChannel>();
+        private object _orderedListLock = new object();
 
         private readonly AblyRest _ablyRest;
 
@@ -33,16 +37,14 @@ namespace IO.Ably.Rest
                 var channel = new RestChannel(_ablyRest, name, options);
                 result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
-                    if (options != null)
+                    if (options != null && realtimeChannel != null)
                     {
-                        if (result != null)
-                        {
-                            result.Options = options;
-                        }
+                        realtimeChannel.Options = options;
                     }
 
                     return realtimeChannel;
                 });
+                AddToOrderedList(result);
             }
             else
             {
@@ -61,7 +63,9 @@ namespace IO.Ably.Rest
         /// <inheritdoc/>
         public bool Release(string name)
         {
-            return _channels.TryRemove(name, out _);
+            var result = _channels.TryRemove(name, out var channel);
+            RemoveFromOrderedList(channel);
+            return result;
         }
 
         /// <inheritdoc/>
@@ -83,13 +87,44 @@ namespace IO.Ably.Rest
         /// <inheritdoc/>
         IEnumerator<IRestChannel> IEnumerable<IRestChannel>.GetEnumerator()
         {
-            return _channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
+        }
+
+        private void AddToOrderedList(RestChannel channel)
+        {
+            if (_orderedChannels.Contains(channel) == false)
+            {
+                lock (_orderedListLock)
+                {
+                    if (_orderedChannels.Contains(channel) == false)
+                    {
+                        _orderedChannels.Add(channel);
+                    }
+                }
+            }
+        }
+
+        private void RemoveFromOrderedList(RestChannel channel)
+        {
+            lock (_orderedListLock)
+            {
+                if (_orderedChannels.Contains(channel))
+                {
+                    _orderedChannels.Remove(channel);
+                }
+            }
         }
     }
 }
