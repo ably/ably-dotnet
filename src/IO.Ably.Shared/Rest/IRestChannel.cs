@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 
 namespace IO.Ably.Rest
 {
@@ -56,6 +57,12 @@ namespace IO.Ably.Rest
         /// Returns the Presence object.
         /// </summary>
         IPresence Presence { get; }
+
+        /// <summary>
+        /// A convenient set of methods that help with managing subscriptions to a push channel.
+        /// <see cref="PushChannel"/>.
+        /// </summary>
+        PushChannel Push { get; }
 
         /// <summary>
         /// Sync version of <see cref="PublishAsync(string, object, string)"/>.

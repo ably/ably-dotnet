@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Encryption;
+using IO.Ably.Push;
 
 namespace IO.Ably.Rest
 {
@@ -17,13 +18,19 @@ namespace IO.Ably.Rest
         private readonly AblyRest _ablyRest;
         private readonly string _basePath;
         private ChannelOptions _options;
+        private readonly PushChannel _pushChannel;
 
-        internal RestChannel(AblyRest ablyRest, string name, ChannelOptions options)
+        internal RestChannel(AblyRest ablyRest, string name, ChannelOptions options, IMobileDevice mobileDevice = null)
         {
             Name = name;
             _ablyRest = ablyRest;
             _options = options;
             _basePath = $"/channels/{name.EncodeUriPart()}";
+
+            if (mobileDevice != null)
+            {
+                _pushChannel = new PushChannel(name, ablyRest);
+            }
         }
 
         /// <inheritdoc/>
@@ -36,6 +43,22 @@ namespace IO.Ably.Rest
         {
             get => _options;
             set => _options = value ?? new ChannelOptions();
+        }
+
+        /// <inheritdoc />
+        public PushChannel Push
+        {
+            get
+            {
+                if (_pushChannel is null)
+                {
+                    // TODO: Provide a link for setting up push notifications for supported devices.
+                    throw new AblyException(
+                        "The current device is does not support or is not configured for Push notifications.");
+                }
+
+                return _pushChannel;
+            }
         }
 
         /// <inheritdoc/>

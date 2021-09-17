@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -20,6 +21,7 @@ namespace IO.Ably.Realtime
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
         private ChannelState _state;
+        private readonly PushChannel _pushChannel;
 
         /// <summary>
         /// True when the channel moves to the @ATTACHED@ state, and False
@@ -100,11 +102,28 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
+        /// <inheritdoc />
+        public PushChannel Push
+        {
+            get
+            {
+                if (_pushChannel is null)
+                {
+                    // TODO: Provide a link for setting up push notifications for supported devices.
+                    throw new AblyException(
+                        "The current device is does not support or is not configured for Push notifications.");
+                }
+
+                return _pushChannel;
+            }
+        }
+
         internal RealtimeChannel(
             string name,
             string clientId,
             AblyRealtime realtimeClient,
-            ChannelOptions options = null)
+            ChannelOptions options = null,
+            IMobileDevice mobileDevice = null)
             : base(options?.Logger)
         {
             Name = name;
@@ -115,6 +134,11 @@ namespace IO.Ably.Realtime
             State = ChannelState.Initialized;
             AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, Logger, OnAttachTimeout);
             DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, Logger, OnDetachTimeout);
+
+            if (mobileDevice != null)
+            {
+                _pushChannel = new PushChannel(name, realtimeClient.RestClient);
+            }
         }
 
         internal void ConnectionStateChanged(ConnectionStateChange connectionStateChange)

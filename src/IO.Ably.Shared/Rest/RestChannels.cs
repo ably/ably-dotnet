@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Push;
 
 namespace IO.Ably.Rest
 {
@@ -17,10 +18,12 @@ namespace IO.Ably.Rest
         private object _orderedListLock = new object();
 
         private readonly AblyRest _ablyRest;
+        private readonly IMobileDevice _mobileDevice;
 
-        internal RestChannels(AblyRest restClient)
+        internal RestChannels(AblyRest restClient, IMobileDevice mobileDevice = null)
         {
             _ablyRest = restClient;
+            _mobileDevice = mobileDevice;
         }
 
         /// <inheritdoc/>
@@ -34,7 +37,7 @@ namespace IO.Ably.Rest
         {
             if (!_channels.TryGetValue(name, out var result))
             {
-                var channel = new RestChannel(_ablyRest, name, options);
+                var channel = new RestChannel(_ablyRest, name, options, _mobileDevice);
                 result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null && realtimeChannel != null)

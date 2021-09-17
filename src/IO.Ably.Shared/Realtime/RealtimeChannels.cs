@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 using IO.Ably.Realtime.Workflow;
 using Newtonsoft.Json.Linq;
 
@@ -24,12 +25,14 @@ namespace IO.Ably.Realtime
         private object _orderedListLock = new object();
 
         private readonly AblyRealtime _realtimeClient;
+        private readonly IMobileDevice _mobileDevice;
 
-        internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection)
+        internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection, IMobileDevice mobileDevice = null)
         {
             _realtimeClient = realtimeClient;
             Logger = realtimeClient.Logger;
             connection.InternalStateChanged += ConnectionStateChange;
+            _mobileDevice = mobileDevice;
         }
 
         private void ConnectionStateChange(object sender, ConnectionStateChange stateChange)
@@ -61,7 +64,7 @@ namespace IO.Ably.Realtime
             if (!Channels.TryGetValue(name, out var result))
             {
                 // create a new instance using the passed in option
-                var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options);
+                var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options, _mobileDevice);
                 result = Channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)

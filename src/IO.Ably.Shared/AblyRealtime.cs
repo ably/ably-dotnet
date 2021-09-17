@@ -24,6 +24,7 @@ namespace IO.Ably
         internal RealtimeWorkflow Workflow { get; private set; }
 
         internal volatile bool Disposed = false;
+        private static readonly Func<ClientOptions, IMobileDevice, AblyRest> CreateRestFunc = (clientOptions, mobileDevice) => new AblyRest(clientOptions, mobileDevice);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyRealtime"/> class with an ably key.
@@ -39,16 +40,21 @@ namespace IO.Ably
         /// </summary>
         /// <param name="options"><see cref="ClientOptions"/>.</param>
         public AblyRealtime(ClientOptions options)
-            : this(options, clientOptions => new AblyRest(clientOptions))
+            : this(options, CreateRestFunc, IoC.MobileDevice)
         {
         }
 
-        internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
+        internal AblyRealtime(ClientOptions options, IMobileDevice mobileDevice)
+            : this(options, CreateRestFunc, mobileDevice)
+        {
+        }
+
+        internal AblyRealtime(ClientOptions options, Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc, IMobileDevice mobileDevice = null)
         {
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
-            RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
-            Push = new PushRealtime(RestClient, Logger);
+            RestClient = createRestFunc != null ? createRestFunc.Invoke(options, mobileDevice) : new AblyRest(options, mobileDevice);
+            Push = new PushRealtime(RestClient, mobileDevice, Logger);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
@@ -58,7 +64,7 @@ namespace IO.Ably
                 IoC.RegisterOsNetworkStateChanged();
             }
 
-            Channels = new RealtimeChannels(this, Connection);
+            Channels = new RealtimeChannels(this, Connection, mobileDevice);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
             State = new RealtimeState(options.GetFallbackHosts()?.Shuffle().ToList(), options.NowFunc);

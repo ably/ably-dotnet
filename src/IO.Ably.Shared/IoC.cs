@@ -43,7 +43,18 @@ namespace IO.Ably
 
         public static IMobileDevice MobileDevice
         {
-            get => Platform.MobileDevice;
+            get
+            {
+                try
+                {
+                    return Platform.MobileDevice;
+                }
+                catch (Exception e) when (e is NotImplementedException)
+                {
+                    DefaultLogger.Error("Mobile Device is no supported on the current platform.", e);
+                    return null;
+                }
+            }
             set => Platform.MobileDevice = value;
         }
     }

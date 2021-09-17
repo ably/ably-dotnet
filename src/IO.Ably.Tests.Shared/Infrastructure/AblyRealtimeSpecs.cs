@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
@@ -51,19 +52,19 @@ namespace IO.Ably.Tests
             _signal?.Dispose();
         }
 
-        internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
+        internal AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, IMobileDevice mobileDevice = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests
-            var client = new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
+            var client = new AblyRealtime(clientOptions, (opts, device) => GetRestClient(handleRequestFunc, clientOptions, device), mobileDevice);
             return client;
         }
 
-        internal virtual AblyRealtime GetRealtimeClientWithFakeMessageHandler(ClientOptions options = null, FakeHttpMessageHandler fakeMessageHandler = null)
+        internal AblyRealtime GetRealtimeClientWithFakeMessageHandler(ClientOptions options = null, FakeHttpMessageHandler fakeMessageHandler = null, IMobileDevice mobileDevice = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests
-            var client = new AblyRealtime(clientOptions);
+            var client = new AblyRealtime(clientOptions, mobileDevice);
             if (fakeMessageHandler != null)
             {
                 client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), fakeMessageHandler);
@@ -72,13 +73,13 @@ namespace IO.Ably.Tests
             return client;
         }
 
-        internal virtual AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
+        internal AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var options = new ClientOptions(ValidKey);
             options.SkipInternetCheck = true; // This is for the Unit tests
             optionsAction?.Invoke(options);
 
-            var client = new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
+            var client = new AblyRealtime(options, (clientOptions, device) => GetRestClient(handleRequestFunc, clientOptions, device));
             return client;
         }
 
