@@ -17,7 +17,7 @@ namespace IO.Ably.Utils
             await SafeExecute(action, logger, caller == null ? (Func<string>)null : () => caller);
         }
 
-        public static async Task SafeExecute(Func<Task> action, ILogger logger, Func<string> callerGetter)
+        private static async Task SafeExecute(Func<Task> action, ILogger logger, Func<string> callerGetter)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace IO.Ably.Utils
             }
         }
 
-        public static void SafeExecute(Action action, ILogger logger, Func<string> callerGetter)
+        private static void SafeExecute(Action action, ILogger logger, Func<string> callerGetter)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace IO.Ably.Utils
             }
         }
 
-        public static List<Exception> FlattenAggregate(this Exception exc)
+        private static List<Exception> FlattenAggregate(this Exception exc)
         {
             var result = new List<Exception>();
             if (exc is AggregateException)
