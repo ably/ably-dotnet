@@ -63,7 +63,7 @@ namespace IO.Ably.Push
             {
                 // TODO: What error code should we use here
                 throw new AblyException(
-                    $"Cannot Subscribe device to channel '{ChannelName}' because the device is missing deviceIdentityToken. Please call AblyRest.Push.Activate() and wait for it to complete");
+                    $"Cannot Unsubscribe device from channel '{ChannelName}' because the device is missing deviceIdentityToken. Please call AblyRest.Push.Activate() and wait for it to complete");
             }
 
             await _rest.Push.Admin.ChannelSubscriptions.RemoveAsync(new PushChannelSubscription()
@@ -73,7 +73,7 @@ namespace IO.Ably.Push
             });
 
             _logger.Debug(
-                $"Successfully removed channel '{ChannelName}' to device with id '{localDevice.Id}'");
+                $"Successfully removed channel '{ChannelName}' from device with id '{localDevice.Id}'");
         }
 
         /// <summary>
@@ -105,6 +105,38 @@ namespace IO.Ably.Push
             });
 
             _logger.Debug($"Successfully subscribed channel '{subscription.Channel}' to clientId '{subscription.ClientId}");
+        }
+
+        /// <summary>
+        /// Unsubscribes the current client from receiving push notification from the current channel.
+        /// </summary>
+        /// <exception cref="AblyException">Throws an exception if the local device is not activated. Please make sure Push.Activate() has completed.</exception>
+        /// <exception cref="AblyException">Throws an exception if the local device does not have a clientId assigned.</exception>
+        /// <returns>Async operation.</returns>
+        public async Task UnsubscribeClient()
+        {
+            var localDevice = _rest.Device;
+            if (localDevice?.DeviceIdentityToken is null)
+            {
+                // TODO: What error code should we use here
+                throw new AblyException(
+                    $"Cannot Unsubscribe device from channel '{ChannelName}' because the device is missing deviceIdentityToken. Please call AblyRest.Push.Activate() and wait for it to complete");
+            }
+
+            if (localDevice.ClientId.IsEmpty())
+            {
+                throw new AblyException(
+                    $"Cannot Unsubscribe clientId from channel '{ChannelName}' because the device does not have an assigned clientId."); // TODO: Need to include info on how people come out of this.
+            }
+
+            await _rest.Push.Admin.ChannelSubscriptions.RemoveAsync(new PushChannelSubscription()
+            {
+                Channel = ChannelName,
+                ClientId = localDevice.ClientId
+            });
+
+            _logger.Debug(
+                $"Successfully unsubscribed channel '{ChannelName}' from clientId '{localDevice.ClientId}'");
         }
     }
 }
