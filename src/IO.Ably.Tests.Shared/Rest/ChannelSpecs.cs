@@ -77,11 +77,11 @@ namespace IO.Ably.Tests.Rest
                 client.Channels.Should().BeEmpty();
             }
 
-            public General(ITestOutputHelper output) : base(output)
+            public General(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
-
 
         [Trait("spec", "RSN3")]
         public class GettingAChannel : ChannelSpecs
