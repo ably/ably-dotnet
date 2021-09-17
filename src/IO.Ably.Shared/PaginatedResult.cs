@@ -91,20 +91,6 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Calls the api with the <see cref="FirstQueryParams"/> and returns the very first page of result.
-        /// </summary>
-        /// <returns>returns the very first page of results.</returns>
-        public Task<PaginatedResult<T>> FirstAsync()
-        {
-            if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
-            {
-                return ExecuteDataQueryFunc(FirstQueryParams);
-            }
-
-            return Task.FromResult(new PaginatedResult<T>());
-        }
-
-        /// <summary>
         /// Sync version of <see cref="NextAsync()"/>.
         /// Prefer the async version of the method where possible.
         /// </summary>
@@ -112,16 +98,6 @@ namespace IO.Ably
         public PaginatedResult<T> Next()
         {
             return AsyncHelper.RunSync(NextAsync);
-        }
-
-        /// <summary>
-        /// Sync version of <see cref="FirstAsync()"/>.
-        /// Prefer the async version of the method where possible.
-        /// </summary>
-        /// <returns>returns the very first page of results.</returns>
-        public PaginatedResult<T> First()
-        {
-            return AsyncHelper.RunSync(FirstAsync);
         }
     }
 }
