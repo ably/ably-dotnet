@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -355,7 +356,6 @@ namespace IO.Ably.Tests.Push
 
                 async Task<AblyResponse> RequestHandler(AblyRequest request)
                 {
-                    // RSH7c2, check the correct request is made
                     request.Url.Should().Be("/push/channelSubscriptions");
                     request.Method.Should().Be(HttpMethod.Delete);
                     var queryParams = request.QueryParameters;
@@ -378,6 +378,48 @@ namespace IO.Ably.Tests.Push
                 var pushChannel = client.Channels.Get(channelName).Push;
 
                 await pushChannel.UnsubscribeClient();
+
+                (await taskAwaiter).Should().BeTrue("Didn't validate function");
+            }
+
+            [Fact]
+            [Trait("spec", "RSH7e")]
+            public async Task ListSubscriptions_ShouldCallApiWithCorrectParameters()
+            {
+                const string channelName = "testChannel";
+                const string clientId = "clientId";
+                const string deviceid = "deviceId";
+                const string deviceIdentityToken = "token";
+
+                var taskAwaiter = new TaskCompletionAwaiter();
+
+                async Task<AblyResponse> RequestHandler(AblyRequest request)
+                {
+                    request.Url.Should().Be("/push/channelSubscriptions");
+                    request.Method.Should().Be(HttpMethod.Get);
+                    var queryParams = request.QueryParameters;
+                    queryParams.Should().ContainKey("clientId").WhichValue.Should().Be(clientId);
+                    queryParams.Should().ContainKey("channel").WhichValue.Should().Be(channelName);
+                    queryParams.Should().ContainKey("deviceId").WhichValue.Should().Be(deviceid);
+                    queryParams.Should().ContainKey("concatFilters").WhichValue.Should().Be("true");
+
+                    taskAwaiter.SetCompleted();
+                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(new List<PushChannelSubscription>()) };
+                }
+
+                var client = GetRestClient(RequestHandler, mobileDevice: new FakeMobileDevice());
+
+                client.Device = new LocalDevice()
+                {
+                    DeviceIdentityToken = deviceIdentityToken,
+                    ClientId = clientId,
+                    Id = deviceid
+                };
+
+                var pushChannel = client.Channels.Get(channelName).Push;
+
+                var subscriptions = await pushChannel.ListSubscriptions();
+                subscriptions.Should().NotBeNull();
 
                 (await taskAwaiter).Should().BeTrue("Didn't validate function");
             }
