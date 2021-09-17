@@ -18,17 +18,17 @@ namespace IO.Ably.Push
         /// <summary>
         /// Channel filter.
         /// </summary>
-        public string Channel { get; }
+        public string Channel { get; set; }
 
         /// <summary>
         /// ClientId filter.
         /// </summary>
-        public string ClientId { get; }
+        public string ClientId { get; set; }
 
         /// <summary>
         /// DeviceId filter.
         /// </summary>
-        public string DeviceId { get; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Creates a Request to filter channel subscriptions by deviceId and channel.
@@ -80,7 +80,7 @@ namespace IO.Ably.Push
                 queryParams.Add("channel", Channel);
             }
 
-            return queryParams;
+            return queryParams.Merge(ExtraParameters);
         }
     }
 }
