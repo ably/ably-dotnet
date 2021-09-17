@@ -1,11 +1,13 @@
 ﻿using Xunit;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
 {
-    public class LocalDeviceTests
+    public class LocalDeviceTests : MockHttpRestSpecs
     {
         [Fact]
         [Trait("spec", "RSH3a2b")]
@@ -36,6 +38,20 @@ namespace IO.Ably.Tests.Push
             };
 
             device.IsCreated.Should().Be(result);
+        }
+        [Fact]
+        public async Task RestClient_LocalDevice_ShouldReturnSameInstanceForMultipleClients()
+        {
+            var mobileDevice = new FakeMobileDevice();
+            var client1 = GetRestClient(mobileDevice: mobileDevice);
+            var client2 = GetRestClient(mobileDevice: mobileDevice);
+
+            client1.Device.Should().BeSameAs(client2.Device);
+        }
+
+        public LocalDeviceTests(ITestOutputHelper output)
+            : base(output)
+        {
         }
     }
 }
