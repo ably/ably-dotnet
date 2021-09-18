@@ -15,7 +15,7 @@ namespace IO.Ably.Rest
             new ConcurrentDictionary<string, RestChannel>();
 
         private readonly List<IRestChannel> _orderedChannels = new List<IRestChannel>();
-        private object _orderedListLock = new object();
+        private readonly object _orderedListLock = new object();
 
         private readonly AblyRest _ablyRest;
         private readonly IMobileDevice _mobileDevice;
