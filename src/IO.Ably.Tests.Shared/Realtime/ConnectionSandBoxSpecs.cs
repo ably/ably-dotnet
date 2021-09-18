@@ -410,19 +410,18 @@ namespace IO.Ably.Tests.Realtime
             await new ConditionalAwaiter(() => disconnectedStateError != null);
         }
 
-        [Theory(Skip = "Keeps failing")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-
-            await WaitForState(client, ConnectionState.Connected);
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
             var initialConnectionKey = client.Connection.Key;
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
             await WaitForState(client, ConnectionState.Disconnected);
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(13));
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
