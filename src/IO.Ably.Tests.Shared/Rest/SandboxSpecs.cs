@@ -132,7 +132,7 @@ namespace IO.Ably.Tests
 
         protected async Task WaitForMultiple(int taskCount, Action<Action> done, Action onFail = null)
         {
-            await TestHelpers.WaitFor(10000, taskCount, done, onFail);
+            await TestHelpers.WaitFor(20000, taskCount, done, onFail);
         }
 
         protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
