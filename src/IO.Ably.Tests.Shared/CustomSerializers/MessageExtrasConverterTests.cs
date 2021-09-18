@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.CustomSerializers
             messageObject.Extras.Should().BeNull();
             var serialized = JsonConvert.SerializeObject(messageObject, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
-            serializedJToken.Contains("extras").Should().Be(false);
+            serializedJToken["extras"].Should().BeNull();
         }
 
         [Fact]
@@ -134,7 +134,8 @@ namespace IO.Ably.Tests.CustomSerializers
             messageObject.Extras.ToJson().ToString().Should().Be("extraData");
             var serialized = JsonConvert.SerializeObject(messageObject, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
-            serializedJToken.Contains("extras").Should().Be(false);
+            serializedJToken["extras"].Should().NotBeNull();
+            serializedJToken["extras"].Value<string>().Should().BeEquivalentTo("extraData");
         }
     }
 }
