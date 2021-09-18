@@ -151,7 +151,7 @@ namespace IO.Ably.Realtime.Workflow
             PendingMessages = new List<MessageAndCallback>();
         }
 
-        public JObject WhatDoIHave(bool writeToLog = false)
+        public JObject WhatDoIHave()
         {
             var stateJson = new JObject();
             stateJson["connection"] = JObject.FromObject(Connection);
