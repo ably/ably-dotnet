@@ -227,10 +227,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetClientWithFakeTransportAndMessageHandler(null, handler);
 
             await client.ConnectClient(); // On the default host
-            await client.DisconnectWithRetriableError();
+            await client.DisconnectWithRetryableError();
             await client.ConnectClient(); // On fallback host
             LastCreatedTransport.Parameters.Host.Should().NotBe(Defaults.RealtimeHost);
-            await client.DisconnectWithRetriableError(); // Disconnect again
+            await client.DisconnectWithRetryableError(); // Disconnect again
             await client.ConnectClient(); // We try the default host first
 
             await client.TimeAsync();
