@@ -22,7 +22,7 @@ namespace IO.Ably.Realtime
 
         private readonly List<IRealtimeChannel> _orderedChannels = new List<IRealtimeChannel>();
 
-        private object _orderedListLock = new object();
+        private readonly object _orderedListLock = new object();
 
         private readonly AblyRealtime _realtimeClient;
         private readonly IMobileDevice _mobileDevice;
