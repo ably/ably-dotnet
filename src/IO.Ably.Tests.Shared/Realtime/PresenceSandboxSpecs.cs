@@ -1657,7 +1657,7 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTP16b")]
                 public async Task ConnectionStateCondition_WhenConnectionIsInitialized_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
                 {
-                    /* tests initialized and connecting states */
+                    // Tests initialized and connecting states
 
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
                     var channel = GetRandomChannel(client, "RTP16a");
@@ -1665,8 +1665,7 @@ namespace IO.Ably.Tests.Realtime
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
-                    // force Initialized state
-                    client.Workflow.QueueCommand(SetInitStateCommand.Create(null));
+                    client.Workflow.QueueCommand(ForceStateInitializationCommand.Create());
                     await client.WaitForState(ConnectionState.Initialized);
 
                     await WaitForMultiple(2, partialDone =>

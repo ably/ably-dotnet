@@ -315,7 +315,7 @@ namespace IO.Ably.Realtime.Workflow
                         return EmptyCommand.Instance;
                     }
 
-                case SetInitStateCommand _:
+                case ForceStateInitializationCommand _:
                 case SetConnectedStateCommand _:
                 case SetConnectingStateCommand _:
                 case SetFailedStateCommand _:
@@ -716,7 +716,7 @@ namespace IO.Ably.Realtime.Workflow
             {
                 switch (command)
                 {
-                    case SetInitStateCommand _:
+                    case ForceStateInitializationCommand _:
                         var initState = new ConnectionInitializedState(ConnectionManager, Logger);
                         SetState(initState);
                         break;
