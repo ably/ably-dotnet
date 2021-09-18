@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.Realtime
                 new ProtocolMessage(ProtocolMessage.MessageAction.Message) { Messages = new[] { message }, Channel = channel });
         }
 
-        public static async Task DisconnectWithRetriableError(this AblyRealtime client)
+        public static async Task DisconnectWithRetryableError(this AblyRealtime client)
         {
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
