@@ -785,7 +785,7 @@ namespace IO.Ably.Realtime.Workflow
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
 
-                        ConnectionManager.DestroyTransport(true);
+                        ConnectionManager.DestroyTransport();
 
                         ErrorInfo TransformIfTokenErrorAndNotRetryable()
                         {
@@ -818,7 +818,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (cmd.SkipAttach == false)
                         {
-                            ConnectionManager.DestroyTransport(true);
+                            ConnectionManager.DestroyTransport();
                         }
 
                         if (retryInstantly)
@@ -885,7 +885,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         SetState(closedState);
 
-                        ConnectionManager.DestroyTransport(suppressClosedEvent: true);
+                        ConnectionManager.DestroyTransport();
 
                         break;
                 }
