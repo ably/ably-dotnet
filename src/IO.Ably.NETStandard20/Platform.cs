@@ -1,6 +1,7 @@
-﻿using IO.Ably.Transport;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -12,6 +13,8 @@ namespace IO.Ably
         public string PlatformId => "netstandard20";
 
         public ITransportFactory TransportFactory => null;
+
+        public IMobileDevice MobileDevice { get; set; }
 
         public void RegisterOsNetworkStateChanged()
         {

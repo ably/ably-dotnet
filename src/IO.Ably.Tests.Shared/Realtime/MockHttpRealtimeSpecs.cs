@@ -35,7 +35,7 @@ namespace IO.Ably.Tests
             return client;
         }
 
-        public MockHttpRealtimeSpecs(ITestOutputHelper output)
+        protected MockHttpRealtimeSpecs(ITestOutputHelper output)
             : base(output)
         {
         }

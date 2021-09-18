@@ -1,10 +1,5 @@
 ﻿using System;
 
-using IO.Ably;
-using IO.Ably.Rest;
-
-using Newtonsoft.Json;
-
 namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
@@ -58,14 +53,9 @@ namespace IO.Ably.MessageEncoders
             return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public bool NeedsJsonEncoding(IPayload payload)
+        private static bool NeedsJsonEncoding(IPayload payload)
         {
             return payload.Data is string == false && payload.Data is byte[] == false;
-        }
-
-        public JsonEncoder()
-            : base()
-        {
         }
     }
 }

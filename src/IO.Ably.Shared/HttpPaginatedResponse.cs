@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
@@ -97,7 +96,7 @@ namespace IO.Ably
             InitializeQuery(NextQueryParams, requestParams);
         }
 
-        private void InitializeQuery(PaginatedRequestParams queryParams, PaginatedRequestParams requestParams)
+        private static void InitializeQuery(PaginatedRequestParams queryParams, PaginatedRequestParams requestParams)
         {
             queryParams.Path = requestParams.Path;
             queryParams.HttpMethod = requestParams.HttpMethod;
@@ -106,7 +105,7 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// If there is a next result it will make a call to retrieve it. Othewise it will return an empty response.
+        /// If there is a next result it will make a call to retrieve it. Otherwise it will return an empty response.
         /// </summary>
         /// <returns>returns the next response.</returns>
         public new Task<HttpPaginatedResponse> NextAsync()
@@ -120,7 +119,7 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// If there is a first result it will make a call to retrieve it. Othewise it will return an empty response.
+        /// If there is a first result it will make a call to retrieve it. Otherwise it will return an empty response.
         /// </summary>
         /// <returns>returns the first response in the sequence.</returns>
         public new Task<HttpPaginatedResponse> FirstAsync()

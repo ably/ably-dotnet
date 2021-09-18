@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
             var firstTask = await Task.WhenAny(waitTask, taskCompletionSource.Task);
             if (waitTask == firstTask)
             {
-                throw new Exception("Waitsync timed out after: " + timeout.TotalSeconds + " seconds");
+                throw new Exception("WaitSync timed out after: " + timeout.TotalSeconds + " seconds");
             }
 
             return true;

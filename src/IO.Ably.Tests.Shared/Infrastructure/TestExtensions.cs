@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
-using IO.Ably.Utils;
 
 namespace IO.Ably.Tests.Infrastructure
 {

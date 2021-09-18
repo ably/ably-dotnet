@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -29,9 +28,12 @@ namespace IO.Ably.Realtime.Workflow
     /// </summary>
     internal class RealtimeWorkflow : IQueueCommand
     {
+        private readonly CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
+
         // This is used for the tests so we can have a good
         // way of figuring out when processing has finished
         private volatile bool _processingCommand = false;
+        private bool _heartbeatMonitorDisconnectRequested = false;
 
         private AblyRealtime Client { get; }
 
@@ -53,10 +55,10 @@ namespace IO.Ably.Realtime.Workflow
 
         internal ChannelMessageProcessor ChannelMessageProcessor { get; }
 
-        internal List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> ProtocolMessageProcessors;
+        internal readonly List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> ProtocolMessageProcessors;
 
         internal readonly Channel<RealtimeCommand> CommandChannel = Channel.CreateUnbounded<RealtimeCommand>(
-            new UnboundedChannelOptions()
+            new UnboundedChannelOptions
             {
                 SingleReader = true,
                 SingleWriter = false
@@ -64,7 +66,10 @@ namespace IO.Ably.Realtime.Workflow
 
         public RealtimeWorkflow(AblyRealtime client, ILogger logger)
         {
+            _heartbeatMonitorCancellationTokenSource = new CancellationTokenSource();
+
             Client = client;
+            Client.RestClient.AblyAuth.ExecuteCommand = cmd => QueueCommand(cmd);
             Connection = client.Connection;
             Channels = client.Channels;
             Logger = logger;
@@ -97,6 +102,17 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     _ = ((RealtimeWorkflow)state).Consume();
                 }, this);
+
+            _ = Task.Run(
+                async () =>
+                {
+                    while (true)
+                    {
+                        QueueCommand(HeartbeatMonitorCommand.Create(Connection.ConfirmedAliveAt, Connection.ConnectionStateTtl).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
+                        await Task.Delay(Client.Options.HeartbeatMonitorDelay, _heartbeatMonitorCancellationTokenSource.Token);
+                    }
+                },
+                _heartbeatMonitorCancellationTokenSource.Token);
         }
 
         public void QueueCommand(params RealtimeCommand[] commands)
@@ -150,7 +166,7 @@ namespace IO.Ably.Realtime.Workflow
                                     }
                                     catch (Exception e)
                                     {
-                                        Logger.Error("Error Processing command: " + cmdsToExecute.ToString(), e);
+                                        Logger.Error($"Error Processing command: {cmdsToExecute}", e);
                                     }
                                 }
 
@@ -211,11 +227,14 @@ namespace IO.Ably.Realtime.Workflow
 
                         break;
                     case CompleteWorkflowCommand _:
+                        _heartbeatMonitorCancellationTokenSource.Cancel();
                         Channels.ReleaseAll();
                         ConnectionManager.Transport?.Dispose();
                         CommandChannel.Writer.TryComplete();
                         State.Connection.CurrentStateObject?.AbortTimer();
                         return Enumerable.Empty<RealtimeCommand>();
+                    case HeartbeatMonitorCommand cmd:
+                        return await HandleHeartbeatMonitorCommand(cmd);
                     default:
                         var next = await ProcessCommandInner(command);
                         return new[]
@@ -233,19 +252,43 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
+        private async Task<IEnumerable<RealtimeCommand>> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
+        {
+            if (!command.ConfirmedAliveAt.HasValue)
+            {
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            TimeSpan delta = Now() - command.ConfirmedAliveAt.Value;
+            if (delta > command.ConnectionStateTtl)
+            {
+                if (!_heartbeatMonitorDisconnectRequested)
+                {
+                    _heartbeatMonitorDisconnectRequested = true;
+                    return new RealtimeCommand[] { SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy(command) };
+                }
+            }
+            else
+            {
+                if (_heartbeatMonitorDisconnectRequested)
+                {
+                    _heartbeatMonitorDisconnectRequested = false;
+                }
+            }
+
+            return Enumerable.Empty<RealtimeCommand>();
+        }
+
         /// <summary>
         /// Processes a command and return a list of commands that need to be immediately executed.
         /// </summary>
         /// <param name="command">The current command that will be executed.</param>
         /// <returns>returns the next command that needs to be executed.</returns>
         /// <exception cref="AblyException">will throw an AblyException if anything goes wrong.</exception>
-        internal async Task<RealtimeCommand> ProcessCommandInner(RealtimeCommand command)
+        private async Task<RealtimeCommand> ProcessCommandInner(RealtimeCommand command)
         {
             switch (command)
             {
-                case InitCommand _:
-                    Logger.Debug("Workflow consumer has been initialised");
-                    break;
                 case ConnectCommand _:
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
@@ -274,7 +317,7 @@ namespace IO.Ably.Realtime.Workflow
                         return EmptyCommand.Instance;
                     }
 
-                case SetInitStateCommand _:
+                case ForceStateInitializationCommand _:
                 case SetConnectedStateCommand _:
                 case SetConnectingStateCommand _:
                 case SetFailedStateCommand _:
@@ -360,7 +403,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     async Task AttemptANewConnection()
                     {
-                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
+                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                         SetNewHostInState(host);
 
                         await ConnectionManager.CreateTransport(host);
@@ -416,7 +459,7 @@ namespace IO.Ably.Realtime.Workflow
                             .TriggeredBy(cmd);
                     }
 
-                case HandleTrasportEventCommand cmd:
+                case HandleTransportEventCommand cmd:
 
                     if (ConnectionManager.Transport != null
                         && ConnectionManager.Transport.Id != cmd.TransportId)
@@ -432,14 +475,16 @@ namespace IO.Ably.Realtime.Workflow
                         {
                             case ConnectionState.Closing:
                                 return SetClosedStateCommand.Create(exception: cmd.Exception).TriggeredBy(cmd);
+
                             case ConnectionState.Connecting:
                                 AblyException ablyException = null;
                                 if (cmd.Exception != null)
                                 {
-                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, 80000, HttpStatusCode.ServiceUnavailable);
+                                    ablyException = cmd.Exception as AblyException ?? new AblyException(cmd.Exception.Message, ErrorCodes.ConnectionFailed, HttpStatusCode.ServiceUnavailable);
                                 }
 
                                 return HandleConnectingErrorCommand.Create(null, ablyException, false).TriggeredBy(cmd);
+
                             case ConnectionState.Connected:
                                 var errorInfo =
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
@@ -447,9 +492,27 @@ namespace IO.Ably.Realtime.Workflow
                                     errorInfo,
                                     retryInstantly: Connection.ConnectionResumable,
                                     exception: cmd.Exception).TriggeredBy(cmd);
-                            default:
+
+                            case ConnectionState.Initialized:
+                            case ConnectionState.Disconnected:
+                            case ConnectionState.Suspended:
+                            case ConnectionState.Closed:
+                            case ConnectionState.Failed:
+                                // Nothing to do here.
                                 break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
+                    }
+
+                    return EmptyCommand.Instance;
+                case HandleAblyAuthorizeErrorCommand cmd:
+                    var exception = cmd.Exception;
+                    if (exception?.ErrorInfo?.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        Logger.Debug("Triggering Connection Error due to 403 Authorize error");
+                        return HandleConnectingErrorCommand.Create(null, cmd.Exception).TriggeredBy(cmd);
                     }
 
                     return EmptyCommand.Instance;
@@ -586,7 +649,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
                     {
-                        (channel as RealtimeChannel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
+                        ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
                     }
                 }
             }
@@ -649,13 +712,13 @@ namespace IO.Ably.Realtime.Workflow
             return Task.CompletedTask;
         }
 
-        public async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)
+        private async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)
         {
             try
             {
                 switch (command)
                 {
-                    case SetInitStateCommand _:
+                    case ForceStateInitializationCommand _:
                         var initState = new ConnectionInitializedState(ConnectionManager, Logger);
                         SetState(initState);
                         break;
@@ -678,7 +741,7 @@ namespace IO.Ably.Realtime.Workflow
                                 State.Connection.ClearKeyAndId();
                             }
 
-                            var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
+                            var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                             SetNewHostInState(connectingHost);
 
                             var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
@@ -705,7 +768,7 @@ namespace IO.Ably.Realtime.Workflow
                             Logger.Error("Error setting connecting state", ex);
 
                             // RSA4c2 & RSA4d
-                            if (ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                            if (ex.ErrorInfo.Code == ErrorCodes.ClientAuthProviderRequestFailed & !ex.ErrorInfo.IsForbiddenError)
                             {
                                 return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }
@@ -718,13 +781,13 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
-                        var error = TransformIfTokenErrorAndNotRetriable();
+                        var error = TransformIfTokenErrorAndNotRetryable();
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
 
                         ConnectionManager.DestroyTransport(true);
 
-                        ErrorInfo TransformIfTokenErrorAndNotRetriable()
+                        ErrorInfo TransformIfTokenErrorAndNotRetryable()
                         {
                             if (cmd.Error.IsTokenError && Auth.TokenRenewable == false)
                             {
@@ -780,7 +843,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         break;
 
-                    case SetClosingStateCommand cmd:
+                    case SetClosingStateCommand _:
                         var transport = ConnectionManager.Transport;
                         var connectedTransport = transport?.State == TransportState.Connected;
 
@@ -903,7 +966,7 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        public void SendPendingMessages(bool resumed)
+        private void SendPendingMessages(bool resumed)
         {
             if (resumed)
             {
@@ -931,7 +994,7 @@ namespace IO.Ably.Realtime.Workflow
             State.PendingMessages.Clear();
         }
 
-        public void ClearAckQueueAndFailMessages(ErrorInfo error)
+        private void ClearAckQueueAndFailMessages(ErrorInfo error)
         {
             foreach (var item in State.WaitingForAck.Where(x => x.Callback != null))
             {
@@ -984,11 +1047,17 @@ namespace IO.Ably.Realtime.Workflow
             return Task.FromResult(false);
         }
 
+        public bool IsProcessingCommands()
+        {
+            var gotCount = TryGetCount(out int count);
+            return _processingCommand || (gotCount && count > 0);
+        }
+
         /// <summary>
         /// Attempt to query the backlog length of the queue.
         /// </summary>
         /// <param name="count">The (approximate) count of items in the Channel.</param>
-        public bool TryGetCount(out int count)
+        private bool TryGetCount(out int count)
         {
             // get this using the reflection
             try
@@ -1001,19 +1070,13 @@ namespace IO.Ably.Realtime.Workflow
                     return true;
                 }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                ErrorPolicy.HandleUnexpected(e, Logger);
             }
 
             count = default(int);
             return false;
-        }
-
-        public bool IsProcessingCommands()
-        {
-            var gotCount = TryGetCount(out int count);
-            return _processingCommand || (gotCount && count > 0);
         }
     }
 }

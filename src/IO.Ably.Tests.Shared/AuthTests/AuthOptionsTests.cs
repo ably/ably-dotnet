@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using FluentAssertions;
 using Xunit;
 
@@ -34,7 +33,7 @@ namespace IO.Ably.Tests
 
         private AuthOptions GetCompleteOptions()
         {
-            return new AuthOptions()
+            return new AuthOptions
             {
                 AuthCallback = param => null,
                 AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
@@ -96,7 +95,7 @@ namespace IO.Ably.Tests
         public void Merge_WithCompleteOptions_DoesNotOverwriteAnything()
         {
             AuthOptions complete = GetCompleteOptions();
-            var otherComplete = new AuthOptions()
+            var otherComplete = new AuthOptions
             {
                 AuthHeaders = new Dictionary<string, string> { { "Complete", "Test" } },
                 AuthParams = new Dictionary<string, string> { { "Complete", "Test" } },

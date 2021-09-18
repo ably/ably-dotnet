@@ -8,12 +8,14 @@ namespace IO.Ably.Tests
 {
     public class RestInitSpecs : AblySpecs
     {
+        private const string NoMeansProvidedToRenewAuthToken = "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help";
+
         [Fact]
         [Trait("spec", "RSA2")]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new AblyRest(ValidKey);
-            Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
+            client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Basic);
         }
 
         [Trait("spec", "RSA4")]
@@ -33,16 +35,14 @@ namespace IO.Ably.Tests
             public void WithKeyAndClientId_ShouldUseBasicAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
-                Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Basic);
             }
 
             [Fact]
             [Trait("spec", "RSA4a1")]
             public void WithTokenButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
-                var testLogger =
-                    new TestLogger(
-                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
                 var client = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
@@ -51,9 +51,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA4a1")]
             public void WithTokenDetailsButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
-                var testLogger =
-                    new TestLogger(
-                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
                 var client = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
@@ -69,7 +67,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
-            public void WithouthKey_ShouldUseTokenAuth()
+            public void WithoutKey_ShouldUseTokenAuth()
             {
                 var client = new AblyRest(opts =>
                 {
@@ -78,7 +76,7 @@ namespace IO.Ably.Tests
                     opts.ClientId = "123";
                 });
 
-                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
             }
 
             [Fact]
@@ -131,7 +129,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithTokenOnly_SetsTokenRenewableToFalse()
             {
-                var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
+                var rest = new AblyRest(new ClientOptions { Token = "token_id" });
 
                 rest.AblyAuth.TokenRenewable.Should().BeFalse();
             }
@@ -147,7 +145,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthUrl_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthUrl = new Uri("http://boo") });
+                var rest = new AblyRest(new ClientOptions { AuthUrl = new Uri("http://boo") });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
@@ -155,7 +153,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthCallback_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult<object>(new TokenDetails()) });
+                var rest = new AblyRest(new ClientOptions { AuthCallback = token => Task.FromResult<object>(new TokenDetails()) });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
@@ -165,7 +163,7 @@ namespace IO.Ably.Tests
             public void WithoutTokenAuthAndNoKey_ShouldThrow()
             {
                 var error = Assert.Throws<AblyException>(() => new AblyRest(new ClientOptions()));
-                error.ErrorInfo.Code.Should().Be(40106);
+                error.ErrorInfo.Code.Should().Be(ErrorCodes.UnableToObtainCredentialsFromGivenParameters);
             }
         }
 

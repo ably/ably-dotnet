@@ -154,7 +154,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f")]
         public async Task WithCustomTransportParamsInOptions_ShouldPassThemInQueryStringWhenCreatingTransport()
         {
-            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>()
+            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
             {
                 { "test", "best" },
                 { "best", "test" },
@@ -169,7 +169,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f1")]
         public async Task WithCustomTransportParamsInOptions_WhichOverrideDefaultValues_ShouldPassTheCustomOneSpecifiedInOptions()
         {
-            await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>()
+            await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
             {
                 { "v", "1000" },
             });
@@ -187,7 +187,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f1")]
         public async Task WithCustomTransportParamsInOptions_AcceptsDifferentTypes_CorrectlyCreatesQueryParams(string name, object value, string expected)
         {
-            await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>()
+            await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
             {
                 { name, value },
             });

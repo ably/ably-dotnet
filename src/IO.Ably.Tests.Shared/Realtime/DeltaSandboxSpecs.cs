@@ -1,20 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Realtime
+namespace IO.Ably.Tests.Realtime
 {
     [Collection("SandBox Connection")]
     [Trait("type", "integration")]
@@ -128,7 +126,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             var receivedMessages = new List<ProtocolMessage>();
             var realtime = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                var optionsTransportFactory = new TestTransportFactory()
+                var optionsTransportFactory = new TestTransportFactory
                 {
                     BeforeDataProcessed = receivedMessages.Add,
                 };
@@ -231,10 +229,10 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             var testSink = new TestLoggerSink();
             var taskAwaiter = new TaskCompletionAwaiter(5000);
             var firstMessageReceived = new TaskCompletionAwaiter();
-            using (((DefaultLogger.InternalLogger)Logger).SetTempDestination(testSink))
+            using (((IInternalLogger)Logger).CreateDisposableLoggingContext(testSink))
             {
                 var realtime = await GetRealtimeClient(protocol);
-                var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams() { { "delta", "vcdiff" } }));
+                var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams { { "delta", "vcdiff" } }));
 
                 var received = new List<Message>();
                 channel.Subscribe(message =>
@@ -263,9 +261,9 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                     Channel = channelName,
                     Messages = new[]
                     {
-                        new Message()
+                        new Message
                         {
-                            Id = "badMessage", Encoding = "vcdiff", Data = new byte[0]
+                            Id = "badMessage", Encoding = "vcdiff", Data = Array.Empty<byte>()
                         },
                     },
                 }));
@@ -285,7 +283,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 received.Should().NotContain(x => x.Id == "badMessage");
 
                 bool hasVcdiffErrorMessage = testSink.Messages.Any(x => x.StartsWith(LogLevel.Error.ToString())
-                                                                        && x.Contains(ErrorCodes.VCDiffDecodeError
+                                                                        && x.Contains(ErrorCodes.VcDiffDecodeError
                                                                             .ToString()));
 
                 hasVcdiffErrorMessage.Should().BeTrue();

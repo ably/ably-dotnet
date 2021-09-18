@@ -1,10 +1,9 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Shared.Helpers
 {
-    internal class JAssert
+    internal static class JAssert
     {
         // todo: upgrade testing library - https://github.com/fluentassertions/fluentassertions.json/issues/7
         // https://stackoverflow.com/questions/52645603/how-to-compare-two-json-objects-using-c-sharp

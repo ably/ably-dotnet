@@ -1,30 +1,15 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Realtime;
+using IO.Ably.Utils;
 
 namespace IO.Ably.Transport
 {
-    internal struct MessageToSend
-    {
-        public ArraySegment<byte> Message { get; }
-
-        public WebSocketMessageType Type { get; }
-
-        public MessageToSend(byte[] message, WebSocketMessageType type)
-        {
-            Message = new ArraySegment<byte>(message);
-            Type = type;
-        }
-    }
-
     /// <summary>
     /// Wrapper around Websocket which handles state changes.
     /// </summary>
@@ -71,7 +56,7 @@ namespace IO.Ably.Transport
         private Action<ConnectionState, Exception> _handler;
 
         private readonly Channel<MessageToSend> _sendChannel = Channel.CreateUnbounded<MessageToSend>(
-            new UnboundedChannelOptions()
+            new UnboundedChannelOptions
             {
                 SingleReader = true,
                 SingleWriter = true,
@@ -304,7 +289,7 @@ namespace IO.Ably.Transport
                 try
                 {
                     var buffer = new ArraySegment<byte>(new byte[1024 * 16]); // Default receive buffer size
-                    WebSocketReceiveResult result = null;
+                    WebSocketReceiveResult result;
                     using (var ms = new MemoryStream())
                     {
                         do
@@ -402,9 +387,9 @@ namespace IO.Ably.Transport
                     return true;
                 }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                ErrorPolicy.HandleUnexpected(e, Logger);
             }
 
             count = default(int);
@@ -417,6 +402,19 @@ namespace IO.Ably.Transport
         ~MsWebSocketConnection()
         {
             Dispose(false);
+        }
+
+        private readonly struct MessageToSend
+        {
+            public MessageToSend(byte[] message, WebSocketMessageType type)
+            {
+                Message = new ArraySegment<byte>(message);
+                Type = type;
+            }
+
+            public ArraySegment<byte> Message { get; }
+
+            public WebSocketMessageType Type { get; }
         }
     }
 }

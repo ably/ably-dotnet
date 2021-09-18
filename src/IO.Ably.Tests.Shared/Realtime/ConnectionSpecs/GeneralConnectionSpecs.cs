@@ -1,9 +1,6 @@
-using System.Diagnostics;
-using System.IO.Pipes;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,7 +58,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            var connectionDetailsMessage = new ConnectionDetails()
+            var connectionDetailsMessage = new ConnectionDetails
             {
                 ClientId = "123",
                 ConnectionKey = "boo"

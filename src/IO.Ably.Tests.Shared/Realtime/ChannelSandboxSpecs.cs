@@ -32,13 +32,13 @@ namespace IO.Ably.Tests.Realtime
             IRealtimeChannel target = client.Channels.Get("test");
 
             // Assert
-            target.Name.ShouldBeEquivalentTo("test");
-            target.State.ShouldBeEquivalentTo(ChannelState.Initialized);
+            target.Name.Should().BeEquivalentTo("test");
+            target.State.Should().BeEquivalentTo(ChannelState.Initialized);
         }
 
         [Theory]
         [ProtocolData]
-        public async Task TestAttachChannel_AttachesSuccessfuly(Protocol protocol)
+        public async Task TestAttachChannel_AttachesSuccessfully(Protocol protocol)
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
@@ -56,16 +56,16 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             signal.WaitOne(10000);
-            stateChanges.Count.ShouldBeEquivalentTo(1);
-            stateChanges[0].Current.ShouldBeEquivalentTo(ChannelState.Attaching);
-            stateChanges[0].Error.ShouldBeEquivalentTo(null);
-            target.State.ShouldBeEquivalentTo(ChannelState.Attaching);
+            stateChanges.Count.Should().Be(1);
+            stateChanges[0].Current.Should().BeEquivalentTo(ChannelState.Attaching);
+            stateChanges[0].Error.Should().BeNull();
+            target.State.Should().BeEquivalentTo(ChannelState.Attaching);
 
             signal.WaitOne(10000);
-            stateChanges.Count.ShouldBeEquivalentTo(2);
-            stateChanges[1].Current.ShouldBeEquivalentTo(ChannelState.Attached);
-            stateChanges[1].Error.ShouldBeEquivalentTo(null);
-            target.State.ShouldBeEquivalentTo(ChannelState.Attached);
+            stateChanges.Count.Should().Be(2);
+            stateChanges[1].Current.Should().BeEquivalentTo(ChannelState.Attached);
+            stateChanges[1].Error.Should().BeNull();
+            target.State.Should().BeEquivalentTo(ChannelState.Attached);
         }
 
         [Theory]
@@ -90,9 +90,9 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
-            messagesReceived.Count.ShouldBeEquivalentTo(1);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
+            messagesReceived.Count.Should().Be(1);
+            messagesReceived[0].Name.Should().BeEquivalentTo("test");
+            messagesReceived[0].Data.Should().BeEquivalentTo("test data");
         }
 
         // TODO: RTL1 Spec about presence and sync messages
@@ -111,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
-            result.Error.Code.Should().Be(40160);
+            result.Error.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
             result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests.Realtime
             var sentMessages = new List<ProtocolMessage>();
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {
-                var optionsTransportFactory = new TestTransportFactory()
+                var optionsTransportFactory = new TestTransportFactory
                 {
                     OnMessageSent = sentMessages.Add,
                 };
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
 
             var options = new ChannelOptions(
-                channelParams: new ChannelParams() { { "delta", "vcdiff" }, { "martin", "no chance" } });
+                channelParams: new ChannelParams { { "delta", "vcdiff" }, { "martin", "no chance" } });
             var channel = client.Channels.Get("Test", options);
 
             await channel.AttachAsync();
@@ -211,7 +211,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task SetOptions_WithDifferentModesOrParams_ShouldReAttachChannel(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channelParams = new ChannelParams() { { "delta", "vcdiff" } };
+            var channelParams = new ChannelParams { { "delta", "vcdiff" } };
             var options = new ChannelOptions(channelParams: channelParams);
             var channel = client.Channels.Get("test", options);
             await channel.AttachAsync();
@@ -266,23 +266,23 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             messagesReceived.Should().HaveCount(3);
             var messages = messagesReceived.ToList();
-            messages[0].Name.ShouldBeEquivalentTo("test1");
-            messages[0].Data.ShouldBeEquivalentTo("test 12");
-            messages[1].Name.ShouldBeEquivalentTo("test2");
-            messages[1].Data.ShouldBeEquivalentTo("test 123");
-            messages[2].Name.ShouldBeEquivalentTo("test3");
-            messages[2].Data.ShouldBeEquivalentTo("test 321");
+            messages[0].Name.Should().BeEquivalentTo("test1");
+            messages[0].Data.Should().BeEquivalentTo("test 12");
+            messages[1].Name.Should().BeEquivalentTo("test2");
+            messages[1].Data.Should().BeEquivalentTo("test 123");
+            messages[2].Name.Should().BeEquivalentTo("test3");
+            messages[2].Data.Should().BeEquivalentTo("test 321");
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL7f")]
         [Trait("spec", "RTC1a")]
-        public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
+        public async Task TestAttachChannel_SendingMessage_DoesNot_EchoesItBack(Protocol protocol)
         {
             var channelName = "echo_off_test";
 
-            // this should be logged in MsWebSocketTrasnport.CreateSocket
+            // this should be logged in MsWebSocketTransport.CreateSocket
             var testLogger = new TestLogger("Connecting to web socket on url:");
 
             // Arrange
@@ -615,10 +615,10 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "test".AddRandomSuffix();
             var channel = client.Channels.Get(channelName);
             int messagesReceived = 0;
-            string receivedClienId = string.Empty;
+            string receivedClientId = string.Empty;
             channel.Subscribe(message =>
             {
-                receivedClienId = message.ClientId;
+                receivedClientId = message.ClientId;
                 Interlocked.Increment(ref messagesReceived);
             });
 
@@ -627,7 +627,7 @@ namespace IO.Ably.Tests.Realtime
             await client.ProcessCommands();
 
             messagesReceived.Should().BeGreaterThan(0);
-            receivedClienId.Should().Be(clientId);
+            receivedClientId.Should().Be(clientId);
         }
 
         [Theory]
@@ -636,7 +636,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
             var rest = await GetRestClient(protocol);
-            var token = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "1000" });
+            var token = await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = "1000" });
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
@@ -713,7 +713,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = clientId });
             });
 
             var channelName = "test".AddRandomSuffix();
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams { ClientId = clientId });
             });
             var channelName = "test".AddRandomSuffix();
             var channel = realtimeClient.Channels.Get(channelName);
@@ -992,7 +992,7 @@ namespace IO.Ably.Tests.Realtime
 
                 client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
-                    Error = new ErrorInfo("test", 40140)
+                    Error = new ErrorInfo("test", ErrorCodes.TokenError)
                 });
             });
 
@@ -1036,7 +1036,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
-            var history = await historyChannel.HistoryAsync(new PaginatedRequestParams() { Direction = QueryDirection.Forwards });
+            var history = await historyChannel.HistoryAsync(new PaginatedRequestParams { Direction = QueryDirection.Forwards });
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Items.Should().HaveCount(10);
@@ -1074,7 +1074,7 @@ namespace IO.Ably.Tests.Realtime
                 client.GetTestTransport().FakeReceivedMessage(msg);
             });
 
-            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            stateChange.Error.Should().BeEquivalentTo(msg.Error);
             channel.ErrorReason.Should().BeNull();
             await client.ProcessCommands();
             client.GetTestTransport().ProtocolMessagesSent
@@ -1112,7 +1112,7 @@ namespace IO.Ably.Tests.Realtime
                 client.GetTestTransport().FakeReceivedMessage(msg);
             });
 
-            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            stateChange.Error.Should().BeEquivalentTo(msg.Error);
             channel.ErrorReason.Should().BeNull();
 
             client.GetTestTransport().ProtocolMessagesSent
@@ -1180,7 +1180,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // the first error should be from the detached message
-            stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
+            stateChange.Error.Should().BeEquivalentTo(detachedMessage.Error);
 
             // the second should be a timeout error
             stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
@@ -1278,7 +1278,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("issue", "117")]
-        public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
+        public async Task AttachAwaitShouldTimeoutIfStateChanges(Protocol protocol)
         {
             var client1 = await GetRealtimeClient(protocol, (opts, _) =>
             {
@@ -1300,7 +1300,7 @@ namespace IO.Ably.Tests.Realtime
             });
             client1.Connect();
             var didConnect = await tsc.Task;
-            didConnect.ShouldBeEquivalentTo(true, "this indicates that the connection event was handled.");
+            didConnect.Should().Be(true, "this indicates that the connection event was handled.");
         }
 
         [Theory]
@@ -1342,7 +1342,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(ConnectionEvent.Connected, async args =>
             {
                 await client.Channels.Get("test")
-                    .HistoryAsync(new PaginatedRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
+                    .HistoryAsync(new PaginatedRequestParams { Start = DateHelper.CreateDate(1969, 1, 1) });
             });
 
             var result = await client.Channels.Get("name").AttachAsync();

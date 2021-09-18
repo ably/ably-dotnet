@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task OnceConnected_ShouldUseKeyFromConnectedMessage()
         {
             var client = GetClientWithFakeTransport();
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails() { ConnectionKey = "key" } });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails { ConnectionKey = "key" } });
             await client.WaitForState(ConnectionState.Connected);
             client.Connection.Key.Should().Be("key");
         }

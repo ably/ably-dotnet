@@ -1,5 +1,4 @@
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Transport;
@@ -21,20 +20,6 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData()
         {
             return "Ping request id: " + Request.Id;
-        }
-    }
-
-    internal class InitCommand : RealtimeCommand
-    {
-        private InitCommand()
-        {
-        }
-
-        public static InitCommand Create() => new InitCommand();
-
-        protected override string ExplainData()
-        {
-            return DateTimeOffset.UtcNow.ToString();
         }
     }
 
@@ -74,7 +59,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class EmptyCommand : RealtimeCommand
     {
-        public static EmptyCommand Instance = new EmptyCommand();
+        public static readonly EmptyCommand Instance = new EmptyCommand();
 
         private EmptyCommand()
         {
@@ -114,16 +99,13 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData() => string.Empty;
     }
 
-    internal class SetInitStateCommand : RealtimeCommand
+    internal class ForceStateInitializationCommand : RealtimeCommand
     {
-        public string Recover { get; }
-
-        private SetInitStateCommand(string recover)
+        private ForceStateInitializationCommand()
         {
-            Recover = recover;
         }
 
-        public static SetInitStateCommand Create(string recover) => new SetInitStateCommand(recover);
+        public static ForceStateInitializationCommand Create() => new ForceStateInitializationCommand();
 
         protected override string ExplainData()
         {
@@ -283,7 +265,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return (Error != null) ? "Error: " + Error.ToString() : string.Empty;
+            return (Error != null) ? $"Error: {Error}" : string.Empty;
         }
 
         public static SetFailedStateCommand Create(ErrorInfo error) => new SetFailedStateCommand(error);
@@ -320,7 +302,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return $"Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 
@@ -414,7 +396,7 @@ namespace IO.Ably.Realtime.Workflow
 
         protected override string ExplainData()
         {
-            return "Error: " + Error.ToString();
+            return $"Error: {Error}";
         }
     }
 
@@ -433,6 +415,24 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData()
         {
             return $"Error: {Error}.";
+        }
+    }
+
+    internal class HandleAblyAuthorizeErrorCommand : RealtimeCommand
+    {
+        public AblyException Exception { get; }
+
+        private HandleAblyAuthorizeErrorCommand(AblyException ex)
+        {
+            Exception = ex;
+        }
+
+        public static HandleAblyAuthorizeErrorCommand Create(AblyException ex = null) =>
+            new HandleAblyAuthorizeErrorCommand(ex);
+
+        protected override string ExplainData()
+        {
+            return $" Exception: {Exception?.Message} ";
         }
     }
 
@@ -460,7 +460,7 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    internal class HandleTrasportEventCommand : RealtimeCommand
+    internal class HandleTransportEventCommand : RealtimeCommand
     {
         public Guid TransportId { get; }
 
@@ -468,19 +468,40 @@ namespace IO.Ably.Realtime.Workflow
 
         public Exception Exception { get; }
 
-        private HandleTrasportEventCommand(Guid transportId, TransportState transportState, Exception ex)
+        private HandleTransportEventCommand(Guid transportId, TransportState transportState, Exception ex)
         {
             TransportId = transportId;
             TransportState = transportState;
             Exception = ex;
         }
 
-        public static HandleTrasportEventCommand Create(Guid transportId, TransportState state, Exception ex) =>
-            new HandleTrasportEventCommand(transportId, state, ex);
+        public static HandleTransportEventCommand Create(Guid transportId, TransportState state, Exception ex) =>
+            new HandleTransportEventCommand(transportId, state, ex);
 
         protected override string ExplainData()
         {
-            return $"Transport Id: {TransportId}. TrasportState: {TransportState}. Exception: {Exception?.Message}";
+            return $"Transport Id: {TransportId}. TransportState: {TransportState}. Exception: {Exception?.Message}";
+        }
+    }
+
+    internal class HeartbeatMonitorCommand : RealtimeCommand
+    {
+        private HeartbeatMonitorCommand(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl)
+        {
+            ConfirmedAliveAt = confirmedAliveAt;
+            ConnectionStateTtl = connectionStateTtl;
+        }
+
+        public DateTimeOffset? ConfirmedAliveAt { get; }
+
+        public TimeSpan ConnectionStateTtl { get; }
+
+        public static HeartbeatMonitorCommand Create(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl) =>
+            new HeartbeatMonitorCommand(confirmedAliveAt, connectionStateTtl);
+
+        protected override string ExplainData()
+        {
+            return $"ConfirmedAliveAt: {ConfirmedAliveAt}. ConnectionStateTtl {ConnectionStateTtl}";
         }
     }
 }

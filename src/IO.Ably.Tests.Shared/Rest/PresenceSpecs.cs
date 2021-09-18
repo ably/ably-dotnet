@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Rest;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,14 +27,14 @@ namespace IO.Ably.Tests
 
             presence.Should().BeOfType<PaginatedResult<PresenceMessage>>();
 
-            Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
+            LastRequest.Method.Should().Be(HttpMethod.Get);
+            LastRequest.Url.Should().Be($"/channels/{channel.Name}/presence");
         }
 
         public class GetSpecs : PresenceSpecs
         {
             private AblyRest _client;
-            private IRestChannel _channel;
+            private readonly IRestChannel _channel;
 
             [Theory]
             [InlineData(null, "100", false)]
@@ -74,8 +76,8 @@ namespace IO.Ably.Tests
                 var result = await _channel.Presence.HistoryAsync();
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/presence/history", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/presence/history");
             }
 
             [Fact]
@@ -85,8 +87,8 @@ namespace IO.Ably.Tests
                 var result = await _channel.Presence.HistoryAsync(new PaginatedRequestParams());
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/presence/history", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/presence/history");
             }
 
             [Fact]
@@ -112,7 +114,7 @@ namespace IO.Ably.Tests
             public async Task History_WithStartBeforeEnd_Throws()
             {
                 await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.Presence.HistoryAsync(new PaginatedRequestParams() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.Presence.HistoryAsync(new PaginatedRequestParams { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -140,7 +142,7 @@ namespace IO.Ably.Tests
             public async Task History_WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new PaginatedRequestParams() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new PaginatedRequestParams { Limit = limit }));
             }
 
             [Fact]
@@ -150,7 +152,7 @@ namespace IO.Ably.Tests
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates)
                 {
-                    var query = new PaginatedRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
+                    var query = new PaginatedRequestParams { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
                     await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
@@ -170,7 +172,7 @@ namespace IO.Ably.Tests
             public async Task History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
             {
                 // Arrange
-                var rest = GetRestClient(request => new AblyResponse()
+                var rest = GetRestClient(request => new AblyResponse
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = "[]"
@@ -182,9 +184,9 @@ namespace IO.Ably.Tests
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextQueryParams);
-                Assert.NotNull(result.CurrentQueryParams);
-                Assert.NotNull(result.FirstQueryParams);
+                result.NextQueryParams.Should().NotBeNull();
+                result.CurrentQueryParams.Should().NotBeNull();
+                result.FirstQueryParams.Should().NotBeNull();
             }
 
             public GetSpecs(ITestOutputHelper output)

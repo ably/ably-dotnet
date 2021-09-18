@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 
@@ -132,7 +133,7 @@ namespace IO.Ably.Tests.Samples
                 }
                 else
                 {
-                    Console.WriteLine("Message published sucessfully");
+                    Console.WriteLine("Message published successfully");
                 }
             });
 
@@ -143,7 +144,7 @@ namespace IO.Ably.Tests.Samples
             }
             else
             {
-                Console.WriteLine("Message published sucessfully");
+                Console.WriteLine("Message published successfully");
             }
         }
 
@@ -151,7 +152,9 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
+#pragma warning disable 618
             var history = await channel.HistoryAsync(true);
+#pragma warning restore 618
             Console.WriteLine($"{history.Items.Count} messages received in the first page");
             if (history.HasNext)
             {
@@ -162,7 +165,7 @@ namespace IO.Ably.Tests.Samples
         public async Task StatsExample()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
-            var query = new StatsRequestParams() { Unit = StatsIntervalGranularity.Hour };
+            var query = new StatsRequestParams { Unit = StatsIntervalGranularity.Hour };
             var results = await realtime.StatsAsync(query);
             Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All);
@@ -211,7 +214,7 @@ namespace IO.Ably.Tests.Samples
         {
             /* request a wildcard token */
             AblyRest rest = new AblyRest("{{API_KEY}}");
-            TokenParams @params = new TokenParams() { ClientId = "*" };
+            TokenParams @params = new TokenParams { ClientId = "*" };
             ClientOptions options = new ClientOptions();
             options.TokenDetails = await rest.Auth.RequestTokenAsync(@params, null);
 
@@ -244,7 +247,9 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             await channel.AttachAsync();
+#pragma warning disable 618
             PaginatedResult<Message> resultPage = await channel.HistoryAsync(true);
+#pragma warning restore 618
             Message lastMessage = resultPage.Items[0];
             Console.WriteLine("Last message before attach: " + lastMessage.Data);
 
@@ -437,7 +442,7 @@ namespace IO.Ably.Tests.Samples
         public async Task RestStatsSamples()
         {
             AblyRest rest = new AblyRest("{{API_KEY}}");
-            PaginatedResult<Stats> results = await rest.StatsAsync(new StatsRequestParams() { Unit = StatsIntervalGranularity.Hour });
+            PaginatedResult<Stats> results = await rest.StatsAsync(new StatsRequestParams { Unit = StatsIntervalGranularity.Hour });
             Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All.Count);
         }

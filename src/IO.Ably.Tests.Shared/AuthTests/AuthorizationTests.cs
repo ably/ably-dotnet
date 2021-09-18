@@ -1,21 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Xunit;
-    using Xunit.Abstractions;
-
     [Collection("UnitTests")]
     public class AuthorizationTests : MockHttpRestSpecs
     {
-        internal AblyResponse DummyTokenResponse = new AblyResponse()
+        internal readonly AblyResponse DummyTokenResponse = new AblyResponse
         {
             Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}"
         };
@@ -39,7 +38,7 @@ namespace IO.Ably.Tests
             public async Task WithTlsFalseAndBasicAuth_Throws()
             {
                 var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-                await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthorizeAsync());
+                await Assert.ThrowsAsync<AblyInsecureRequestException>(() => client.Auth.AuthorizeAsync());
             }
 
             [Fact]
@@ -127,7 +126,7 @@ namespace IO.Ably.Tests
             {
                 return GetRestClient(null, options =>
                 {
-                    options.DefaultTokenParams = new TokenParams()
+                    options.DefaultTokenParams = new TokenParams
                     {
                         Ttl = TimeSpan.FromHours(2),
                         Capability = Capability.AllowAll,
@@ -157,7 +156,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetClientWithTokenParams();
 
-                var overridingTokenParams = new TokenParams()
+                var overridingTokenParams = new TokenParams
                 {
                     Ttl = TimeSpan.FromHours(1),
                     ClientId = "999",
@@ -180,7 +179,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetClientWithTokenParams();
 
-                var overrideAuthOptions = new AuthOptions()
+                var overrideAuthOptions = new AuthOptions
                 {
                     Key = "keyid.name:secret",
                 };
@@ -212,7 +211,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA9d")]
-            public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
+            public async Task WithNoTimeStampInRequest_ShouldUseSystemType()
             {
                 var request = await CreateTokenRequest(Client);
                 request.Timestamp.Value.Should().BeCloseTo(Now, 500);
@@ -223,7 +222,7 @@ namespace IO.Ably.Tests
             public async Task WithTimeStampOverridesDefault()
             {
                 var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
-                var data = await CreateTokenRequest(Client, new TokenParams() { Timestamp = date }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Timestamp = date }, null);
                 data.Timestamp.Should().Be(date);
             }
 
@@ -255,7 +254,7 @@ namespace IO.Ably.Tests
             {
                 var capability = new Capability();
                 capability.AddResource("a").AllowAll();
-                var customParams = new TokenParams() { Capability = capability };
+                var customParams = new TokenParams { Capability = capability };
                 var request = await CreateTokenRequest(Client, customParams);
                 request.Capability.Should().Be(capability);
             }
@@ -271,28 +270,28 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WithNonceOverridesDefault()
             {
-                var data = await CreateTokenRequest(Client, new TokenParams() { Nonce = "Blah" }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Nonce = "Blah" }, null);
                 data.Nonce.Should().Be("Blah");
             }
 
             [Fact]
             public async Task WithClientIdOverridesDefault()
             {
-                var data = await CreateTokenRequest(Client, new TokenParams() { ClientId = "123" }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { ClientId = "123" }, null);
                 data.ClientId.Should().Be("123");
             }
 
             [Fact]
             public async Task WithOutKeyIdThrowsException()
             {
-                var client = new AblyRest(new ClientOptions() { UseTokenAuth = true });
+                var client = new AblyRest(new ClientOptions { UseTokenAuth = true });
                 await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
             [Fact]
             public async Task WithOutKeyValueThrowsException()
             {
-                var client = new AblyRest(new ClientOptions() { Key = "111.222" });
+                var client = new AblyRest(new ClientOptions { Key = "111.222" });
                 await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
@@ -340,7 +339,7 @@ namespace IO.Ably.Tests
                 var client = GetRestClient(null, options =>
                 {
                     options.ClientId = "123";
-                    options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
+                    options.DefaultTokenParams = new TokenParams { ClientId = "999" };
                 });
 
                 client.Auth.AuthorizeAsync();
@@ -359,7 +358,7 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC17")]
             [Trait("spec", "RSA7b1")]
-            public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
+            public void WhenClientIdInOptions_ShouldPassClientIdToAblyAuth()
             {
                 var options = new ClientOptions(ValidKey) { ClientId = "123" };
                 var client = new AblyRest(options);
@@ -370,7 +369,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA7b4")]
             public void WhenClientIsInitialisedWithTokenDetails_AuthClientIdShouldBeTheSame()
             {
-                var options = new ClientOptions() { TokenDetails = new TokenDetails() { ClientId = "*" } };
+                var options = new ClientOptions { TokenDetails = new TokenDetails { ClientId = "*" } };
                 var client = new AblyRest(options);
                 client.AblyAuth.ClientId.Should().Be("*");
             }
@@ -400,7 +399,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA7c")]
             public void ClientIdInClientOptionsCannotBeWildCard()
             {
-                Assert.Throws<InvalidOperationException>(() => new ClientOptions() { ClientId = "*" });
+                Assert.Throws<InvalidOperationException>(() => new ClientOptions { ClientId = "*" });
             }
         }
 

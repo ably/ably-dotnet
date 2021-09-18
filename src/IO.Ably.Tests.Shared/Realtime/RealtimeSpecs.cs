@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +23,7 @@ namespace IO.Ably.Tests
 
         public class RealtimePropertiesSpec : MockHttpRealtimeSpecs
         {
-            private AblyRealtime _client;
+            private readonly AblyRealtime _client;
 
             [Fact]
             [Trait("spec", "RTC2")]
@@ -36,7 +38,7 @@ namespace IO.Ably.Tests
             public void ShouldAllowAccessToChannelsObject()
             {
                 _client.Channels.Should().NotBeNull();
-                (_client.Channels is IChannels<IRealtimeChannel>).Should().BeTrue();
+                _client.Channels.Should().BeAssignableTo<IChannels<IRealtimeChannel>>();
             }
 
             [Fact]
@@ -58,7 +60,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RTC5b")]
             public void ShouldImplementTheSameStatsInterfaceAsTheRestClient()
             {
-                (_client is IStatsCommands).Should().BeTrue();
+                _client.Should().BeAssignableTo<IStatsCommands>();
             }
 
             [Fact]
@@ -101,7 +103,7 @@ namespace IO.Ably.Tests
             if (Defaults.MsgPackEnabled)
 #pragma warning disable 162
             {
-                Assert.True(options.UseBinaryProtocol);
+                options.UseBinaryProtocol.Should().BeTrue();
             }
 #pragma warning restore 162
         }
@@ -110,21 +112,21 @@ namespace IO.Ably.Tests
         public void New_Realtime_HasConnection()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Connection);
+            realtime.Connection.Should().NotBeNull();
         }
 
         [Fact]
         public void New_Realtime_HasChannels()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Channels);
+            realtime.Channels.Should().NotBeNull();
         }
 
         [Fact]
         public void New_Realtime_HasAuth()
         {
             AblyRealtime realtime = new AblyRealtime(ValidKey);
-            Assert.NotNull(realtime.Auth);
+            realtime.Auth.Should().NotBeNull();
         }
 
         [Theory(Skip = "This test can only be run on its own without any other tests because it depends on static values. Make sure you run each test case individually.")]

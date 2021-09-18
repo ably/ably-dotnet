@@ -6,28 +6,27 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal class PresenceMap
+    internal sealed class PresenceMap
     {
-        internal ILogger Logger { get; private set; }
-
-        internal event EventHandler SyncNoLongerInProgress;
-
-        private readonly string _channelName;
         private readonly object _lock = new object();
-
-        // Exposed internally to allow for testing.
-        internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
-
+        private readonly ILogger _logger;
+        private readonly string _channelName;
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;
+
         private ICollection<string> _residualMembers;
         private bool _isSyncInProgress;
 
         public PresenceMap(string channelName, ILogger logger)
         {
-            Logger = logger;
+            _logger = logger;
             _channelName = channelName;
             _members = new ConcurrentDictionary<string, PresenceMessage>();
         }
+
+        internal event EventHandler SyncNoLongerInProgress;
+
+        // Exposed internally to allow for testing.
+        internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
 
         public bool IsSyncInProgress
         {
@@ -76,7 +75,7 @@ namespace IO.Ably.Realtime
             }
             catch (Exception ex)
             {
-                Logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
+                _logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
                 throw;
             }
 
@@ -113,9 +112,9 @@ namespace IO.Ably.Realtime
 
         public void StartSync()
         {
-            if (Logger.IsDebug)
+            if (_logger.IsDebug)
             {
-                Logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
             }
 
             if (!IsSyncInProgress)
@@ -130,9 +129,9 @@ namespace IO.Ably.Realtime
 
         public PresenceMessage[] EndSync()
         {
-            if (Logger.IsDebug)
+            if (_logger.IsDebug)
             {
-                Logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
             }
 
             List<PresenceMessage> removed = new List<PresenceMessage>();
@@ -173,7 +172,7 @@ namespace IO.Ably.Realtime
             }
             catch (Exception ex)
             {
-                Logger.Error($"PresenceMap.EndSync | Channel: {_channelName}, Error: {ex.Message}");
+                _logger.Error($"PresenceMap.EndSync | Channel: {_channelName}, Error: {ex.Message}");
                 throw;
             }
             finally
@@ -197,11 +196,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        protected virtual void OnSyncNoLongerInProgress()
-        {
-            SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
-        }
-
         internal JObject GetState()
         {
             var state = new JObject();
@@ -210,6 +204,11 @@ namespace IO.Ably.Realtime
             state["initialSyncComplete"] = InitialSyncCompleted;
             state["members"] = new JArray(_members.Select(x => JObject.FromObject(new { Name = x.Key, Data = x.Value })));
             return state;
+        }
+
+        private void OnSyncNoLongerInProgress()
+        {
+            SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
         }
     }
 }

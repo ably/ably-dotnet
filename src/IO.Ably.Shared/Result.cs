@@ -107,11 +107,11 @@ namespace IO.Ably
         /// <summary>
         /// Factory method to create a failed Result with message.
         /// </summary>
-        /// <param name="message">errro message.</param>
+        /// <param name="message">error message.</param>
         /// <returns>Result.</returns>
         public static Result Fail(string message)
         {
-            return new Result(false, new ErrorInfo() { Message = message });
+            return new Result(false, new ErrorInfo { Message = message });
         }
 
         /// <summary>

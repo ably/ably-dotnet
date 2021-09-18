@@ -72,7 +72,7 @@ namespace IO.Ably
         public DateTimeOffset IntervalTime { get; set; }
 
         /// <summary>
-        /// IntervalId converted to a DateTimeOffet.
+        /// IntervalId converted to a DateTimeOffset.
         /// </summary>
         public DateTimeOffset Interval => DateTimeOffset.ParseExact(IntervalId, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
 
@@ -251,7 +251,7 @@ namespace IO.Ably
         public long Succeeded { get; set; }
 
         /// <summary>
-        /// Reuests failed.
+        /// Requests failed.
         /// </summary>
         public long Failed { get; set; }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,11 +60,11 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Helps timeout an async execution after a specificed period.
+        /// Helps timeout an async execution after a specified period.
         /// </summary>
         /// <typeparam name="T">Type of Task.</typeparam>
         /// <param name="task">The task we want to timeout.</param>
-        /// <param name="timeout">The pediod after which the timeout will occur.</param>
+        /// <param name="timeout">The period after which the timeout will occur.</param>
         /// <param name="timeoutResult">The value returned if the timeout occurs.</param>
         /// <returns>will either return the actual result if the tasks executes in time or the value provided by <paramref name="timeoutResult"/>.</returns>
         internal static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout, T timeoutResult)

@@ -1,9 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using FluentAssertions;
+
 using IO.Ably.Types;
+
+using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -14,10 +18,10 @@ namespace IO.Ably.Tests
         {
             get
             {
-                yield return new object[] { new Message[] { new Message() } }; // 1 empty message
-                yield return new object[] { new Message[] { new Message(), new Message() } }; // 2 empty messages
-                yield return new object[] { new Message[] { new Message(), new Message("test", null) } }; // 1 empty, 1 mesage
-                yield return new object[] { new Message[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
+                yield return new object[] { new[] { new Message() } }; // 1 empty message
+                yield return new object[] { new[] { new Message(), new Message() } }; // 2 empty messages
+                yield return new object[] { new[] { new Message(), new Message("test", null) } }; // 1 empty, 1 message
+                yield return new object[] { new[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
             }
         }
 
@@ -25,8 +29,8 @@ namespace IO.Ably.Tests
         {
             get
             {
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, null) } }; // 1 empty message
+                yield return new object[] { new[] { new PresenceMessage() } }; // 1 empty message
+                yield return new object[] { new[] { new PresenceMessage(PresenceAction.Enter, null) } }; // 1 empty message
             }
         }
 
@@ -35,11 +39,11 @@ namespace IO.Ably.Tests
             get
             {
                 yield return new object[] { "[]", new Message[] { } };
-                yield return new object[] { "[{\"name\":\"test\"}]", new Message[] { new Message("test", null) } };
-                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new Message[] { new Message("test", null), new Message("attach", null) } };
-                yield return new object[] { "[{\"data\":\"test\"}]", new Message[] { new Message(null, "test") } };
-                yield return new object[] { "[{}]", new Message[] { new Message(null, null) } };
-                yield return new object[] { "[{\"data\":[1234,4321]}]", new Message[] { new Message(null, new JArray(1234, 4321)) } };
+                yield return new object[] { "[{\"name\":\"test\"}]", new[] { new Message("test", null) } };
+                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new[] { new Message("test", null), new Message("attach", null) } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new[] { new Message(null, "test") } };
+                yield return new object[] { "[{}]", new[] { new Message(null, null) } };
+                yield return new object[] { "[{\"data\":[1234,4321]}]", new[] { new Message(null, new JArray(1234, 4321)) } };
             }
         }
 
@@ -48,11 +52,11 @@ namespace IO.Ably.Tests
             get
             {
                 yield return new object[] { "[]", new PresenceMessage[] { } };
-                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test") } };
-                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } };
-                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
-                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new[] { new PresenceMessage(PresenceAction.Enter, "test") } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } };
+                yield return new object[] { "[{\"connectionId\":\"test\"}]", new[] { new PresenceMessage { ConnectionId = "test" } } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new[] { new PresenceMessage { Data = "test" } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new[] { new PresenceMessage { Timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
             }
         }
 
@@ -78,7 +82,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage(messageAction);
-            string expectedMessage = string.Format("{{\"action\":{0},\"msgSerial\":0}}", (int)messageAction);
+            string expectedMessage = $"{{\"action\":{(int)messageAction},\"msgSerial\":0}}";
 
             // Act
             Serialize(message).Should().Be(expectedMessage);
@@ -93,7 +97,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
+            ProtocolMessage message = new ProtocolMessage { Channel = channel };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0");
             if (!string.IsNullOrEmpty(channel))
@@ -115,7 +119,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_MsgSerial(long msgSerial)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage { MsgSerial = msgSerial };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0")
                 .AppendFormat(",\"msgSerial\":{0}", msgSerial)
@@ -129,7 +133,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_NoMessages_DoesNotThrowException()
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Messages = null };
+            ProtocolMessage message = new ProtocolMessage { Messages = null };
 
             // Act & Assert
             Serialize(message).Should().Be("{\"action\":0,\"msgSerial\":0}");
@@ -140,7 +144,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
+            ProtocolMessage message = new ProtocolMessage { Messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
             if (validMessages.Any())
@@ -164,7 +168,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void SerializesMessageParamsCorrectly()
         {
-            ChannelParams channelParams = new ChannelParams() { { "rewind", "1" }, { "delta", "delta" } };
+            ChannelParams channelParams = new ChannelParams { { "rewind", "1" }, { "delta", "delta" } };
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach) { Params = channelParams };
             var serialized = Serialize(message);
             var deserialized = Deserialize(serialized);
@@ -177,7 +181,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            ProtocolMessage message = new ProtocolMessage { Presence = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             expectedMessage.Append(",\"presence\":[");
             foreach (PresenceMessage msg in messages)
@@ -203,13 +207,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Action(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            string message = string.Format("{{ \"action\": {0} }}", (int)action);
+            string message = $"{{ \"action\": {(int)action} }}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(action, target.Action);
         }
 
@@ -222,13 +226,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            string message = string.Format("{{\"channel\":{0}}}", channel == null ? "null" : string.Format("\"{0}\"", channel));
+            string message = $"{{\"channel\":{(channel == null ? "null" : $"\"{channel}\"")}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(channel, target.Channel);
         }
 
@@ -240,13 +244,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ChannelSerial(string serial)
         {
             // Arrange
-            string message = string.Format("{{\"channelSerial\":\"{0}\"}}", serial);
+            string message = $"{{\"channelSerial\":\"{serial}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(serial, target.ChannelSerial);
         }
 
@@ -258,13 +262,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionId(string connectionId)
         {
             // Arrange
-            string message = string.Format("{{\"connectionId\":\"{0}\"}}", connectionId);
+            string message = $"{{\"connectionId\":\"{connectionId}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionId, target.ConnectionId);
         }
 
@@ -276,13 +280,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange
-            string message = string.Format("{{\"id\":\"{0}\"}}", id);
+            string message = $"{{\"id\":\"{id}\"}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(id, target.Id);
         }
 
@@ -296,14 +300,15 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionSerial(object connectionSerial)
         {
             // Arrange
-            string message = string.Format("{{\"connectionSerial\":{0}}}", connectionSerial);
+            string message = $"{{\"connectionSerial\":{connectionSerial}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
+            target.Should().NotBeNull();
+            Debug.Assert(target.ConnectionSerial.HasValue, $"'{nameof(target.ConnectionSerial)}' should have a value");
+            target.ConnectionSerial.Value.Should().Be(ToLong(connectionSerial));
         }
 
         [Theory]
@@ -316,14 +321,15 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Count(object count)
         {
             // Arrange
-            string message = string.Format("{{\"count\":{0}}}", count);
+            string message = $"{{\"count\":{count}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
-            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count.Value);
+            target.Should().NotBeNull();
+            Debug.Assert(target.Count.HasValue, $"'{nameof(target.Count)}' should have a value");
+            target.Count.Value.Should().Be(ToInt(count));
         }
 
         [Theory]
@@ -336,14 +342,14 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_MsgSerial(object serial)
         {
             // Arrange
-            string message = string.Format("{{\"msgSerial\":{0}}}", serial);
+            string message = $"{{\"msgSerial\":{serial}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
+            target.Should().NotBeNull();
+            target.MsgSerial.Should().Be(ToLong(serial));
         }
 
         [Theory]
@@ -356,14 +362,15 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Flags(object flags)
         {
             // Arrange
-            string message = string.Format("{{\"flags\":{0}}}", flags);
+            string message = $"{{\"flags\":{flags}}}";
 
             // Act
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
 
             // Assert
-            Assert.NotNull(target);
-            Assert.Equal<byte>(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
+            target.Should().NotBeNull();
+            Debug.Assert(target.Flags.HasValue, $"'{nameof(target.Flags)}' should have a value");
+            ((byte)target.Flags).Should().Be(ToByte(flags));
         }
 
         [Theory]
@@ -378,9 +385,9 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message.ToString());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
-            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
+            target.Should().NotBeNull();
+            target.Messages.Should().NotBeNull();
+            target.Messages.Length.Should().Be(expectedMessages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
@@ -400,9 +407,9 @@ namespace IO.Ably.Tests
             ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message.ToString());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Presence);
-            Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
+            target.Should().NotBeNull();
+            target.Presence.Should().NotBeNull();
+            target.Presence.Length.Should().Be(expectedMessages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal(expectedMessages[i].ClientId, target.Presence[i].ClientId);
@@ -412,6 +419,31 @@ namespace IO.Ably.Tests
                 Assert.Equal(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
                 Assert.Equal(expectedMessages[i].Data, target.Presence[i].Data);
             }
+        }
+
+        private static string ToString(object value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return value.ToString();
+        }
+
+        private static long ToLong(object value)
+        {
+            return long.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
+        }
+
+        private static int ToInt(object value)
+        {
+            return int.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
+        }
+
+        private static byte ToByte(object value)
+        {
+            return byte.Parse(ToString(value), System.Globalization.CultureInfo.InstalledUICulture);
         }
     }
 }

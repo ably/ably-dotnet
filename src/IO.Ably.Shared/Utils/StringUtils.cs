@@ -43,7 +43,7 @@ namespace IO.Ably
         {
             if (base64String.IsEmpty())
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             string s = base64String;

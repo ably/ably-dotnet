@@ -99,7 +99,7 @@ namespace IO.Ably.Transport
                 var token = await auth.GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (token == null)
                 {
-                    throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
+                    throw new AblyException("There is no valid token. Can't authenticate", ErrorCodes.Unauthorized, HttpStatusCode.Unauthorized);
                 }
 
                 result.AuthValue = token.Token;
@@ -108,7 +108,7 @@ namespace IO.Ably.Transport
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
             result.EchoMessages = options.EchoMessages;
-            result.FallbackHosts = options.FallbackHosts;
+            result.FallbackHosts = options.GetFallbackHosts();
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
@@ -139,7 +139,8 @@ namespace IO.Ably.Transport
                             }
                             catch (Exception e)
                             {
-                                logger.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+                                logger?.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+
                                 return string.Empty;
                             }
                     }

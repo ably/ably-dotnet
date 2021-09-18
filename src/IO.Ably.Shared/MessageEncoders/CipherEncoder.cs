@@ -1,5 +1,4 @@
 using System;
-using IO.Ably;
 using IO.Ably.Encryption;
 
 namespace IO.Ably.MessageEncoders
@@ -27,7 +26,7 @@ namespace IO.Ably.MessageEncoders
             }
 
             var cipherType = GetCipherType(currentEncoding);
-            if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
+            if (cipherType.EqualsTo(options.CipherParams.CipherType) == false)
             {
                 logger.Error(
                     $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
@@ -53,7 +52,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private string GetCipherType(string currentEncoding)
+        private static string GetCipherType(string currentEncoding)
         {
             var parts = currentEncoding.Split('+');
             if (parts.Length == 2)
@@ -100,11 +99,6 @@ namespace IO.Ably.MessageEncoders
         private bool IsEncrypted(IPayload payload)
         {
             return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
-        }
-
-        public CipherEncoder()
-            : base()
-        {
         }
     }
 }

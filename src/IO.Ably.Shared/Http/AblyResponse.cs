@@ -1,15 +1,8 @@
-using System;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 
 namespace IO.Ably
 {
-    internal class EmptyHttpHeaders : HttpHeaders
-    {
-    }
-
     internal enum ResponseType
     {
         Json,
@@ -20,24 +13,6 @@ namespace IO.Ably
 
     internal class AblyResponse
     {
-        internal HttpHeaders Headers { get; set; }
-
-        internal ResponseType Type { get; set; }
-
-        internal HttpStatusCode StatusCode { get; set; }
-
-        internal string TextResponse { get; set; }
-
-        internal string ContentType { get; }
-
-        internal byte[] Body { get; }
-
-        internal string Encoding { get; }
-
-        internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]" };
-
-        internal static AblyResponse InternetCheckTimeoutResponse => new AblyResponse { TextResponse = "timeout" };
-
         internal AblyResponse()
         {
             Headers = new EmptyHttpHeaders();
@@ -57,6 +32,22 @@ namespace IO.Ably
             Body = body;
         }
 
+        internal HttpHeaders Headers { get; set; }
+
+        internal ResponseType Type { get; set; }
+
+        internal HttpStatusCode StatusCode { get; set; }
+
+        internal string TextResponse { get; set; }
+
+        internal string ContentType { get; }
+
+        internal byte[] Body { get; }
+
+        internal string Encoding { get; }
+
+        internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]" };
+
         private static ResponseType GetResponseType(string contentType)
         {
             if (contentType == null)
@@ -75,6 +66,10 @@ namespace IO.Ably
                 default:
                     return ResponseType.Binary;
             }
+        }
+
+        private class EmptyHttpHeaders : HttpHeaders
+        {
         }
     }
 }

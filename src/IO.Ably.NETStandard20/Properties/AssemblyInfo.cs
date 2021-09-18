@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
@@ -10,5 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 #if !PACKAGE
+[assembly: InternalsVisibleTo("IO.Ably.Push.Android")]
+[assembly: InternalsVisibleTo("IO.Ably.Push.iOS")]
 [assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
 #endif

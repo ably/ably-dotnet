@@ -20,13 +20,13 @@ namespace IO.Ably
         void Off();
 
         /// <summary>
-        /// Register a given listerner for all events.
+        /// Register a given listener for all events.
         /// </summary>
         /// <param name="listener">listener function.</param>
         void On(Action<TArgs> listener);
 
         /// <summary>
-        /// Register a given listener for a single occurrance of a single event.
+        /// Register a given listener for a single occurrence of a single event.
         /// </summary>
         /// <param name="listener">listener function.</param>
         void Once(Action<TArgs> listener);
@@ -45,7 +45,7 @@ namespace IO.Ably
         void On(TEvent state, Action<TArgs> action);
 
         /// <summary>
-        /// Register the given listener for a single occurance of a single event.
+        /// Register the given listener for a single occurence of a single event.
         /// </summary>
         /// <param name="state">the event to listen for.</param>
         /// <param name="action">listener function.</param>
@@ -59,13 +59,13 @@ namespace IO.Ably
         void Off(TEvent state, Action<TArgs> action);
 
         /// <summary>
-        /// Register a given listerner for all events.
+        /// Register a given listener  for all events.
         /// </summary>
         /// <param name="listener">listener function.</param>
         void On(Func<TArgs, Task> listener);
 
         /// <summary>
-        /// Register a given listener for a single occurrance of a single event.
+        /// Register a given listener for a single occurrence of a single event.
         /// </summary>
         /// <param name="listener">listener function.</param>
         void Once(Func<TArgs, Task> listener);
@@ -84,7 +84,7 @@ namespace IO.Ably
         void On(TEvent state, Func<TArgs, Task> action);
 
         /// <summary>
-        /// Register the given listener for a single occurance of a single event.
+        /// Register the given listener for a single occurence of a single event.
         /// </summary>
         /// <param name="state">the event to listen for.</param>
         /// <param name="action">async listener function.</param>
@@ -405,7 +405,7 @@ namespace IO.Ably
             foreach (var emitter in emitters)
             {
                 var current = emitter;
-                NotifyClient(delegate
+                NotifyClient(() =>
                 {
                     try
                     {

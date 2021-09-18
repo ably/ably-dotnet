@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
-using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Types;
-using IO.Ably.Utils;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,40 +18,21 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN15")]
     public class ConnectionFailuresOnceConnectedSpecs : AblyRealtimeSpecs
     {
-        private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
-        private int _tokenErrorCode = 40140;
+        private const int FailedRenewalErrorCode = 1234;
+
+        private readonly TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
+        private readonly TokenDetails _validToken;
+        private readonly ErrorInfo _tokenErrorInfo;
+
         private bool _renewTokenCalled;
-        private TokenDetails _validToken;
-        private ErrorInfo _tokenErrorInfo;
-        private int _failedRenewalErrorCode = 1234;
 
-        public Task<AblyRealtime> SetupConnectedClient(bool failRenewal = false, bool renewable = true)
+        public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output)
+            : base(output)
         {
-            return GetConnectedClient(
-                opts =>
-            {
-                if (renewable == false)
-                {
-                    opts.Key = string.Empty; // clear the key to make the token non renewable
-                }
-
-                opts.TokenDetails = _validToken;
-                opts.UseBinaryProtocol = false;
-            }, request =>
-            {
-                if (request.Url.Contains("/keys"))
-                {
-                    if (failRenewal)
-                    {
-                        throw new AblyException(new ErrorInfo("Failed to renew token", _failedRenewalErrorCode));
-                    }
-
-                    _renewTokenCalled = true;
-                    return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
-                }
-
-                return AblyResponse.EmptyResponse.ToTask();
-            });
+            SetNowFunc(() => DateTimeOffset.UtcNow);
+            _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
+            _renewTokenCalled = false;
+            _tokenErrorInfo = new ErrorInfo { Code = ErrorCodes.TokenError, StatusCode = HttpStatusCode.Unauthorized };
         }
 
         [Fact]
@@ -131,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h2")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToDisconnectedAndEmitError()
         {
-            var client = await SetupConnectedClient(true);
+            var client = await SetupConnectedClient(failRenewal: true);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -162,8 +140,8 @@ namespace IO.Ably.Tests.Realtime
 
             errors.Should().NotBeEmpty();
             errors.Should().HaveCount(2);
-            errors[0].Code.Should().Be(40140);
-            errors[1].Code.Should().Be(_failedRenewalErrorCode);
+            errors[0].Code.Should().Be(ErrorCodes.TokenError);
+            errors[1].Code.Should().Be(FailedRenewalErrorCode);
         }
 
         [Fact]
@@ -172,7 +150,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await SetupConnectedClient(renewable: false);
 
-            ConcurrentBag<ConnectionState> states = new ConcurrentBag<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
             {
@@ -261,16 +238,6 @@ namespace IO.Ably.Tests.Realtime
             callbackResults.All(x => x == false).Should().BeTrue();
         }
 
-        private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage connectedMessage = null)
-        {
-            connectedMessage = connectedMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
-            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
-            await client.WaitForState(ConnectionState.Connecting);
-            client.FakeProtocolMessageReceived(connectedMessage);
-            await client.WaitForState(ConnectionState.Connected);
-            await client.ProcessCommands();
-        }
-
         [Fact]
         [Trait("spec", "RTN15f")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
@@ -290,13 +257,43 @@ namespace IO.Ably.Tests.Realtime
             client.State.WaitingForAck.Should().HaveCount(2);
         }
 
-        public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output)
-            : base(output)
+        private Task<AblyRealtime> SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
-            SetNowFunc(() => DateTimeOffset.UtcNow);
-            _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
-            _renewTokenCalled = false;
-            _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
+            return GetConnectedClient(
+                opts =>
+                {
+                    if (renewable == false)
+                    {
+                        opts.Key = string.Empty; // clear the key to make the token non renewable
+                    }
+
+                    opts.TokenDetails = _validToken;
+                    opts.UseBinaryProtocol = false;
+                }, request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        if (failRenewal)
+                        {
+                            throw new AblyException(new ErrorInfo("Failed to renew token", FailedRenewalErrorCode));
+                        }
+
+                        _renewTokenCalled = true;
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
+                    }
+
+                    return AblyResponse.EmptyResponse.ToTask();
+                });
+        }
+
+        private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage connectedMessage = null)
+        {
+            connectedMessage = connectedMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
+            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
+            await client.WaitForState(ConnectionState.Connecting);
+            client.FakeProtocolMessageReceived(connectedMessage);
+            await client.WaitForState(ConnectionState.Connected);
+            await client.ProcessCommands();
         }
     }
 }

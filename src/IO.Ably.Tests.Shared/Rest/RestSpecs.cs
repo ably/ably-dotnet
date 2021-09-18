@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.AcceptanceTests;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,7 +30,7 @@ namespace IO.Ably.Tests
             public void WithValidKey_InitialisesTheClient()
             {
                 var client = new AblyRest(ValidKey);
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -37,7 +38,7 @@ namespace IO.Ably.Tests
             public void WithKeyInOptions_InitialisesTheClient()
             {
                 var client = new AblyRest(new ClientOptions(ValidKey));
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -45,7 +46,7 @@ namespace IO.Ably.Tests
             public void Ctor_WithKeyPassedInOptions_InitializesClient()
             {
                 var client = new AblyRest(opts => opts.Key = ValidKey);
-                Assert.NotNull(client);
+                client.Should().NotBeNull();
             }
 
             [Fact]
@@ -58,7 +59,7 @@ namespace IO.Ably.Tests
                     opts.ClientId = "123";
                 });
 
-                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
             }
 
             [Theory]
@@ -84,9 +85,9 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC2")]
-        public void DefaultLoggerSinkShouldbeSetup()
+        public void DefaultLoggerSinkShouldBeSetup()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             logger.LoggerSink.Should().BeOfType<DefaultLoggerSink>();
         }
 
@@ -94,7 +95,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC3")]
         public void DefaultLogLevelShouldBeWarning()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             logger.LogLevel.Should().Be(LogLevel.Warning);
         }
 
@@ -102,7 +103,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC4")]
         public void ACustomLoggerCanBeProvided()
         {
-            var logger = new DefaultLogger.InternalLogger();
+            var logger = InternalLogger.Create();
             var sink = new TestLoggerSink();
             logger.LoggerSink = sink;
             logger.Error("Boo");
@@ -156,7 +157,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC8b")]
-        public void WhenBinaryProtoclIsFalse_ShouldSetProtocolToJson()
+        public void WhenBinaryProtocolIsFalse_ShouldSetProtocolToJson()
         {
             var client = GetRestClient(setOptionsAction: opts => opts.UseBinaryProtocol = false);
             client.Protocol.Should().Be(Protocol.Json);
@@ -164,7 +165,7 @@ namespace IO.Ably.Tests
 
         public class WithInvalidToken : MockHttpRestSpecs
         {
-            private TokenDetails _returnedDummyTokenDetails;
+            private readonly TokenDetails _returnedDummyTokenDetails;
             private bool _firstAttempt = true;
 
             [Theory]
@@ -176,7 +177,7 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 // Now = DateTimeOffset.Now;
-                var tokenDetails = new TokenDetails() { Token = "id", Expires = Now.AddHours(1) };
+                var tokenDetails = new TokenDetails { Token = "id", Expires = Now.AddHours(1) };
 
                 // Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
@@ -206,7 +207,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenErrorCodeIsNotTokenSpecific_ShouldThrow()
             {
-                var client = GetConfiguredRestClient(40100, null);
+                var client = GetConfiguredRestClient(ErrorCodes.Unauthorized, null);
 
                 await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
@@ -276,6 +277,32 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_ShouldUseRequestIdInParam()
+            {
+                // With request id
+                var client = CreateClient(options => options.AddRequestIds = true);
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(1);
+                var requestId1 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                requestId1.Length.Should().BeGreaterOrEqualTo(9);
+
+                // with request id and new request
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(2);
+                var requestId2 = _handler.LastRequest.Headers.GetValues("request_id").First();
+                requestId2.Length.Should().BeGreaterOrEqualTo(9);
+                requestId1.Should().NotBe(requestId2);
+
+                // Without request id
+                client = CreateClient(_ => { });
+                await MakeAnyRequest(client);
+                _handler.NumberOfRequests.Should().Be(3);
+                _handler.LastRequest.Headers.TryGetValues("request_id", out var requestIdHeaders);
+                requestIdHeaders.Should().BeNull();
+            }
+
+            [Fact]
             [Trait("spec", "RSC12")]
             public async Task WithHostSpecifiedInOption_ShouldUseCustomHost()
             {
@@ -290,7 +317,7 @@ namespace IO.Ably.Tests
             {
                 var client = CreateClient(options => { options.Environment = environment; });
                 await MakeAnyRequest(client);
-                var expected = environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                var expected = environment.ToLower() + "-" + Defaults.RestHost;
                 _handler.LastRequest.RequestUri.Host.Should().Be(expected);
             }
 
@@ -327,7 +354,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3c")]
             public void WithLogHandler_ShouldUseNewLogHandler()
             {
-                new AblyRest(new ClientOptions(ValidKey) { LogHandler = new TestLogHandler() });
+                _ = new AblyRest(new ClientOptions(ValidKey) { LogHandler = new TestLogHandler() });
 
                 Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
             }
@@ -430,7 +457,7 @@ namespace IO.Ably.Tests
             public FallbackSpecs(ITestOutputHelper output)
                 : base(output)
             {
-                _response = new HttpResponseMessage() { Content = new StringContent("1234") };
+                _response = new HttpResponseMessage { Content = new StringContent("1234") };
                 _handler = new FakeHttpMessageHandler(_response);
             }
 
@@ -441,6 +468,33 @@ namespace IO.Ably.Tests
                 var client = new AblyRest(options);
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
                 return client;
+            }
+
+            [Fact]
+            [Trait("spec", "RSC7c")]
+            public async Task WithRequestIdSet_RequestIdShouldRemainSameIfRetriedToFallbackHost()
+            {
+                var client = CreateClient(options =>
+                {
+                    options.FallbackHosts = null;
+                    options.AddRequestIds = true;
+                    options.HttpMaxRetryCount = 5;
+                });
+
+                var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                handler.NumberOfRequests.Should().Be(5);
+                var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
+                ex.Message.Should().Contain(uniqueRequestId);
+                ex.ErrorInfo.Message.Should().Contain(uniqueRequestId);
+                handler.Requests.ForEach(request =>
+                {
+                    var requestId = request.Headers.GetValues("request_id").First();
+                    requestId.Length.Should().BeGreaterOrEqualTo(9);
+                    requestId.Should().Be(uniqueRequestId);
+                });
             }
 
             [Fact]
@@ -484,13 +538,13 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC15a")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
-                int interations = 20;
+                int interactions = 20;
                 _response.StatusCode = HttpStatusCode.BadGateway;
 
                 // The higher the retries the less chance the two lists will match
                 // but as per RSC15a each host will only be tried once (there are currently 6 hosts)...
                 List<string> firstAttemptHosts = new List<string>();
-                for (int i = 0; i < interations; i++)
+                for (int i = 0; i < interactions; i++)
                 {
                     var client = CreateClient(options => options.HttpMaxRetryCount = 10);
                     await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
@@ -502,7 +556,7 @@ namespace IO.Ably.Tests
                 await Task.Delay(100);
 
                 List<string> secondAttemptHosts = new List<string>();
-                for (int i = 0; i < interations; i++)
+                for (int i = 0; i < interactions; i++)
                 {
                     var client = CreateClient(options => options.HttpMaxRetryCount = 10);
                     await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
@@ -735,7 +789,7 @@ namespace IO.Ably.Tests
                 Func<TokenParams, Task<object>> callback = (x) =>
                 {
                     called = true;
-                    return Task.FromResult<object>(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) });
+                    return Task.FromResult<object>(new TokenDetails { Expires = DateTimeOffset.UtcNow.AddHours(1) });
                 };
 
                 await GetClient(callback).StatsAsync();
@@ -755,7 +809,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new object[] { new object(), string.Empty, new Uri("http://test") };
+                var objects = new[] { new object(), string.Empty, new Uri("http://test") };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>
@@ -809,7 +863,7 @@ namespace IO.Ably.Tests
 
             await rest.StatsAsync();
 
-            Assert.True(called, "Rest with Callback needs to request token using callback");
+            called.Should().BeTrue("Rest with Callback needs to request token using callback");
         }
 
         [Fact]
@@ -840,7 +894,7 @@ namespace IO.Ably.Tests
 
                 return "[{}]".ToAblyResponse();
             };
-            rest.AblyAuth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.AblyAuth.CurrentToken = new TokenDetails { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             await rest.StatsAsync();
             newTokenRequested.Should().BeTrue();
@@ -881,7 +935,7 @@ namespace IO.Ably.Tests
 
             var channel = rest.Channels.Get("Test");
 
-            Assert.Equal("Test", channel.Name);
+            channel.Name.Should().Be("Test");
         }
 
         public RestSpecs(ITestOutputHelper output)

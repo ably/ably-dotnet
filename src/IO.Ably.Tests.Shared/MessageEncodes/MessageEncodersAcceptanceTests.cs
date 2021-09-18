@@ -7,12 +7,18 @@ using IO.Ably.Encryption;
 using IO.Ably.Tests;
 using Xunit;
 using Xunit.Abstractions;
+
 #pragma warning disable 162
 
 namespace IO.Ably.AcceptanceTests
 {
     public class MessageEncodersAcceptanceTests : AblySpecs
     {
+        public MessageEncodersAcceptanceTests(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         public class WithSupportedPayloads : MockHttpRestSpecs
         {
             public WithSupportedPayloads(ITestOutputHelper output)
@@ -35,7 +41,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     yield return new object[] { new Message("string", "string"), null };
                     yield return new object[] { new Message("string", new byte[] { 1, 2, 4 }), "base64" };
-                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
+                    yield return new object[] { new Message("object", new TestObject { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
                 }
             }
 
@@ -77,7 +83,7 @@ namespace IO.Ably.AcceptanceTests
         [Trait("spec", "RSL4d")]
         public class WithTextProtocolWithoutEncryption : MockHttpRestSpecs
         {
-            private AblyRest _client;
+            private readonly AblyRest _client;
 
             public WithTextProtocolWithoutEncryption(ITestOutputHelper output)
                 : base(output)
@@ -115,7 +121,7 @@ namespace IO.Ably.AcceptanceTests
                 // Assert
                 var payload = GetPayload();
                 byte[] data = (payload.Data as string).FromBase64();
-                data.ShouldBeEquivalentTo(bytes);
+                data.Should().BeEquivalentTo(bytes);
                 payload.Encoding.Should().Be("base64");
             }
 
@@ -138,20 +144,14 @@ namespace IO.Ably.AcceptanceTests
 
         public class WithTextProtocolWithEncryption : MockHttpRestSpecs
         {
-            private AblyRest _client;
-            private ChannelOptions _options;
+            private readonly AblyRest _client;
+            private readonly ChannelOptions _options;
 
             public WithTextProtocolWithEncryption(ITestOutputHelper output)
                 : base(output)
             {
                 _options = new ChannelOptions(Crypto.GetDefaultParams());
                 _client = GetRestClient();
-            }
-
-            private Message GetPayload()
-            {
-                var payloads = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
-                return payloads.FirstOrDefault();
             }
 
             [Fact]
@@ -198,22 +198,18 @@ namespace IO.Ably.AcceptanceTests
                 var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
+
+            private Message GetPayload()
+            {
+                var payloads = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
+                return payloads.FirstOrDefault();
+            }
         }
 
         [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
-            private AblyRest _client;
-
-            private Message GetPayload()
-            {
-#if MSGPACK
-                var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
-                return messages.First();
-#else
-                return null;
-#endif
-            }
+            private readonly AblyRest _client;
 
             public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output)
                 : base(output)
@@ -278,12 +274,22 @@ namespace IO.Ably.AcceptanceTests
                 payload.Data.Should().Be(JsonHelper.Serialize(obj));
                 payload.Encoding.Should().Be("json");
             }
+
+            private Message GetPayload()
+            {
+#if MSGPACK
+                var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
+                return messages.First();
+#else
+                return null;
+#endif
+            }
         }
 
         public class WithBinaryProtocolWithEncryption : MockHttpRestSpecs
         {
-            private AblyRest _client;
-            private ChannelOptions _options;
+            private readonly AblyRest _client;
+            private readonly ChannelOptions _options;
 
             public WithBinaryProtocolWithEncryption(ITestOutputHelper output)
                 : base(output)
@@ -360,11 +366,6 @@ namespace IO.Ably.AcceptanceTests
                 var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
-        }
-
-        public MessageEncodersAcceptanceTests(ITestOutputHelper output)
-            : base(output)
-        {
         }
     }
 }

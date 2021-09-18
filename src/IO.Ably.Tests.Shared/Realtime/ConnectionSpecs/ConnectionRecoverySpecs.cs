@@ -5,7 +5,6 @@ using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
-using System.Threading;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Tests.Realtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -91,7 +89,7 @@ namespace IO.Ably.Tests
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                 // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().Be(40171);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             }
 
             // did not retry the request
@@ -125,7 +123,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -151,7 +149,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -181,7 +179,7 @@ namespace IO.Ably.Tests
 
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -221,7 +219,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -255,7 +253,7 @@ namespace IO.Ably.Tests
             var awaiter = new TaskCompletionAwaiter(5000);
             realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                state.Reason.Code.Should().Be(80019);
+                state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                 awaiter.SetCompleted();
             });
 
@@ -345,7 +343,7 @@ namespace IO.Ably.Tests
                 realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
-                    change.Reason.Code.Should().Be(80019);
+                    change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
                     tca.SetCompleted();
                 });
 
@@ -365,14 +363,14 @@ namespace IO.Ably.Tests
             }
 
             // authCallback fails
-            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) => throw new Exception("AuthCallback force error");
             }
 
             // invalid token returned
-            void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
@@ -404,33 +402,20 @@ namespace IO.Ably.Tests
                     options.TokenDetails = token;
                 }
 
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(1000);
                 var realtimeClient = await GetRealtimeClient(protocol, Options);
-
                 realtimeClient.Connect();
                 await realtimeClient.WaitForState(ConnectionState.Connected);
+                bool stateChanged = false;
                 realtimeClient.Connection.On(change =>
                 {
                     // this callback should not be called
-                    change.Previous.Should().Be(ConnectionState.Connected);
-                    change.Reason.Code.Should().Be(80019);
-                    tca.SetCompleted();
+                    stateChanged = true;
                 });
 
-                bool didThrowAblyException = false;
-                try
-                {
-                    await realtimeClient.Auth.AuthorizeAsync();
-                    Assert.True(false, "An exception should be raised before this line is reached.");
-                }
-                catch (AblyException)
-                {
-                    didThrowAblyException = true;
-                }
+                _ = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync());
 
-                didThrowAblyException.Should().BeTrue();
-                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
-                (await tca.Task).Should().BeFalse(context);
+                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected, because: context);
+                stateChanged.Should().BeFalse(because: context);
             }
 
             await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
@@ -445,7 +430,7 @@ namespace IO.Ably.Tests
         {
             async Task Test403BecomesFailed(string context, int expectedCode, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
 
                 realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
@@ -457,19 +442,19 @@ namespace IO.Ably.Tests
                     tca.SetCompleted();
                 });
 
-                realtimeClient.Connection.Connect();
+                realtimeClient.Connect();
                 (await tca.Task).Should().BeTrue(context);
             }
 
             // authUrl fails and returns no body
-            void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
+            static void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
             }
 
-            // Authcallback that results in an ErrorInfo with code 403
-            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            // AuthCallback that results in an ErrorInfo with code 403
+            static void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthCallback = (tokenParams) =>
@@ -479,8 +464,65 @@ namespace IO.Ably.Tests
                 };
             }
 
-            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019, optionsAction: AuthUrlOptions);
-            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: 80019, optionsAction: AuthCallbackOptions);
+            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthUrlOptions);
+            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: ErrorCodes.ClientAuthProviderRequestFailed, optionsAction: AuthCallbackOptions);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4d")]
+        [Trait("spec", "RSA4d1")]
+        public async Task Auth_WithRealtimeClient_WhenExplicitAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
+        {
+            var realtimeClient = await GetRealtimeClient(protocol);
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            TaskCompletionAwaiter failedAwaiter = new TaskCompletionAwaiter();
+            realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
+            {
+                change.Previous.Should().Be(ConnectionState.Connected);
+                change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
+                failedAwaiter.SetCompleted();
+            });
+
+            var authOptionsWhichFail = new AuthOptions
+            {
+                UseTokenAuth = true,
+                AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
+            };
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.AuthorizeAsync(null, authOptionsWhichFail));
+
+            ex.Should().BeOfType<AblyException>();
+
+            (await failedAwaiter.Task).Should().BeTrue("With 403 response connection should become Failed");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4d1")]
+        public async Task Auth_WithConnectedRealtimeClient_WhenExplicitRequestTokenFailsWith403_ShouldNotAffectConnectionState(Protocol protocol)
+        {
+            var realtimeClient = await GetRealtimeClient(protocol);
+            realtimeClient.Connection.Connect();
+
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            var authOptions = new AuthOptions
+            {
+                UseTokenAuth = true,
+                AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403"),
+            };
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => realtimeClient.Auth.RequestTokenAsync(null, authOptions));
+            ex.Should().BeOfType<AblyException>();
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+            ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            await Task.Delay(1000);
+
+            realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         [Theory]
@@ -542,7 +584,7 @@ namespace IO.Ably.Tests
             });
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => ably.StatsAsync());
-            ex.ErrorInfo.Code.Should().Be(40171);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
         }
 
         [Theory]
@@ -561,7 +603,7 @@ namespace IO.Ably.Tests
             var error =
                 await
                     Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
-            error.ErrorInfo.Code.Should().Be(40160);
+            error.ErrorInfo.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
@@ -575,7 +617,7 @@ namespace IO.Ably.Tests
             {
                 var tokenParams = CreateTokenParams(null);
                 tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
-                return ably.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions() { QueryTime = false }));
+                return ably.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions { QueryTime = false }));
             });
 
             error.ErrorInfo.Code.Should().Be(40104);
@@ -589,7 +631,7 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
+            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             ably.AblyAuth.ClientId.Should().Be("123");
 
             // uses Token Auth for all future requests (RSA10a)
@@ -597,14 +639,14 @@ namespace IO.Ably.Tests
 
             // create a token immediately (RSA10a)
             // regardless of whether the existing token is valid or not
-            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
+            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f1")]
-        public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
+        public async Task TokenAuthWithoutClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
             var client = await GetRestClient(protocol, opts => opts.QueryTime = true);
             var settings = await Fixture.GetSettings();
@@ -627,7 +669,7 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f2")]
-        public async Task TokenAuthWithouthClientIdAndAMessageWithExplicitId_ShouldThrow(Protocol protocol)
+        public async Task TokenAuthWithoutClientIdAndAMessageWithExplicitId_ShouldThrow(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
@@ -646,12 +688,12 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f3")]
-        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard(
+        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessfullyAndClientIdShouldBeSetToWildcard(
             Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -676,7 +718,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -697,7 +739,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWhenPlainTextTokenIsReturn_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -721,7 +763,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
 
@@ -746,7 +788,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToConnect(Protocol protocol)
         {
             var ablyRest = await GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var tokenJson = token.ToJson();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
@@ -768,9 +810,8 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWithIncorrectJsonTokenReturned_ShouldNotBeAbleToConnectAndShouldHaveError(Protocol protocol)
         {
             var ablyRest = await GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await Fixture.GetSettings();
-            var tokenJson = token.ToJson();
             var incorrectJson = $"[{token.ToJson()}]";
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
 
@@ -805,7 +846,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" }).Convert();
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
@@ -828,7 +869,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
+                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
@@ -861,7 +902,7 @@ namespace IO.Ably.Tests
         }
 
         /// <summary>
-        /// Helper methods that return an AblyRest or AblyRealitme instance and a list of AblyRequest that
+        /// Helper methods that return an AblyRest or AblyRealtime instance and a list of AblyRequest that
         /// will contain all the HTTP requests the client attempts
         /// </summary>
         private class RSA4Helper
@@ -894,24 +935,7 @@ namespace IO.Ably.Tests
 
                 var restClient = await Specs.GetRestClient(protocol, optionsAction);
 
-                // intercept http calls to demostrate that the
-                // client did not attempt to request a new token
-                var execute = restClient.ExecuteHttpRequest;
-                restClient.ExecuteHttpRequest = request =>
-                {
-                    Requests.Add(request);
-                    return execute.Invoke(request);
-                };
-
-                return restClient;
-            }
-
-            public async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
-            {
-                var restClient = await Specs.GetRestClient(protocol, optionsAction);
-
-                // intercept http calls to demostrate that the
-                // client did not attempt to request a new token
+                // intercept http calls to demonstrate that the client did not attempt to request a new token
                 var execute = restClient.ExecuteHttpRequest;
                 restClient.ExecuteHttpRequest = request =>
                 {
@@ -941,34 +965,8 @@ namespace IO.Ably.Tests
                     optionsAction = DefaultOptionsAction;
                 }
 
-                var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, options => restClient);
+                var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, (options, device) => restClient);
                 return realtimeClient;
-            }
-
-            public async Task<AblyRealtime> GetRealtimeClient(Protocol protocol, Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
-            {
-                var client = await Specs.GetRealtimeClient(protocol, optionsAction);
-                var execHttp = client.RestClient.ExecuteHttpRequest;
-                client.RestClient.ExecuteHttpRequest = request =>
-                {
-                    Requests.Add(request);
-                    return execHttp(request);
-                };
-                return client;
-            }
-
-            public Task<AblyResponse> AblyResponseWith401Status(AblyRequest request)
-            {
-                Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
-                throw AblyException.FromResponse(r);
-            }
-
-            public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
-            {
-                Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
-                throw AblyException.FromResponse(r);
             }
 
             public Task<AblyResponse> AblyResponseWith500Status(AblyRequest request)

@@ -11,14 +11,13 @@ namespace IO.Ably.Tests
 {
     public class InitializedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionInitializedState _state;
+        private readonly ConnectionInitializedState _state;
 
         public InitializedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
-            _context = new FakeConnectionContext();
-            _state = new ConnectionInitializedState(_context, Logger);
+            var context = new FakeConnectionContext();
+            _state = new ConnectionInitializedState(context, Logger);
         }
 
         [Fact]
@@ -52,7 +51,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
         }
 
         [Fact]

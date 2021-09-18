@@ -191,7 +191,7 @@ namespace IO.Ably.Transport
                 {
                     Logger.Error("Error in AuthUpdated handler", e);
                     throw new AblyException(
-                        new ErrorInfo($"Error while waiting for connection to update after updating Auth"), e);
+                        new ErrorInfo("Error while waiting for connection to update after updating Auth"), e);
                 }
             }
         }
@@ -213,15 +213,18 @@ namespace IO.Ably.Transport
                 message.ConnectionId = null;
             }
 
-            var result = VerifyMessageHasCompatibleClientId(message);
+            Result result = VerifyMessageHasCompatibleClientId(message);
             if (result.IsFailure)
             {
                 callback?.Invoke(false, result.Error);
                 return;
             }
 
-            // TODO: What happens if a message fails encoding before being sent.
-            var encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext());
+            Result encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext());
+            if (encodingResult.IsFailure)
+            {
+                Logger.Error($"Failed to encode protocol message: {encodingResult.Error.Message}");
+            }
 
             if (State.CanSend == false && State.CanQueue == false)
             {
@@ -268,7 +271,7 @@ namespace IO.Ably.Transport
         }
 
         void ITransportListener.OnTransportEvent(Guid transportId, TransportState transportState, Exception ex)
-            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
+            => ExecuteCommand(HandleTransportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {

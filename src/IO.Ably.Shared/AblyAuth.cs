@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -21,15 +22,22 @@ namespace IO.Ably
             _rest = rest;
             Logger = options.Logger;
             ServerTime = () => _rest.TimeAsync();
-            ServerNow = () => null;
             Initialise();
         }
 
+        internal Action<RealtimeCommand> ExecuteCommand { get; set; } = (cmd) => { };
+
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
-        private bool HasServerTime => ServerNow().HasValue;
+        private TimeSpan? _serverTimeDiff;
 
-        protected Func<DateTimeOffset?> ServerNow { get; private set; }
+        private bool HasServerTime => ServerNow.HasValue;
+
+        protected DateTimeOffset? ServerNow
+        {
+            get => _serverTimeDiff != null ? Now() - _serverTimeDiff : null;
+            set => _serverTimeDiff = Now() - value;
+        }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -58,7 +66,7 @@ namespace IO.Ably
 
         private bool HasApiKey => Options.Key.IsNotEmpty();
 
-        internal void Initialise()
+        private void Initialise()
         {
             AuthMethod = CheckAndGetAuthMethod();
 
@@ -90,21 +98,11 @@ namespace IO.Ably
 
         internal async Task SetServerTime()
         {
-            var serverTime = await ServerTime();
+            ServerNow = await ServerTime();
             if (Logger.IsDebug)
             {
-                Logger.Debug("Received server time: " + serverTime);
+                Logger.Debug("Server time differs from device time by: " + _serverTimeDiff);
             }
-
-            TimeSpan diff = Now() - serverTime;
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Server time differs from device Now by: " + diff);
-            }
-
-            // TODO: Save servertime and check if now has drastically changed
-            ServerNow = () => Now() - diff;
         }
 
         private AuthMethod CheckAndGetAuthMethod()
@@ -179,7 +177,7 @@ namespace IO.Ably
                 var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (currentValidToken == null)
                 {
-                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
+                    throw new AblyException("Invalid token credentials: " + CurrentToken, ErrorCodes.Unauthorized, HttpStatusCode.Unauthorized);
                 }
 
                 request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
@@ -193,7 +191,7 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken(ServerNow()))
+            if (CurrentToken.IsValidToken(ServerNow))
             {
                 return CurrentToken;
             }
@@ -214,13 +212,13 @@ namespace IO.Ably
 
                 await OnAuthUpdated(token, false);
 
-                if (token.IsValidToken(ServerNow()))
+                if (token.IsValidToken(ServerNow))
                 {
                     CurrentToken = token;
                     return token;
                 }
 
-                throw new AblyException("Token is invalid: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
+                throw new AblyException("Token is invalid: " + CurrentToken, ErrorCodes.TokenExpired, HttpStatusCode.Unauthorized);
             }
 
             throw new AblyException(ErrorInfo.NonRenewableToken);
@@ -269,7 +267,7 @@ namespace IO.Ably
 
                     if (callbackResult == null)
                     {
-                        throw new AblyException("AuthCallback returned null", 80019);
+                        throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
                     }
 
                     if (callbackResult is TokenDetails)
@@ -285,7 +283,7 @@ namespace IO.Ably
                     else
                     {
                         shouldCatch = false;
-                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019, HttpStatusCode.BadRequest);
+                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", ErrorCodes.ClientAuthProviderRequestFailed, HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
@@ -300,9 +298,11 @@ namespace IO.Ably
 
                     throw new AblyException(
                         new ErrorInfo(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.",
-                        80019,
-                        statusCode), ex);
+                            "Error calling AuthCallback, token request failed. See inner exception for details.",
+                            ErrorCodes.ClientAuthProviderRequestFailed,
+                            statusCode,
+                            ex),
+                        ex);
                 }
             }
             else if (authOptions.AuthUrl.IsNotEmpty())
@@ -340,7 +340,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
-                            80019,
+                            ErrorCodes.ClientAuthProviderRequestFailed,
                             statusCode,
                             ex),
                         ex);
@@ -359,7 +359,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             reason,
-                            80019,
+                            ErrorCodes.ClientAuthProviderRequestFailed,
                             HttpStatusCode.InternalServerError,
                             ex),
                         ex);
@@ -369,7 +369,7 @@ namespace IO.Ably
             {
                 if (keyId.IsEmpty() || keyValue.IsEmpty())
                 {
-                    throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
+                    throw new AblyException("TokenAuth is on but there is no way to generate one", ErrorCodes.ClientAuthProviderRequestFailed);
                 }
 
                 postData = new TokenRequest(Now).Populate(tokenParams, keyId, keyValue);
@@ -381,7 +381,7 @@ namespace IO.Ably
 
             if (result == null)
             {
-                throw new AblyException("Invalid token response returned", 80019);
+                throw new AblyException("Invalid token response returned", ErrorCodes.ClientAuthProviderRequestFailed);
             }
 
             return result;
@@ -397,7 +397,7 @@ namespace IO.Ably
 
             if (!tokenParams.Timestamp.HasValue)
             {
-                tokenParams.Timestamp = ServerNow();
+                tokenParams.Timestamp = ServerNow;
             }
         }
 
@@ -461,7 +461,7 @@ namespace IO.Ably
         {
             if (AuthMethod == AuthMethod.Basic && Options.Tls == false)
             {
-                throw new InsecureRequestException();
+                throw new AblyInsecureRequestException();
             }
         }
 
@@ -485,12 +485,21 @@ namespace IO.Ably
             tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
             SetCurrentTokenParams(tokenParams);
 
-            CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
+            try
+            {
+                CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
+            }
+            catch (AblyException ex)
+            {
+                // ExecuteCommand is only initialised when AblyAuth is initialised as part of a Realtime Client
+                ExecuteCommand(HandleAblyAuthorizeErrorCommand.Create(ex));
+                throw;
+            }
+
             AuthMethod = AuthMethod.Token;
 
             // RTC8a3 - wait for reconnect if it's the Realtime client
             await OnAuthUpdated(CurrentToken, true);
-
             return CurrentToken;
         }
 
@@ -530,7 +539,7 @@ namespace IO.Ably
 
             if (string.IsNullOrEmpty(authOptions.Key))
             {
-                throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
+                throw new AblyException("No key specified", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
             }
 
             await SetTokenParamsTimestamp(authOptions, tokenParams);
@@ -540,7 +549,7 @@ namespace IO.Ably
             return JsonHelper.Serialize(request);
         }
 
-        internal TokenAuthMethod GetTokenAuthMethod()
+        private TokenAuthMethod GetTokenAuthMethod()
         {
             if (Options.AuthCallback != null)
             {

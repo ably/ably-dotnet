@@ -10,13 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{258ABD2A-ACCA-4226-AEDD-B9C74075B367}"
 	ProjectSection(SolutionItems) = preProject
-		..\appveyor.yml = ..\appveyor.yml
 		..\CHANGELOG.md = ..\CHANGELOG.md
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
 		IO.Ably.ruleset = IO.Ably.ruleset
 		IO.Ably.Tests.ruleset = IO.Ably.Tests.ruleset
-		..\nuget\io.ably_msgpack.nuspec = ..\nuget\io.ably_msgpack.nuspec
 		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
 	EndProjectSection

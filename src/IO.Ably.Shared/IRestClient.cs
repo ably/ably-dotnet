@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-
 using IO.Ably.Rest;
 
 namespace IO.Ably
@@ -12,6 +11,11 @@ namespace IO.Ably
     {
         /// <summary>Authentication methods.</summary>
         IAblyAuth Auth { get; }
+
+        // /// <summary>
+        // /// Methods for managing Push notifications subscriptions and device registrations.
+        // /// </summary>
+        // PushRest Push { get; }
 
         /// <summary>Channel methods.</summary>
         RestChannels Channels { get; }

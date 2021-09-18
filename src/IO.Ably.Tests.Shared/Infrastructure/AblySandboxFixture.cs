@@ -27,7 +27,7 @@ namespace IO.Ably.Tests
 
         private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")
         {
-            var settings = new TestEnvironmentSettings()
+            var settings = new TestEnvironmentSettings
             {
                 Tls = true,
             };
@@ -60,14 +60,14 @@ namespace IO.Ably.Tests
             string appId = settings.AppId = (string)json["appId"];
             foreach (var key in json["keys"])
             {
-                var testkey = new Key
+                var testKey = new Key
                 {
                     KeyName = appId + "." + (string)key["keyName"],
                     KeySecret = (string)key["keySecret"],
                     KeyStr = (string)key["keyStr"],
                     Capability = (string)key["capability"]
                 };
-                settings.Keys.Add(testkey);
+                settings.Keys.Add(testKey);
             }
 
             // await SetupSampleStats(settings);
@@ -101,7 +101,7 @@ namespace IO.Ably.Tests
             await SetupSampleStats(await GetSettings());
         }
 
-        public static async Task SetupSampleStats(TestEnvironmentSettings settings)
+        private static async Task SetupSampleStats(TestEnvironmentSettings settings)
         {
             var lastInterval = StartInterval;
             var interval1 = lastInterval - TimeSpan.FromMinutes(120);

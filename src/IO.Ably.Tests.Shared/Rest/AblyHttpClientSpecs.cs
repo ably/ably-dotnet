@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost()
         {
-            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = true });
+            var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = true });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureFalse_CreatesNonSecureRestUrlsWithDefaultRestHost()
         {
-            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = false });
+            var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = false });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -66,6 +66,21 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSC7c")]
+        public async Task WhenCallingUrl_AddsRequestIdIfSetTrue()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions { AddRequestIds = true }, handler);
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Get);
+            ablyRequest.AddHeaders(new Dictionary<string, string> { { "request_id", "custom_request_id" } });
+            await client.Execute(ablyRequest);
+            var values = handler.LastRequest.Headers.GetValues("request_id").ToArray();
+            values.Should().NotBeEmpty();
+            values.First().Should().StartWith("custom_request_id");
+        }
+
+        [Fact]
         public async Task WhenCallingUrlWithPostParamsAndEmptyBody_PassedTheParamsAsUrlEncodedValues()
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
@@ -73,7 +88,7 @@ namespace IO.Ably.Tests
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
             var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
-            ablyRequest.PostParameters = new Dictionary<string, string>() { { "test", "test" }, { "best", "best" } };
+            ablyRequest.PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } };
 
             await client.Execute(ablyRequest);
             var content = handler.LastRequest.Content;
@@ -81,19 +96,12 @@ namespace IO.Ably.Tests
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
-        public class IsRetriableResponseSpecs
+        public class IsRetryableResponseSpecs
         {
-            private AblyHttpClient _client;
-
-            public IsRetriableResponseSpecs()
-            {
-                _client = new AblyHttpClient(new AblyHttpOptions());
-            }
-
             [Fact]
             public void IsRetryableError_WithTaskCancellationException_ShouldBeTrue()
             {
-                _client.IsRetryableError(new TaskCanceledException()).Should().BeTrue();
+                AblyHttpClient.IsRetryableError(new TaskCanceledException()).Should().BeTrue();
             }
 
             [Theory]
@@ -101,10 +109,10 @@ namespace IO.Ably.Tests
             [InlineData(WebExceptionStatus.ConnectFailure)]
             [InlineData(WebExceptionStatus.NameResolutionFailure)]
             [Trait("spec", "RSC15d")]
-            public void IsRetyableError_WithHttpMessageExecption_ShouldBeTrue(WebExceptionStatus status)
+            public void IsRetryableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
             {
                 var exception = new HttpRequestException("Error", new WebException("boo", status));
-                _client.IsRetryableError(exception).Should().BeTrue();
+                AblyHttpClient.IsRetryableError(exception).Should().BeTrue();
             }
 
             [Theory]
@@ -116,13 +124,12 @@ namespace IO.Ably.Tests
             [InlineData(HttpStatusCode.NoContent, false)]
             [InlineData(HttpStatusCode.NotFound, false)]
             [Trait("spec", "RSC15d")]
-
             public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(
                 HttpStatusCode statusCode,
                 bool expected)
             {
                 var response = new HttpResponseMessage(statusCode);
-                _client.IsRetryableResponse(response).Should().Be(expected);
+                AblyHttpClient.IsRetryableResponse(response).Should().Be(expected);
             }
         }
     }

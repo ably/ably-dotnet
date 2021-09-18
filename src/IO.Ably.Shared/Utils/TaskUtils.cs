@@ -1,22 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably.Utils;
 
 namespace IO.Ably
 {
     internal static class TaskUtils
     {
-        // http://stackoverflow.com/a/21648387/126995
-        public static Task IgnoreExceptions(this Task task)
-        {
-            task.ContinueWith(
-                c =>
-                    {
-                        var ignored = c.Exception;
-                    },
-                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
-            return task;
-        }
-
         // http://stackoverflow.com/a/30857843/29555
         public static Task<object> Convert<T>(this Task<T> task)
         {
@@ -29,7 +18,7 @@ namespace IO.Ably
                         {
                             res.TrySetCanceled();
                         }
-                        else if (t.IsFaulted)
+                        else if (t.IsFaulted && t.Exception != null)
                         {
                             res.TrySetException(t.Exception);
                         }
@@ -46,8 +35,14 @@ namespace IO.Ably
         private static readonly Action<Task> DefaultErrorContinuation =
             t =>
             {
-                try { t.Wait(); }
-                catch { }
+                try
+                {
+                    t.Wait();
+                }
+                catch (Exception e)
+                {
+                    ErrorPolicy.HandleUnexpected(e, DefaultLogger.LoggerInstance);
+                }
             };
 
         /// <summary>
@@ -71,7 +66,7 @@ namespace IO.Ably
             else
             {
                 task.ContinueWith(
-                    t => handler(t.Exception.GetBaseException()),
+                    t => handler(t.Exception?.GetBaseException()),
                     TaskContinuationOptions.ExecuteSynchronously |
                     TaskContinuationOptions.OnlyOnFaulted);
             }

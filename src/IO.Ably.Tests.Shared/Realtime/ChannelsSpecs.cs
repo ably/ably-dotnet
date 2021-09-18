@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
 using IO.Ably.Types;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -58,7 +60,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS3c")]
-        public async Task WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
+        public async Task WithExistingChannelAndOptions_ShouldGetExistingChannelAndUpdateOptions()
         {
             // Arrange
             var client = await GetConnectedClient();
@@ -69,7 +71,7 @@ namespace IO.Ably.Tests.Realtime
             var channel2 = client.Channels.Get("test", options);
 
             // Assert
-            Assert.NotNull(channel2);
+            channel2.Should().NotBeNull();
             Assert.Same(options, channel2.Options);
         }
 
@@ -87,7 +89,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.Release("test");
 
             // Assert
-            Assert.Equal(ChannelState.Detaching, channel.State);
+            channel.State.Should().Be(ChannelState.Detaching);
         }
 
         [Fact]
@@ -156,7 +158,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.ReleaseAll();
 
             // Assert
-            Assert.Equal(ChannelState.Detaching, channel.State);
+            channel.State.Should().Be(ChannelState.Detaching);
         }
 
         [Fact]
@@ -194,7 +196,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
+        public async Task ReleaseAll_ShouldRemoveChannelWhenFailed()
         {
             // Arrange
             var (client, channel) = await GetClientAndChannel();
@@ -225,7 +227,24 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             Assert.Same(channel, enumerator.Current);
-            Assert.False(enumerator.MoveNext());
+            enumerator.MoveNext().Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task AllowEnumerationAndReturnSameOrder()
+        {
+            // Arrange
+            var client = GetClientWithFakeTransport();
+
+            var channel1 = client.Channels.Get("test");
+            var channel2 = client.Channels.Get("test1");
+            var channel4 = client.Channels.Get("test3");
+            var channel5 = client.Channels.Get("test4");
+            var channel6 = client.Channels.Get("test5");
+            var channel7 = client.Channels.Get("test7");
+
+            client.Channels.Should().HaveCount(6);
+            client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
         }
 
         [Fact]
@@ -236,12 +255,12 @@ namespace IO.Ably.Tests.Realtime
             var (client, channel) = await GetClientAndChannel();
 
             // Act
-            IEnumerator<IRealtimeChannel> enumerator = (client.Channels as IEnumerable<IRealtimeChannel>).GetEnumerator();
+            using var enumerator = ((IEnumerable<IRealtimeChannel>)client.Channels).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert
             Assert.Same(channel, enumerator.Current);
-            Assert.False(enumerator.MoveNext());
+            enumerator.MoveNext().Should().BeFalse();
         }
 
         [Fact]
@@ -306,7 +325,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.WaitForState(ChannelState.Attaching);
             var ex = Assert.Throws<AblyException>(() => client.Channels.Get("Test", channelOptions2));
 
-            ex.ErrorInfo.Code.Should().Be(40000);
+            ex.ErrorInfo.Code.Should().Be(ErrorCodes.BadRequest);
             ex.Message.Should().Contain("SetOptions");
         }
 
@@ -335,7 +354,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var key = Convert.FromBase64String("dDGE8dYl8M9+uyUTIv0+ncs1hEa++HiNDu75Dyj4kmw=");
             var cipherParams = new CipherParams(key);
-            var options = new ChannelOptions(cipherParams); // enable encrytion
+            var options = new ChannelOptions(cipherParams); // enable encryption
             var client = await GetConnectedClient();
             var channel = client.Channels.Get("test", options);
 
@@ -346,7 +365,7 @@ namespace IO.Ably.Tests.Realtime
             await client.ProcessCommands();
 
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
-            Assert.True(options.CipherParams.Equals(cipherParams));
+            options.CipherParams.Equals(cipherParams).Should().BeTrue();
         }
     }
 }

@@ -5,7 +5,7 @@ namespace IO.Ably.Realtime
 {
     internal class LastMessageIds
     {
-        public static LastMessageIds Empty = new LastMessageIds();
+        public static readonly LastMessageIds Empty = new LastMessageIds();
 
         // The internal set is to make things easier with testing where I need to simulate mismatching LastMessageIds
         // which should trigger the delta recovery process.

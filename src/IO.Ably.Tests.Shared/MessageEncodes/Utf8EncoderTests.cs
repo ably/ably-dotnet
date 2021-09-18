@@ -6,9 +6,9 @@ namespace IO.Ably.Tests.MessageEncodes
 {
     public class Utf8EncoderTests
     {
-        private string _stringData;
-        private byte[] _byteData;
-        private Utf8Encoder _encoder;
+        private readonly string _stringData;
+        private readonly byte[] _byteData;
+        private readonly Utf8Encoder _encoder;
 
         public Utf8EncoderTests()
         {
@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
         private IPayload DecodePayload(object data, string encoding = "")
         {
-            var payload = new Message() { Data = data, Encoding = encoding };
+            var payload = new Message { Data = data, Encoding = encoding };
             return _encoder.Decode(payload, new DecodingContext()).Value;
         }
 

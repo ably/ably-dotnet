@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using System.Xml.XPath;
-using IO.Ably;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
-using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -16,11 +12,11 @@ namespace IO.Ably.MessageEncoders
     {
         internal ILogger Logger { get; }
 
-        internal static Base64Encoder Base64Encoder = new Base64Encoder();
+        internal static readonly Base64Encoder Base64Encoder = new Base64Encoder();
 
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VCDiffEncoder(), Base64Encoder,
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
         };
 
         private static readonly Type[] UnsupportedTypes =
@@ -42,7 +38,7 @@ namespace IO.Ably.MessageEncoders
             _protocol = protocol;
         }
 
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
+        private IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
         {
             if (response.Type != ResponseType.Json)
             {
@@ -63,7 +59,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
+        private IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
         {
             if (response.Type == ResponseType.Json)
             {
@@ -82,7 +78,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
+        private static void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
             DecodePayloads(context, payloads as IEnumerable<IMessage>);
@@ -99,7 +95,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public byte[] GetRequestBody(AblyRequest request)
+        private byte[] GetRequestBody(AblyRequest request)
         {
             if (request.PostData == null)
             {
@@ -145,23 +141,12 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Serialize(payloads).GetBytes();
         }
 
-        internal Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
+        internal static Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
                 result = Result.Combine(result, EncodePayload(payload, context));
-            }
-
-            return result;
-        }
-
-        internal static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
-        {
-            var result = Result.Ok();
-            foreach (var payload in payloads)
-            {
-                result = Result.Combine(result, DecodePayload(payload, context, encoders));
             }
 
             return result;
@@ -202,7 +187,7 @@ namespace IO.Ably.MessageEncoders
             var testType = GetNullableType(dataType) ?? dataType;
             if (UnsupportedTypes.Contains(testType))
             {
-                throw new AblyException("Unsupported payload type. Only string, binarydata (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
+                throw new AblyException("Unsupported payload type. Only string, binary data (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
             }
 
             Type GetNullableType(Type type)
@@ -311,12 +296,6 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
-        {
-            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
-            return res;
-        }
-
         public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             LogResponse(response);
@@ -325,7 +304,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var typedResult = result as PaginatedResult<Message>;
                 var context = request.ChannelOptions.ToDecodingContext();
-                typedResult.Items.AddRange(ParseMessagesResponse(response, context));
+                typedResult?.Items.AddRange(ParseMessagesResponse(response, context));
             }
 
             if (typeof(T) == typeof(Stats))
@@ -338,7 +317,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var typedResult = result as PaginatedResult<PresenceMessage>;
                 var context = request.ChannelOptions.ToDecodingContext();
-                typedResult.Items.AddRange(ParsePresenceMessages(response, context));
+                typedResult?.Items.AddRange(ParsePresenceMessages(response, context));
             }
 
             return result;
@@ -364,6 +343,23 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Deserialize<T>(responseText);
         }
 
+        private static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
+        {
+            var result = Result.Ok();
+            foreach (var payload in payloads)
+            {
+                result = Result.Combine(result, DecodePayload(payload, context, encoders));
+            }
+
+            return result;
+        }
+
+        private static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        {
+            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
+            return res;
+        }
+
         private void LogResponse(AblyResponse response)
         {
             if (Logger.IsDebug)
@@ -387,7 +383,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
+        private static IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
         {
             var body = response.TextResponse;
 #if MSGPACK

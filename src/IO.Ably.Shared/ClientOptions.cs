@@ -12,8 +12,12 @@ namespace IO.Ably
     public class ClientOptions : AuthOptions
     {
         private string _clientId;
+        private string _realtimeHost;
+        private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
+#if !MSGPACK
         private bool _useBinaryProtocol = false;
+#endif
         private string[] _fallbackHosts;
 
         /// <summary>
@@ -53,6 +57,10 @@ namespace IO.Ably
         /// </summary>
         public TokenParams DefaultTokenParams { get; set; }
 
+        /// <summary>
+        /// Used internally for getting clientId from options or DefaultTokenParams.
+        /// </summary>
+        /// <returns>clientId.</returns>
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
@@ -89,12 +97,6 @@ namespace IO.Ably
         public string Recover { get; set; }
 
         /// <summary>
-        /// For development environments only. Allows a non default host for the realtime service.
-        /// Default: null.
-        /// </summary>
-        public string RealtimeHost { get; set; }
-
-        /// <summary>
         /// Log level; controls the level of verbosity of log messages from the library.
         /// Default: null. Which means the log level is set to Warning.
         /// </summary>
@@ -124,7 +126,19 @@ namespace IO.Ably
         /// For development environments only. Allows a non default host for the rest service.
         /// Default: null.
         /// </summary>
-        public string RestHost { get; set; }
+        public string RestHost
+        {
+            set => _restHost = value;
+        }
+
+        /// <summary>
+        /// For development environments only. Allows a non default host for the realtime service.
+        /// Default: null.
+        /// </summary>
+        public string RealtimeHost
+        {
+            set => _realtimeHost = value;
+        }
 
         /// <summary>
         /// Gets or sets an array of custom Fallback hosts to be (optionally) used in place of the defaults.
@@ -132,68 +146,126 @@ namespace IO.Ably
         /// </summary>
         public string[] FallbackHosts
         {
-            get
-            {
-                if (_fallbackHosts is null)
-                {
-                    return Defaults.FallbackHosts;
-                }
-
-                return _fallbackHosts;
-            }
-
             set => _fallbackHosts = value;
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether to use default FallbackHosts even when overriding
         /// environment or restHost/realtimeHost.
+        /// It will be removed in the next version of the library.
+        /// Default: false.
         /// </summary>
+        [Obsolete("We will no longer support the FallbackHostsUseDefault in the library. This property will be removed in future versions")]
         public bool FallbackHostsUseDefault { get; set; }
 
-        internal bool IsLiveEnvironment => Environment.IsEmpty() || Environment == "live";
+        internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
+        internal bool IsDefaultRestHost => FullRestHost() == Defaults.RestHost;
 
-        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
+        internal bool IsDefaultRealtimeHost => FullRealtimeHost() == Defaults.RealtimeHost;
 
-        internal bool IsDefaultPort => Tls ? Port == 80 : TlsPort == 443;
+        internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
-        internal string FullRealtimeHost()
+        /// <summary>
+        /// Used for getting default/provided RestHost.
+        /// </summary>
+        /// <returns>RestHost.</returns>
+        public string FullRestHost()
         {
-            if (RealtimeHost.IsEmpty())
+            var restHost = _restHost;
+            if (restHost.IsEmpty())
             {
-                if (IsLiveEnvironment)
-                {
-                    return Defaults.RealtimeHost;
-                }
-
-                return Environment.ToString().ToLower() + "-" + Defaults.RealtimeHost;
+                restHost = Defaults.RestHost;
             }
 
-            return RealtimeHost;
+            if (restHost == Defaults.RestHost)
+            {
+                return IsProductionEnvironment
+                    ? restHost
+                    : $"{Environment}-{restHost}";
+            }
+
+            return restHost;
         }
 
-        internal string FullRestHost()
+        /// <summary>
+        /// Used for getting default/provided RealtimeHost.
+        /// </summary>
+        /// <returns>RealtimeHost.</returns>
+        public string FullRealtimeHost()
         {
-            if (RestHost.IsEmpty())
+            var realtimeHost = _realtimeHost;
+            if (realtimeHost.IsEmpty())
             {
-                if (IsLiveEnvironment)
+                if (_restHost.IsNotEmpty())
                 {
-                    return Defaults.RestHost;
+                    Logger.Warning(
+                        $@"restHost is set to {_restHost} but realtimeHost is not set,
+                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
+                                     please set realtimeHost explicitly.");
+                    return _restHost;
                 }
 
-                return Environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                realtimeHost = Defaults.RealtimeHost;
             }
 
-            return RestHost;
+            if (realtimeHost == Defaults.RealtimeHost)
+            {
+                return IsProductionEnvironment ? realtimeHost : $"{Environment}{'-'}{realtimeHost}";
+            }
+
+            return realtimeHost;
+        }
+
+        /// <summary>
+        /// Used for getting default/provided FallbackHosts.
+        /// </summary>
+        /// <returns>FallbackHosts.</returns>
+        public string[] GetFallbackHosts()
+        {
+#pragma warning disable 618
+            if (FallbackHostsUseDefault)
+#pragma warning restore 618
+            {
+                if (_fallbackHosts != null)
+                {
+                    const string msg = "fallbackHosts and fallbackHostsUseDefault cannot both be set";
+                    throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
+                }
+
+                if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
+                {
+                    const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
+                    throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
+                }
+
+                if (Environment.IsNotEmpty())
+                {
+                    Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
+                }
+                else
+                {
+                    Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
+                }
+
+                return Defaults.FallbackHosts;
+            }
+
+            if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
+            {
+                return IsProductionEnvironment
+                    ? Defaults.FallbackHosts
+                    : Defaults.GetEnvironmentFallbackHosts(Environment);
+            }
+
+            return _fallbackHosts ?? new string[] { };
         }
 
         /// <summary>
         /// For development environments only; allows a non-default Ably port to be specified.
         /// Default: 80.
         /// </summary>
-        public int Port { get; set; } = 80;
+        public int Port { get; set; } = Defaults.Port;
 
         /// <summary>
         /// Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
@@ -206,7 +278,7 @@ namespace IO.Ably
         /// Allows non-default Tls port to be specified.
         /// Default: 443.
         /// </summary>
-        public int TlsPort { get; set; } = 443;
+        public int TlsPort { get; set; } = Defaults.TlsPort;
 
         /// <summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
@@ -327,6 +399,25 @@ namespace IO.Ably
         /// Default: true.
         /// </summary>
         public bool AutomaticNetworkStateMonitoring { get; set; } = true;
+
+        /// <summary>
+        /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server
+        /// connection has been lost.
+        /// Defaults: 1000.
+        /// </summary>
+        public int HeartbeatMonitorDelay { get; set; } = 1000;
+
+        /// <summary>
+        /// If enabled, every REST request to Ably includes a `request_id` query string parameter.
+        /// This request ID remains the same if a request is retried to a fallback host.
+        /// </summary>
+        public bool AddRequestIds { get; set; } = false;
+
+        /// <summary>
+        /// It tells Ably push REST requests to fully wait for all their effects before responding.
+        /// Default: false.
+        /// </summary>
+        public bool PushAdminFullWait { get; set; }
 
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc

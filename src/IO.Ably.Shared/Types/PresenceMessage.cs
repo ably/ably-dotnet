@@ -94,6 +94,10 @@ namespace IO.Ably
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
+        /// <summary>The connection key of the publisher of the message. Used for impersonation.</summary>
+        [JsonProperty("connectionKey")]
+        public string ConnectionKey { get; set; }
+
         /// <summary>
         /// Custom data object associated with the message.
         /// </summary>

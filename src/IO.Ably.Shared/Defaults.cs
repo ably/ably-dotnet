@@ -2,14 +2,13 @@
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using IO.Ably;
 using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     internal static class Defaults
     {
-        internal static float ProtocolVersionNumber = 1.2F;
+        internal static readonly float ProtocolVersionNumber = 1.2F;
 
         internal static readonly string AssemblyVersion = GetVersion();
 
@@ -65,6 +64,9 @@ namespace IO.Ably
         internal const int TokenErrorCodesRangeStart = 40140;
         internal const int TokenErrorCodesRangeEnd = 40149;
 
+        internal const string DeviceIdentityTokenHeader = "X-Ably-DeviceIdentityToken";
+        internal const string DeviceSecretHeader = "X-Ably-DeviceSecret";
+
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;
 
@@ -85,6 +87,18 @@ namespace IO.Ably
         static Defaults()
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
+        }
+
+        internal static string[] GetEnvironmentFallbackHosts(string environment)
+        {
+            return new[]
+            {
+                $"{environment}-a-fallback.ably-realtime.com",
+                $"{environment}-b-fallback.ably-realtime.com",
+                $"{environment}-c-fallback.ably-realtime.com",
+                $"{environment}-d-fallback.ably-realtime.com",
+                $"{environment}-e-fallback.ably-realtime.com"
+            };
         }
     }
 }

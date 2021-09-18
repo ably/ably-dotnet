@@ -1,5 +1,6 @@
 ﻿using IO.Ably.Transport;
 using System.Net.NetworkInformation;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
 
 namespace IO.Ably
@@ -12,6 +13,8 @@ namespace IO.Ably
         public string PlatformId => "xamarin-android";
         public bool SyncContextDefault => true;
         public ITransportFactory TransportFactory => null;
+
+        public IMobileDevice MobileDevice { get; set; }
 
         public void RegisterOsNetworkStateChanged()
         {

@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime.Workflow;
@@ -12,9 +11,9 @@ namespace IO.Ably.Tests
 {
     public class ConnectingStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionConnectingState _state;
-        private FakeTimer _timer;
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionConnectingState _state;
+        private readonly FakeTimer _timer;
 
         public ConnectingStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -22,11 +21,6 @@ namespace IO.Ably.Tests
             _context = new FakeConnectionContext();
             _timer = new FakeTimer();
             _state = new ConnectionConnectingState(_context, _timer, Logger);
-        }
-
-        private static FakeTransport GetConnectedTrasport()
-        {
-            return new FakeTransport() { State = TransportState.Connected };
         }
 
         [Fact]
@@ -55,25 +49,25 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
         }
 
         [Fact]
         public async Task ShouldHandleInboundConnectedMessage()
         {
-            _context.Transport = new FakeTransport() { State = TransportState.Connecting };
+            _context.Transport = new FakeTransport { State = TransportState.Connecting };
 
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
         }
 
         [Fact]
-        public async Task WithInboundConnectedMessageAndClosingTrasport_ShouldNotGoToConnected()
+        public async Task WithInboundConnectedMessageAndClosingTransport_ShouldNotGoToConnected()
         {
             // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Closing };
+            _context.Transport = new FakeTransport { State = TransportState.Closing };
 
             // Act
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
@@ -86,7 +80,7 @@ namespace IO.Ably.Tests
         public async Task WithConnectedTransportAndInboundConnectedMessage_ShouldGoToConnected()
         {
             // Arrange
-            _context.Transport = GetConnectedTrasport();
+            _context.Transport = GetConnectedTransport();
 
             // Act
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
@@ -99,7 +93,7 @@ namespace IO.Ably.Tests
         public async Task ConnectingState_HandlesInboundErrorMessage()
         {
             // Arrange
-            _context.Transport = GetConnectedTrasport();
+            _context.Transport = GetConnectedTransport();
 
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), null);
@@ -135,6 +129,11 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _context.ShouldQueueCommand<HandleConnectingDisconnectedCommand>();
+        }
+
+        private static FakeTransport GetConnectedTransport()
+        {
+            return new FakeTransport { State = TransportState.Connected };
         }
     }
 }

@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentAssertions;
+
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
-using static IO.Ably.Tests.SandboxSpecs;
 
 namespace IO.Ably.Tests.NETFramework.Realtime
 {
@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
              {
                  ConnectionId = "1",
                  ConnectionSerial = 100,
-                 ConnectionDetails = new ConnectionDetails()
+                 ConnectionDetails = new ConnectionDetails
                  {
                      ClientId = "client1",
                      ConnectionKey = "validKey"
@@ -207,7 +207,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 var client = await GetConnectedClient();
 
                 // Arrange
-                client.ConnectionManager.Transport = new FakeTransport() { State = transportState };
+                client.ConnectionManager.Transport = new FakeTransport { State = transportState };
 
                 // Act
                 client.ExecuteCommand(SetClosingStateCommand.Create());
@@ -247,7 +247,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             [Fact]
             [Trait("spec", "RTN7c")]
             [Trait("sandboxTest", "needed")]
-            public async Task ShouldDestroyTrasport()
+            public async Task ShouldDestroyTransport()
             {
                 var client = await GetConnectedClient();
 
@@ -347,9 +347,9 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 // Assert
-                Assert.Equal(0, targetMessage1.MsgSerial);
-                Assert.Equal(1, targetMessage2.MsgSerial);
-                Assert.Equal(2, targetMessage3.MsgSerial);
+                targetMessage1.MsgSerial.Should().Be(0);
+                targetMessage2.MsgSerial.Should().Be(1);
+                targetMessage3.MsgSerial.Should().Be(2);
             }
 
             // TODO: Move the test to the workflow tests for send message
@@ -387,9 +387,9 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 // Assert
-                Assert.Equal(0, targetMessage1.MsgSerial);
-                Assert.Equal(0, targetMessage2.MsgSerial);
-                Assert.Equal(0, targetMessage3.MsgSerial);
+                targetMessage1.MsgSerial.Should().Be(0);
+                targetMessage2.MsgSerial.Should().Be(0);
+                targetMessage3.MsgSerial.Should().Be(0);
             }
 
             [Theory]
@@ -403,7 +403,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
                 // Assert
-                Assert.True(result);
+                result.Should().BeTrue();
             }
 
             [Theory]
@@ -431,7 +431,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
                 // Assert
-                Assert.False(result);
+                result.Should().BeFalse();
             }
 
             [Fact]
@@ -455,7 +455,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 // Assert
-                Assert.Equal(2, callbacks.Count);
+                callbacks.Count.Should().Be(2);
                 Assert.True(callbacks.TrueForAll(c => c.Item1)); // Ack
                 Assert.True(callbacks.TrueForAll(c => c.Item2 == null)); // No error
             }
@@ -501,7 +501,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await awaiter.Task;
 
                 // Assert
-                Assert.Equal(3, callbacks.Count);
+                callbacks.Count.Should().Be(3);
                 Assert.True(callbacks.TrueForAll(c => c.Item1)); // Ack
                 Assert.True(callbacks.TrueForAll(c => c.Item2 == null)); // No error
             }
@@ -527,7 +527,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 // Assert
-                Assert.Equal(2, callbacks.Count);
+                callbacks.Count.Should().Be(2);
                 Assert.True(callbacks.TrueForAll(c => c.Item1 == false)); // Nack
                 Assert.True(callbacks.TrueForAll(c => c.Item2 != null)); // Error
             }
@@ -554,7 +554,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 // Assert
-                Assert.Equal(3, callbacks.Count);
+                callbacks.Count.Should().Be(3);
                 Assert.True(callbacks.TrueForAll(c => !c.Item1)); // Nack
                 Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using IO.Ably;
 
 namespace IO.Ably
 {
@@ -35,6 +34,8 @@ namespace IO.Ably
 
         public ILogger Logger { get; set; }
 
+        public bool AddRequestIds { get; set; } = false;
+
         public AblyHttpOptions()
         {
             // Used for testing
@@ -68,8 +69,9 @@ namespace IO.Ably
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
             FallbackRetryTimeOut = options.FallbackRetryTimeout;
-            FallbackHosts = options.FallbackHosts;
+            FallbackHosts = options.GetFallbackHosts();
             FallbackHostsUseDefault = options.FallbackHostsUseDefault;
+            AddRequestIds = options.AddRequestIds;
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;

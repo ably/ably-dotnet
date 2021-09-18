@@ -18,9 +18,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public List<string> FallbackHosts { get; }
 
-            public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
-
-            public DateTimeOffset? ConfirmedAliveAt { get; set; }
+            public DateTimeOffset? ConfirmedAliveAt { get; private set; }
 
             /// <summary>
             ///     The id of the current connection. This string may be
@@ -136,7 +134,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public List<MessageAndCallback> PendingMessages { get; }
 
-        public List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
+        public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
         public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         => WaitingForAck.Add(new MessageAndCallback(message, callback));

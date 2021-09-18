@@ -4,20 +4,6 @@ using System.Net;
 namespace IO.Ably
 {
     /// <summary>
-    /// Ably exception if an action cannot be performed over http.
-    /// </summary>
-    public class InsecureRequestException : AblyException
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InsecureRequestException"/> class.
-        /// </summary>
-        public InsecureRequestException()
-            : base("Current action cannot be performed over http")
-        {
-        }
-    }
-
-    /// <summary>
     /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably.
     /// All inner exceptions are wrapped in this class. Always check the inner exception property of the caught exception.
     /// </summary>
@@ -26,25 +12,18 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyException"/> class.
         /// </summary>
-        public AblyException()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AblyException"/> class.
-        /// </summary>
         /// <param name="reason">Reason passed to the error info class.</param>
         public AblyException(string reason)
-            : this(new ErrorInfo(reason, 500, null))
+            : this(new ErrorInfo(reason, 500))
         {
         }
 
         /// <summary>
-        /// Creates AblyException. ErrorInfo is automatically generated based on the inner exception message. StatusCode is set to 50000.
+        /// Creates AblyException. ErrorInfo is automatically generated based on the inner exception message. StatusCode is set to 'ErrorCodes.InternalError'.
         /// </summary>
         /// <param name="ex">Original exception to be wrapped.</param>
         public AblyException(Exception ex)
-            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
+            : this(new ErrorInfo("Unexpected error :" + ex.Message, ErrorCodes.InternalError), ex)
         {
         }
 
@@ -93,7 +72,7 @@ namespace IO.Ably
         /// <summary>
         /// Gets the current error info for the exception.
         /// </summary>
-        public ErrorInfo ErrorInfo { get; set; }
+        public ErrorInfo ErrorInfo { get; }
 
         internal static AblyException FromResponse(AblyResponse response)
         {

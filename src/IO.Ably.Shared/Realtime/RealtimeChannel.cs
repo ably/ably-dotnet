@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using IO.Ably.Utils;
 using Newtonsoft.Json.Linq;
-using IO.Ably.MessageEncoders;
 
 namespace IO.Ably.Realtime
 {
@@ -21,6 +21,7 @@ namespace IO.Ably.Realtime
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
         private ChannelState _state;
+        private readonly PushChannel _pushChannel;
 
         /// <summary>
         /// True when the channel moves to the @ATTACHED@ state, and False
@@ -101,11 +102,28 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
+        /// <inheritdoc />
+        public PushChannel Push
+        {
+            get
+            {
+                if (_pushChannel is null)
+                {
+                    // TODO: Provide a link for setting up push notifications for supported devices.
+                    throw new AblyException(
+                        "The current device is does not support or is not configured for Push notifications.");
+                }
+
+                return _pushChannel;
+            }
+        }
+
         internal RealtimeChannel(
             string name,
             string clientId,
             AblyRealtime realtimeClient,
-            ChannelOptions options = null)
+            ChannelOptions options = null,
+            IMobileDevice mobileDevice = null)
             : base(options?.Logger)
         {
             Name = name;
@@ -116,6 +134,11 @@ namespace IO.Ably.Realtime
             State = ChannelState.Initialized;
             AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, Logger, OnAttachTimeout);
             DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, Logger, OnDetachTimeout);
+
+            if (mobileDevice != null)
+            {
+                _pushChannel = new PushChannel(name, realtimeClient.RestClient);
+            }
         }
 
         internal void ConnectionStateChanged(ConnectionStateChange connectionStateChange)
@@ -326,7 +349,7 @@ namespace IO.Ably.Realtime
             }
 
             // RTL4f
-            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", 90007, HttpStatusCode.RequestTimeout));
+            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", ErrorCodes.ChannelOperationFailedNoServerResponse, HttpStatusCode.RequestTimeout));
         }
 
         private void OnDetachTimeout()
@@ -336,7 +359,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
             }
 
-            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+            SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", ErrorCodes.InternalError));
         }
 
         public void Detach(Action<bool, ErrorInfo> callback = null)
@@ -490,7 +513,13 @@ namespace IO.Ably.Realtime
             return await tw.Task.TimeoutAfter(RealtimeClient.Options.RealtimeRequestTimeout, failResult);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false)
+        public Task<PaginatedResult<Message>> HistoryAsync()
+        {
+            var query = new PaginatedRequestParams();
+            return RestChannel.HistoryAsync(query);
+        }
+
+        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach)
         {
             var query = new PaginatedRequestParams();
             if (untilAttach)
@@ -501,7 +530,13 @@ namespace IO.Ably.Realtime
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query)
+        {
+            query = query ?? new PaginatedRequestParams();
+            return RestChannel.HistoryAsync(query);
+        }
+
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach)
         {
             query = query ?? new PaginatedRequestParams();
             if (untilAttach)
@@ -544,12 +579,12 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Suspended || State == ChannelState.Failed)
             {
-                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             if (!Connection.CanPublishMessages)
             {
-                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
+                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
             }
 
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
@@ -565,7 +600,7 @@ namespace IO.Ably.Realtime
             SetChannelState(state, protocolMessage?.Error, protocolMessage);
         }
 
-        internal void SetChannelState(ChannelState state, bool emitUpdate)
+        private void SetChannelState(ChannelState state, bool emitUpdate)
         {
             SetChannelState(state, null, null, emitUpdate);
         }
@@ -623,10 +658,10 @@ namespace IO.Ably.Realtime
             switch (state)
             {
                 case ChannelState.Attaching:
-                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", 50000));
+                    DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", ErrorCodes.InternalError));
                     break;
                 case ChannelState.Detaching:
-                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", ErrorCodes.InternalError));
                     AttachResume = false;
                     break;
                 case ChannelState.Attached:
@@ -645,14 +680,23 @@ namespace IO.Ably.Realtime
                             // SetChannelState(ChannelState.Detached, error, protocolMessage);
                             Reattach(error, protocolMessage);
                             break;
+
                         case ChannelState.Attaching:
                             /* RTL13b says we need to become suspended, but continue to retry */
                             Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
                             SetChannelState(ChannelState.Suspended, error, protocolMessage);
                             ReattachAfterTimeout(error, protocolMessage);
                             break;
-                        default:
+
+                        case ChannelState.Initialized:
+                        case ChannelState.Detaching:
+                        case ChannelState.Detached:
+                        case ChannelState.Failed:
+                            // Nothing to do here.
                             break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
 
                     Presence.ChannelDetachedOrFailed(error);

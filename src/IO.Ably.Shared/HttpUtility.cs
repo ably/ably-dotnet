@@ -11,7 +11,7 @@ namespace IO.Ably
     /// Provides Http helper methods.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Only used internally")]
-    public sealed class HttpUtility
+    public static class HttpUtility
     {
         public static HttpValueCollection ParseQueryString(string query)
         {
@@ -99,11 +99,6 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
         /// </summary>
-        public HttpValueCollection() { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
-        /// </summary>
         /// <param name="query">initialise with a query string.</param>
         public HttpValueCollection(string query)
             : this(query, true) { }
@@ -121,10 +116,15 @@ namespace IO.Ably
             }
         }
 
-        private void FillFromString(string query, bool urlencoded)
+        private void FillFromString(string query, bool urlEncoded)
         {
+            if (query is null)
+            {
+                return;
+            }
+
             // http://stackoverflow.com/a/20284635/126995
-            int num = (query != null) ? query.Length : 0;
+            int num = query.Length;
             for (int i = 0; i < num; i++)
             {
                 int startIndex = i;
@@ -160,7 +160,7 @@ namespace IO.Ably
                     str2 = query.Substring(startIndex, i - startIndex);
                 }
 
-                if (urlencoded)
+                if (urlEncoded)
                 {
                     Add(Uri.UnescapeDataString(str), Uri.UnescapeDataString(str2));
                 }
@@ -180,7 +180,7 @@ namespace IO.Ably
         /// For internal testing only.
         /// This method does not URL encode and should be considered unsafe for general use.
         /// </summary>
-        /// <returns>returs query string value based on the contents of the object.</returns>
+        /// <returns>returns query string value based on the contents of the object.</returns>
         internal string ToQueryString()
         {
             var n = _data.Count;

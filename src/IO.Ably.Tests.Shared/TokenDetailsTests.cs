@@ -1,7 +1,8 @@
 using System;
-using Xunit;
+
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
+using Xunit;
 
 namespace IO.Ably.Tests
 {
@@ -26,20 +27,19 @@ namespace IO.Ably.Tests
 
             var token = JsonHelper.DeserializeObject<TokenDetails>((JObject)JObject.Parse(json)["access_token"]);
 
-            Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
+            token.Token.Should().Be("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7");
 
-            // Assert.Equal("3lJG9Q", token.ClientId
-            Assert.Equal(1430784000000, token.Issued.ToUnixTimeInMilliseconds());
-            Assert.Equal(1430784000000, token.Expires.ToUnixTimeInMilliseconds());
+            token.Issued.ToUnixTimeInMilliseconds().Should().Be(1430784000000);
+            token.Expires.ToUnixTimeInMilliseconds().Should().Be(1430784000000);
             var expectedCapability = new Capability();
             expectedCapability.AddResource("*").AllowAll();
-            Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());
+            token.Capability.ToJson().Should().Be(expectedCapability.ToJson());
         }
 
         [Fact]
         public void ShouldSerializeDatesInMilliseconds()
         {
-            var details = new TokenDetails()
+            var details = new TokenDetails
             {
                 Expires = DateTimeOffset.UtcNow,
                 Issued = DateTimeOffset.UtcNow.AddSeconds(1),
@@ -47,9 +47,9 @@ namespace IO.Ably.Tests
 
             var json = JsonHelper.Serialize(details);
 
-            var jobject = JObject.Parse(json);
-            ((string)jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
-            ((string)jobject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
+            var jObject = JObject.Parse(json);
+            ((string)jObject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
+            ((string)jObject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]

@@ -10,7 +10,7 @@ namespace IO.Ably
     public static class EnumerableExtensions
     {
         /// <summary>
-        /// Suffles the values of a collection.
+        /// Shuffles the values of a collection.
         /// </summary>
         /// <typeparam name="T">type.</typeparam>
         /// <param name="source">source collection.</param>
@@ -21,22 +21,22 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Suffles the values of a collection.
+        /// Shuffles the values of a collection.
         /// </summary>
         /// <typeparam name="T">type.</typeparam>
         /// <param name="source">source collection.</param>
         /// <param name="rng">random seed.</param>
         /// <returns>returns a shuffled collection.</returns>
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
+        private static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (rng == null)
             {
-                throw new ArgumentNullException("rng");
+                throw new ArgumentNullException(nameof(rng));
             }
 
             return source.ShuffleIterator(rng);

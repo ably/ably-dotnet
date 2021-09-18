@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace IO.Ably
@@ -92,7 +91,7 @@ namespace IO.Ably
         {
             if (key.IsEmpty())
             {
-                throw new AblyException(new ErrorInfo("Auth Key cannot be empty", 40106));
+                throw new AblyException(new ErrorInfo("Auth Key cannot be empty", ErrorCodes.UnableToObtainCredentialsFromGivenParameters));
             }
 
             if (key.Contains(":"))

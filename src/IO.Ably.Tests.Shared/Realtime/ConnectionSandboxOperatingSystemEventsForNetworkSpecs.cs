@@ -136,9 +136,9 @@ namespace IO.Ably.Tests.Realtime
                 });
             });
 
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
-            var didReconect = await reconnectAwaiter.Task;
-            didReconect.Should().BeTrue();
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", ErrorCodes.TokenError) });
+            var didReconnect = await reconnectAwaiter.Task;
+            didReconnect.Should().BeTrue();
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
             client.Close();
         }
@@ -173,9 +173,9 @@ namespace IO.Ably.Tests.Realtime
                 });
             });
 
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
-            var didReconect = await reconnectAwaiter.Task;
-            didReconect.Should().BeTrue();
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", ErrorCodes.TokenError) });
+            var didReconnect = await reconnectAwaiter.Task;
+            didReconnect.Should().BeTrue();
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
             client.Close();
         }

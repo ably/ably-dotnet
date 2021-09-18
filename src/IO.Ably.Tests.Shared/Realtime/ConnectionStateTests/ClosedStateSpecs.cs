@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
@@ -14,17 +12,17 @@ namespace IO.Ably.Tests
 {
     public class ClosedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionClosedState _state;
-        private DefaultLogger.InternalLogger _logger;
+        private readonly ConnectionClosedState _state;
+        private readonly IInternalLogger _logger;
 
         public ClosedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
             var sink = new TestLoggerSink();
-            _logger = new DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, sink);
-            _context = new FakeConnectionContext();
-            _state = new ConnectionClosedState(_context, _logger);
+
+            _logger = InternalLogger.Create(Defaults.DefaultLogLevel, sink);
+            var context = new FakeConnectionContext();
+            _state = new ConnectionClosedState(context, _logger);
         }
 
         [Fact]

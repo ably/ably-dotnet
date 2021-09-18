@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -12,19 +11,14 @@ namespace IO.Ably.Tests
 {
     public class ConnectedStateSpecs : AblySpecs
     {
-        private FakeConnectionContext _context;
-        private ConnectionConnectedState _state;
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionConnectedState _state;
 
         public ConnectedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
             _context = new FakeConnectionContext();
             _state = GetState();
-        }
-
-        private ConnectionConnectedState GetState()
-        {
-            return new ConnectionConnectedState(_context);
         }
 
         [Fact]
@@ -54,7 +48,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
             _context.ShouldHaveNotChangedState();
         }
 
@@ -79,7 +73,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.Should().BeEquivalentTo(targetError));
         }
 
         [Fact]
@@ -88,13 +82,13 @@ namespace IO.Ably.Tests
             // Act
             _state.Connect();
 
-            // Asser
+            // Assert
             _context.ShouldHaveNotChangedState();
         }
 
         [Fact]
         [Trait("spec", "RTN12a")]
-        public void WhenCloseCalled_ShouldCHangeStateToClosing()
+        public void WhenCloseCalled_ShouldChangeStateToClosing()
         {
             // Act
             _state.Close();
@@ -111,6 +105,11 @@ namespace IO.Ably.Tests
 
             result.Should().BeTrue();
             _context.ShouldQueueCommand<SetClosedStateCommand>();
+        }
+
+        private ConnectionConnectedState GetState()
+        {
+            return new ConnectionConnectedState(_context);
         }
     }
 }

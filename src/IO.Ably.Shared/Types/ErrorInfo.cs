@@ -12,16 +12,16 @@ namespace IO.Ably
     /// </summary>
     public class ErrorInfo
     {
-        internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", 10000);
+        internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
         internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
-        internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", 80002);
-        internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", 80000);
-        internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", 40100);
-        internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", 40000);
-        internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", 80002);
+        internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", ErrorCodes.ConnectionSuspended);
+        internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", ErrorCodes.ConnectionFailed);
+        internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", ErrorCodes.Unauthorized);
+        internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", ErrorCodes.BadRequest);
+        internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", ErrorCodes.ConnectionSuspended);
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
-        internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", 50000, HttpStatusCode.InternalServerError);
-        internal static readonly ErrorInfo NonRenewableToken = new ErrorInfo("The library was initialized with a token without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help", 40171, HttpStatusCode.Unauthorized);
+        internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
+        internal static readonly ErrorInfo NonRenewableToken = new ErrorInfo("The library was initialized with a token without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help", ErrorCodes.NoMeansProvidedToRenewAuthToken, HttpStatusCode.Unauthorized);
 
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";
@@ -94,16 +94,6 @@ namespace IO.Ably
         /// <param name="reason">error reason.</param>
         public ErrorInfo(string reason)
             : this(reason, 0)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorInfo"/> class.
-        /// </summary>
-        /// <param name="reason">error reason.</param>
-        /// <param name="code">error code.</param>
-        public ErrorInfo(string reason, int code)
-            : this(reason, code, null, null, null)
         {
         }
 
@@ -185,7 +175,7 @@ namespace IO.Ably
         {
             // RSA4d, if we have 403 response default to code 40300, this may be overwritten
             // if the response has a usable JSON body
-            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : 50000;
+            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : ErrorCodes.InternalError;
             string reason = string.Empty;
 
             if (response.Type == ResponseType.Json)

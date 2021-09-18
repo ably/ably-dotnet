@@ -12,6 +12,18 @@ namespace IO.Ably.Tests
 {
     public class ClosingStateSpecs : AblySpecs
     {
+        private readonly FakeConnectionContext _context;
+        private readonly ConnectionClosingState _state;
+        private readonly FakeTimer _timer;
+
+        public ClosingStateSpecs(ITestOutputHelper output)
+            : base(output)
+        {
+            _timer = new FakeTimer();
+            _context = new FakeConnectionContext();
+            _state = GetState();
+        }
+
         [Fact]
         public void ShouldHaveClosingState()
         {
@@ -70,7 +82,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.Should().BeEquivalentTo(targetError));
         }
 
         [Fact]
@@ -80,7 +92,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
             _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 
@@ -130,21 +142,9 @@ namespace IO.Ably.Tests
             _context.ShouldQueueCommand<SetFailedStateCommand>();
         }
 
-        private FakeConnectionContext _context;
-        private ConnectionClosingState _state;
-        private FakeTimer _timer;
-
         private ConnectionClosingState GetState(ErrorInfo info = null, bool connectedTransport = true)
         {
             return new ConnectionClosingState(_context, info, connectedTransport, _timer, Logger);
-        }
-
-        public ClosingStateSpecs(ITestOutputHelper output)
-            : base(output)
-        {
-            _timer = new FakeTimer();
-            _context = new FakeConnectionContext();
-            _state = GetState();
         }
     }
 }

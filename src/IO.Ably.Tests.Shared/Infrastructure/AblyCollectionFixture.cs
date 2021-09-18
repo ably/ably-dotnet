@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -61,22 +60,21 @@ namespace IO.Ably.Tests
             Keys = new List<Key>();
         }
 
-        internal AblyHttpClient GetHttpClient(string environment = null)
-        {
-            var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
-            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
-            return new AblyHttpClient(ablyHttpOptions);
-        }
-
         public ClientOptions CreateDefaultOptions(string key = null, string environment = null)
         {
-            environment = environment ?? Environment;
+            environment ??= Environment;
 
-            var env = System.Environment.GetEnvironmentVariable("ABLY_ENV").IsNotEmpty()
-                ? System.Environment.GetEnvironmentVariable("ABLY_ENV").Trim()
-                : environment;
+            var ablyEnv = System.Environment.GetEnvironmentVariable("ABLY_ENV");
+            var env = !string.IsNullOrEmpty(ablyEnv) ? ablyEnv.Trim() : environment;
 
-            return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
+            return new ClientOptions { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
+        }
+
+        internal AblyHttpClient GetHttpClient(string environment = null)
+        {
+            var ablyHttpOptions = new AblyHttpOptions { IsSecure = Tls };
+            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
+            return new AblyHttpClient(ablyHttpOptions);
         }
     }
 }

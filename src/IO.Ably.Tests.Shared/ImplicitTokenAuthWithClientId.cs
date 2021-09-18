@@ -14,21 +14,21 @@ namespace IO.Ably.Tests
 
         public int ExecutionCount { get; set; }
 
-        public int TokenRequestcount { get; set; }
+        public int TokenRequestCount { get; set; }
 
         public ImplicitTokenAuthWithClientId()
         {
             var clientId = "123";
-            Client = new AblyRest(new ClientOptions() { Key = ApiKey, ClientId = clientId, UseBinaryProtocol = false });
+            Client = new AblyRest(new ClientOptions { Key = ApiKey, ClientId = clientId, UseBinaryProtocol = false });
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;
                 if (request.Url.Contains("requestToken"))
                 {
-                    TokenRequestcount++;
-                    return string.Format(
-                                "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
-                                DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds()).ToAblyResponse();
+                    TokenRequestCount++;
+                    return
+                        $"{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds()}\"}}}}"
+                            .ToAblyResponse();
                 }
 
                 return "{}".ToAblyResponse();
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
             Client.Channels.Get("test").PublishAsync("test", "true");
 
             ExecutionCount.Should().Be(1);
-            TokenRequestcount.Should().Be(0);
+            TokenRequestCount.Should().Be(0);
         }
 
         [Fact]

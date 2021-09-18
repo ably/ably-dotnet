@@ -64,7 +64,7 @@ namespace IO.Ably
         internal bool CanBeUsedToCheckExpiry => Expires != DateTimeOffset.MinValue;
 
         /// <summary>
-        /// Checks if a json object is a token. It does it by ensuring the existance of "issued" property.
+        /// Checks if a json object is a token. It does it by ensuring the existence of "issued" property.
         /// </summary>
         /// <param name="json">Json object to check.</param>
         /// <returns>true if json object contains "issued".</returns>
@@ -150,7 +150,7 @@ namespace IO.Ably
         /// <param name="token"><see cref="TokenDetails"/>.</param>
         /// <param name="now">the correct instance of now to compare with the token.</param>
         /// <returns>true / false.</returns>
-        public static bool IsExpired(this TokenDetails token, DateTimeOffset now)
+        private static bool IsExpired(this TokenDetails token, DateTimeOffset now)
         {
             return token.Expires < now;
         }

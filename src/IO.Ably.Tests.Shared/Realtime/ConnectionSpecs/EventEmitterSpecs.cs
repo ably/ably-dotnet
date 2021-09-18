@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -21,8 +20,7 @@ namespace IO.Ably.Tests.Realtime
         public void EmittedEventTypesShouldBe()
         {
             var states = Enum.GetNames(typeof(ConnectionEvent));
-            states.ShouldBeEquivalentTo(new[]
-            {
+            states.Should().BeEquivalentTo(
                 "Initialized",
                 "Connecting",
                 "Connected",
@@ -31,8 +29,7 @@ namespace IO.Ably.Tests.Realtime
                 "Closing",
                 "Closed",
                 "Failed",
-                "Update"
-            });
+                "Update");
         }
 
         [Fact]
@@ -170,7 +167,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             // add Handler1 as a catch all
-            em.On((Action<TestEventEmitterArgs>)Handler1);
+            em.On(Handler1);
             em.DoDummyEmit(1, "on");
             handled1.Should().BeTrue();
             message.Should().Be("on");
@@ -182,14 +179,14 @@ namespace IO.Ably.Tests.Realtime
             Reset();
 
             // add another Handler1 as a catch all
-            em.On((Action<TestEventEmitterArgs>)Handler1);
+            em.On(Handler1);
             em.DoDummyEmit(1, "on");
             handled1.Should().BeTrue();
             counter.Should().Be(3);
             handledCounter1.Should().Be(3);
 
             // only catch 1 events
-            em.On(1, (Action<TestEventEmitterArgs>)Handler2);
+            em.On(1, Handler2);
             em.DoDummyEmit(2, "on");
 
             // handled2 should be false here
@@ -244,8 +241,8 @@ namespace IO.Ably.Tests.Realtime
             }
 
             // no event/state argument, catch all
-            em.Once((Action<TestEventEmitterArgs>)Handler1);
-            em.Once((Action<TestEventEmitterArgs>)Handler1);
+            em.Once(Handler1);
+            em.Once(Handler1);
             em.DoDummyEmit(1, "once");
             t.Should().BeTrue();
             message.Should().Be("once");
@@ -253,7 +250,7 @@ namespace IO.Ably.Tests.Realtime
             Reset();
 
             // only catch 1 events
-            em.Once(1, (Action<TestEventEmitterArgs>)Handler2);
+            em.Once(1, Handler2);
             em.DoDummyEmit(2, "on");
 
             // no events should be handled, t & tt should be false here
@@ -261,7 +258,7 @@ namespace IO.Ably.Tests.Realtime
             tt.Should().BeFalse();
 
             // there are 2 listeners and the first is catch all
-            // but the first should have already handled an event and deregistered
+            // but the first should have already handled an event and de-registered
             // so the count remains the same
             counter.Should().Be(2);
             Reset();
@@ -280,7 +277,7 @@ namespace IO.Ably.Tests.Realtime
             t.Should().BeFalse();
             tt.Should().BeFalse();
 
-            // handlers should be deregistered so the count should remain at 2
+            // handlers should be de-registered so the count should remain at 2
             counter.Should().Be(3);
         }
 
@@ -310,9 +307,9 @@ namespace IO.Ably.Tests.Realtime
             }
 
             // if called with no arguments, it removes all registrations, for all events and listeners
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(2, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(3, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, Listener1);
+            em.On(2, Listener1);
+            em.On(3, Listener1);
             em.DoDummyEmit(1, "off");
             message.Should().Be("off");
             counter.Should().Be(1);
@@ -325,9 +322,9 @@ namespace IO.Ably.Tests.Realtime
             counter.Should().Be(0);
             Reset();
 
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(2, (Action<TestEventEmitterArgs>)Listener2);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(1, Listener1);
+            em.On(2, Listener2);
+            em.On(1, Listener2);
             em.DoDummyEmit(1, "off");
             message.Should().Be("off");
             counter.Should().Be(2);
@@ -341,26 +338,26 @@ namespace IO.Ably.Tests.Realtime
 
             // if called only with a listener, it removes all registrations matching the given listener,
             // regardless of whether they are associated with an event or not
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(1, Listener1);
+            em.On(1, Listener2);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(2);
             Reset();
 
-            em.Off((Action<TestEventEmitterArgs>)Listener2);
+            em.Off(Listener2);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(1);
             Reset();
 
-            em.Off((Action<TestEventEmitterArgs>)Listener1);
+            em.Off(Listener1);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(0);
 
             // If called with a specific event and a listener,
             // it removes all registrations that match both the given listener and the given event
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
-            em.On(2, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, Listener1);
+            em.On(1, Listener2);
+            em.On(2, Listener1);
             Reset();
 
             em.DoDummyEmit(1, "off");
@@ -372,25 +369,25 @@ namespace IO.Ably.Tests.Realtime
             Reset();
 
             // no handler for this event, so this should have no effect
-            em.Off(3, (Action<TestEventEmitterArgs>)Listener1);
+            em.Off(3, Listener1);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(2);
             Reset();
 
             // no handler for this listener, so this should have no effect
-            em.Off(2, (Action<TestEventEmitterArgs>)Listener2);
+            em.Off(2, Listener2);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(2);
             Reset();
 
             // remove handler 1 of 2 remaining
-            em.Off(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.Off(1, Listener1);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(1);
             Reset();
 
             // remove the final handler
-            em.Off(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.Off(1, Listener2);
             em.DoDummyEmit(1, "off");
             counter.Should().Be(0);
         }
@@ -409,19 +406,19 @@ namespace IO.Ably.Tests.Realtime
 
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
 
-            TestEventEmitterArgs listener1args = null;
+            TestEventEmitterArgs listener1Args = null;
             void Listener1(TestEventEmitterArgs args)
             {
                 callList.Add(1);
-                em.Off(1, (Action<TestEventEmitterArgs>)Listener2);
-                em.On(1, (Action<TestEventEmitterArgs>)Listener4);
-                listener1args = args;
+                em.Off(1, Listener2);
+                em.On(1, Listener4);
+                listener1Args = args;
             }
 
             void Listener2(TestEventEmitterArgs args)
             {
                 callList.Add(2);
-                em.Off(1, (Action<TestEventEmitterArgs>)Listener3);
+                em.Off(1, Listener3);
                 throw new Exception("should not be hit");
             }
 
@@ -438,16 +435,16 @@ namespace IO.Ably.Tests.Realtime
             void Listener5(TestEventEmitterArgs args)
             {
                 callList.Add(5);
-                em.Off(1, (Action<TestEventEmitterArgs>)Listener5);
+                em.Off(1, Listener5);
             }
 
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener3);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener5);
+            em.On(1, Listener1);
+            em.On(1, Listener2);
+            em.On(1, Listener3);
+            em.On(1, Listener5);
 
             // Listener1 is called first, it subscribes Listener4
-            // Listener2 is removed by Listenter1, but should still be called
+            // Listener2 is removed by Listener1, but should still be called
             // Listener3 is called
             // Listener4 is should not be called as it was added by Listener1
             // Listener5 is called
@@ -457,20 +454,20 @@ namespace IO.Ably.Tests.Realtime
             callList[1].Should().Be(2);
             callList[2].Should().Be(3);
             callList[3].Should().Be(5);
-            listener1args.Message.Should().Be("emit1");
+            listener1Args.Message.Should().Be("emit1");
 
             callList = new List<int>();
 
             // Listener1 is called first, it subscribes Listener4. Listener4 now has 2 subscriptions, but only 1 should fire here
-            // Listener2 was already removed by Listenter1, so it is not called
-            // Listener3 was remvoed by Listener2, it should not be called
+            // Listener2 was already removed by Listener, so it is not called
+            // Listener3 was removed by Listener2, it should not be called
             // Listener4 is called once
             // Listener5 is not called as it removed itself previously
             em.DoDummyEmit(1, "emit2");
             callList.Count.Should().Be(2);
             callList[0].Should().Be(1);
             callList[1].Should().Be(4);
-            listener1args.Message.Should().Be("emit2");
+            listener1Args.Message.Should().Be("emit2");
 
             callList = new List<int>();
 
@@ -480,21 +477,21 @@ namespace IO.Ably.Tests.Realtime
                 em.Off();
             }
 
-            em.On(1, (Action<TestEventEmitterArgs>)Listener6);
+            em.On(1, Listener6);
             em.DoDummyEmit(1, "emit3");
             callList.Count.Should().Be(4);
             callList[0].Should().Be(1);
             callList[1].Should().Be(4);
             callList[2].Should().Be(4);
             callList[3].Should().Be(6);
-            listener1args.Message.Should().Be("emit3");
+            listener1Args.Message.Should().Be("emit3");
 
             callList = new List<int>();
 
             // Listener6 removed all listeners
             em.DoDummyEmit(1, "emit4");
             callList.Count.Should().Be(0);
-            listener1args.Message.Should().Be("emit3");
+            listener1Args.Message.Should().Be("emit3");
         }
 
         [Fact]
@@ -524,8 +521,8 @@ namespace IO.Ably.Tests.Realtime
                 callOrder.Add(2);
             }
 
-            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(1, Listener1);
+            em.On(1, Listener2);
             em.DoDummyEmit(1, string.Empty);
             handled1.Should().BeTrue();
             handled2.Should().BeTrue();
@@ -538,8 +535,8 @@ namespace IO.Ably.Tests.Realtime
             logger.Reset();
             callOrder = new List<int>();
 
-            em.Once(1, (Action<TestEventEmitterArgs>)Listener1);
-            em.Once(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.Once(1, Listener1);
+            em.Once(1, Listener2);
             em.DoDummyEmit(1, string.Empty);
             handled1.Should().BeTrue();
             handled2.Should().BeTrue();
@@ -560,7 +557,7 @@ namespace IO.Ably.Tests.Realtime
         {
         }
 
-        private class TestEventEmitterArgs : System.EventArgs
+        private class TestEventEmitterArgs : EventArgs
         {
             public string Message { get; set; }
         }
@@ -576,7 +573,7 @@ namespace IO.Ably.Tests.Realtime
 
             public void DoDummyEmit(int state, string message)
             {
-                Emit(state, new TestEventEmitterArgs() { Message = message });
+                Emit(state, new TestEventEmitterArgs { Message = message });
             }
         }
     }

@@ -52,6 +52,10 @@ namespace IO.Ably
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
+        /// <summary>The connection key of the publisher of the message. Used for impersonation.</summary>
+        [JsonProperty("connectionKey")]
+        public string ConnectionKey { get; set; }
+
         /// <summary>The event name, if available.</summary>
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -183,7 +187,7 @@ namespace IO.Ably
             catch (Exception e)
             {
                 DefaultLogger.Error($"Error decoding message: {messageJson}", e);
-                throw new AblyException("Error decoding message. Error: " + e.Message, 50000);
+                throw new AblyException("Error decoding message. Error: " + e.Message, ErrorCodes.InternalError);
             }
         }
 
@@ -204,7 +208,7 @@ namespace IO.Ably
             catch (Exception e)
             {
                 DefaultLogger.Error($"Error decoding message: {messagesJson}", e);
-                throw new AblyException("Error decoding messages. Error: " + e.Message, 50000);
+                throw new AblyException("Error decoding messages. Error: " + e.Message, ErrorCodes.InternalError);
             }
         }
     }

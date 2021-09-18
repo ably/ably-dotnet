@@ -9,13 +9,15 @@
     <Import_RootNamespace>IO.Ably.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AblyInsecureRequestExceptionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyResponseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthOptionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthSandboxSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\ServerTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\TestAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
@@ -23,31 +25,29 @@
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageDataConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageExtrasConverterTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EncryptionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorInfoTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyCollectionFixture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblyRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySandboxFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AsyncLazy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConditionalAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConnectionAwaiter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeConnectionContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeHttpClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeHttpMessageHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeResponseHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTimer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransportFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteroperabilityMessagePayloadDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\MiscUtils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ProtocolData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ProtocolDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ResourceHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TaskCompletionAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TaskCountAwaiter.cs" />
@@ -64,14 +64,23 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageDecodingAcceptanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageEncodersAcceptanceTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\SerializationSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\ProtocolMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessagePack\SerializationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachineTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\FakeMobileDevice.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ListDeviceDetailsRequestTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\ListSubscriptionsRequestTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\LocalDeviceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdminSandboxTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdminTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushChannelTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\RegistrationTokenTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelsSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionAttempsInfoSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionAttemptsInfoSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxOperatingSystemEventsForNetworkSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxTransportSideEffectsSpecs.cs" />
@@ -91,7 +100,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ClosingStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ConnectedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ConnectingStateSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\DisconectedStateSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\DisconnectedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
@@ -99,10 +108,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaLastMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\DeltaSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ExtraSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ExtraSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceSandboxSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeWorkflowSpecs.cs" />
@@ -118,7 +127,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestInitSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RequestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpecExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSandBoxSpecs.cs" />
@@ -130,8 +139,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)StatsParsingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskUtilsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestLoggerSink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetailsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenParamsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TokenRequestDataTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPopulateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttemptTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\AttemptFailedStateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\OperatingSystemTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\SemanticVersionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ErrorPolicyTests.cs" />
   </ItemGroup>
 </Project>

@@ -86,6 +86,8 @@ namespace IO.Ably.Encryption
     /// </summary>
     public static class Crypto
     {
+        private static readonly RNGCryptoServiceProvider SecureRandom = new RNGCryptoServiceProvider();
+
         private const int IdempotentGeneratedIdLength = 9;
 
         /// <summary>
@@ -165,7 +167,7 @@ namespace IO.Ably.Encryption
                 return new AesCipher(cipherParams);
             }
 
-            throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
+            throw new AblyException("Currently only the AES encryption algorithm is supported", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
         }
 
         /// <summary>
@@ -186,7 +188,7 @@ namespace IO.Ably.Encryption
         }
 
         /// <summary>
-        /// Given a keylength and Cipher mode, generates a random key.
+        /// Given a keyLength and Cipher mode, generates a random key.
         /// </summary>
         /// <param name="keyLength">128 or 256 bit keys are supporter.</param>
         /// <param name="mode">optional Cipher mode.</param>
@@ -201,17 +203,30 @@ namespace IO.Ably.Encryption
             return AesCipher.GenerateKey(mode, keyLength);
         }
 
-        private static RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
-
         /// <summary>
         /// Generates a cryptographically random message id.
         /// </summary>
         /// <returns>base64 encoded random array of 9 bytes.</returns>
         public static string GetRandomMessageId()
         {
-            byte[] bytes = new byte[IdempotentGeneratedIdLength];
-            secureRandom.GetBytes(bytes);
+            var bytes = new byte[IdempotentGeneratedIdLength];
+            SecureRandom.GetBytes(bytes);
             return bytes.ToBase64();
+        }
+
+        /// <summary>
+        /// Generates a random SHA256 hash and returns a Base64 encoded string.
+        /// </summary>
+        /// <returns>Returns a random string.</returns>
+        internal static string GenerateSecret()
+        {
+            var entropy = new byte[64];
+            var rnd = RandomNumberGenerator.Create();
+            rnd.GetNonZeroBytes(entropy);
+
+            var hasher = SHA256.Create();
+            var hash = hasher.ComputeHash(entropy);
+            return Convert.ToBase64String(hash);
         }
     }
 }

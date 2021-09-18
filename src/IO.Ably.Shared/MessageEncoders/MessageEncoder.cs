@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using IO.Ably.Rest;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -13,22 +12,6 @@ namespace IO.Ably.MessageEncoders
         public abstract Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context);
 
         public abstract Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context);
-
-        public bool IsEmpty(object data)
-        {
-            return data == null || (data is string s && s.IsEmpty());
-        }
-
-        public static string AddEncoding(IPayload payload, string encoding)
-        {
-            var encodingToAdd = encoding;
-            if (payload.Encoding.IsEmpty())
-            {
-                return encodingToAdd;
-            }
-
-            return payload.Encoding + "/" + encodingToAdd;
-        }
 
         public static bool CurrentEncodingIs(IPayload payload, string encoding)
         {
@@ -52,8 +35,18 @@ namespace IO.Ably.MessageEncoders
                 return string.Empty;
             }
 
-            var encodings = payload.Encoding.Split(new[] { '/' });
+            var encodings = payload.Encoding.Split('/');
             return string.Join("/", encodings.Take(encodings.Length - 1));
+        }
+
+        protected static bool IsEmpty(object data)
+        {
+            return data == null || (data is string s && s.IsEmpty());
+        }
+
+        protected static string AddEncoding(IPayload payload, string encoding)
+        {
+            return payload.Encoding.IsEmpty() ? encoding : $"{payload.Encoding}/{encoding}";
         }
     }
 }

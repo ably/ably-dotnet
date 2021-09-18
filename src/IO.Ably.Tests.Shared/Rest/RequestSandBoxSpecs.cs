@@ -21,14 +21,14 @@ namespace IO.Ably.Tests
     [Trait("spec", "RSC19e")]
     public class RequestSandBoxSpecs : SandboxSpecs, IAsyncLifetime
     {
-        private string _channelName;
-        private string _channelAltName;
-        private string _channelNamePrefix;
-        private string _channelPath;
-        private string _channelsPath;
-        private string _channelMessagesPath;
+        private readonly string _channelName;
+        private readonly string _channelAltName;
+        private readonly string _channelNamePrefix;
+        private readonly string _channelPath;
+        private readonly string _channelsPath;
+        private readonly string _channelMessagesPath;
 
-        private AblyRequest _lastRequest = null;
+        private AblyRequest _lastRequest;
 
         public RequestSandBoxSpecs(ITestOutputHelper output)
             : base(new AblySandboxFixture(), output)
@@ -221,9 +221,9 @@ namespace IO.Ably.Tests
             var paginatedResult = client.Channels.Get(_channelName).History(new PaginatedRequestParams { Limit = 3 });
             paginatedResult.Should().NotBeNull();
             paginatedResult.Items.Should().HaveCount(3);
-            paginatedResult.Items[2].Data.ShouldBeEquivalentTo("from-json-string");
-            paginatedResult.Items[1].Data.ShouldBeEquivalentTo("from-message");
-            paginatedResult.Items[0].Data.ShouldBeEquivalentTo("from-publish");
+            paginatedResult.Items[2].Data.Should().BeEquivalentTo("from-json-string");
+            paginatedResult.Items[1].Data.Should().BeEquivalentTo("from-message");
+            paginatedResult.Items[0].Data.Should().BeEquivalentTo("from-publish");
         }
 
         [Trait("spec", "RSC19e")]
@@ -235,7 +235,7 @@ namespace IO.Ably.Tests
             var response = await client.Request(HttpMethod.Post, "/does-not-exist");
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             response.Success.Should().BeFalse();
-            response.ErrorCode.Should().Be(40400);
+            response.ErrorCode.Should().Be(ErrorCodes.NotFound);
             response.ErrorMessage.Should().NotBeNullOrEmpty();
             response.Response.ContentType.Should().Be("application/json");
         }
@@ -260,7 +260,7 @@ namespace IO.Ably.Tests
             }
             catch (AblyException e)
             {
-                e.ErrorInfo.Code.Should().Be(50000);
+                e.ErrorInfo.Code.Should().Be(ErrorCodes.InternalError);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
                 e.ErrorInfo.Message.Should().Contain("Invalid URI: Invalid port specified.");
             }

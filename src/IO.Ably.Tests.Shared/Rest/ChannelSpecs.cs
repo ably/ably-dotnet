@@ -3,51 +3,90 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Xunit;
+
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+
+using FluentAssertions;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Rest
 {
     public class ChannelSpecs : MockHttpRestSpecs
     {
-        [Fact]
-        [Trait("spec", "RSN1")]
-        public void ChannelsIsACollectionOfChannelObjects()
+        public class General : ChannelSpecs
         {
-            var client = GetRestClient();
-            (client.Channels is IEnumerable<IRestChannel>).Should().BeTrue();
-        }
+            [Fact]
+            [Trait("spec", "RSN1")]
+            public void ChannelsIsACollectionOfChannelObjects()
+            {
+                var client = GetRestClient();
+                client.Channels.Should().BeAssignableTo<IEnumerable<IRestChannel>>();
+            }
 
-        [Fact]
-        [Trait("spec", "RSN2")]
-        public void ShouldBeAbleToIterateThroughExistingChannels()
-        {
-            var client = GetRestClient();
-            var channel1 = client.Channels.Get("test");
-            var channel2 = client.Channels.Get("test1");
+            [Fact]
+            [Trait("spec", "RSN2")]
+            public void ShouldBeAbleToIterateThroughExistingChannels()
+            {
+                var client = GetRestClient();
+                var channel1 = client.Channels.Get("test");
+                var channel2 = client.Channels.Get("test1");
+                _ = client.Channels.Get("test2");
+                var channel4 = client.Channels.Get("test3");
+                var channel5 = client.Channels.Get("test4");
+                var channel6 = client.Channels.Get("test5");
+                client.Channels.Release("test2");
+                var channel7 = client.Channels.Get("test7");
 
-            client.Channels.Should().HaveCount(2);
-            client.Channels.ShouldBeEquivalentTo(new[] { channel1, channel2 });
-        }
+                client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
+            }
 
-        [Fact]
-        [Trait("spec", "RSN2")]
-        public void ShouldBeAbleToCheckIsAChannelExists()
-        {
-            var client = GetRestClient();
-            var channel1 = client.Channels.Get("test");
-            var channel2 = client.Channels.Get("test1");
+            [Fact]
+            public async Task ShouldUpdateOptionsWhenTwoThreadsTryToCreateTheSameChannelWithDifferentOptions()
+            {
+                var client = GetRestClient();
+                var options = new ChannelOptions(encrypted: true);
+                var task1 = Task.Run(() => client.Channels.Get("test"));
+                var task2 = Task.Run(() => client.Channels.Get("test", options));
 
-            client.Channels.Any(x => x.Name == "test").Should().BeTrue();
+                await Task.WhenAll(task1, task2);
+                var channel2 = (RestChannel)client.Channels.Get("test");
+                channel2.Options.Should().BeSameAs(options);
+            }
+
+            [Fact]
+            [Trait("spec", "RSN2")]
+            public void ShouldBeAbleToCheckIsAChannelExists()
+            {
+                var client = GetRestClient();
+                var channel1 = client.Channels.Get("test");
+                var channel2 = client.Channels.Get("test1");
+
+                client.Channels.Any(x => x.Name == "test").Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSN4a")]
+            public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
+            {
+                var client = GetRestClient();
+                var channel = client.Channels.Get("first");
+                client.Channels.Should().Contain(x => x.Name == "first");
+                client.Channels.Release("first");
+                client.Channels.Should().BeEmpty();
+            }
+
+            public General(ITestOutputHelper output)
+                : base(output)
+            {
+            }
         }
 
         [Trait("spec", "RSN3")]
         public class GettingAChannel : ChannelSpecs
         {
-            private AblyRest _client;
+            private readonly AblyRest _client;
 
             public GettingAChannel(ITestOutputHelper output)
                 : base(output)
@@ -57,7 +96,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "RSN3a")]
-            public void WhenChannelDoesntExist_ShouldCreateANewOne()
+            public void WhenChannelDoesNotExist_ShouldCreateANewOne()
             {
                 var channel = _client.Channels.Get("new");
                 channel.Should().NotBeNull();
@@ -65,7 +104,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "RSN3a")]
-            public void WhenChannelAlreadyexists_ShouldReturnExistingChannel()
+            public void WhenChannelAlreadyExists_ShouldReturnExistingChannel()
             {
                 var channel = _client.Channels.Get("new");
                 var secondTime = _client.Channels.Get("new");
@@ -79,30 +118,18 @@ namespace IO.Ably.Tests.Rest
             {
                 var options = new ChannelOptions();
                 var channel = _client.Channels.Get("test", options);
-                (channel as RestChannel).Options.ShouldBeEquivalentTo(options);
+                ((RestChannel)channel).Options.Should().BeEquivalentTo(options);
             }
 
             [Fact]
             [Trait("spec", "RSN3c")]
-            public void WhenAccesingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
+            public void WhenAccessingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
             {
                 var channel = _client.Channels.Get("test");
-                var initialOptions = (channel as RestChannel).Options;
                 var newOptions = new ChannelOptions(true);
                 var secondTime = _client.Channels.Get("test", newOptions);
-                (secondTime as RestChannel).Options.ShouldBeEquivalentTo(newOptions);
+                ((RestChannel)secondTime).Options.Should().BeEquivalentTo(newOptions);
             }
-        }
-
-        [Fact]
-        [Trait("spec", "RSN4a")]
-        public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
-        {
-            var client = GetRestClient();
-            var channel = client.Channels.Get("first");
-            client.Channels.Should().Contain(x => x.Name == "first");
-            client.Channels.Release("first");
-            client.Channels.Should().BeEmpty();
         }
 
         public class ChannelPublish : ChannelSpecs
@@ -132,9 +159,9 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var message = new Message() { Name = "event", Data = "data" };
-                var message1 = new Message() { Name = "event1", Data = "data" };
-                var message2 = new Message() { Name = "event2", Data = "data" };
+                var message = new Message { Name = "event", Data = "data" };
+                var message1 = new Message { Name = "event1", Data = "data" };
+                var message2 = new Message { Name = "event2", Data = "data" };
                 channel.PublishAsync(new List<Message> { message, message1, message2 });
 
                 Requests.Count.Should().Be(1);
@@ -143,7 +170,7 @@ namespace IO.Ably.Tests.Rest
                 LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
                 var postedMessages = LastRequest.PostData as List<Message>;
                 postedMessages.Should().HaveCount(3);
-                postedMessages.ShouldBeEquivalentTo(new[] { message, message1, message2 });
+                postedMessages.Should().BeEquivalentTo(message, message1, message2);
             }
 
             [Fact]
@@ -156,7 +183,7 @@ namespace IO.Ably.Tests.Rest
                     options.IdempotentRestPublishing = false;
                 });
 
-                var messageWithNoData = new Message() { Name = "NoData" };
+                var messageWithNoData = new Message { Name = "NoData" };
                 await client.Channels.Get("nodata").PublishAsync(messageWithNoData);
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"name\":\"NoData\"}]");
@@ -172,7 +199,7 @@ namespace IO.Ably.Tests.Rest
                     options.IdempotentRestPublishing = false;
                 });
 
-                var messageWithNoName = new Message() { Data = "NoName" };
+                var messageWithNoName = new Message { Data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
@@ -200,7 +227,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
 
-                var messageWithNoName = new Message() { Data = "NoName" };
+                var messageWithNoName = new Message { Data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
             }
 
@@ -213,8 +240,8 @@ namespace IO.Ably.Tests.Rest
 
                 var messages = LastRequest.PostData as IEnumerable<Message>;
                 var data = messages.First();
-                Assert.Equal("data", data.Data);
-                Assert.Equal("event", data.Name);
+                data.Data.Should().Be("data");
+                data.Name.Should().Be("event");
             }
 
             [Fact]
@@ -225,7 +252,7 @@ namespace IO.Ably.Tests.Rest
                 channel.PublishAsync("event", new byte[] { 1, 2 });
 
                 var postData = (LastRequest.PostData as IEnumerable<Message>).First();
-                Assert.Equal("base64", postData.Encoding);
+                postData.Encoding.Should().Be("base64");
             }
 
             [Fact]
@@ -234,15 +261,16 @@ namespace IO.Ably.Tests.Rest
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
 
-                var message = new Message() { Name = "event", Data = "data" };
+                var message = new Message { Name = "event", Data = "data" };
                 channel.PublishAsync(new List<Message> { message });
 
                 var data = LastRequest.PostData as IEnumerable<Message>;
-                Assert.NotNull(data);
+                data.Should().NotBeNull();
+
                 data.Count().Should().Be(1);
                 var payloadMessage = data.First();
-                Assert.Equal("data", payloadMessage.Data);
-                Assert.Equal("event", payloadMessage.Name);
+                payloadMessage.Data.Should().Be("data");
+                payloadMessage.Name.Should().Be("event");
             }
 
             public ChannelPublish(ITestOutputHelper output)
@@ -253,8 +281,8 @@ namespace IO.Ably.Tests.Rest
 
         public class ChannelHistory : ChannelSpecs
         {
+            private readonly IRestChannel _channel;
             private AblyRest _client;
-            private IRestChannel _channel;
 
             [Fact]
             [Trait("spec", "RSL2a")]
@@ -263,8 +291,8 @@ namespace IO.Ably.Tests.Rest
                 var result = await _channel.HistoryAsync();
 
                 result.Should().BeOfType<PaginatedResult<Message>>();
-                Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{_channel.Name}/messages", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{_channel.Name}/messages");
             }
 
             [Fact]
@@ -319,7 +347,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithStartBeforeEnd_Throws()
             {
                 var ex = await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.HistoryAsync(new PaginatedRequestParams() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.HistoryAsync(new PaginatedRequestParams { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -348,7 +376,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams { Limit = limit }));
             }
 
             [Fact]
@@ -358,7 +386,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates())
                 {
-                    var query = new PaginatedRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
+                    var query = new PaginatedRequestParams { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
                     var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
@@ -375,7 +403,7 @@ namespace IO.Ably.Tests.Rest
             public async Task History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
             {
                 // Arrange
-                var rest = GetRestClient(request => new AblyResponse()
+                var rest = GetRestClient(request => new AblyResponse
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = "[]"
@@ -387,9 +415,9 @@ namespace IO.Ably.Tests.Rest
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextQueryParams);
-                Assert.NotNull(result.CurrentQueryParams);
-                Assert.NotNull(result.FirstQueryParams);
+                result.NextQueryParams.Should().NotBeNull();
+                result.CurrentQueryParams.Should().NotBeNull();
+                result.FirstQueryParams.Should().NotBeNull();
             }
 
             [Fact]
@@ -397,12 +425,12 @@ namespace IO.Ably.Tests.Rest
             {
                 // Arrange
                 var rest = GetRestClient();
-                var message = new Message() { Name = "test", Data = "Test" };
+                var message = new Message { Name = "test", Data = "Test" };
                 var defaultParams = Crypto.GetDefaultParams();
 
                 rest.ExecuteHttpRequest = request =>
                 {
-                    var response = new AblyResponse()
+                    var response = new AblyResponse
                     {
                         Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                         TextResponse = $"[{JsonHelper.Serialize(message)}]"
@@ -418,7 +446,7 @@ namespace IO.Ably.Tests.Rest
                 // Assert
                 Assert.NotEmpty(result.Items);
                 var firstMessage = result.Items.First();
-                Assert.Equal(message.Data, firstMessage.Data);
+                firstMessage.Data.Should().Be(message.Data);
             }
 
             public ChannelHistory(ITestOutputHelper output)

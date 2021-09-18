@@ -1,14 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using IO.Ably;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Push;
 using IO.Ably.Rest;
-
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
@@ -42,7 +39,7 @@ namespace IO.Ably
         {
             Options = new ClientOptions();
             init(Options);
-            InitializeAbly();
+            InitializeAbly(IoC.MobileDevice);
         }
 
         /// <summary>
@@ -50,10 +47,17 @@ namespace IO.Ably
         /// </summary>
         /// <param name="clientOptions">instance of clientOptions.</param>
         public AblyRest(ClientOptions clientOptions)
+            : this(clientOptions, IoC.MobileDevice)
+        {
+        }
+
+        internal AblyRest(ClientOptions clientOptions, IMobileDevice mobileDevice)
         {
             Options = clientOptions;
-            InitializeAbly();
+            InitializeAbly(mobileDevice);
         }
+
+        internal IMobileDevice MobileDevice { get; private set; }
 
         internal AblyHttpClient HttpClient { get; private set; }
 
@@ -77,6 +81,16 @@ namespace IO.Ably
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
 
+        /// <summary>
+        /// Expose Push Admin Rest APIs.
+        /// Rest API documentation: https://ably.com/documentation/rest-api#push.
+        /// </summary>
+        public PushRest Push { get; private set; }
+
+        // TODO: Think about how the local device will be shared among Rest instances and
+        // what will happen whet it gets updated.
+        internal LocalDevice Device { get; set; }
+
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
 
         internal ClientOptions Options { get; }
@@ -84,7 +98,7 @@ namespace IO.Ably
         internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         /// <summary>Initializes the rest client and validates the passed in options.</summary>
-        private void InitializeAbly()
+        private void InitializeAbly(IMobileDevice mobileDevice)
         {
             if (Options == null)
             {
@@ -114,12 +128,23 @@ namespace IO.Ably
             HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
-            Channels = new RestChannels(this);
+            Channels = new RestChannels(this, mobileDevice);
+            Push = new PushRest(this, Logger);
+            MobileDevice = mobileDevice;
         }
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
             Logger.Debug("Sending {0} request to {1}", request.Method, request.Url);
+            string requestId = null;
+            if (Options.AddRequestIds)
+            {
+                requestId = Guid.NewGuid().ToByteArray().ToBase64();
+                var dict = new Dictionary<string, string> { { "request_id", requestId } };
+                request.AddHeaders(dict);
+            }
+
+            Logger.Debug(WrapWithRequestId($"Sending {request.Method} request to {request.Url}"));
 
             if (request.SkipAuthentication == false)
             {
@@ -135,7 +160,7 @@ namespace IO.Ably
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
                 }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
@@ -148,7 +173,7 @@ namespace IO.Ably
 
                     if (Logger.IsDebug)
                     {
-                        Logger.Debug("Handling UnAuthorized Error, attempting to Re-authorize and repeat request.");
+                        Logger.Debug(WrapWithRequestId("Handling UnAuthorized Error, attempting to Re-authorize and repeat request."));
                     }
 
                     try
@@ -169,11 +194,13 @@ namespace IO.Ably
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
                 }
 
                 throw new AblyException(ex);
             }
+
+            string WrapWithRequestId(string message) => requestId != null ? $"RequestId {requestId} : {message}" : message;
         }
 
         internal async Task<T> ExecuteRequest<T>(AblyRequest request)
@@ -209,7 +236,7 @@ namespace IO.Ably
                 }
             }
 
-            return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
+            return MessageHandler.ParsePaginatedResponse(request, response, executeDataQueryRequest);
         }
 
         internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
@@ -320,7 +347,7 @@ namespace IO.Ably
         /// <example>
         /// var client = new AblyRest("validkey");
         /// var stats = client..StatsAsync();
-        /// var nextPage = cliest..StatsAsync(stats.NextQuery);.
+        /// var nextPage = client..StatsAsync(stats.NextQuery);.
         /// </example>
         /// <param name="query"><see cref="PaginatedRequestParams"/> and <see cref="StatsRequestParams"/>.</param>
         /// <returns>returns a PaginatedResult of Stats.</returns>

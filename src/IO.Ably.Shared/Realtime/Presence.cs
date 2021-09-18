@@ -14,7 +14,7 @@ namespace IO.Ably.Realtime
     /// <summary>
     /// A class that provides access to presence operations and state for the associated Channel.
     /// </summary>
-    public partial class Presence
+    public sealed partial class Presence
     {
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -23,7 +23,7 @@ namespace IO.Ably.Realtime
         private string _currentSyncChannelSerial;
         private bool _initialSyncCompleted = false;
 
-        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
@@ -31,7 +31,7 @@ namespace IO.Ably.Realtime
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
-            _clientId = cliendId;
+            _clientId = clientId;
         }
 
         private event EventHandler InitialSyncCompleted;
@@ -92,14 +92,14 @@ namespace IO.Ably.Realtime
         ///     However, if the channel is in or moves to the FAILED.
         ///     state before the operation succeeds, it will result in an error.
         /// </summary>
-        /// <param name="options">Options for the Getasync. For details <see cref="GetParams"/>.</param>
+        /// <param name="options">Options for the GetAsync. For details <see cref="GetParams"/>.</param>
         /// <returns>a list of PresenceMessages.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
         {
             // RTP11b
             if (_channel.State == ChannelState.Failed || _channel.State == ChannelState.Detached)
             {
-                throw new AblyException(new ErrorInfo($"channel operation failed. Invalid channel state ({_channel.State})", 90001));
+                throw new AblyException(new ErrorInfo($"channel operation failed. Invalid channel state ({_channel.State})", ErrorCodes.ChannelOperationFailedWithInvalidState));
             }
 
             if (_channel.State == ChannelState.Initialized)
@@ -134,7 +134,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync)
         {
-            return await GetAsync(new GetParams() { WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { WaitForSync = waitForSync });
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync)
         {
-            return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { ClientId = clientId, WaitForSync = waitForSync });
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace IO.Ably.Realtime
         /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId = null, string connectionId = null, bool waitForSync = true)
         {
-            return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
 
         private async Task<bool> WaitForSyncAsync()
@@ -218,7 +218,7 @@ namespace IO.Ably.Realtime
                 else
                 {
                     /* RTP11b */
-                    errorCode = 90001;
+                    errorCode = ErrorCodes.ChannelOperationFailedWithInvalidState;
                     errorMessage = $"Channel {_channel.Name}: cannot get presence state when the channel is in a {_channel.State} state.";
                 }
 
@@ -472,7 +472,7 @@ namespace IO.Ably.Realtime
                 default:
                     var error = new ErrorInfo(
                         $"Unable to enter presence channel when connection is in a ${_connection.Connection.State} state.",
-                        91001,
+                        ErrorCodes.UnableToEnterPresenceChannelInvalidState,
                         HttpStatusCode.BadRequest);
                     Logger.Warning(error.ToString());
                     ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
@@ -498,7 +498,7 @@ namespace IO.Ably.Realtime
                     _connection.Send(message, callback);
                     break;
                 default:
-                    var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", 91001);
+                    var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", ErrorCodes.UnableToEnterPresenceChannelInvalidState);
                     Logger.Warning(error.ToString());
                     ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
                     return;
@@ -863,15 +863,6 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable SA1600 // Elements should be documented
-        protected virtual void OnInitialSyncCompleted()
-        {
-            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
-        }
-#pragma warning restore SA1600 // Elements should be documented
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
         internal void OnSyncCompleted()
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
@@ -883,5 +874,10 @@ namespace IO.Ably.Realtime
             ["members"] = Map.GetState(),
             ["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message))),
         };
+
+        private void OnInitialSyncCompleted()
+        {
+            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

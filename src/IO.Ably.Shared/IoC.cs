@@ -1,11 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
+using IO.Ably.Push;
 using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    using System.IO;
-
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     internal static class IoC
     {
@@ -18,7 +18,7 @@ namespace IO.Ably
             {
                 var name = new AssemblyName("IO.Ably");
                 var asm = Assembly.Load(name);
-                var type = Assembly.Load(name).GetType("IO.Ably.Platform");
+                var type = asm.GetType("IO.Ably.Platform");
                 if (type != null)
                 {
                     var obj = Activator.CreateInstance(type);
@@ -40,5 +40,22 @@ namespace IO.Ably
         public static void RegisterOsNetworkStateChanged() => Platform.RegisterOsNetworkStateChanged();
 
         public static string PlatformId => Platform?.PlatformId ?? string.Empty;
+
+        public static IMobileDevice MobileDevice
+        {
+            get
+            {
+                try
+                {
+                    return Platform.MobileDevice;
+                }
+                catch (Exception e) when (e is NotImplementedException)
+                {
+                    DefaultLogger.Error("Mobile Device is no supported on the current platform.", e);
+                    return null;
+                }
+            }
+            set => Platform.MobileDevice = value;
+        }
     }
 }

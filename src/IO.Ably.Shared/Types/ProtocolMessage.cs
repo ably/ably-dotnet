@@ -234,7 +234,7 @@ namespace IO.Ably.Types
         }
 
         /// <summary>
-        /// Convenience method to check if the current message contians a flag.
+        /// Convenience method to check if the current message contains a flag.
         /// </summary>
         /// <param name="flag">Flag we are looking for.</param>
         /// <returns>true / false.</returns>
@@ -274,7 +274,7 @@ namespace IO.Ably.Types
                 .AppendFormat("action={0}", Action);
             if (Messages != null && Messages.Length > 0)
             {
-                text.Append(", mesasages=[ ");
+                text.Append(", messages=[ ");
                 foreach (var message in Messages)
                 {
                     text.AppendFormat("{{ name=\"{0}\"", message.Name);

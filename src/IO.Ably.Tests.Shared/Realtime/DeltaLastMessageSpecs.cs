@@ -7,7 +7,7 @@ using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.DotNetCore20.Realtime
+namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTL19")]
     public class DeltaLastMessageSpecs : AblyRealtimeSpecs

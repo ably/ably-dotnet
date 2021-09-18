@@ -2,12 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using IO.Ably.Realtime;
-using Timer = System.Timers.Timer;
 
 namespace IO.Ably.Tests.Infrastructure
 {

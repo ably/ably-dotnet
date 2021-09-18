@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 using IO.Ably.Realtime.Workflow;
 using Newtonsoft.Json.Linq;
 
@@ -19,13 +20,19 @@ namespace IO.Ably.Realtime
 
         private ConcurrentDictionary<string, RealtimeChannel> Channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
-        private readonly AblyRealtime _realtimeClient;
+        private readonly List<IRealtimeChannel> _orderedChannels = new List<IRealtimeChannel>();
 
-        internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection)
+        private readonly object _orderedListLock = new object();
+
+        private readonly AblyRealtime _realtimeClient;
+        private readonly IMobileDevice _mobileDevice;
+
+        internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection, IMobileDevice mobileDevice = null)
         {
             _realtimeClient = realtimeClient;
             Logger = realtimeClient.Logger;
             connection.InternalStateChanged += ConnectionStateChange;
+            _mobileDevice = mobileDevice;
         }
 
         private void ConnectionStateChange(object sender, ConnectionStateChange stateChange)
@@ -57,7 +64,7 @@ namespace IO.Ably.Realtime
             if (!Channels.TryGetValue(name, out var result))
             {
                 // create a new instance using the passed in option
-                var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options);
+                var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options, _mobileDevice);
                 result = Channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)
@@ -67,6 +74,7 @@ namespace IO.Ably.Realtime
 
                     return realtimeChannel;
                 });
+                AddToOrderedList(result);
             }
             else
             {
@@ -74,7 +82,7 @@ namespace IO.Ably.Realtime
                 {
                     if (result.ShouldReAttach(options))
                     {
-                        throw new AblyException(new ErrorInfo("Channels.Get() cannot be used to set channel options that would cause the channel to reattach. Please, use Channel.SetOptions() instead.", 40000, HttpStatusCode.BadRequest));
+                        throw new AblyException(new ErrorInfo("Channels.Get() cannot be used to set channel options that would cause the channel to reattach. Please, use Channel.SetOptions() instead.", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
                     }
 
                     result.SetOptions(options);
@@ -90,44 +98,47 @@ namespace IO.Ably.Realtime
         /// <inheritdoc/>
         public bool Release(string name)
         {
-            if (Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
-            RealtimeChannel channel = null;
-            if (Channels.TryGetValue(name, out channel))
+            if (Logger.IsDebug)
             {
-                EventHandler<ChannelStateChange> eventHandler = null;
-                eventHandler = (s, args) =>
-                {
-                    var detachedChannel = (RealtimeChannel)s;
-                    if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
-                        }
-
-                        detachedChannel.InternalStateChanged -= eventHandler;
-
-                        RealtimeChannel removedChannel;
-                        if (Channels.TryRemove(name, out removedChannel))
-                        {
-                            removedChannel.RemoveAllListeners();
-                        }
-                    }
-                    else
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
-                        }
-                    }
-                };
-
-                channel.InternalStateChanged += eventHandler;
-                channel.Detach();
-                return true;
+                Logger.Debug($"Releasing channel #{name}");
             }
 
-            return false;
+            if (!Channels.TryGetValue(name, out RealtimeChannel channel))
+            {
+                return false;
+            }
+
+            EventHandler<ChannelStateChange> eventHandler = null;
+            eventHandler = (s, args) =>
+            {
+                if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
+                    }
+
+                    var detachedChannel = (RealtimeChannel)s;
+                    detachedChannel.InternalStateChanged -= eventHandler;
+
+                    if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
+                    {
+                        removedChannel.RemoveAllListeners();
+                        RemoveFromOrderedList(removedChannel);
+                    }
+                }
+                else
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
+                    }
+                }
+            };
+
+            channel.InternalStateChanged += eventHandler;
+            channel.Detach();
+            return true;
         }
 
         /// <inheritdoc/>
@@ -151,6 +162,7 @@ namespace IO.Ably.Realtime
                     if (success)
                     {
                         channel.RemoveAllListeners();
+                        RemoveFromOrderedList(channel);
                     }
                 }
             }
@@ -169,13 +181,19 @@ namespace IO.Ably.Realtime
         /// <inheritdoc/>
         IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator()
         {
-            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
         }
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+            lock (_orderedChannels)
+            {
+                return _orderedChannels.ToList().GetEnumerator();
+            }
         }
 
         internal JArray GetCurrentState()
@@ -218,6 +236,31 @@ namespace IO.Ably.Realtime
                      * transitions all the channels to INITIALIZED */
                     channel.SetChannelState(ChannelState.Initialized);
                     break;
+            }
+        }
+
+        private void AddToOrderedList(RealtimeChannel channel)
+        {
+            if (_orderedChannels.Contains(channel) == false)
+            {
+                lock (_orderedListLock)
+                {
+                    if (_orderedChannels.Contains(channel) == false)
+                    {
+                        _orderedChannels.Add(channel);
+                    }
+                }
+            }
+        }
+
+        private void RemoveFromOrderedList(RealtimeChannel channel)
+        {
+            lock (_orderedListLock)
+            {
+                if (_orderedChannels.Contains(channel))
+                {
+                    _orderedChannels.Remove(channel);
+                }
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace IO.Ably.Tests
+﻿using FluentAssertions;
+
+namespace IO.Ably.Tests
 {
 #if MSGPACK
     public class GenerateMsgPackSerializers
@@ -13,7 +15,7 @@
                     Namespace = "IO.Ably.CustomSerialisers",
                     OutputDirectory = "../../../IO.Ably/CustomSerialisers/GeneratedSerializers",
                     EnumSerializationMethod = EnumSerializationMethod.ByName, // You can tweak it to use ByUnderlyingValue as you like.
-                IsRecursive = true, // Set depenendent serializers are also generated.
+                IsRecursive = true, // Set dependent serializers are also generated.
                 PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
                 SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
             },
@@ -35,7 +37,7 @@
             {
                 yield return new object[] { new Message[] { new Message() } }; // 1 empty message
                 yield return new object[] { new Message[] { new Message(), new Message() } }; // 2 empty messages
-                yield return new object[] { new Message[] { new Message(), new Message("test", null) } }; // 1 empty, 1 mesage
+                yield return new object[] { new Message[] { new Message(), new Message("test", null) } }; // 1 empty, 1 message
                 yield return new object[] { new Message[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
             }
         }
@@ -46,7 +48,7 @@
             {
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage() } }; // 2 empty messages
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceAction.Enter, "test") } }; // 1 empty, 1 mesage
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceAction.Enter, "test") } }; // 1 empty, 1 message
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } }; // 2 messages
             }
         }
@@ -89,7 +91,7 @@
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -120,7 +122,7 @@
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -152,7 +154,7 @@
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -161,7 +163,7 @@
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            
+
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -187,7 +189,7 @@
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -226,7 +228,7 @@
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
-            Assert.IsType<byte[]>(result);
+            result.Should().BeOfType<byte[]>();
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -249,7 +251,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(action, target.Action);
         }
 
@@ -278,7 +280,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(channel, target.Channel);
         }
 
@@ -306,7 +308,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(serial, target.ChannelSerial);
         }
 
@@ -327,7 +329,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionId, target.ConnectionId);
         }
 
@@ -348,7 +350,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(connectionKey, target.ConnectionKey);
         }
 
@@ -369,7 +371,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(id, target.Id);
         }
 
@@ -389,7 +391,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
         }
 
@@ -406,7 +408,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage);
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal(count, target.Count.Value);
         }
 
@@ -426,7 +428,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<long>(serial, target.MsgSerial);
         }
 
@@ -437,7 +439,7 @@
         public void DeserializesMessageCorrectly_Flags(int flags)
         {
             // Arrange
-            
+
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("flags"));
@@ -447,7 +449,7 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
+            target.Should().NotBeNull();
             Assert.Equal<byte>((byte)flags, (byte)target.Flags);
         }
 
@@ -466,8 +468,8 @@
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
-            Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
+            target.Should().NotBeNull();
+            target.Messages.Should().NotBeNull();
             Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {

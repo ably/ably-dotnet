@@ -12,21 +12,21 @@ namespace IO.Ably.AcceptanceTests
     {
         public class WithBase64Message
         {
-            private string _stringData;
             private byte[] _binaryData;
             private string _base64Data;
 
             public WithBase64Message()
             {
-                _stringData = "random-string";
-                _binaryData = _stringData.GetBytes();
+                const string stringData = "random-string";
+
+                _binaryData = stringData.GetBytes();
                 _base64Data = _binaryData.ToBase64();
             }
 
             [Fact]
             public void WithBase64EncodingBeforeOtherEncodings_SavesDecodedDataToTheContext()
             {
-                var payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
+                var payload = new Message { Data = _base64Data, Encoding = "utf-8/base64" };
 
                 var context = new DecodingContext();
                 MessageHandler.DecodePayload(payload, context);
@@ -54,7 +54,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 var initialEncoding = "utf-8/cipher+aes-128-cbc";
                 var encryptedValue = "test";
-                var payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
+                var payload = new Message { Data = encryptedValue, Encoding = initialEncoding };
 
                 var channelOptions =
                     new ChannelOptions(true, new CipherParams(
