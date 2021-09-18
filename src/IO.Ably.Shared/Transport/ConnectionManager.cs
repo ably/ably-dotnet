@@ -60,7 +60,7 @@ namespace IO.Ably.Transport
 
             if (Transport != null)
             {
-                DestroyTransport(false);
+                DestroyTransport();
             }
 
             try
@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void DestroyTransport(bool suppressClosedEvent)
+        public void DestroyTransport()
         {
             if (Logger.IsDebug)
             {
