@@ -289,7 +289,7 @@ namespace IO.Ably.Transport
                 try
                 {
                     var buffer = new ArraySegment<byte>(new byte[1024 * 16]); // Default receive buffer size
-                    WebSocketReceiveResult result = null;
+                    WebSocketReceiveResult result;
                     using (var ms = new MemoryStream())
                     {
                         do
