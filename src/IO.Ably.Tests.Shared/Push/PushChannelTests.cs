@@ -342,7 +342,6 @@ namespace IO.Ably.Tests.Push
                 subscribeFunc.Should().ThrowAsync<AblyException>().WithMessage("Cannot Unsubscribe client from channel*");
             }
 
-
             [Fact]
             [Trait("spec", "RSH7d")]
             [Trait("spec", "RSH7d2")]
