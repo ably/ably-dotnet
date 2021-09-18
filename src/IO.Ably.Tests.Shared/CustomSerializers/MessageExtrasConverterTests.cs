@@ -1,4 +1,3 @@
-using System.Linq;
 using FluentAssertions;
 using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
@@ -23,14 +22,14 @@ namespace IO.Ably.Tests.CustomSerializers
         [Trait("spec ", "tm2i")]
         public void ShouldParse_MessageExtrasJson()
         {
-            var json = @"
-                        {
+            const string json = @"{
                             'random':'boo',
                             'delta': {
                                 'From': '1',
                                 'Format':'best'
                              }
                         }";
+
             var originalJToken = JToken.Parse(json);
             var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
 
@@ -50,7 +49,7 @@ namespace IO.Ably.Tests.CustomSerializers
         [Trait("spec ", "tm2i")]
         public void ShouldParse_MessageExtrasJson_WithEmptyDelta()
         {
-            var json = @"{
+            const string json = @"{
                             'random':'boo',
                             'foo':'fooValue',
                             'bar':'barValue',
@@ -59,6 +58,7 @@ namespace IO.Ably.Tests.CustomSerializers
                                 'key2': 'value2'
                             }
                         }";
+
             var originalJToken = JToken.Parse(json);
             var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
             ((string)messageExtras.ToJson()["random"]).Should().Be("boo");
@@ -76,12 +76,13 @@ namespace IO.Ably.Tests.CustomSerializers
         [Trait("spec ", "tm2i")]
         public void ShouldParse_MessageExtrasJson_WithDelta()
         {
-            var json = @"{
+            const string json = @"{
                             'delta': {
                                 'From': '1',
                                 'Format':'best'
                              }
                         }";
+
             var originalJToken = JToken.Parse(json);
             var messageExtras = JsonConvert.DeserializeObject<MessageExtras>(json, _jsonSettings);
 
@@ -98,7 +99,7 @@ namespace IO.Ably.Tests.CustomSerializers
         [Trait("spec ", "tm2i")]
         public void ShouldParse_Message_WithNullMessageExtras()
         {
-            var json = @"{
+            const string json = @"{
                             'id':'UniqueId',
                             'clientId':'clientId',
                             'connectionId':'connectionId',
@@ -119,7 +120,7 @@ namespace IO.Ably.Tests.CustomSerializers
         [Trait("spec ", "tm2i")]
         public void ShouldParse_Message_WithArbitraryMessageExtras()
         {
-            var json = @"{
+            const string json = @"{
                             'id':'UniqueId',
                             'clientId':'clientId',
                             'connectionId':'connectionId',
