@@ -252,25 +252,27 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        internal async Task<IEnumerable<RealtimeCommand>> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
+        private async Task<IEnumerable<RealtimeCommand>> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
         {
-            if (command.ConfirmedAliveAt.HasValue)
+            if (!command.ConfirmedAliveAt.HasValue)
             {
-                TimeSpan delta = Now() - command.ConfirmedAliveAt.Value;
-                if (delta > command.ConnectionStateTtl)
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            TimeSpan delta = Now() - command.ConfirmedAliveAt.Value;
+            if (delta > command.ConnectionStateTtl)
+            {
+                if (!_heartbeatMonitorDisconnectRequested)
                 {
-                    if (!_heartbeatMonitorDisconnectRequested)
-                    {
-                        _heartbeatMonitorDisconnectRequested = true;
-                        return new RealtimeCommand[] { SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy(command) };
-                    }
+                    _heartbeatMonitorDisconnectRequested = true;
+                    return new RealtimeCommand[] { SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy(command) };
                 }
-                else
+            }
+            else
+            {
+                if (_heartbeatMonitorDisconnectRequested)
                 {
-                    if (_heartbeatMonitorDisconnectRequested)
-                    {
-                        _heartbeatMonitorDisconnectRequested = false;
-                    }
+                    _heartbeatMonitorDisconnectRequested = false;
                 }
             }
 
@@ -710,7 +712,7 @@ namespace IO.Ably.Realtime.Workflow
             return Task.CompletedTask;
         }
 
-        public async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)
+        private async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)
         {
             try
             {
@@ -779,13 +781,13 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
-                        var error = TransformIfTokenErrorAndNotRetriable();
+                        var error = TransformIfTokenErrorAndNotRetryable();
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
 
                         ConnectionManager.DestroyTransport(true);
 
-                        ErrorInfo TransformIfTokenErrorAndNotRetriable()
+                        ErrorInfo TransformIfTokenErrorAndNotRetryable()
                         {
                             if (cmd.Error.IsTokenError && Auth.TokenRenewable == false)
                             {
@@ -964,7 +966,7 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        public void SendPendingMessages(bool resumed)
+        private void SendPendingMessages(bool resumed)
         {
             if (resumed)
             {
@@ -992,7 +994,7 @@ namespace IO.Ably.Realtime.Workflow
             State.PendingMessages.Clear();
         }
 
-        public void ClearAckQueueAndFailMessages(ErrorInfo error)
+        private void ClearAckQueueAndFailMessages(ErrorInfo error)
         {
             foreach (var item in State.WaitingForAck.Where(x => x.Callback != null))
             {
@@ -1045,11 +1047,17 @@ namespace IO.Ably.Realtime.Workflow
             return Task.FromResult(false);
         }
 
+        public bool IsProcessingCommands()
+        {
+            var gotCount = TryGetCount(out int count);
+            return _processingCommand || (gotCount && count > 0);
+        }
+
         /// <summary>
         /// Attempt to query the backlog length of the queue.
         /// </summary>
         /// <param name="count">The (approximate) count of items in the Channel.</param>
-        public bool TryGetCount(out int count)
+        private bool TryGetCount(out int count)
         {
             // get this using the reflection
             try
@@ -1069,12 +1077,6 @@ namespace IO.Ably.Realtime.Workflow
 
             count = default(int);
             return false;
-        }
-
-        public bool IsProcessingCommands()
-        {
-            var gotCount = TryGetCount(out int count);
-            return _processingCommand || (gotCount && count > 0);
         }
     }
 }
