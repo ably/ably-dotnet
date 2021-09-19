@@ -3,12 +3,19 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Shared.CustomSerializers
 {
     public class MessageDataConverterTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
         private readonly JsonSerializerSettings _jsonSettings = JsonHelper.Settings;
+
+        public MessageDataConverterTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
 
         private class TestLetter
         {
