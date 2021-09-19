@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,7 +10,7 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
     public class MessageDataConverterTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        public JsonSerializerSettings JsonSettings = JsonHelper.Settings;
+        private readonly JsonSerializerSettings _jsonSettings = JsonHelper.Settings;
 
         public MessageDataConverterTests(ITestOutputHelper testOutputHelper)
         {
@@ -33,12 +32,14 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
         [Fact]
         public void ShouldParse_Message_WithData_Transparently()
         {
-            var message = new Message()
+            var message = new Message
             {
                 Id = "my-id",
-                Data = new TestLetter()
+                Data = new TestLetter
                 {
-                    Sender = "naruto-kun", Receiver = "sakura-chan", Message = null
+                    Sender = "naruto-kun",
+                    Receiver = "sakura-chan",
+                    Message = null
                 },
                 ClientId = "my-client-id",
                 ConnectionId = "my-connection-id",
@@ -48,7 +49,7 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
                 Timestamp = DateTimeOffset.Now
             };
 
-            var serialized = JsonConvert.SerializeObject(message, JsonSettings);
+            var serialized = JsonConvert.SerializeObject(message, _jsonSettings);
             var serializedJToken = JToken.Parse(serialized);
             serializedJToken["encoding"].Should().BeNull();
             serializedJToken["extras"].Should().BeNull();
