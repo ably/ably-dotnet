@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
-using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {
