@@ -410,7 +410,7 @@ namespace IO.Ably
                     try
                     {
                         current.Action?.Invoke(data);
-                        var ignoredTask = current.AsyncAction?.Invoke(data);
+                        _ = current.AsyncAction?.Invoke(data);
                     }
                     catch (Exception ex)
                     {
