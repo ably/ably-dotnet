@@ -198,11 +198,16 @@ namespace IO.Ably.Realtime
 
         internal JObject GetState()
         {
-            var state = new JObject();
-            state["channelName"] = _channelName;
-            state["syncInProgress"] = _isSyncInProgress;
-            state["initialSyncComplete"] = InitialSyncCompleted;
-            state["members"] = new JArray(_members.Select(x => JObject.FromObject(new { Name = x.Key, Data = x.Value })));
+            var matchingMembers = _members.Select(x => JObject.FromObject(new { Name = x.Key, Data = x.Value }));
+
+            var state = new JObject
+            {
+                ["channelName"] = _channelName,
+                ["syncInProgress"] = _isSyncInProgress,
+                ["initialSyncComplete"] = InitialSyncCompleted,
+                ["members"] = new JArray(matchingMembers),
+            };
+
             return state;
         }
 
