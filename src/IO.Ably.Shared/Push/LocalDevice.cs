@@ -38,13 +38,18 @@ namespace IO.Ably.Push
 
             set
             {
-                if (value != null)
+                if (value == null)
                 {
-                    JObject obj = new JObject();
-                    obj.Add("transportType", value.Type);
-                    obj.Add("registrationToken", value.Token);
-                    Push.Recipient = obj;
+                    return;
                 }
+
+                var obj = new JObject
+                {
+                    { "transportType", value.Type },
+                    { "registrationToken", value.Token },
+                };
+
+                Push.Recipient = obj;
             }
         }
 
