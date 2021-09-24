@@ -284,21 +284,23 @@ namespace IO.Ably.Push
             Debug("Loading Local Device persisted state.");
             string GetDeviceSetting(string key) => _mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
 
-            var localDevice = new LocalDevice();
-            localDevice.Platform = _mobileDevice.DevicePlatform;
-            localDevice.FormFactor = _mobileDevice.FormFactor;
             string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
 
-            localDevice.Id = id;
+            var localDevice = new LocalDevice
+            {
+                Platform = _mobileDevice.DevicePlatform,
+                FormFactor = _mobileDevice.FormFactor,
+                Id = id,
+                ClientId = GetDeviceSetting(PersistKeys.Device.ClientId),
+                DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken),
+            };
+
             if (id.IsNotEmpty())
             {
                 localDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
             }
 
-            localDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
-            localDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
-
-            var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
+            string tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
 
             if (tokenType.IsNotEmpty())
             {
