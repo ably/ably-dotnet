@@ -1232,7 +1232,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3g")]
-        public class WaitingForDeregistrationTests : MockHttpRestSpecs
+        public class WaitingForDeregistrationTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3g1")]
@@ -1268,6 +1268,7 @@ namespace IO.Ably.Tests.Push
             {
                 var (state, machine) = GetStateAndStateMachine(stateMachine => new ActivationStateMachine.NotActivated(stateMachine));
                 var machineLocalDevice = machine.LocalDevice;
+
                 MobileDevice.Settings.Should().NotBeEmpty();
                 var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.Deregistered());
 
@@ -1344,9 +1345,17 @@ namespace IO.Ably.Tests.Push
                 return (new ActivationStateMachine.WaitingForDeregistration(stateMachine, getPreviousState(stateMachine)), stateMachine);
             }
 
+            private void ClearLocalDeviceStaticInstance() => LocalDevice.Instance = null;
+
             public FakeMobileDevice MobileDevice { get; set; }
 
-            public AblyRest RestClient { get; set; }
+            public AblyRest RestClient { get; }
+
+            public void Dispose()
+            {
+                MobileDevice = null;
+                ClearLocalDeviceStaticInstance();
+            }
         }
     }
 }
