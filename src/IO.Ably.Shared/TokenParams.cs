@@ -55,12 +55,14 @@ namespace IO.Ably
                 return this;
             }
 
-            var result = new TokenParams();
-            result.ClientId = ClientId.IsNotEmpty() ? ClientId : otherParams.ClientId;
-            result.Capability = Capability ?? otherParams.Capability;
-            result.Ttl = Ttl ?? otherParams.Ttl;
-            result.Timestamp = Timestamp ?? otherParams.Timestamp;
-            result.Nonce = Nonce ?? otherParams.Nonce;
+            var result = new TokenParams
+            {
+                ClientId = ClientId.IsNotEmpty() ? ClientId : otherParams.ClientId,
+                Capability = Capability ?? otherParams.Capability,
+                Ttl = Ttl ?? otherParams.Ttl,
+                Timestamp = Timestamp ?? otherParams.Timestamp,
+                Nonce = Nonce ?? otherParams.Nonce,
+            };
             return result;
         }
 
@@ -70,16 +72,19 @@ namespace IO.Ably
         /// <returns>a new instance of token params.</returns>
         public TokenParams Clone()
         {
-            var result = new TokenParams();
-            result.ClientId = ClientId;
+            var result = new TokenParams
+            {
+                ClientId = ClientId,
+                Nonce = Nonce,
+                Ttl = Ttl,
+                Timestamp = Timestamp,
+            };
+
             if (Capability != null)
             {
                 result.Capability = new Capability(Capability.ToJson());
             }
 
-            result.Nonce = Nonce;
-            result.Ttl = Ttl;
-            result.Timestamp = Timestamp;
             return result;
         }
 
