@@ -234,7 +234,7 @@ namespace IO.Ably.Tests.Push
             }
         }
 
-        public class NotActivatedStateTests : MockHttpRestSpecs
+        public class NotActivatedStateTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3a1")]
@@ -465,7 +465,13 @@ namespace IO.Ably.Tests.Push
 
             public AblyRest RestClient { get; }
 
-            public FakeMobileDevice MobileDevice { get; }
+            public FakeMobileDevice MobileDevice { get; set; }
+
+            public void Dispose()
+            {
+                MobileDevice = null;
+                ClearLocalDeviceStaticInstance();
+            }
         }
 
         [Trait("spec", "RSH3b")]
@@ -1345,8 +1351,6 @@ namespace IO.Ably.Tests.Push
                 return (new ActivationStateMachine.WaitingForDeregistration(stateMachine, getPreviousState(stateMachine)), stateMachine);
             }
 
-            private void ClearLocalDeviceStaticInstance() => LocalDevice.Instance = null;
-
             public FakeMobileDevice MobileDevice { get; set; }
 
             public AblyRest RestClient { get; }
@@ -1357,5 +1361,7 @@ namespace IO.Ably.Tests.Push
                 ClearLocalDeviceStaticInstance();
             }
         }
+
+        private static void ClearLocalDeviceStaticInstance() => LocalDevice.Instance = null;
     }
 }
