@@ -189,11 +189,13 @@ namespace IO.Ably
         /// <returns>json object of the full state of the library.</returns>
         public string GetCurrentState()
         {
-            var result = new JObject();
-            result["options"] = JObject.FromObject(Options);
-            result["state"] = State.WhatDoIHave();
-            result["channels"] = Channels.GetCurrentState();
-            result["isDisposed"] = Disposed;
+            var result = new JObject
+            {
+                ["options"] = JObject.FromObject(Options),
+                ["state"] = State.WhatDoIHave(),
+                ["channels"] = Channels.GetCurrentState(),
+                ["isDisposed"] = Disposed,
+            };
             return result.ToString();
         }
 
