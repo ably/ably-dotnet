@@ -108,8 +108,7 @@ namespace IO.Ably.Realtime
                 return false;
             }
 
-            EventHandler<ChannelStateChange> eventHandler = null;
-            eventHandler = (s, args) =>
+            void EventHandler(object s, ChannelStateChange args)
             {
                 if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                 {
@@ -119,7 +118,7 @@ namespace IO.Ably.Realtime
                     }
 
                     var detachedChannel = (RealtimeChannel)s;
-                    detachedChannel.InternalStateChanged -= eventHandler;
+                    detachedChannel.InternalStateChanged -= EventHandler;
 
                     if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
                     {
@@ -134,9 +133,9 @@ namespace IO.Ably.Realtime
                         Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
                     }
                 }
-            };
+            }
 
-            channel.InternalStateChanged += eventHandler;
+            channel.InternalStateChanged += EventHandler;
             channel.Detach();
             return true;
         }
