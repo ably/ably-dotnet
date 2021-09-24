@@ -401,6 +401,57 @@ namespace IO.Ably.Tests
             {
                 Assert.Throws<InvalidOperationException>(() => new ClientOptions { ClientId = "*" });
             }
+
+            [Fact]
+            public void WhenConnectionClientIdIsSet_ShouldFireOnClientIdChangedFires()
+            {
+                var rest = new AblyRest(ValidKey);
+                var updateClientIdCalled = false;
+                var newClientId = "newClientId";
+
+                rest.AblyAuth.OnClientIdChanged = (tuple) =>
+                {
+                    updateClientIdCalled = true;
+                    tuple.newClientId.Should().Be(newClientId);
+                };
+
+                rest.AblyAuth.ConnectionClientId = newClientId;
+                updateClientIdCalled.Should().BeTrue();
+            }
+
+            [Fact]
+            public void WhenConnectionTokenParamsAreUpdatedWithNewClientId_ShouldFireOnClientIdChanged()
+            {
+                var rest = new AblyRest(ValidKey);
+                var updateClientIdCalled = false;
+                var newClientId = "newClientId";
+
+                rest.AblyAuth.OnClientIdChanged = (tuple) =>
+                {
+                    updateClientIdCalled = true;
+                    tuple.newClientId.Should().Be(newClientId);
+                };
+
+                rest.AblyAuth.CurrentTokenParams = new TokenParams { ClientId = newClientId };
+                updateClientIdCalled.Should().BeTrue();
+            }
+
+            [Fact]
+            public void WhenCurrentTokenIsUpdatedWithNewClientId_ShouldFireOnClientIdChanged()
+            {
+                var rest = new AblyRest(ValidKey);
+                var updateClientIdCalled = false;
+                var newClientId = "newClientId";
+
+                rest.AblyAuth.OnClientIdChanged = (tuple) =>
+                {
+                    updateClientIdCalled = true;
+                    tuple.newClientId.Should().Be(newClientId);
+                };
+
+                rest.AblyAuth.CurrentToken = new TokenDetails { ClientId = newClientId };
+                updateClientIdCalled.Should().BeTrue();
+            }
         }
 
         public AuthorizationTests(ITestOutputHelper output)

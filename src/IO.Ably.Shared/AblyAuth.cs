@@ -12,6 +12,7 @@ namespace IO.Ably
     internal class AblyAuth : IAblyAuth
     {
         public Func<TokenDetails, bool, Task> OnAuthUpdated = (token, wait) => Task.CompletedTask; // By default nothing should happen
+        public Action<(string oldClientId, string newClientId)> OnClientIdChanged = (tuple) => { };
 
         private readonly AblyRest _rest;
 
@@ -30,6 +31,9 @@ namespace IO.Ably
         protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
 
         private TimeSpan? _serverTimeDiff;
+        private TokenDetails _currentToken;
+        private TokenParams _currentTokenParams;
+        private string _connectionClientId;
 
         private bool HasServerTime => ServerNow.HasValue;
 
@@ -47,18 +51,51 @@ namespace IO.Ably
 
         internal ClientOptions Options { get; }
 
-        internal TokenParams CurrentTokenParams { get; set; }
+        internal TokenParams CurrentTokenParams
+        {
+            get => _currentTokenParams;
+            set
+            {
+                if (value != null)
+                {
+                    NotifyClientIdIfChanged(value.ClientId);
+                }
+
+                _currentTokenParams = value;
+            }
+        }
 
         internal AuthOptions CurrentAuthOptions { get; set; }
 
-        public TokenDetails CurrentToken { get; set; }
+        public TokenDetails CurrentToken
+        {
+            get => _currentToken;
+            set
+            {
+                if (value != null)
+                {
+                    NotifyClientIdIfChanged(value.ClientId);
+                }
 
-        internal string ConnectionClientId { get; set; }
+                _currentToken = value;
+            }
+        }
 
+        internal string ConnectionClientId
+        {
+            get => _connectionClientId;
+            set
+            {
+                NotifyClientIdIfChanged(value);
+                _connectionClientId = value;
+            }
+        }
+
+        // TODO: It's really difficult to know when the clientId gets updated
         public string ClientId => ConnectionClientId
-            ?? CurrentToken?.ClientId
-            ?? CurrentTokenParams?.ClientId
-            ?? Options.GetClientId();
+                                  ?? CurrentToken?.ClientId
+                                  ?? CurrentTokenParams?.ClientId
+                                  ?? Options.GetClientId();
 
         public bool TokenRenewable => TokenCreatedExternally || HasApiKey;
 
@@ -398,6 +435,15 @@ namespace IO.Ably
             if (!tokenParams.Timestamp.HasValue)
             {
                 tokenParams.Timestamp = ServerNow;
+            }
+        }
+
+        private void NotifyClientIdIfChanged(string newClientId)
+        {
+            var clientId = ClientId;
+            if (newClientId.IsNotEmpty() && clientId.EqualsTo(newClientId) == false)
+            {
+                OnClientIdChanged((clientId, newClientId));
             }
         }
 
