@@ -19,7 +19,7 @@ namespace IO.Ably.Realtime.Workflow
     /// on a single thread. This makes it very easy to mutate state because we are immune from thread race conditions.
     /// There requests are encapsulated in Command objects (objects inheriting from RealtimeCommand) which provide
     /// information about what needs to happen and also hold any parameters necessary for the operation. For example if we take the
-    /// SetClosedStateCommand object. The intension is to change the Connection state to Closed but the Command object also contains the error
+    /// SetClosedStateCommand object. The intention is to change the Connection state to Closed but the Command object also contains the error
     /// if any associated with this request. This makes logging very easy as we can clearly see the intent of the command and the parameters. Also in the
     /// future we can parse the logs and easily recreate state in the library.
     /// 2. Centralizes the logic for handling Commands. It is now much easier to find where things are happening. If you exclude
