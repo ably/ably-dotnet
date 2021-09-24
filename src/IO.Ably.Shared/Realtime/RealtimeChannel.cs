@@ -430,8 +430,9 @@ namespace IO.Ably.Realtime
 
         public async Task<Result> SetOptionsAsync(ChannelOptions options)
         {
-            Action<Action<bool, ErrorInfo>> setOptions = callback => SetOptions(options, callback);
-            return await TaskWrapper.Wrap(setOptions);
+            void Action(Action<bool, ErrorInfo> callback) => SetOptions(options, callback);
+
+            return await TaskWrapper.Wrap(Action);
         }
 
         public void Subscribe(Action<Message> handler)
