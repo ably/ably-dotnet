@@ -254,7 +254,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(2000);
                 tsc = new TaskCompletionAwaiter(500);
 
-                // set detached so that the nexted Attached message with resume will pass
+                // set detached so that the next Attached message with resume will pass
                 client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
                 channel.Once(ChannelEvent.Attached, stateChange =>
