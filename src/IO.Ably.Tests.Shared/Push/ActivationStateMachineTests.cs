@@ -684,6 +684,7 @@ namespace IO.Ably.Tests.Push
 
             [Fact]
             [Trait("spec", "RSH3c2a")]
+            [Trait("spec", "RSH8c")]
             public async Task WithGotDeviceRegistration_ShouldUpdateDeviceDetails()
             {
                 var (state, machine) = GetStateAndStateMachine();
