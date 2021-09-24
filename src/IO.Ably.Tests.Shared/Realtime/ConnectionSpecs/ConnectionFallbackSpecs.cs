@@ -150,7 +150,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithRealtimeHostConnectedToFallback_WhenMakingRestRequestThatFails_ShouldRetryUsingAFallback()
         {
             var requestCount = 0;
-            Func<HttpRequestMessage, HttpResponseMessage> getResponse = request =>
+
+            HttpResponseMessage GetResponse(HttpRequestMessage request)
             {
                 try
                 {
@@ -175,9 +176,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 {
                     requestCount++;
                 }
-            };
+            }
 
-            var handler = new FakeHttpMessageHandler(getResponse);
+            var handler = new FakeHttpMessageHandler(GetResponse);
 
             var client = GetClientWithFakeTransportAndMessageHandler(messageHandler: handler);
 
