@@ -75,7 +75,7 @@ namespace IO.Ably.Push
 
         internal static LocalDevice Instance { get; set; }
 
-        internal static LocalDevice GetInstance(IMobileDevice mobileDevice = null, string clientId = null)
+        internal static LocalDevice GetInstance(IMobileDevice mobileDevice, string clientId)
         {
             if (mobileDevice is null)
             {
