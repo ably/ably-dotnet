@@ -90,8 +90,9 @@ namespace IO.Ably
         /// </summary>
         public PushRest Push { get; private set; }
 
-        // TODO: Think about how the local device will be shared among Rest instances and
-        // what will happen whet it gets updated.
+        /// <summary>
+        /// The local device instance represents the current state of the device in respect of it being a target for push notifications.
+        /// </summary>
         internal LocalDevice Device
         {
             get
