@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
+using IO.Ably.Realtime;
+using IO.Ably.Tests.Realtime;
+using IO.Ably.Types;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
@@ -163,6 +166,54 @@ namespace IO.Ably.Tests.Push
             var device = restClient.Device;
 
             device.ClientId.Should().Be(optionsClientId);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA7b2")]
+        [Trait("spec", "RSH8d")]
+        public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_ShouldUpdateLocalDeviceClientId()
+        {
+            const string newClientId = "123";
+            var mobileDevice = new FakeMobileDevice();
+            var ably = GetRestClient(
+                handleRequestFunc: async request => new AblyResponse() { TextResponse = new TokenDetails("token").ToJson() },
+                mobileDevice: mobileDevice);
+
+            var localDevice = ably.Device;
+            localDevice.ClientId.Should().BeNull();
+
+            _ = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = newClientId });
+
+            localDevice.ClientId.Should().Be(newClientId);
+            mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA7b3")]
+        [Trait("spec", "RSH8d")]
+        public async Task WhenConnectedMessageContainsClientId_AuthClientIdShouldBeTheSame()
+        {
+            // Arrange
+            var options = new ClientOptions(ValidKey) { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true };
+            var mobileDevice = new FakeMobileDevice();
+            var realtime = new AblyRealtime(options, mobileDevice: mobileDevice);
+            const string newClientId = "testId";
+
+            var localDevice = realtime.Device;
+            localDevice.ClientId.Should().BeNull();
+
+            // Act
+            realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails { ClientId = newClientId },
+            });
+
+            await realtime.WaitForState(ConnectionState.Connected);
+
+            // Assert
+            realtime.Auth.ClientId.Should().Be(newClientId);
+            localDevice.ClientId.Should().Be(newClientId);
+            mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
         }
 
         public LocalDeviceTests(ITestOutputHelper output)
