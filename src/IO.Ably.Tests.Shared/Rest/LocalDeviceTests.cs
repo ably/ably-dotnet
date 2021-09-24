@@ -34,6 +34,22 @@ namespace IO.Ably.Tests.DotNetCore20.Rest
             realtime.Device.Should().NotBeNull();
         }
 
+        [Fact]
+        [Trait("spec", "RSH8")]
+        public void WhenPlatformsDoesNotSupportPushNotifications_DeviceShouldBeNull()
+        {
+            // Realtime check
+            var realtime = new AblyRealtime(new ClientOptions(ValidKey)
+            {
+                AutoConnect = false
+            });
+            realtime.Device.Should().BeNull();
+
+            // Rest check
+            var rest = new AblyRest(ValidKey);
+            rest.MobileDevice.Should().BeNull();
+        }
+
         public LocalDeviceTests(ITestOutputHelper output)
             : base(output)
         {
