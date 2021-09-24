@@ -62,10 +62,94 @@ namespace IO.Ably.Push
                 DeviceSecret = Crypto.GenerateSecret(),
                 ClientId = clientId,
 
-                // TODO: Pass mobile device in constructor instead of using static dependencies.
                 Platform = mobileDevice?.DevicePlatform,
                 FormFactor = mobileDevice?.FormFactor,
             };
         }
+
+        internal static void ResetDevice(IMobileDevice mobileDevice)
+        {
+            mobileDevice.ClearPreferences(PersistKeys.Device.SharedName);
+            Instance = null;
+        }
+
+        internal static LocalDevice Instance { get; set; }
+
+        internal static LocalDevice GetInstance(IMobileDevice mobileDevice = null, string clientId = null)
+        {
+            if (mobileDevice is null)
+            {
+                throw new AblyException(
+                    "Cannot initialise LocalDevice instance before initialising the MobileDevice class. For Android call AndroidMobileDevice.Initialise() and for iOS call AppleMobileDevice.Initialise()");
+            }
+
+            switch (Instance)
+            {
+                case null:
+                    if (LoadPersistedLocalDevice(mobileDevice, out var device))
+                    {
+                        Instance = device;
+                    }
+                    else
+                    {
+                        Instance = Create(clientId, mobileDevice);
+                        PersistLocalDevice(mobileDevice, Instance);
+                    }
+
+                    return Instance;
+                default:
+                    return Instance;
+            }
+        }
+
+        internal static bool LoadPersistedLocalDevice(IMobileDevice mobileDevice, out LocalDevice persistedDevice)
+        {
+            Debug("Loading Local Device persisted state.");
+            string GetDeviceSetting(string key) => mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
+
+            string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
+            if (id.IsEmpty())
+            {
+                persistedDevice = null;
+                return false;
+            }
+
+            persistedDevice = new LocalDevice();
+            persistedDevice.Platform = mobileDevice.DevicePlatform;
+            persistedDevice.FormFactor = mobileDevice.FormFactor;
+
+            persistedDevice.Id = id;
+            persistedDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
+
+            persistedDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
+            persistedDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
+
+            var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
+
+            if (tokenType.IsNotEmpty())
+            {
+                string tokenString = GetDeviceSetting(PersistKeys.Device.Token);
+
+                if (tokenString.IsNotEmpty())
+                {
+                    var token = new RegistrationToken(tokenType, tokenString);
+                    persistedDevice.RegistrationToken = token;
+                }
+            }
+
+            Debug($"LocalDevice loaded: {persistedDevice.ToJson()}");
+
+            return true;
+        }
+
+        internal static void PersistLocalDevice(IMobileDevice mobileDevice, LocalDevice localDevice)
+        {
+            mobileDevice.SetPreference(PersistKeys.Device.DeviceId, localDevice.Id, PersistKeys.Device.SharedName);
+            mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
+            mobileDevice.SetPreference(PersistKeys.Device.DeviceSecret, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
+            mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        private static void Debug(string message) => DefaultLogger.Debug($"LocalDevice: {message}");
     }
 }

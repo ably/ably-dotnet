@@ -71,19 +71,13 @@ namespace IO.Ably.Push
                             return (nextState, ToNextEventFunc(Machine.ValidateRegistration));
                         }
 
-                        if (localDevice.IsCreated == false)
+                        if (localDevice.RegistrationToken == null)
                         {
-                            var newLocalDevice = LocalDevice.Create(Machine.ClientId, Machine._mobileDevice);
-                            Machine.PersistLocalDevice(newLocalDevice);
-                            Machine.LocalDevice = newLocalDevice;
                             Machine.GetRegistrationToken();
-
                             return (new WaitingForPushDeviceDetails(Machine), EmptyNextEventFunc);
                         }
 
-                        var nextEvent = localDevice.RegistrationToken != null ? new GotPushDeviceDetails() : null;
-
-                        return (new WaitingForPushDeviceDetails(Machine), ToNextEventFunc(nextEvent));
+                        return (new WaitingForPushDeviceDetails(Machine), ToNextEventFunc(new GotPushDeviceDetails()));
                     case GotPushDeviceDetails _:
                         return (this, EmptyNextEventFunc);
                     default:
@@ -216,7 +210,7 @@ namespace IO.Ably.Push
                         var localDevice = Machine.LocalDevice;
                         return (new WaitingForDeregistration(Machine, this), ToNextEventFunc(() => Deregister(localDevice.Id)));
                     case GotPushDeviceDetails _:
-                        var device = Machine.EnsureLocalDeviceIsLoaded();
+                        var device = Machine.LocalDevice;
 
                         return (new WaitingForRegistrationSync(Machine, @event), ToNextEventFunc(() => UpdateRegistration(device)));
                     default:

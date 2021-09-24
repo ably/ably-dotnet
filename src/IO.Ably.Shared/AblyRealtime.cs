@@ -54,7 +54,7 @@ namespace IO.Ably
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options, mobileDevice) : new AblyRest(options, mobileDevice);
-            Push = new PushRealtime(RestClient, mobileDevice, Logger);
+            Push = new PushRealtime(RestClient, Logger);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();

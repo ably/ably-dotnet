@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Push;
@@ -15,6 +16,8 @@ namespace IO.Ably
     public sealed class AblyRest : IRestClient
     {
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
+        private LocalDevice _device;
+        private object _deviceLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyRest"/> class using an api key.</summary>
@@ -89,7 +92,27 @@ namespace IO.Ably
 
         // TODO: Think about how the local device will be shared among Rest instances and
         // what will happen whet it gets updated.
-        internal LocalDevice Device { get; set; }
+        internal LocalDevice Device
+        {
+            get
+            {
+                if (_device != null)
+                {
+                    return _device;
+                }
+
+                if (MobileDevice != null)
+                {
+                    lock (_deviceLock)
+                    {
+                        return LocalDevice.GetInstance(MobileDevice, Auth.ClientId);
+                    }
+                }
+
+                return null;
+            }
+            set => _device = value; // The setting is only for testing purposes
+        }
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
 
