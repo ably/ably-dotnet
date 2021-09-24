@@ -48,6 +48,12 @@ namespace IO.Ably.Push
             }
         }
 
+        internal void UpdateClientId(string newClientId, IMobileDevice mobileDevice)
+        {
+            ClientId = newClientId;
+            PersistLocalDevice(mobileDevice, this);
+        }
+
         /// <summary>
         /// Create a new instance of localDevice with a random Id and secret.
         /// </summary>
@@ -74,6 +80,8 @@ namespace IO.Ably.Push
         }
 
         internal static LocalDevice Instance { get; set; }
+
+        internal static bool IsLocalDeviceInitialized => Instance != null;
 
         internal static LocalDevice GetInstance(IMobileDevice mobileDevice, string clientId)
         {
