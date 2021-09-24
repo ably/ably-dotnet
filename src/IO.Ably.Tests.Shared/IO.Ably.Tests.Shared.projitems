@@ -121,6 +121,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\JwtSandboxSpec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\LocalDeviceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\MockHttpRestSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PresenceSpecs.cs" />
