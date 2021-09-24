@@ -139,10 +139,10 @@ namespace IO.Ably.Tests.Push
             {
                 var rest = GetRestClient();
 
-                Func<string, Task> func = (deviceId) => rest.Push.Admin.DeviceRegistrations.GetAsync(deviceId);
+                Task Func(string deviceId) => rest.Push.Admin.DeviceRegistrations.GetAsync(deviceId);
 
-                Func<Task> withEmptyDeviceId = () => func(string.Empty);
-                Func<Task> withNullDeviceId = () => func(null);
+                Func<Task> withEmptyDeviceId = () => Func(string.Empty);
+                Func<Task> withNullDeviceId = () => Func(null);
 
                 await withEmptyDeviceId.Should().ThrowAsync<AblyException>();
                 await withNullDeviceId.Should().ThrowAsync<AblyException>();
@@ -211,31 +211,30 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1b2")]
             public async Task List_ShouldCallCorrectUrlAndQueryParameters()
             {
-                Func<ListDeviceDetailsRequest, Task<AblyRequest>> listDevices =
-                    async query =>
+                async Task<AblyRequest> ListDevices(ListDeviceDetailsRequest query)
+                {
+                    AblyRequest currentRequest = null;
+                    var client = GetRestClient(request =>
                     {
-                        AblyRequest currentRequest = null;
-                        var client = GetRestClient(request =>
-                        {
-                            currentRequest = request;
-                            return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
-                        });
+                        currentRequest = request;
+                        return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
+                    });
 
-                        await client.Push.Admin.DeviceRegistrations.List(query);
+                    await client.Push.Admin.DeviceRegistrations.List(query);
 
-                        return currentRequest;
-                    };
+                    return currentRequest;
+                }
 
-                var emptyFilterRequest = await listDevices(ListDeviceDetailsRequest.Empty(100));
+                var emptyFilterRequest = await ListDevices(ListDeviceDetailsRequest.Empty(100));
                 emptyFilterRequest.Url.Should().Be("/push/deviceRegistrations");
                 emptyFilterRequest.QueryParameters.Should().HaveCount(1);
                 emptyFilterRequest.QueryParameters.Should().ContainKey("limit");
 
-                var deviceIdRequest = await listDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
+                var deviceIdRequest = await ListDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
                 deviceIdRequest.Url.Should().Be("/push/deviceRegistrations");
                 deviceIdRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("123");
 
-                var clientIdRequest = await listDevices(ListDeviceDetailsRequest.WithClientId("234"));
+                var clientIdRequest = await ListDevices(ListDeviceDetailsRequest.WithClientId("234"));
                 clientIdRequest.Url.Should().Be("/push/deviceRegistrations");
                 clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("234");
             }
@@ -303,10 +302,10 @@ namespace IO.Ably.Tests.Push
             {
                 var restClient = GetRestClient();
 
-                Func<DeviceDetails, Task> callSave = (deviceDetails) => restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
+                Task CallSave(DeviceDetails deviceDetails) => restClient.Push.Admin.DeviceRegistrations.SaveAsync(deviceDetails);
 
-                Func<Task> withNullDeviceDetails = () => callSave(null);
-                Func<Task> withDeviceDetailsWithoutId = () => callSave(new DeviceDetails());
+                Func<Task> withNullDeviceDetails = () => CallSave(null);
+                Func<Task> withDeviceDetailsWithoutId = () => CallSave(new DeviceDetails());
 
                 (await withNullDeviceDetails.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
                     .Be(ErrorCodes.BadRequest);
@@ -339,10 +338,10 @@ namespace IO.Ably.Tests.Push
             {
                 var client = GetRestClient();
 
-                Func<string, Task> callDelete = (deviceId) => client.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
+                Task CallDelete(string deviceId) => client.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
 
-                Func<Task> withNullDeviceId = () => callDelete(null);
-                Func<Task> withEmptyDeviceId = () => callDelete(string.Empty);
+                Func<Task> withNullDeviceId = () => CallDelete(null);
+                Func<Task> withEmptyDeviceId = () => CallDelete(string.Empty);
 
                 (await withEmptyDeviceId.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
                     .Be(ErrorCodes.BadRequest);
@@ -425,7 +424,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c1")]
             public async Task List_ShouldPassTheCorrectFilters()
             {
-                Func<ListSubscriptionsRequest, Task<AblyRequest>> callList = async filter =>
+                async Task<AblyRequest> CallList(ListSubscriptionsRequest filter)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -435,13 +434,13 @@ namespace IO.Ably.Tests.Push
                     });
                     await rest.Push.Admin.ChannelSubscriptions.ListAsync(filter);
                     return request;
-                };
+                }
 
-                var emptyFilterRequest = await callList(ListSubscriptionsRequest.Empty(100));
+                var emptyFilterRequest = await CallList(ListSubscriptionsRequest.Empty(100));
                 emptyFilterRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("100");
 
                 var channelDeviceIdRequest =
-                    await callList(ListSubscriptionsRequest.WithDeviceId("test-channel", "device123"));
+                    await CallList(ListSubscriptionsRequest.WithDeviceId("test-channel", "device123"));
 
                 channelDeviceIdRequest.QueryParameters.Should().ContainKey("channel")
                     .WhichValue.Should().Be("test-channel");
@@ -449,7 +448,7 @@ namespace IO.Ably.Tests.Push
                     .WhichValue.Should().Be("device123");
 
                 var channelClientIdRequest =
-                    await callList(ListSubscriptionsRequest.WithClientId("test-channel", "clientId123"));
+                    await CallList(ListSubscriptionsRequest.WithClientId("test-channel", "clientId123"));
 
                 channelClientIdRequest.QueryParameters.Should().ContainKey("channel")
                     .WhichValue.Should().Be("test-channel");
@@ -461,7 +460,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c2")]
             public async Task ListChannels_ShouldCallsTheCorrectUrl()
             {
-                Func<PaginatedRequestParams, Task<AblyRequest>> callListChannels = async filter =>
+                async Task<AblyRequest> CallListChannels(PaginatedRequestParams filter)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -471,13 +470,13 @@ namespace IO.Ably.Tests.Push
                     });
                     await rest.Push.Admin.ChannelSubscriptions.ListChannelsAsync(filter);
                     return request;
-                };
+                }
 
-                var request = await callListChannels(PaginatedRequestParams.Empty);
+                var request = await CallListChannels(PaginatedRequestParams.Empty);
 
                 request.Url.Should().Be("/push/channels");
 
-                var limitRequest = await callListChannels(new PaginatedRequestParams { Limit = 150 });
+                var limitRequest = await CallListChannels(new PaginatedRequestParams { Limit = 150 });
                 limitRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("150");
             }
 
@@ -485,7 +484,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c3")]
             public async Task Save_ShouldCallsTheCorrectUrlAndHaveTheCorrectBody()
             {
-                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                async Task<AblyRequest> CallSave(PushChannelSubscription subscription)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -496,10 +495,10 @@ namespace IO.Ably.Tests.Push
 
                     await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
                     return request;
-                };
+                }
 
                 var sub = PushChannelSubscription.ForDevice("test");
-                var request = await callSave(sub);
+                var request = await CallSave(sub);
 
                 request.Url.Should().Be("/push/channelSubscriptions");
                 request.Method.Should().Be(HttpMethod.Post);
@@ -510,7 +509,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c3")]
             public async Task Save_ShouldValidateSubscriptionBeforeSendingItToTheServer()
             {
-                Func<PushChannelSubscription, Task<AblyRequest>> callSave = async subscription =>
+                async Task<AblyRequest> CallSave(PushChannelSubscription subscription)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -521,10 +520,10 @@ namespace IO.Ably.Tests.Push
 
                     await rest.Push.Admin.ChannelSubscriptions.SaveAsync(subscription);
                     return request;
-                };
+                }
 
-                Func<Task> nullSubscription = () => callSave(null);
-                Func<Task> withEmptyChannel = () => callSave(PushChannelSubscription.ForDevice(string.Empty));
+                Func<Task> nullSubscription = () => CallSave(null);
+                Func<Task> withEmptyChannel = () => CallSave(PushChannelSubscription.ForDevice(string.Empty));
 
                 (await nullSubscription.Should().ThrowAsync<AblyException>()).Which.ErrorInfo.Code.Should()
                     .Be(ErrorCodes.BadRequest);
@@ -555,7 +554,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c4")]
             public async Task Remove_ShouldCallTheCorrectUrl()
             {
-                Func<PushChannelSubscription, Task<AblyRequest>> callRemove = async subscription =>
+                async Task<AblyRequest> CallRemove(PushChannelSubscription subscription)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -566,16 +565,16 @@ namespace IO.Ably.Tests.Push
 
                     await rest.Push.Admin.ChannelSubscriptions.RemoveAsync(subscription);
                     return request;
-                };
+                }
 
-                var request = await callRemove(PushChannelSubscription.ForDevice("channel", "device"));
+                var request = await CallRemove(PushChannelSubscription.ForDevice("channel", "device"));
                 request.Url.Should().Be("/push/channelSubscriptions");
                 request.Method.Should().Be(HttpMethod.Delete);
 
                 request.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
                 request.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("device");
 
-                var requestWithClientId = await callRemove(PushChannelSubscription.ForClientId("channel", "123"));
+                var requestWithClientId = await CallRemove(PushChannelSubscription.ForClientId("channel", "123"));
 
                 requestWithClientId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
                 requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("123");
@@ -585,7 +584,7 @@ namespace IO.Ably.Tests.Push
             [Trait("spec", "RSH1c5")]
             public async Task RemoveWhere_ShouldCallTheCorrectUrl()
             {
-                Func<IDictionary<string, string>, Task<AblyRequest>> callRemoveWhere = async whereParams =>
+                async Task<AblyRequest> CallRemoveWhere(IDictionary<string, string> whereParams)
                 {
                     AblyRequest request = null;
                     var rest = GetRestClient(r =>
@@ -596,19 +595,19 @@ namespace IO.Ably.Tests.Push
 
                     await rest.Push.Admin.ChannelSubscriptions.RemoveWhereAsync(whereParams);
                     return request;
-                };
+                }
 
-                var request = await callRemoveWhere(new Dictionary<string, string>());
+                var request = await CallRemoveWhere(new Dictionary<string, string>());
                 request.Url.Should().Be("/push/channelSubscriptions");
                 request.Method.Should().Be(HttpMethod.Delete);
                 request.QueryParameters.Should().BeEmpty();
 
-                var requestWithChannelAndDeviceId = await callRemoveWhere(new Dictionary<string, string>() { { "channel", "test" }, { "deviceId", "best" } });
+                var requestWithChannelAndDeviceId = await CallRemoveWhere(new Dictionary<string, string>() { { "channel", "test" }, { "deviceId", "best" } });
 
                 requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("test");
                 requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("best");
 
-                var requestWithRandomParameter = await callRemoveWhere(new Dictionary<string, string>() { { "random", "value" } });
+                var requestWithRandomParameter = await CallRemoveWhere(new Dictionary<string, string>() { { "random", "value" } });
 
                 requestWithRandomParameter.QueryParameters.Should().ContainKey("random").WhichValue.Should().Be("value");
             }
