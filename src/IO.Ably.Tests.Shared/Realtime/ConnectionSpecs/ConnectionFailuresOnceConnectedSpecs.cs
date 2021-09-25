@@ -217,13 +217,11 @@ namespace IO.Ably.Tests.Realtime
             var client = await SetupConnectedClient();
 
             List<bool> callbackResults = new List<bool>();
-            Action<bool, ErrorInfo> callback = (b, info) =>
-            {
-                callbackResults.Add(b);
-            };
 
-            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
-            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+            void Callback(bool b, ErrorInfo info) => callbackResults.Add(b);
+
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), Callback);
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), Callback);
 
             await client.ProcessCommands();
 
