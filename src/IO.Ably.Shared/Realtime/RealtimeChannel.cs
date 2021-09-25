@@ -821,18 +821,20 @@ namespace IO.Ably.Realtime
 
         public JObject GetCurrentState()
         {
-            var state = new JObject();
-            state["name"] = Name;
-            state["options"] = JObject.FromObject(_options);
-            state["state"] = JToken.FromObject(_state);
-            state["timers"] = JObject.FromObject(new
+            var state = new JObject
             {
-                awaitTimer = AttachedAwaiter.Waiting,
-                detachTimer = DetachedAwaiter.Waiting,
-            });
-            state["emitters"] = GetState();
-            state["handlers"] = _handlers.GetState();
-            state["presence"] = Presence.GetState();
+                ["name"] = Name,
+                ["options"] = JObject.FromObject(_options),
+                ["state"] = JToken.FromObject(_state),
+                ["timers"] = JObject.FromObject(new
+                {
+                    awaitTimer = AttachedAwaiter.Waiting,
+                    detachTimer = DetachedAwaiter.Waiting,
+                }),
+                ["emitters"] = GetState(),
+                ["handlers"] = _handlers.GetState(),
+                ["presence"] = Presence.GetState(),
+            };
             return state;
         }
     }
