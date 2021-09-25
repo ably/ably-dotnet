@@ -493,8 +493,10 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Attached:
-                    var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-                    message.Presence = new[] { msg };
+                    var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name)
+                    {
+                        Presence = new[] { msg },
+                    };
                     _connection.Send(message, callback);
                     break;
                 default:
@@ -787,8 +789,10 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-            message.Presence = new PresenceMessage[PendingPresenceQueue.Count];
+            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name)
+            {
+                Presence = new PresenceMessage[PendingPresenceQueue.Count],
+            };
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
 
