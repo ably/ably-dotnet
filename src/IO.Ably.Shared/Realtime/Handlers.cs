@@ -140,8 +140,11 @@ namespace IO.Ably.Realtime
 
         internal JObject GetState()
         {
-            var state = new JObject();
-            state["*"] = _handlers.Count;
+            var state = new JObject
+            {
+                ["*"] = _handlers.Count,
+            };
+
             foreach (var key in _specificHandlers.Keys)
             {
                 state[key] = _specificHandlers[key].Count;
