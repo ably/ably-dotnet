@@ -159,8 +159,7 @@ namespace IO.Ably.Push
             ValidateRequest();
             var request = _restClient.CreatePostRequest("/push/publish");
             AddFullWaitIfNecessary(request);
-            JObject data = new JObject();
-            data.Add("recipient", recipient);
+            var data = new JObject { { "recipient", recipient } };
             foreach (var property in payload.Properties())
             {
                 data.Add(property.Name, property.Value);
