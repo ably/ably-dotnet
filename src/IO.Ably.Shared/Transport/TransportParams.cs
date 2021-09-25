@@ -84,12 +84,23 @@ namespace IO.Ably.Transport
 
         internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
         {
-            var result = new TransportParams();
-            result.Host = host;
-            result.Tls = options.Tls;
-            result.Port = options.Tls ? options.TlsPort : options.Port;
-            result.ClientId = options.GetClientId();
-            result.AuthMethod = auth.AuthMethod;
+            var result = new TransportParams
+            {
+                Host = host,
+                Tls = options.Tls,
+                Port = options.Tls ? options.TlsPort : options.Port,
+                ClientId = options.GetClientId(),
+                ConnectionKey = connectionKey,
+                ConnectionSerial = connectionSerial,
+                EchoMessages = options.EchoMessages,
+                FallbackHosts = options.GetFallbackHosts(),
+                UseBinaryProtocol = options.UseBinaryProtocol,
+                RecoverValue = options.Recover,
+                Logger = logger ?? options.Logger,
+                AdditionalParameters = StringifyParameters(options.TransportParams),
+                AuthMethod = auth.AuthMethod,
+            };
+
             if (result.AuthMethod == AuthMethod.Basic)
             {
                 result.AuthValue = ApiKey.Parse(options.Key).ToString();
@@ -105,14 +116,6 @@ namespace IO.Ably.Transport
                 result.AuthValue = token.Token;
             }
 
-            result.ConnectionKey = connectionKey;
-            result.ConnectionSerial = connectionSerial;
-            result.EchoMessages = options.EchoMessages;
-            result.FallbackHosts = options.GetFallbackHosts();
-            result.UseBinaryProtocol = options.UseBinaryProtocol;
-            result.RecoverValue = options.Recover;
-            result.Logger = logger ?? options.Logger;
-            result.AdditionalParameters = StringifyParameters(options.TransportParams);
             return result;
 
             Dictionary<string, string> StringifyParameters(Dictionary<string, object> originalParams)
@@ -155,8 +158,10 @@ namespace IO.Ably.Transport
         public Uri GetUri()
         {
             var wsScheme = Tls ? "wss://" : "ws://";
-            var uriBuilder = new UriBuilder(wsScheme, Host, Port);
-            uriBuilder.Query = GetParams().ToQueryString();
+            var uriBuilder = new UriBuilder(wsScheme, Host, Port)
+            {
+                Query = GetParams().ToQueryString(),
+            };
             return uriBuilder.Uri;
         }
 
