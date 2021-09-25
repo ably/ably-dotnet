@@ -81,9 +81,9 @@ namespace IO.Ably.Realtime
 
         public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
-            Func<Action<bool, ErrorInfo>, bool> func = action => StartWait(action, timeout ?? TimeSpan.FromSeconds(2));
+            bool Func(Action<bool, ErrorInfo> action) => StartWait(action, timeout ?? TimeSpan.FromSeconds(2));
 
-            return await TaskWrapper.Wrap(func);
+            return await TaskWrapper.Wrap((Func<Action<bool, ErrorInfo>, bool>)Func);
         }
 
         public bool StartWait(Action<bool, ErrorInfo> callback, TimeSpan timeout, bool restart = false)
