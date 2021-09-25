@@ -888,11 +888,11 @@ namespace IO.Ably.Tests
         public async Task WhenClientTimeIsWrongAndQueryTimeSetToTrue_ShouldNotTreatTokenAsInvalid(Protocol protocol)
         {
             // Our device's clock is fast. The server returns by default a token valid for an hour
-            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow.AddHours(2);
+            DateTimeOffset NowFunc() => DateTimeOffset.UtcNow.AddHours(2);
 
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.NowFunc = nowFunc;
+                opts.NowFunc = NowFunc;
                 opts.QueryTime = true;
                 opts.ClientId = "clientId";
                 opts.UseTokenAuth = true; // We force the token auth because further on it's not necessary when there is a key present
