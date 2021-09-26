@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -7,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
 {
-    public class LocalDeviceTests : MockHttpRestSpecs
+    public class LocalDeviceTests : MockHttpRestSpecs, IDisposable
     {
         [Fact]
         [Trait("spec", "RSH3a2b")]
@@ -127,9 +128,51 @@ namespace IO.Ably.Tests.Push
             rest.MobileDevice.Should().BeNull();
         }
 
+        [Fact]
+        [Trait("spec", "RSH8a")]
+        public void LocalDevice_IsOnlyInitialisedOnce()
+        {
+            var restClient = GetRestClient(mobileDevice: new FakeMobileDevice());
+            var restClient2 = GetRestClient(mobileDevice: new FakeMobileDevice());
+
+            restClient.Device.Should().BeSameAs(restClient2.Device);
+        }
+
+        [Fact]
+        [Trait("spec", "RSH8a")]
+        [Trait("spec", "RSH8b")]
+        public void LocalDevice_WhenInitialised_ShouldHave_CorrectProperties_set()
+        {
+            var restClient = GetRestClient(mobileDevice: new FakeMobileDevice());
+
+            var device = restClient.Device;
+
+            device.Id.Should().NotBeEmpty();
+            device.DeviceSecret.Should().NotBeEmpty();
+            device.Platform.Should().NotBeEmpty();
+            device.FormFactor.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        [Trait("spec", "RSH8a")]
+        [Trait("spec", "RSH8b")]
+        public void LocalDevice_WhenRestClientContainsClientId_ShouldHaveTheSameClientId()
+        {
+            const string optionsClientId = "123";
+            var restClient = GetRestClient(setOptionsAction: options => options.ClientId = optionsClientId, mobileDevice: new FakeMobileDevice());
+            var device = restClient.Device;
+
+            device.ClientId.Should().Be(optionsClientId);
+        }
+
         public LocalDeviceTests(ITestOutputHelper output)
             : base(output)
         {
+        }
+
+        public void Dispose()
+        {
+            LocalDevice.Instance = null;
         }
     }
 }
