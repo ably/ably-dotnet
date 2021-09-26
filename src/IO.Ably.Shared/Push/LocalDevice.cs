@@ -119,15 +119,15 @@ namespace IO.Ably.Push
                 return false;
             }
 
-            persistedDevice = new LocalDevice();
-            persistedDevice.Platform = mobileDevice.DevicePlatform;
-            persistedDevice.FormFactor = mobileDevice.FormFactor;
-
-            persistedDevice.Id = id;
-            persistedDevice.DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret);
-
-            persistedDevice.ClientId = GetDeviceSetting(PersistKeys.Device.ClientId);
-            persistedDevice.DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken);
+            persistedDevice = new LocalDevice
+            {
+                Platform = mobileDevice.DevicePlatform,
+                FormFactor = mobileDevice.FormFactor,
+                Id = id,
+                DeviceSecret = GetDeviceSetting(PersistKeys.Device.DeviceSecret),
+                ClientId = GetDeviceSetting(PersistKeys.Device.ClientId),
+                DeviceIdentityToken = GetDeviceSetting(PersistKeys.Device.DeviceToken)
+            };
 
             var tokenType = GetDeviceSetting(PersistKeys.Device.TokenType);
 
