@@ -19,33 +19,6 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Waits for the task to complete, unwrapping any exceptions.
-        /// </summary>
-        /// <typeparam name="TResult">The type of the result of the task.</typeparam>
-        /// <param name="task">The task. May not be <c>null</c>.</param>
-        /// <returns>The result of the task.</returns>
-        public static TResult WaitAndUnwrapException<TResult>(this Task<TResult> task)
-        {
-            return task.GetAwaiter().GetResult();
-        }
-
-        /// <summary>
-        /// Waits for the task to complete, but does not raise task exceptions. The task exception (if any) is unobserved.
-        /// </summary>
-        /// <param name="task">The task. May not be <c>null</c>.</param>
-        public static void WaitWithoutException(this Task task)
-        {
-            // Check to see if it's completed first, so we don't cause unnecessary allocation of a WaitHandle.
-            if (task.IsCompleted)
-            {
-                return;
-            }
-
-            var asyncResult = (IAsyncResult)task;
-            asyncResult.AsyncWaitHandle.WaitOne();
-        }
-
-        /// <summary>
         /// Helps chain results that return a Task without having to await the first one.
         /// </summary>
         /// <typeparam name="T">Type of the input Task.</typeparam>
