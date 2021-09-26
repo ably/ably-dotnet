@@ -36,15 +36,17 @@ namespace IO.Ably
         public const int QueryLimit = 100;
 
         public const string InternetCheckUrl = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
-        public static readonly string InternetCheckOkMessage = "yes";
+        public const string InternetCheckOkMessage = "yes";
 
-        public static readonly string RestHost = "rest.ably.io";
-        public static readonly string RealtimeHost = "realtime.ably.io";
+        public const string RestHost = "rest.ably.io";
+        public const string RealtimeHost = "realtime.ably.io";
+
+        public const int Port = 80;
+        public const int TlsPort = 443;
+
         public static readonly string[] FallbackHosts;
         public static readonly TimeSpan DefaultTokenTtl = TimeSpan.FromHours(1);
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
-        public const int Port = 80;
-        public const int TlsPort = 443;
 
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
@@ -86,7 +88,14 @@ namespace IO.Ably
 
         static Defaults()
         {
-            FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
+            FallbackHosts = new[]
+            {
+                "a.ably-realtime.com",
+                "b.ably-realtime.com",
+                "c.ably-realtime.com",
+                "d.ably-realtime.com",
+                "e.ably-realtime.com",
+            };
         }
 
         internal static string[] GetEnvironmentFallbackHosts(string environment)
@@ -97,7 +106,7 @@ namespace IO.Ably
                 $"{environment}-b-fallback.ably-realtime.com",
                 $"{environment}-c-fallback.ably-realtime.com",
                 $"{environment}-d-fallback.ably-realtime.com",
-                $"{environment}-e-fallback.ably-realtime.com"
+                $"{environment}-e-fallback.ably-realtime.com",
             };
         }
     }
