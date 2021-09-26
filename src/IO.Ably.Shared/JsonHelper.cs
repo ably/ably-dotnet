@@ -17,16 +17,18 @@ namespace IO.Ably
     {
         private static JsonSerializerSettings GetJsonSettings()
         {
-            JsonSerializerSettings res = new JsonSerializerSettings();
-            res.Converters = new List<JsonConverter>
+            var res = new JsonSerializerSettings
             {
-                new DateTimeOffsetJsonConverter(),
-                new CapabilityJsonConverter(),
-                new TimeSpanJsonConverter(),
-                new MessageExtrasConverter(),
+                Converters = new List<JsonConverter>
+                {
+                    new DateTimeOffsetJsonConverter(),
+                    new CapabilityJsonConverter(),
+                    new TimeSpanJsonConverter(),
+                    new MessageExtrasConverter(),
+                },
+                DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+                NullValueHandling = NullValueHandling.Ignore,
             };
-            res.DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
-            res.NullValueHandling = NullValueHandling.Ignore;
             return res;
         }
 
