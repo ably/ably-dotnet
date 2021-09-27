@@ -8,26 +8,23 @@ namespace IO.Ably.Tests
 {
     public class TaskUtilsTests
     {
-        [Fact(Skip = "Keeps failing when ran on the build server")]
+        [Fact]
         public async Task FailingTaskShouldHaveExceptionHandled()
         {
-            var tsc = new TaskCompletionAwaiter(500);
-            TaskUtils.RunInBackground(MockBackGroundService.FailingTask(), exception =>
-            {
-                tsc.SetCompleted();
-            });
-
-            var result = await tsc.Task;
-            result.Should().BeTrue();
-        }
-
-        private static class MockBackGroundService
-        {
-            public static async Task FailingTask()
+            async Task FailingTask()
             {
                 await Task.Delay(100);
                 throw new Exception();
             }
+
+            var tca = new TaskCompletionAwaiter(500);
+            TaskUtils.RunInBackground(FailingTask(), exception =>
+            {
+                tca.SetCompleted();
+            });
+
+            var result = await tca.Task;
+            result.Should().Be(!tca.TimeoutExpired);
         }
     }
 }

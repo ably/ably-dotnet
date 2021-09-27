@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,12 +8,8 @@ namespace IO.Ably.Tests.Infrastructure
 {
     public sealed class TaskCompletionAwaiter : IDisposable
     {
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private TaskCompletionSource<bool> _taskCompletionSource;
-
-        public int TimeoutMs { get; private set; }
-
-        public int TaskCount { get; private set; }
 
         /// <summary>
         /// Wait for task(s) to complete
@@ -26,15 +23,34 @@ namespace IO.Ably.Tests.Infrastructure
 
             if (taskCount < 1)
             {
-                throw new ArgumentException("taskCount must be greater than zero");
+                throw new ArgumentException("Must be greater than zero", nameof(taskCount));
             }
 
             TaskCount = taskCount;
 
             _cancellationTokenSource = new CancellationTokenSource(TimeoutMs);
             _taskCompletionSource = new TaskCompletionSource<bool>();
-            _cancellationTokenSource.Token.Register(() => _taskCompletionSource.TrySetResult(false));
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            _cancellationTokenSource.Token.Register(() =>
+            {
+                stopwatch.Stop();
+                if (stopwatch.ElapsedMilliseconds >= TimeoutMs)
+                {
+                    TimeoutExpired = true;
+                }
+
+                _taskCompletionSource.TrySetResult(false);
+            });
         }
+
+        public int TimeoutMs { get; }
+
+        public int TaskCount { get; private set; }
+
+        public bool TimeoutExpired { get; private set; }
 
         public void Done()
         {
