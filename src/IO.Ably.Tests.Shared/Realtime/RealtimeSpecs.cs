@@ -145,7 +145,7 @@ namespace IO.Ably.Tests
                 AutomaticNetworkStateMonitoring = enabled,
             });
 
-            Platform._hookedUpToNetworkEvents.Should().Be(enabled);
+            Platform.HookedUpToNetworkEvents.Should().Be(enabled);
         }
 
         [Fact]
