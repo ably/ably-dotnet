@@ -129,12 +129,17 @@ namespace IO.Ably.Tests
             realtime.Auth.Should().NotBeNull();
         }
 
-        [Theory(Skip = "This test can only be run on its own without any other tests because it depends on static values. Make sure you run each test case individually.")]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         [Trait("issue", "380")]
         public void AutomaticNetworkDetectionCanBeDisabledByClientOption(bool enabled)
         {
+            // Because this test depends on static state in the 'Platform' type we need
+            // to (re)Initialize the static 'Platform' state before each test run.
+
+            Platform.Initialize();
+
             var realtime = new AblyRealtime(new ClientOptions(ValidKey)
             {
                 AutomaticNetworkStateMonitoring = enabled,
