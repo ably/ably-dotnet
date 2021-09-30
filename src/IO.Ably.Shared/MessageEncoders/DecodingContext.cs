@@ -12,8 +12,6 @@ namespace IO.Ably.MessageEncoders
         /// </summary>
         public ChannelOptions ChannelOptions { get; set; }
 
-        public byte[] GetPreviousPayloadBytes() => PreviousPayload?.GetBytes();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DecodingContext"/> class.
         /// </summary>
