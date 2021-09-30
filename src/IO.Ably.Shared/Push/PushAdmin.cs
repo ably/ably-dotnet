@@ -375,7 +375,7 @@ namespace IO.Ably.Push
         {
             Validate();
 
-            var url = "/push/deviceRegistrations";
+            const string url = "/push/deviceRegistrations";
 
             var request = _restClient.CreateGetRequest(url);
             request.AddQueryParameters(filterRequest.ToQueryParams());
