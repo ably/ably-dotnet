@@ -49,16 +49,6 @@ namespace IO.Ably
             return string.Join(delimiter, input.Where(IsNotEmpty));
         }
 
-        public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class
-        {
-            if (listOfTs != null)
-            {
-                return string.Join(delimiter, listOfTs.Select(selector));
-            }
-
-            return Empty;
-        }
-
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
         {
             return string.Equals(input, other, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
