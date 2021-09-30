@@ -1,0 +1,26 @@
+{
+    "name": "PlayMode",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "IO.Ably.DeltaCodec.dll",
+        "IO.Ably.dll",
+        "System.Threading.Tasks.Extensions.dll",
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "System.Threading.Channels.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
