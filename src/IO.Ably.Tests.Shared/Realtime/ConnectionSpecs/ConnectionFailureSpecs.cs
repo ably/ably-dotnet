@@ -250,8 +250,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
-            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
-            DateTimeOffset NowWrapperFunc() => nowFunc();
+            DateTimeOffset Func() => DateTimeOffset.UtcNow;
 
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
@@ -262,7 +261,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.AutoConnect = false;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(1000);
-                opts.NowFunc = NowWrapperFunc;
+                opts.NowFunc = Func;
             });
 
             client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
