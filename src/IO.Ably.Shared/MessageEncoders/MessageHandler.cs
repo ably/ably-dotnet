@@ -54,8 +54,6 @@ namespace IO.Ably.MessageEncoders
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
             ProcessMessages(payloads, options);
             return payloads;
-#else
-
 #endif
         }
 
