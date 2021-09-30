@@ -155,6 +155,22 @@ namespace IO.Ably
             Channels = new RestChannels(this, mobileDevice);
             Push = new PushRest(this, Logger);
             MobileDevice = mobileDevice;
+            AblyAuth.OnClientIdChanged = OnAuthClientIdChanged;
+        }
+
+        private void OnAuthClientIdChanged((string oldClientId, string newClientId) clientIdArgs)
+        {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"ClientId changed from '{clientIdArgs.oldClientId}' to '{clientIdArgs.newClientId}'");
+            }
+
+            // If the global LocalDevice instance hasn't been initialized we don't need to worry about setting the client id
+            // as it will pick up the correct one when it is requested for the first time.
+            if (LocalDevice.IsLocalDeviceInitialized)
+            {
+                Device.UpdateClientId(clientIdArgs.newClientId, MobileDevice);
+            }
         }
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
