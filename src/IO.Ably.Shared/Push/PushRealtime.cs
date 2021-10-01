@@ -1,19 +1,43 @@
-﻿namespace IO.Ably.Push
+﻿using System;
+using System.Threading.Tasks;
+
+namespace IO.Ably.Push
 {
     /// <summary>
     /// Push Apis for Realtime clients.
     /// </summary>
-    public class PushRealtime
+    public class PushRealtime : IDisposable
     {
         private readonly AblyRest _restClient;
-        private readonly ActivationStateMachine _stateMachine;
+        private readonly ILogger _logger;
+
+        private ActivationStateMachine StateMachine { get; set; }
 
         internal PushRealtime(AblyRest restClient, ILogger logger)
         {
             _restClient = restClient;
+            _logger = logger;
+        }
+
+        internal void InitialiseStateMachine()
+        {
             if (_restClient.MobileDevice != null)
             {
-                _stateMachine = new ActivationStateMachine(restClient, logger);
+                StateMachine = new ActivationStateMachine(_restClient, _logger);
+                if (_restClient.Device != null)
+                {
+                    _restClient.Device.ClientIdUpdated = ClientIdUpdated;
+                }
+            }
+        }
+
+        internal void ClientIdUpdated(string newClientId)
+        {
+            var currentStateIsNotNotActivated =
+                (StateMachine.CurrentState is ActivationStateMachine.NotActivated) == false;
+            if (_restClient.Device.IsRegistered && currentStateIsNotNotActivated)
+            {
+                _ = Task.Run(() => StateMachine.HandleEvent(new ActivationStateMachine.GotPushDeviceDetails()));
             }
         }
 
@@ -22,9 +46,9 @@
         /// </summary>
         public void Activate()
         {
-            if (_stateMachine is null)
+            if (StateMachine is null)
             {
-                throw new AblyException("Realtime push is not enabled. Please call (AndroidMobileDevice / IOSMobileDevice).Initialize() before calling `Activate`"); // TODO: Come up with a better message.
+                throw new AblyException("Realtime push is not enabled. Please initialise Ably by calling (AblyAndroidMobileDevice / AblyAppleMobileDevice).Initialize() before calling `Activate`");
             }
         }
 
@@ -33,9 +57,9 @@
         /// </summary>
         public void Deactivate()
         {
-            if (_stateMachine is null)
+            if (StateMachine is null)
             {
-                throw new AblyException("Realtime push is not enabled. Please call (AndroidMobileDevice / IOSMobileDevice).Initialize() before calling `Deactivate`"); // TODO: Come up with a better message.
+                throw new AblyException("Realtime push is not enabled. Please initialise Ably by calling (AblyAndroidMobileDevice / AblyAppleMobileDevice).Initialize() before calling `Deactivate`");
             }
         }
 
@@ -43,5 +67,14 @@
         /// Admin APIs for Push notifications.
         /// </summary>
         public PushAdmin Admin => _restClient.Push.Admin;
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_restClient.Device != null)
+            {
+                _restClient.Device.ClientIdUpdated = null;
+            }
+        }
     }
 }
