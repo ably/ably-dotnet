@@ -56,12 +56,13 @@ namespace IO.Ably
             get => _currentTokenParams;
             set
             {
+                var oldClientId = ClientId;
+                _currentTokenParams = value;
+
                 if (value != null)
                 {
-                    NotifyClientIdIfChanged(value.ClientId);
+                    NotifyClientIdIfChanged(oldClientId);
                 }
-
-                _currentTokenParams = value;
             }
         }
 
@@ -72,12 +73,14 @@ namespace IO.Ably
             get => _currentToken;
             set
             {
-                if (value != null)
-                {
-                    NotifyClientIdIfChanged(value.ClientId);
-                }
+                var oldClientId = ClientId;
 
                 _currentToken = value;
+
+                if (value != null)
+                {
+                    NotifyClientIdIfChanged(oldClientId);
+                }
             }
         }
 
@@ -86,12 +89,13 @@ namespace IO.Ably
             get => _connectionClientId;
             set
             {
-                NotifyClientIdIfChanged(value);
+                var oldClientId = ClientId;
                 _connectionClientId = value;
+                NotifyClientIdIfChanged(oldClientId);
             }
         }
 
-        // TODO: It's really difficult to know when the clientId gets updated
+        // TODO: Refactor how we hold the ClientId as per https://github.com/ably/ably-dotnet/issues/930
         public string ClientId => ConnectionClientId
                                   ?? CurrentToken?.ClientId
                                   ?? CurrentTokenParams?.ClientId
@@ -438,12 +442,12 @@ namespace IO.Ably
             }
         }
 
-        private void NotifyClientIdIfChanged(string newClientId)
+        private void NotifyClientIdIfChanged(string oldClientId)
         {
-            var clientId = ClientId;
-            if (newClientId.IsNotEmpty() && clientId.EqualsTo(newClientId) == false)
+            var newClientId = ClientId;
+            if (newClientId.IsNotEmpty() && oldClientId.EqualsTo(newClientId) == false)
             {
-                OnClientIdChanged((clientId, newClientId));
+                OnClientIdChanged((oldClientId, newClientId));
             }
         }
 
