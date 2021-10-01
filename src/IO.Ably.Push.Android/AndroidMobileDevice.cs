@@ -14,10 +14,31 @@ namespace IO.Ably.Push.Android
     public class AndroidMobileDevice : IMobileDevice
     {
         private readonly ILogger _logger;
+        private static AblyRealtime _realtimeInstance;
 
-        internal AndroidMobileDevice(ILogger logger)
+        internal AndroidMobileDevice(PushCallbacks callbacks, ILogger logger)
         {
+            Callbacks = callbacks;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Initialises the Android MobileDevice implementation as well initialised the AblyRealtime client that is used to subscribe to Firebase push notifications.
+        /// Use this method to initialise your AblyRealtime if you want to register the device for push notifications.
+        /// </summary>
+        /// <param name="ablyClientOptions">ClientOptions used to initialise the AblyRealtime instanced used to setup the ActivationStat.</param>
+        /// <param name="configureCallbacks">Option action which can be used to configure callbacks. It's especially useful to subscribe/unsubscribe to push channels when a device is activated / deactivated.</param>
+        /// <returns>Initialised Ably instance which supports push notification registrations.</returns>
+        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, Action<PushCallbacks> configureCallbacks = null)
+        {
+            var callbacks = new PushCallbacks();
+            configureCallbacks?.Invoke(callbacks);
+            var androidMobileDevice = new AndroidMobileDevice(callbacks, DefaultLogger.LoggerInstance);
+            IoC.MobileDevice = androidMobileDevice;
+            // Create the instance of ably used for Push registrations
+            _realtimeInstance = new AblyRealtime(ablyClientOptions, androidMobileDevice);
+            _realtimeInstance.Push.InitialiseStateMachine();
+            return _realtimeInstance;
         }
 
         private Context Context => Application.Context;
@@ -76,7 +97,7 @@ namespace IO.Ably.Push.Android
             throw new NotImplementedException();
         }
 
-        public PushCallbacks Callbacks { get; } = new PushCallbacks();
+        public PushCallbacks Callbacks { get; }
         public string DevicePlatform { get; } = "android"; // TODO: Update how we get Mobile Device.
         public string FormFactor { get; } = "tbc"; // TODO: Update how we pull form factor.
 

@@ -17,6 +17,8 @@ namespace IO.Ably.Push
         [JsonIgnore]
         public string DeviceIdentityToken { get; set; }
 
+        internal Action<string> ClientIdUpdated { get; set; } = (newClientId) => { };
+
         internal bool IsRegistered => DeviceIdentityToken.IsNotEmpty();
 
         internal bool IsCreated => Id.IsNotEmpty() && DeviceSecret.IsNotEmpty();
@@ -55,8 +57,13 @@ namespace IO.Ably.Push
 
         internal void UpdateClientId(string newClientId, IMobileDevice mobileDevice)
         {
-            ClientId = newClientId;
-            PersistLocalDevice(mobileDevice, this);
+            if (ClientId != newClientId)
+            {
+                ClientId = newClientId;
+                PersistLocalDevice(mobileDevice, this);
+
+                ClientIdUpdated(newClientId);
+            }
         }
 
         /// <summary>

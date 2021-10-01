@@ -231,6 +231,7 @@ namespace IO.Ably
                 {
                     Connection?.RemoveAllListeners();
                     Channels?.CleanupChannels();
+                    Push.Dispose();
                 }
                 catch (Exception e)
                 {
