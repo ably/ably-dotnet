@@ -210,7 +210,6 @@ namespace IO.Ably.Push
         {
             Debug("Validating Registration");
 
-            // TODO: See if I need to get Ably from some kind of context
             var presentClientId = _restClient.Auth.ClientId;
             if (presentClientId.IsNotEmpty() && LocalDevice.ClientId.IsNotEmpty() &&
                 presentClientId.EqualsTo(LocalDevice.ClientId) == false)
