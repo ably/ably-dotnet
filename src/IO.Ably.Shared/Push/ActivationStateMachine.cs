@@ -20,6 +20,8 @@ namespace IO.Ably.Push
 
         public IMobileDevice MobileDevice => _restClient.MobileDevice;
 
+        internal Action<Event> ProcessingEventCallback { get; set; } = (@event) => { };
+
         public State CurrentState
         {
             get => _currentState;
@@ -62,6 +64,7 @@ namespace IO.Ably.Push
             {
                 try
                 {
+                    ProcessingEventCallback(@event);
                     await HandleInner();
                     PersistState();
                 }

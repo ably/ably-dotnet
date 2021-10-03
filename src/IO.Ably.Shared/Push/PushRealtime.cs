@@ -11,7 +11,7 @@ namespace IO.Ably.Push
         private readonly AblyRest _restClient;
         private readonly ILogger _logger;
 
-        private ActivationStateMachine StateMachine { get; set; }
+        internal ActivationStateMachine StateMachine { get; set; }
 
         internal PushRealtime(AblyRest restClient, ILogger logger)
         {
