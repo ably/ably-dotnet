@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Push;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
 using Xunit.Abstractions;
@@ -214,6 +215,103 @@ namespace IO.Ably.Tests.Push
             realtime.Auth.ClientId.Should().Be(newClientId);
             localDevice.ClientId.Should().Be(newClientId);
             mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
+        }
+
+        [Theory]
+        [ClassData(typeof(RSH8eStateTheoryData))]
+        [Trait("spec", "RSH8e")]
+        internal async Task WhenClientIdChangesAfterInitialisation_StateMachineShouldReceive_GotPushDeviceDetailsEvent(Func<ActivationStateMachine, ActivationStateMachine.State> createCurrentState)
+        {
+            // Arrange
+            const string initialClientId = "123";
+            var options = new ClientOptions(ValidKey) { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true, ClientId = initialClientId };
+            var mobileDevice = new FakeMobileDevice();
+            var realtime = new AblyRealtime(options, mobileDevice: mobileDevice);
+            const string newClientId = "testId";
+
+            var localDevice = realtime.Device;
+            // Make sure the LocalDevice is registered
+            realtime.Device.DeviceIdentityToken = "token";
+            localDevice.ClientId.Should().Be(initialClientId);
+            // Initialise the activation statemachine and set a fake state to record the next event.
+            realtime.Push.InitialiseStateMachine();
+            var taskAwaiter = new TaskCompletionAwaiter();
+            realtime.Push.StateMachine.CurrentState =
+                createCurrentState(realtime.Push.StateMachine);
+            realtime.Push.StateMachine.ProcessingEventCallback = @event =>
+            {
+                // Check we received the correct event
+                @event.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                taskAwaiter.Done();
+            };
+
+            // Pretend we are connected and change the ClientId
+            realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails { ClientId = newClientId },
+            });
+
+            await realtime.WaitForState(ConnectionState.Connected);
+
+            // Check the clientId is set correctly
+            realtime.Auth.ClientId.Should().Be(newClientId);
+            localDevice.ClientId.Should().Be(newClientId);
+
+            // It's necessary to pause the current thread and let the background action to complete which fires the event.
+            await Task.Delay(100);
+
+            (await taskAwaiter).Should().BeTrue();
+            mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
+        }
+
+        [Fact]
+        [Trait("spec", "RSH8e")]
+        internal async Task WhenClientIdChangesAfterInitialisationAndStateMachineIsNotActivated_ShouldNotFireEvent()
+        {
+            // Arrange
+            const string initialClientId = "123";
+            var options = new ClientOptions(ValidKey) { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true, ClientId = initialClientId };
+            var mobileDevice = new FakeMobileDevice();
+            var realtime = new AblyRealtime(options, mobileDevice: mobileDevice);
+            const string newClientId = "testId";
+
+            var localDevice = realtime.Device;
+            // Make sure the LocalDevice is registered
+            realtime.Device.DeviceIdentityToken = "token";
+            localDevice.ClientId.Should().Be(initialClientId);
+            realtime.Push.InitialiseStateMachine();
+            var taskAwaiter = new TaskCompletionAwaiter(1000);
+            realtime.Push.StateMachine.ProcessingEventCallback = @event =>
+            {
+                taskAwaiter.Done();
+            };
+
+            // Pretend we are connected and change the ClientId
+            realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails { ClientId = newClientId },
+            });
+
+            await realtime.WaitForState(ConnectionState.Connected);
+
+            // It's necessary to pause the current thread and let the background action to complete which fires the event.
+            await Task.Delay(100);
+
+            // No event should be sent to the statemachine
+            (await taskAwaiter).Should().BeFalse();
+        }
+
+        private class RSH8eStateTheoryData : TheoryData<Func<ActivationStateMachine, ActivationStateMachine.State>>
+        {
+            public RSH8eStateTheoryData()
+            {
+                Add((machine) => new ActivationStateMachine.WaitingForDeregistration(machine, new ActivationStateMachine.NotActivated(machine)));
+                Add((machine) => new ActivationStateMachine.AfterRegistrationSyncFailed(machine));
+                Add((machine) => new ActivationStateMachine.WaitingForDeviceRegistration(machine));
+                Add((machine) => new ActivationStateMachine.WaitingForRegistrationSync(machine, null));
+                Add((machine) => new ActivationStateMachine.WaitingForPushDeviceDetails(machine));
+                Add((machine) => new ActivationStateMachine.WaitingForNewPushDeviceDetails(machine));
+            }
         }
 
         public LocalDeviceTests(ITestOutputHelper output)
