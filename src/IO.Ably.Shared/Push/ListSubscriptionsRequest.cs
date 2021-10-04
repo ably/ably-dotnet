@@ -55,7 +55,7 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
         /// <returns>Returns an instance of <see cref="ListSubscriptionsRequest"/> with specified values set.</returns>
-        public static ListSubscriptionsRequest Empty(int? limit = null) => new ListSubscriptionsRequest(limit: limit);
+        public new static ListSubscriptionsRequest Empty(int? limit = null) => new ListSubscriptionsRequest(limit: limit);
 
         internal Dictionary<string, string> ToQueryParams()
         {
