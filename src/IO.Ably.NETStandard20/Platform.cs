@@ -7,8 +7,14 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
-        internal static bool _hookedUpToNetworkEvents = false;
         private static readonly object _lock = new object();
+
+        static Platform()
+        {
+            Initialize();
+        }
+
+        internal static bool HookedUpToNetworkEvents { get; private set; }
 
         public string PlatformId => "netstandard20";
 
@@ -16,17 +22,22 @@ namespace IO.Ably
 
         public IMobileDevice MobileDevice { get; set; }
 
+        internal static void Initialize()
+        {
+            HookedUpToNetworkEvents = false;
+        }
+
         public void RegisterOsNetworkStateChanged()
         {
             lock (_lock)
             {
-                if (_hookedUpToNetworkEvents == false)
+                if (HookedUpToNetworkEvents == false)
                 {
                     NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
                         Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
                 }
 
-                _hookedUpToNetworkEvents = true;
+                HookedUpToNetworkEvents = true;
             }
         }
     }
