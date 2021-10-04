@@ -122,7 +122,7 @@ namespace IO.Ably
         /// If there is a first result it will make a call to retrieve it. Otherwise it will return an empty response.
         /// </summary>
         /// <returns>returns the first response in the sequence.</returns>
-        public new Task<HttpPaginatedResponse> FirstAsync()
+        public Task<HttpPaginatedResponse> FirstAsync()
         {
             if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
             {
@@ -145,7 +145,7 @@ namespace IO.Ably
         /// Sync version of FirstAsync().
         /// </summary>
         /// <returns>returns the next response.</returns>
-        public new HttpPaginatedResponse First()
+        public HttpPaginatedResponse First()
         {
             return AsyncHelper.RunSync(FirstAsync);
         }
