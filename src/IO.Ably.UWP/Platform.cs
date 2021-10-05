@@ -10,8 +10,9 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
-        internal static bool _hookedUpToNetworkEvents = false;
         private static readonly object _lock = new object();
+
+        internal static bool HookedUpToNetworkEvents { get; private set; }
 
         public string PlatformId => "uwp";
 
@@ -23,7 +24,7 @@ namespace IO.Ably
         {
             lock (_lock)
             {
-                if (_hookedUpToNetworkEvents == false)
+                if (HookedUpToNetworkEvents == false)
                 {
                     NetworkInformation.NetworkStatusChanged += sender =>
                     {
@@ -33,7 +34,7 @@ namespace IO.Ably
                     };
                 }
 
-                _hookedUpToNetworkEvents = true;
+                HookedUpToNetworkEvents = true;
             }
         }
     }
