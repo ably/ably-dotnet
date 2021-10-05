@@ -15,12 +15,12 @@ namespace IO.Ably
         /// <summary>
         /// Indicates whether the channel is encrypted.
         /// </summary>
-        public bool Encrypted { get; private set; }
+        public bool Encrypted { get; }
 
         /// <summary>
         /// If Encrypted it provides the <see cref="IO.Ably.CipherParams"/>.
         /// </summary>
-        public CipherParams CipherParams { get; private set; }
+        public CipherParams CipherParams { get; }
 
         /// <summary>
         /// Params allows custom parameters to be passed to the server when attaching the channel.
