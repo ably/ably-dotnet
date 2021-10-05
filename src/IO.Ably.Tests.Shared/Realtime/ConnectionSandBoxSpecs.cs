@@ -571,7 +571,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
             await client.WaitForState(ConnectionState.Connected);
             channel.Attach();
-            await channel.WaitForState(ChannelState.Attached);
+            await channel.WaitForAttachedState();
             channel.State.Should().Be(ChannelState.Attached);
 
             var oldConnectionId = client.Connection.Id;
@@ -940,17 +940,11 @@ namespace IO.Ably.Tests.Realtime
                 options.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(5000);
             });
 
-            DateTime disconnectedAt = DateTime.MinValue;
-            DateTime reconnectedAt = DateTime.MinValue;
-            TimeSpan connectionStateTtl = TimeSpan.MinValue;
-            string initialConnectionId = string.Empty;
-            string newConnectionId = string.Empty;
-
             await client.WaitForState(ConnectionState.Connected);
 
             client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
-            initialConnectionId = client.Connection.Id;
-            connectionStateTtl = client.Connection.ConnectionStateTtl;
+            string initialConnectionId = client.Connection.Id;
+            TimeSpan connectionStateTtl = client.Connection.ConnectionStateTtl;
 
             var aliveAt1 = client.Connection.ConfirmedAliveAt;
             var aliveAt2 = aliveAt1;
@@ -968,6 +962,10 @@ namespace IO.Ably.Tests.Realtime
             channels[0].State.Should().Be(ChannelState.Attached);
             channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
             channels[2].State.Should().Be(ChannelState.Suspended);
+
+            DateTime disconnectedAt = DateTime.MinValue;
+            DateTime reconnectedAt = DateTime.MinValue;
+            string newConnectionId = string.Empty;
 
             await WaitFor(60000, done =>
             {
@@ -998,9 +996,9 @@ namespace IO.Ably.Tests.Realtime
             connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
             aliveAt1.Value.Should().BeBefore(aliveAt2.Value);
 
-            await channels[0].WaitForState(ChannelState.Attached);
-            await channels[1].WaitForState(ChannelState.Attached);
-            await channels[2].WaitForState(ChannelState.Attached);
+            await channels[0].WaitForAttachedState();
+            await channels[1].WaitForAttachedState();
+            await channels[2].WaitForAttachedState();
         }
 
         [Theory]
@@ -1019,7 +1017,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (options, settings) => { });
             var channel = client.Channels.Get("RTN15i".AddRandomSuffix());
             channel.Attach();
-            await channel.WaitForState(ChannelState.Attached);
+            await channel.WaitForAttachedState();
 
             var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
