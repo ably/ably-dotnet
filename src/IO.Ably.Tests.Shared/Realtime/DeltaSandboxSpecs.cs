@@ -22,9 +22,9 @@ namespace IO.Ably.Tests.Realtime
         {
             public string Foo { get; }
 
-            public int Count { get; set; }
+            public int Count { get; }
 
-            public string Status { get; set; }
+            public string Status { get; }
 
             public TestData(string foo, int count, string status)
             {
