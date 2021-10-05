@@ -68,6 +68,6 @@ namespace IO.Ably.Push
         /// </summary>
         /// <param name="limit">The number of results to return. Default is 100 and Max is 1000.</param>
         /// <returns>returns an instance of <see cref="ListDeviceDetailsRequest"/> with specified values set.</returns>
-        public static ListDeviceDetailsRequest Empty(int? limit) => new ListDeviceDetailsRequest(limit: limit);
+        public new static ListDeviceDetailsRequest Empty(int? limit) => new ListDeviceDetailsRequest(limit: limit);
     }
 }
