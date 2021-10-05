@@ -196,7 +196,14 @@ namespace IO.Ably.Transport
                     DetachEvents();
                 }
 
-                TaskUtils.RunInBackground(_socket.StopConnectionAsync(), e => Logger.Warning(e.Message));
+                try
+                {
+                    _ = Task.Run(_socket.StopConnectionAsync);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warning(e.Message);
+                }
             }
         }
 

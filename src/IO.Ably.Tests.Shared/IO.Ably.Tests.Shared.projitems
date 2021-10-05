@@ -138,7 +138,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\DocumentationSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\RealtimeSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StatsParsingTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TaskUtilsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestLoggerSink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenDetailsTests.cs" />
