@@ -1121,7 +1121,7 @@ namespace IO.Ably.Tests.Realtime
                 presence.Should().HaveCount(1);
             }
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [ProtocolData]
             public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
             {
