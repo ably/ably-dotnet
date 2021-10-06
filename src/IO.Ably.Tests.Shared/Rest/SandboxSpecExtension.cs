@@ -34,6 +34,11 @@ namespace IO.Ably.Tests
             }
         }
 
+        internal static async Task WaitForAttachedState(this IRealtimeChannel channel, TimeSpan? waitSpan = null)
+        {
+            await channel.WaitForState(ChannelState.Attached, waitSpan);
+        }
+
         internal static async Task<bool> WaitSync(this Presence presence, TimeSpan? waitSpan = null)
         {
             TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
