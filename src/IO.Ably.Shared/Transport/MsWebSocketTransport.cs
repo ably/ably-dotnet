@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -136,16 +137,28 @@ namespace IO.Ably.Transport
                     Logger.Debug("Socket connected");
                 }
 
-                await _socket.Receive(HandleMessageReceived);
+                if (_socket == null)
+                {
+                    HandleError(new NullReferenceException($"'{nameof(_socket)}' is null"));
+                }
+                else
+                {
+                    await _socket.Receive(HandleMessageReceived);
+                }
             }
             catch (Exception ex)
             {
+                HandleError(ex);
+            }
+
+            void HandleError(Exception e)
+            {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
+                    Logger.Debug($"Socket couldn't connect. Error: {e.Message}");
                 }
 
-                Listener?.OnTransportEvent(Id, TransportState.Closed, ex);
+                Listener?.OnTransportEvent(Id, TransportState.Closed, e);
             }
         }
 
