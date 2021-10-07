@@ -288,7 +288,7 @@ namespace IO.Ably.Realtime
                         Emit(stateChange.Event, stateChange);
                         try
                         {
-                            externalHandlers(this, stateChange);
+                            externalHandlers?.Invoke(this, stateChange);
                         }
                         catch (Exception ex)
                         {
