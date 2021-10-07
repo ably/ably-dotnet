@@ -104,10 +104,10 @@ namespace IO.Ably.Tests.Samples
             void ChannelStateListener(ChannelStateChange args) => Console.WriteLine($"channel state is {channel.State}");
 
             // remove the listener registered for a single event
-            channel.Off(ChannelEvent.Attached, (Action<ChannelStateChange>)ChannelStateListener);
+            channel.Off(ChannelEvent.Attached, ChannelStateListener);
 
             // remove the listener registered for all events
-            channel.Off((Action<ChannelStateChange>)ChannelStateListener);
+            channel.Off(ChannelStateListener);
 
             var privateChannel = realtime.Channels.Get("private:chatroom");
             privateChannel.Attach((_, error) =>
@@ -296,8 +296,8 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             realtime.Connection.On(ConnectionEvent.Connected, args => Console.WriteLine("Connected, that was easy"));
             void Action(ConnectionStateChange args) => Console.WriteLine($"New state is {args.Current}");
-            realtime.Connection.On((Action<ConnectionStateChange>)Action);
-            realtime.Connection.Off((Action<ConnectionStateChange>)Action);
+            realtime.Connection.On(Action);
+            realtime.Connection.Off(Action);
         }
 
         public static void RestInit()
