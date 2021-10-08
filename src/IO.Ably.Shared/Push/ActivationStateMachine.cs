@@ -43,6 +43,7 @@ namespace IO.Ably.Push
             _restClient = restClient;
             ClientId = _restClient.Auth.ClientId;
             _logger = logger ?? restClient.Logger;
+            _currentState = new NotActivated(this);
         }
 
         public LocalDevice LocalDevice
