@@ -664,12 +664,12 @@ namespace IO.Ably
                 return Result.Ok();
             }
 
-            var message = messages.FirstOrDefault(msg => msg.ClientId.IsNotEmpty() && msg.ClientId != libClientId);
-            if (message != null)
+            var invalidMessage = messages.FirstOrDefault(msg => msg.ClientId.IsNotEmpty() && msg.ClientId != libClientId);
+            if (invalidMessage != null)
             {
-                var errorMessage = message is Message
-                    ? $"{message.GetType().Name} with name '{(message as Message).Name}' has incompatible clientId {message.ClientId} as the current client is configured with {libClientId}"
-                    : $"{message.GetType().Name} has incompatible clientId '{message.ClientId}' as the current client is configured with '{libClientId}'";
+                var errorMessage = invalidMessage is Message
+                    ? $"{invalidMessage.GetType().Name} with name '{(invalidMessage as Message).Name}' has incompatible clientId {invalidMessage.ClientId} as the current client is configured with {libClientId}"
+                    : $"{invalidMessage.GetType().Name} has incompatible clientId '{invalidMessage.ClientId}' as the current client is configured with '{libClientId}'";
 
                 return Result.Fail(new ErrorInfo(errorMessage, ErrorCodes.InvalidClientId, HttpStatusCode.BadRequest));
             }
