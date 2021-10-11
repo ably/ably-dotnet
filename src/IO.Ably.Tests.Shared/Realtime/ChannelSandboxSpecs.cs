@@ -1083,7 +1083,7 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTL13a")]
         public async Task ServerInitiatedDetach_WhenChannelSuspended_ShouldReattachImmediately(Protocol protocol)

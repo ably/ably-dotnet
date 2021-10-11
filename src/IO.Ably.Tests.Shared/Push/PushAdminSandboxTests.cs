@@ -244,7 +244,7 @@ namespace IO.Ably.Tests.Push
                 clientSavedSub.ClientId.Should().Be(channelSubForClient.ClientId);
             }
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [ProtocolData]
             [Trait("spec", "RSH1c4")]
             public async Task ShouldSuccessfullyRemoveAChannelSubscription(Protocol protocol)
@@ -273,7 +273,7 @@ namespace IO.Ably.Tests.Push
                 await executeTest.Should().NotThrowAsync();
             }
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [ProtocolData]
             [Trait("spec", "RSH1c5")]
             public async Task ShouldSuccessfullyRemoveAChannelSubscriptionWithCustomFilter(Protocol protocol)

@@ -168,7 +168,7 @@ namespace IO.Ably.Tests
             private readonly TokenDetails _returnedDummyTokenDetails;
             private bool _firstAttempt = true;
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [InlineData(Defaults.TokenErrorCodesRangeStart)]
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]

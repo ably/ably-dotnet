@@ -292,7 +292,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [InlineData(Protocol.Json, 30)] // Wait for 30 seconds
             [InlineData(Protocol.Json, 60)] // Wait for 1 minute
             [Trait("spec", "RTP17e")]
@@ -1121,7 +1121,7 @@ namespace IO.Ably.Tests.Realtime
                 presence.Should().HaveCount(1);
             }
 
-            [Theory]
+            [Theory(Skip = "Intermittently fails")]
             [ProtocolData]
             public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
             {
