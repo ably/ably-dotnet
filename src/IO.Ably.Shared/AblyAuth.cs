@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -663,24 +664,14 @@ namespace IO.Ably
                 return Result.Ok();
             }
 
-            foreach (var message in messages)
+            var invalidMessage = messages.FirstOrDefault(msg => msg.ClientId.IsNotEmpty() && msg.ClientId != libClientId);
+            if (invalidMessage != null)
             {
-                if (message.ClientId.IsNotEmpty() && message.ClientId != libClientId)
-                {
-                    var errorMessage = string.Empty;
-                    if (message is Message)
-                    {
-                        errorMessage =
-                            $"{message.GetType().Name} with name '{(message as Message).Name}' has incompatible clientId {message.ClientId} as the current client is configured with {libClientId}";
-                    }
-                    else
-                    {
-                        errorMessage =
-                            $"{message.GetType().Name} has incompatible clientId '{message.ClientId}' as the current client is configured with '{libClientId}'";
-                    }
+                var errorMessage = invalidMessage is Message
+                    ? $"{invalidMessage.GetType().Name} with name '{(invalidMessage as Message).Name}' has incompatible clientId {invalidMessage.ClientId} as the current client is configured with {libClientId}"
+                    : $"{invalidMessage.GetType().Name} has incompatible clientId '{invalidMessage.ClientId}' as the current client is configured with '{libClientId}'";
 
-                    return Result.Fail(new ErrorInfo(errorMessage, 40012, (HttpStatusCode)400));
-                }
+                return Result.Fail(new ErrorInfo(errorMessage, ErrorCodes.InvalidClientId, HttpStatusCode.BadRequest));
             }
 
             return Result.Ok();
