@@ -19,10 +19,10 @@ Until we resolve the issue you can either use version 1.1.13 or update to using 
 Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
 Here is a list of the significant changes. You can find a full list in the release notes.
 
-1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged resources and there was no need to expose the Dispose function. 
-2. [Breaking]ITransport has acquired an Id Property and ITransportListener.OnTransportEvent has an Id parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated. 
+1. [Breaking] `Presence` and `IRealtimeChannel` no longer implement the `IDisposable` interface. They don't hold on to any unmanaged resources and there was no need to expose the `Dispose` function.
+2. [Breaking] `ITransport` has acquired an `Id` property and `ITransportListener.OnTransportEvent` has an `Id` parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated.
 3. `ClientOptions.CaptureCurrentSynchronizationContext` has been deprecated and defaulted to `false`. It will be removed in future versions. You need to make sure that you don't directly update UI elements if you are building a WPF or Xamarin.Forms application from Ably handlers. If you still require the functionality please set it back to `true` and open an Ably Support ticket that you need the functionality. The main reason to disable this feature is that the library should not assume on which thread updates should be posted and that needs to be handled by the developer.
-4. IRealtimeClient implements IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
+4. `IRealtimeClient` implements `IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
 5. Logging has been greatly improved. We've removed a lot of verbose messages that brought little value. There is a helpful debug method called `.GetCurrentState()` on the realtime client that will dump the whole library's state as a json string. This will be helpful to include in the support tickets.
 
 
@@ -37,7 +37,7 @@ Here is a list of the significant changes. You can find a full list in the relea
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
 &ast; To target Windows 7 (with .NET 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/main/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
-This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implemented on Windows 7.
+This is because [`System.Net.WebSockets`]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implemented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
 &ast;&ast; We regression-test the library against .NET Core 3.1 and .NET Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
@@ -62,9 +62,9 @@ Unity Requirements:
   - Scripting Runtime Version should be '.NET 4.x Equivalent'
   - Api Compatibility Level should be '.NET Standard 2.0'
 
-Please download the latest Unity package from the [github releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a Unity package as well.
+Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a Unity package as well.
 
-Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the SynchronizationContext and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following Client option `CaptureCurrentSynchronizationContext`. Even thought the setting is deprecated it will not be removed.
+Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the `SynchronizationContext `and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following `Client` option `CaptureCurrentSynchronizationContext`. Even though the setting is deprecated it will not be removed.
 
 ## Unsupported platforms
 
@@ -135,7 +135,7 @@ realtime.Connection.On(ConnectionEvent.Connected, args =>
 });
 
 ```
-To disable the default automatic connect behavior of the library, set `AutoConnect=false` when initializing the client.
+To disable the default automatic connect behavior of the library, set `AutoConnect = false` when initializing the client.
 
 ```csharp
 var realtime = new AblyRealtime(new ClientOptions("<api key>") { AutoConnect = false });
@@ -280,7 +280,7 @@ var presenceNextPage = await presenceHistory.NextAsync();
 
 ### Symmetric end-to-end encrypted payloads on a channel
 
-When a 128 bit or 256 bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
+When a 128-bit or 256-bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
 
 ```csharp
 var secret = Crypto.GetRandomKey();
@@ -397,7 +397,7 @@ string tokenRequest = await client.Auth.CreateTokenRequestAsync();
 
 ### Symmetric end-to-end encrypted payloads on a channel
 
-When a 128 bit or 256 bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
+When a 128-bit or 256-bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
 
 ```csharp
 var secret = Crypto.GetRandomKey();
@@ -497,7 +497,7 @@ See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 
 Please visit http://support.ably.io/ for access to our knowledge-base and to ask for any assistance.
 
-You can also view the [community reported Github issues](https://github.com/ably/ably-dotnet/issues).
+You can also view the [community reported GitHub issues](https://github.com/ably/ably-dotnet/issues).
 
 ## Contributing
 
@@ -512,15 +512,17 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 or Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
 
-    choco install fake
-    choco install nuget.commandline
+```
+choco install fake
+choco install nuget.commandline
+```
 
 Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests. 
 To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 
-If you want to incorporate ably-dotnet into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the principal should transfer to other IDEs
+If you want to incorporate `ably-dotnet` into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the principal should transfer to other IDEs
 
 1. Clone this repository to your local system (`git clone --recurse-submodules https://github.com/ably/ably-dotnet.git`)
 2. Open the solution you want to reference ably-dotnet from
@@ -528,7 +530,7 @@ If you want to incorporate ably-dotnet into your project from source (perhaps to
 4. Select Add > Existing Project from the context menu
 5. Browse to the ably-dotnet repository and add ably-dotnet\src\IO.Ably.Shared\IO.Ably.Shared.shproj
 6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targeting .NET Framework (AKA Classic .NET) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
-7. In any project that you want to use ably-dotnet you need to add a project reference, to do so:
+7. In any project that you want to use `ably-dotnet` you need to add a project reference, to do so:
     1. Find your project in Solution Explorer and expand the tree so that the Dependencies node is visible
     2. Right click Dependencies and select Add Reference
     3. In the dialogue that opens you should see a list of the projects in your solution. Check the box next to IO.Ably.NETFramework (or whatever version you are trying to use) and click OK.
