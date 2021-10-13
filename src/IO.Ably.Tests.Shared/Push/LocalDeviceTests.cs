@@ -51,8 +51,6 @@ namespace IO.Ably.Tests.Push
             var mobileDevice = new FakeMobileDevice();
             void SetSetting(string key, string value) => mobileDevice.SetPreference(key, value, PersistKeys.Device.SharedName);
 
-            var stateMachine = new ActivationStateMachine(GetRestClient(mobileDevice: mobileDevice));
-
             const string deviceId = "deviceId";
             SetSetting(PersistKeys.Device.DeviceId, deviceId);
             const string clientId = "clientId";
