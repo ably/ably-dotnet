@@ -325,7 +325,7 @@ namespace IO.Ably.Tests.Push
                     };
                 }
 
-                return new AblyResponse() { TextResponse = "{}"};
+                return new AblyResponse() { TextResponse = "{}" };
             }
 
             var realtime = new AblyRealtime(options, (clientOptions, device) => GetRestClient(HandleRequestFunc, options, device), mobileDevice);
@@ -357,7 +357,6 @@ namespace IO.Ably.Tests.Push
             (await taskAwaiter).Should().BeTrue();
             mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
         }
-
 
         private class RSH8eStateTheoryData : TheoryData<Func<ActivationStateMachine, ActivationStateMachine.State>>
         {
