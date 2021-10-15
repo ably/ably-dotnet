@@ -43,6 +43,7 @@ namespace IO.Ably.Push
             _restClient = restClient;
             ClientId = _restClient.Auth.ClientId;
             _logger = logger ?? restClient.Logger;
+            CurrentState = new NotActivated(this);
         }
 
         public LocalDevice LocalDevice
@@ -148,7 +149,7 @@ namespace IO.Ably.Push
             }
         }
 
-        private void PersistState()
+        internal void PersistState()
         {
             Debug(
                 $"Persisting State and PendingQueue. State: {CurrentState.GetType().Name}. Queue: {PendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}");
@@ -264,6 +265,99 @@ namespace IO.Ably.Push
         {
             LocalDevice.DeviceIdentityToken = deviceIdentityToken;
             MobileDevice.SetPreference(PersistKeys.Device.DeviceToken, deviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        internal bool LoadPersistedState()
+        {
+            Debug("Loading persisted state.");
+
+            var canEnter = _handleEventsLock.Wait(1000); // Arbitrary number = 1 second
+
+            if (canEnter == false)
+            {
+                throw new AblyException("Failed to get ActivationStateMachine state lock.");
+            }
+
+            try
+            {
+                bool hasPersistedState = MobileDevice.GetPreference(
+                    PersistKeys.StateMachine.CurrentState,
+                    PersistKeys.StateMachine.SharedName).IsNotEmpty();
+
+                CurrentState = LoadState();
+                PendingEvents = LoadPersistedEvents();
+
+                if (hasPersistedState)
+                {
+                    Debug(
+                        $"HasState: '{hasPersistedState}'. State loaded. CurrentState: '{CurrentState.GetType().Name}', PendingEvents: '{PendingEvents.Select((x, i) => $"({i}) {x.GetType().Name}").JoinStrings()}'.");
+                }
+                else
+                {
+                    Debug("No persisted state found");
+                }
+
+                return hasPersistedState;
+
+                Queue<Event> LoadPersistedEvents()
+                {
+                    var persistedEvents = MobileDevice.GetPreference(PersistKeys.StateMachine.PendingEvents, PersistKeys.StateMachine.SharedName) ?? string.Empty;
+                    var eventNames = persistedEvents.Split('|');
+
+                    return new Queue<Event>(eventNames.Select(ParseEvent).Where(x => x != null));
+                }
+
+                Event ParseEvent(string eventName)
+                {
+                    switch (eventName)
+                    {
+                        case nameof(CalledActivate):
+                            return new CalledActivate();
+                        case nameof(CalledDeactivate):
+                            return new CalledDeactivate();
+                        case nameof(GotPushDeviceDetails):
+                            return new GotPushDeviceDetails();
+                        case nameof(RegistrationSynced):
+                            return new RegistrationSynced();
+                        case nameof(Deregistered):
+                            return new Deregistered();
+                        default: return null;
+                    }
+                }
+
+                State LoadState()
+                {
+                    var currentState = MobileDevice.GetPreference(PersistKeys.StateMachine.CurrentState, PersistKeys.StateMachine.SharedName) ?? string.Empty;
+                    switch (currentState)
+                    {
+                        case nameof(NotActivated):
+                            return new NotActivated(this);
+                        case nameof(WaitingForPushDeviceDetails):
+                            return new WaitingForPushDeviceDetails(this);
+                        case nameof(WaitingForNewPushDeviceDetails):
+                            return new WaitingForNewPushDeviceDetails(this);
+                        case nameof(AfterRegistrationSyncFailed):
+                            return new AfterRegistrationSyncFailed(this);
+                        default:
+                            return new NotActivated(this);
+                    }
+                }
+            }
+            finally
+            {
+                _handleEventsLock.Release();
+            }
+        }
+
+        internal void ClearPersistedState()
+        {
+            MobileDevice.ClearPreferences(PersistKeys.StateMachine.CurrentState);
+        }
+
+        internal void ResetStateMachine()
+        {
+            CurrentState = new NotActivated(this);
+            PendingEvents.Clear();
         }
     }
 }
