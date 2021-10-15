@@ -124,7 +124,7 @@ namespace IO.Ably.Push
 
                 async Task<Event> RegisterDevice()
                 {
-                    DeviceDetails device = Machine.LocalDevice;
+                    LocalDevice device = Machine.LocalDevice;
 
                     var ably = Machine._restClient; // TODO: Check if there is an instance when Ably is not set. In which case Java set queues GettingDeviceRegistrationFailed
 
@@ -136,6 +136,11 @@ namespace IO.Ably.Push
                         {
                             return new GettingDeviceRegistrationFailed(new ErrorInfo(
                                 "Invalid deviceIdentityToken in response", ErrorCodes.BadRequest, HttpStatusCode.BadRequest));
+                        }
+
+                        if (registeredDevice.ClientId.IsNotEmpty())
+                        {
+                            device.UpdateClientId(registeredDevice.ClientId, Machine.MobileDevice);
                         }
 
                         return new GotDeviceRegistration(deviceIdentityToken);
