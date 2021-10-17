@@ -12,20 +12,8 @@ namespace IO.Ably.Tests.Push
 {
     public static class PushAdminSandboxTests
     {
-        private static LocalDevice GetTestLocalDevice(AblyRest client)
-        {
-            var device = LocalDevice.Create("123");
-            device.FormFactor = "phone";
-            device.Platform = "android";
-            device.Push.Recipient = JObject.FromObject(new
-            {
-                transportType = "ablyChannel",
-                channel = "pushenabled:test",
-                ablyKey = client.Options.Key,
-                ablyUrl = "https://" + client.Options.FullRestHost(),
-            });
-            return device;
-        }
+        private static LocalDevice GetTestLocalDevice(AblyRest client) =>
+            PushTestHelpers.GetTestLocalDevice(client, "123");
 
         [Trait("type", "integration")]
         public class PublishTests : SandboxSpecs
