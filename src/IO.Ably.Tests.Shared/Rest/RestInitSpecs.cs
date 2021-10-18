@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
             public void WithTokenButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
                 var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
-                var client = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
+                _ = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
 
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
             public void WithTokenDetailsButNoWayToRenew_ShouldLogErrorMessageWithError()
             {
                 var testLogger = new TestLogger(NoMeansProvidedToRenewAuthToken);
-                var client = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
+                _ = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
                 testLogger.MessageSeen.Should().BeTrue();
             }
 

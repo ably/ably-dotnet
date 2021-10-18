@@ -516,9 +516,8 @@ namespace IO.Ably.Tests
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var client = CreateClient(null);
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                _ = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
-                // ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
                 _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount);
             }
 
@@ -663,7 +662,7 @@ namespace IO.Ably.Tests
 
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                _ = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 handler.Requests.Count.Should().Be(3); // First attempt is with rest.ably.io
             }

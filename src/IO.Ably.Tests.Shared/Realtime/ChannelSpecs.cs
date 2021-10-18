@@ -1618,7 +1618,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get("history");
 
 #pragma warning disable 618
-                var ex = await Assert.ThrowsAsync<AblyException>(() => channel.HistoryAsync(true));
+                _ = await Assert.ThrowsAsync<AblyException>(() => channel.HistoryAsync(true));
 #pragma warning restore 618
             }
 

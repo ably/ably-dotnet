@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2")]
         public async Task ShouldUseDefaultRealtimeHost()
         {
-            var client = await GetConnectedClient();
+            _ = await GetConnectedClient();
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
         }
 
@@ -31,7 +31,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
 #pragma warning disable 162
-            var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
+            _ = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
             LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should().Be(format);
 #pragma warning restore 162
@@ -43,7 +43,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2b")]
         public async Task WithEchoInClientOptions_ShouldSetTransportEchoCorrectly(bool echo)
         {
-            var client = await GetConnectedClient(opts => opts.EchoMessages = echo);
+            _ = await GetConnectedClient(opts => opts.EchoMessages = echo);
 
             LastCreatedTransport.Parameters.EchoMessages.Should().Be(echo);
             LastCreatedTransport.Parameters.GetParams()
@@ -55,8 +55,8 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2d")]
         public async Task WithClientId_ShouldSetTransportClientIdCorrectly()
         {
-            var clientId = "12345";
-            var client = await GetConnectedClient(opts =>
+            const string clientId = "12345";
+            _ = await GetConnectedClient(opts =>
             {
                 opts.ClientId = clientId;
                 opts.Token = "123";
@@ -72,7 +72,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2d")]
         public async Task WithoutClientId_ShouldNotSetClientIdParameterOnTransport()
         {
-            var client = await GetConnectedClient();
+            _ = await GetConnectedClient();
 
             LastCreatedTransport.Parameters.ClientId.Should().BeNullOrEmpty();
             LastCreatedTransport.Parameters.GetParams().Should().NotContainKey("clientId");
@@ -92,9 +92,9 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RSA3c")]
         public async Task WithTokenAuth_ShouldSetTransportAccessTokeParameter()
         {
-            var clientId = "123";
-            var tokenString = "token";
-            var client = await GetConnectedClient(opts =>
+            const string clientId = "123";
+            const string tokenString = "token";
+            _ = await GetConnectedClient(opts =>
             {
                 opts.Key = string.Empty;
                 opts.ClientId = clientId;
@@ -111,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2f")]
         public async Task ShouldSetTransportVersionParameterToProtocolVersion()
         {
-            var client = await GetConnectedClient();
+            _ = await GetConnectedClient();
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
@@ -131,7 +131,7 @@ namespace IO.Ably.Tests.Realtime
             Regex.Match($"xdotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeFalse();
             Regex.Match($"csharp.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeFalse();
 
-            var client = await GetConnectedClient();
+            _ = await GetConnectedClient();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
             var transportParams = LastCreatedTransport.Parameters.GetParams();
 
@@ -143,7 +143,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f")]
         public async Task WithNullTransportParamsInOptions_ShouldNotThrow()
         {
-            var client = await GetConnectedClient(options => options.TransportParams = null);
+            _ = await GetConnectedClient(options => options.TransportParams = null);
 
             var ex = Record.Exception(() => LastCreatedTransport.Parameters.GetUri().ToString());
 
@@ -154,7 +154,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1f")]
         public async Task WithCustomTransportParamsInOptions_ShouldPassThemInQueryStringWhenCreatingTransport()
         {
-            var client = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
+            _ = await GetConnectedClient(options => options.TransportParams = new Dictionary<string, object>
             {
                 { "test", "best" },
                 { "best", "test" },

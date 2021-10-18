@@ -46,11 +46,11 @@ namespace IO.Ably.Tests
             {
                 if (throws)
                 {
-                    var ex = await Assert.ThrowsAsync<ArgumentException>(() => _channel.Presence.GetAsync(limit));
+                    _ = await Assert.ThrowsAsync<ArgumentException>(() => _channel.Presence.GetAsync(limit));
                 }
                 else
                 {
-                    var result = await _channel.Presence.GetAsync(limit);
+                    _ = await _channel.Presence.GetAsync(limit);
 
                     LastRequest.AssertContainsParameter("limit", expectedLimitHeader);
                 }
@@ -141,7 +141,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP4b3")]
             public async Task History_WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
-                var ex = await
+                _ = await
                     Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new PaginatedRequestParams { Limit = limit }));
             }
 
