@@ -488,7 +488,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var tokenParams = new TokenParams { Capability = new Capability() };
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestTokenAsync(tokenParams, options));
+            _ = await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestTokenAsync(tokenParams, options));
         }
 
         [Fact]

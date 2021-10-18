@@ -346,7 +346,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL2b")]
             public async Task WithStartBeforeEnd_Throws()
             {
-                var ex = await Assert.ThrowsAsync<AblyException>(() =>
+                _ = await Assert.ThrowsAsync<AblyException>(() =>
                         _channel.HistoryAsync(new PaginatedRequestParams { Start = Now, End = Now.AddHours(-1) }));
             }
 
@@ -375,7 +375,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSP3a1")]
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
-                var ex = await
+                _ = await
                     Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams { Limit = limit }));
             }
 
@@ -388,7 +388,7 @@ namespace IO.Ably.Tests.Rest
                 {
                     var query = new PaginatedRequestParams { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
-                    var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                    _ = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
             }
 

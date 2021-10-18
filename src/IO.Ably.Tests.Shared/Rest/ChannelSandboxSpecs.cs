@@ -42,12 +42,14 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1d")]
         public async Task SendingAVeryLargeMessage_ShouldThrowErrorToIndicateSendingFailed(Protocol protocol)
         {
-            var message = new Message();
-            message.Name = "large";
-            message.Data = new string('a', 50 * 1024 * 8); // 100KB
+            var message = new Message
+            {
+                Name = "large",
+                Data = new string('a', 50 * 1024 * 8), // 100KB
+            };
             var client = await GetRestClient(protocol);
-            var ex = await Assert.ThrowsAsync<AblyException>(()
-                => client.Channels.Get("large").PublishAsync(message));
+            var channel = client.Channels.Get("large");
+            _ = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
         }
 
         [Theory]
@@ -105,7 +107,7 @@ namespace IO.Ably.Tests.Rest
             var message = new Message("test", "test") { ClientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "111");
             var channel = client.Channels.Get("test");
-            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
+            _ = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
 
             // Can publish further messages in the same channel
             await channel.PublishAsync("test", "test");
@@ -488,7 +490,7 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test_" + protocol);
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync("int", 1));
+            _ = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync("int", 1));
         }
 
         private class TestLoggerSink : ILoggerSink
