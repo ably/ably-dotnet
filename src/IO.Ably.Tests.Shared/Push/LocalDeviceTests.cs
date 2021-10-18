@@ -8,6 +8,7 @@ using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
@@ -50,8 +51,6 @@ namespace IO.Ably.Tests.Push
         {
             var mobileDevice = new FakeMobileDevice();
             void SetSetting(string key, string value) => mobileDevice.SetPreference(key, value, PersistKeys.Device.SharedName);
-
-            var stateMachine = new ActivationStateMachine(GetRestClient(mobileDevice: mobileDevice));
 
             const string deviceId = "deviceId";
             SetSetting(PersistKeys.Device.DeviceId, deviceId);
@@ -333,6 +332,62 @@ namespace IO.Ably.Tests.Push
             stateMachine.PendingEvents.Should().BeEmpty();
             stateMachine.LocalDevice.Id.Should().NotBeEmpty();
             stateMachine.LocalDevice.DeviceSecret.Should().NotBeEmpty();
+        }
+
+        // RSH8f
+        // (RSH8f) If the LocalDevice is created by an unidentified client (see (RSA7) )
+        // and therefore has no clientId set, but on receipt of a registration response (see (RSH3c2) )
+        // the registered device has a non-empty clientId, then the LocalDevice clientId is set with that clientId.
+        [Fact]
+        [Trait("spec", "RSH8f")]
+        internal async Task WhenClientIdChangesAfterRegisteringDevice_StateMachineShouldReceive_GotPushDeviceDetailsEvent()
+        {
+            // Arrange
+            const string newClientId = "testId";
+
+            var options = new ClientOptions(ValidKey) { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true };
+            var mobileDevice = new FakeMobileDevice();
+            async Task<AblyResponse> HandleRequestFunc(AblyRequest request)
+            {
+                if (request.Url.Contains("/push/deviceRegistrations"))
+                {
+                    return new AblyResponse()
+                    {
+                        TextResponse = JObject.FromObject(new { clientId = newClientId, deviceIdentityToken = new { token = "token" } }).ToString()
+                    };
+                }
+
+                return new AblyResponse() { TextResponse = "{}" };
+            }
+
+            var realtime = new AblyRealtime(options, (clientOptions, device) => GetRestClient(HandleRequestFunc, options, device), mobileDevice);
+
+            // Setup the local device
+            var localDevice = PushTestHelpers.GetRegisteredLocalDevice(realtime.RestClient);
+            realtime.RestClient.Device = localDevice;
+            localDevice.ClientId.Should().BeNull();
+
+            realtime.Push.InitialiseStateMachine();
+
+            var taskAwaiter = new TaskCompletionAwaiter();
+            var stateMachine = realtime.Push.StateMachine;
+            stateMachine.CurrentState = new ActivationStateMachine.WaitingForPushDeviceDetails(stateMachine);
+
+            // We trigger the GotPushDeviceDetails event
+            await stateMachine.HandleEvent(new ActivationStateMachine.GotPushDeviceDetails());
+
+            // From here we expect the stateMachine to move to WaitingForDeviceRegistration and try to register the Device
+            // The registration will hit our mocked rest client above and return a localDevice with a new clientId.
+            // Once the clientId is received we should expect to receive GotPushDeviceDetails event and the new clientId to be persisted
+            realtime.Push.StateMachine.ProcessingEventCallback = @event =>
+            {
+                // Check we received the correct event
+                @event.Should().BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+                taskAwaiter.Done();
+            };
+
+            (await taskAwaiter).Should().BeTrue();
+            mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
         }
 
         private class RSH8eStateTheoryData : TheoryData<Func<ActivationStateMachine, ActivationStateMachine.State>>

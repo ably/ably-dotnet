@@ -78,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushAdminTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushChannelTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\PushRealtimeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Push\PushTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\RegistrationTokenTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSpecs.cs" />
