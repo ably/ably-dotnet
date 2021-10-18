@@ -24,6 +24,23 @@ namespace IO.Ably.Push
             if (_restClient.MobileDevice != null)
             {
                 StateMachine = new ActivationStateMachine(_restClient, _logger);
+
+                var hasState = StateMachine.LoadPersistedState();
+
+                // if we are not in the initial state
+                if (hasState && (StateMachine.CurrentState is ActivationStateMachine.NotActivated == false))
+                {
+                    var device = _restClient.Device;
+                    if (device.Id.IsEmpty() || device.DeviceSecret.IsEmpty())
+                    {
+                        _logger.Warning("State machine has loaded state but failed to load Local device. Resetting local device.");
+                        LocalDevice.ResetDevice(_restClient.MobileDevice);
+
+                        StateMachine.ClearPersistedState();
+                        StateMachine.ResetStateMachine();
+                    }
+                }
+
                 if (_restClient.Device != null)
                 {
                     _restClient.Device.ClientIdUpdated = ClientIdUpdated;

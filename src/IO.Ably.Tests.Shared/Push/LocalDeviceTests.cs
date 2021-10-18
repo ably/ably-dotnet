@@ -300,6 +300,40 @@ namespace IO.Ably.Tests.Push
             (await taskAwaiter).Should().BeFalse();
         }
 
+        // (RSH8j) If during library initialisation the LocalDevice id or deviceSecret attributes are not able to be
+        // loaded then those LocalDevice details must be discarded and the ActivationStateMachine machine should
+        // transition to the NotActivated state. New LocalDevice id and deviceSecret attributes should be generated
+        // on the next activation event.
+        [Fact]
+        [Trait("spec", "RSH8j")]
+        internal async Task WhenStateMachineIsInitialised_And_LocalDeviceIdIsEmpty_But_StateMachineState_is_loaded_ShouldResetLocalDevice_And_StateMachineState()
+        {
+            // Arrange
+            const string initialClientId = "123";
+            var options = new ClientOptions(ValidKey)
+                { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true, ClientId = initialClientId };
+            var mobileDevice = new FakeMobileDevice();
+            var setupRealtime = new AblyRealtime(options, mobileDevice: mobileDevice);
+
+            setupRealtime.Push.InitialiseStateMachine();
+            setupRealtime.Push.StateMachine.CurrentState =
+                new ActivationStateMachine.WaitingForNewPushDeviceDetails(setupRealtime.Push.StateMachine);
+            setupRealtime.Push.StateMachine.PendingEvents.Enqueue(new ActivationStateMachine.CalledActivate());
+            setupRealtime.Push.StateMachine.PersistState();
+
+            var testRealtime = new AblyRealtime(options, mobileDevice: mobileDevice);
+
+            // We let the RestClient create the local device.
+            testRealtime.RestClient.Device.Id = null;
+
+            testRealtime.Push.InitialiseStateMachine();
+            var stateMachine = testRealtime.Push.StateMachine;
+            stateMachine.CurrentState.Should().BeOfType<ActivationStateMachine.NotActivated>();
+            stateMachine.PendingEvents.Should().BeEmpty();
+            stateMachine.LocalDevice.Id.Should().NotBeEmpty();
+            stateMachine.LocalDevice.DeviceSecret.Should().NotBeEmpty();
+        }
+
         // RSH8f
         // (RSH8f) If the LocalDevice is created by an unidentified client (see (RSA7) )
         // and therefore has no clientId set, but on receipt of a registration response (see (RSH3c2) )
