@@ -34,7 +34,7 @@ namespace IO.Ably
 
         public ILogger Logger { get; set; }
 
-        public bool AddRequestIds { get; set; } = false;
+        public bool AddRequestIds { get; set; }
 
         public AblyHttpOptions()
         {

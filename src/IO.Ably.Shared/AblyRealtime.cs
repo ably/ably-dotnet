@@ -23,7 +23,7 @@ namespace IO.Ably
 
         internal RealtimeWorkflow Workflow { get; private set; }
 
-        internal volatile bool Disposed = false;
+        internal volatile bool Disposed;
         private static readonly Func<ClientOptions, IMobileDevice, AblyRest> CreateRestFunc = (clientOptions, mobileDevice) => new AblyRest(clientOptions, mobileDevice);
 
         /// <summary>

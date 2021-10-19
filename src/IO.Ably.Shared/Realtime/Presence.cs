@@ -21,7 +21,7 @@ namespace IO.Ably.Realtime
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
         private readonly IConnectionManager _connection;
         private string _currentSyncChannelSerial;
-        private bool _initialSyncCompleted = false;
+        private bool _initialSyncCompleted;
 
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
         {

@@ -91,7 +91,7 @@ namespace IO.Ably.Tests.Infrastructure
             _handler = new MessageHandler(DefaultLogger.LoggerInstance, protocol);
         }
 
-        public bool ThrowOnConnect { get; set; } = false;
+        public bool ThrowOnConnect { get; set; }
 
         public Guid Id => WrappedTransport.Id;
 

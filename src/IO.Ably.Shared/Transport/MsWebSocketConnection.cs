@@ -48,7 +48,7 @@ namespace IO.Ably.Transport
             Closed
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 

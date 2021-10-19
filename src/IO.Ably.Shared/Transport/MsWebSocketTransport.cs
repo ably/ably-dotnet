@@ -31,7 +31,7 @@ namespace IO.Ably.Transport
     public class MsWebSocketTransport : ITransport
     {
         private readonly MsWebSocketOptions _socketOptions;
-        private bool _disposed = false;
+        private bool _disposed;
         private readonly CancellationTokenSource _readerThreadSource = new CancellationTokenSource();
         private MsWebSocketConnection _socket;
 

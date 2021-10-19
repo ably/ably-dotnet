@@ -54,7 +54,7 @@ namespace IO.Ably
         /// Set to 'true' when 4XX or 5XX HTTP status codes should not cause an exception.
         /// Add to support AblyRest.Request(...).
         /// </summary>
-        public bool NoExceptionOnHttpError { get; set; } = false;
+        public bool NoExceptionOnHttpError { get; set; }
 
         public void AddHeaders(IEnumerable<KeyValuePair<string, string>> parameters)
         {

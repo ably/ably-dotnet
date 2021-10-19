@@ -32,8 +32,8 @@ namespace IO.Ably.Realtime.Workflow
 
         // This is used for the tests so we can have a good
         // way of figuring out when processing has finished
-        private volatile bool _processingCommand = false;
-        private bool _heartbeatMonitorDisconnectRequested = false;
+        private volatile bool _processingCommand;
+        private bool _heartbeatMonitorDisconnectRequested;
 
         private AblyRealtime Client { get; }
 
