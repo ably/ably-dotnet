@@ -1,3 +1,5 @@
+0
+
 # ably-dotnet
 
 [![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
