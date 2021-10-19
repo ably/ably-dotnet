@@ -16,7 +16,7 @@ namespace IO.Ably
         private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
 #if !MSGPACK
-        private bool _useBinaryProtocol = false;
+        private bool _useBinaryProtocol;
 #endif
         private string[] _fallbackHosts;
 
@@ -411,7 +411,7 @@ namespace IO.Ably
         /// If enabled, every REST request to Ably includes a `request_id` query string parameter.
         /// This request ID remains the same if a request is retried to a fallback host.
         /// </summary>
-        public bool AddRequestIds { get; set; } = false;
+        public bool AddRequestIds { get; set; }
 
         /// <summary>
         /// It tells Ably push REST requests to fully wait for all their effects before responding.
@@ -429,7 +429,7 @@ namespace IO.Ably
         [JsonIgnore]
         internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
-        internal bool SkipInternetCheck { get; set; } = false;
+        internal bool SkipInternetCheck { get; set; }
 
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 

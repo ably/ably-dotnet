@@ -36,7 +36,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public bool IsFallbackHost => FallbackHosts.Contains(Host);
 
-            internal long MessageSerial { get; set; } = 0;
+            internal long MessageSerial { get; set; }
 
             /// <summary>
             /// The current connection key.

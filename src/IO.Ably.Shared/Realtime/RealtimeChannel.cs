@@ -27,9 +27,9 @@ namespace IO.Ably.Realtime
         /// True when the channel moves to the @ATTACHED@ state, and False
         /// when the channel moves to the @DETACHING@ or @FAILED@ states.
         /// </summary>
-        internal bool AttachResume { get; set; } = false;
+        internal bool AttachResume { get; set; }
 
-        private int _decodeRecoveryInProgress = 0;
+        private int _decodeRecoveryInProgress;
 
         // We use interlocked exchange because it is a thread safe way to read a variable
         // without the need of locking. Generally DecodeRecovery is set from a method triggered by

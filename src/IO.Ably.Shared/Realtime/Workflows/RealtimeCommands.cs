@@ -160,9 +160,9 @@ namespace IO.Ably.Realtime.Workflow
             RetryAuth = retryAuth;
         }
 
-        public bool ClearConnectionKey { get; } = false;
+        public bool ClearConnectionKey { get; }
 
-        public bool RetryAuth { get; } = false;
+        public bool RetryAuth { get; }
 
         public static SetConnectingStateCommand Create(bool clearConnectionKey = false, bool retryAuth = false) => new SetConnectingStateCommand(clearConnectionKey, retryAuth);
 

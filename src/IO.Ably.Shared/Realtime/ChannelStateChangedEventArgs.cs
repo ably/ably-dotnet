@@ -66,7 +66,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public ChannelEvent Event { get; }
 
-        internal ProtocolMessage ProtocolMessage { get; set; } = null;
+        internal ProtocolMessage ProtocolMessage { get; set; }
 
         /// <inheritdoc/>
         public override string ToString()
