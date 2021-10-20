@@ -79,7 +79,7 @@ namespace IO.Ably.MessageEncoders
         private static void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
-            DecodePayloads(context, payloads as IEnumerable<IMessage>);
+            _ = DecodePayloads(context, payloads as IEnumerable<IMessage>);
         }
 
         public void SetRequestBody(AblyRequest request)
@@ -212,7 +212,7 @@ namespace IO.Ably.MessageEncoders
             if (pp == context.PreviousPayload)
             {
                 var originalPayloadResult = GetOriginalMessagePayload();
-                originalPayloadResult.IfSuccess(x =>
+                _ = originalPayloadResult.IfSuccess(x =>
                 {
                     context.PreviousPayload = x;
                 });

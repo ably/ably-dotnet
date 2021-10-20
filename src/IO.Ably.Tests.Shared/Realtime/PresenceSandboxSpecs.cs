@@ -327,7 +327,7 @@ namespace IO.Ably.Tests.Realtime
 
                     await rtChannel.Presence.EnterAsync();
                     await rtChannel.WaitForState(ChannelState.Attached);
-                    await rtChannel.Presence.WaitSync();
+                    _ = await rtChannel.Presence.WaitSync();
 
                     return (rtChannel, rChannel);
                 }
@@ -387,7 +387,7 @@ namespace IO.Ably.Tests.Realtime
                     await realtimeClient.WaitForState(ConnectionState.Disconnected);
                     await realtimeClient.WaitForState(ConnectionState.Connected);
                     await realtimeChannel.WaitForState(ChannelState.Attached);
-                    await realtimeChannel.Presence.WaitSync();
+                    _ = await realtimeChannel.Presence.WaitSync();
 
                     // Wait for a second because the Rest call returns [] if done straight away
                     await Sleep(1);
@@ -870,7 +870,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel2.Presence.EnterClientAsync("3", null);
 
                 // wait for the above to raise a subscribe event
-                await ch2Awaiter.WaitFor(1);
+                _ = await ch2Awaiter.WaitFor(1);
 
                 // filter by clientId
                 var presenceMessages3 = await channel2.Presence.GetAsync("1");

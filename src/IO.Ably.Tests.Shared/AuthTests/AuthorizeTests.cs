@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.AuthTests
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);
             var customTokenParams = TokenParams.WithDefaultsApplied();
-            customTokenParams.Merge(new TokenParams { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) });
+            _ = customTokenParams.Merge(new TokenParams { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) });
             var customAuthOptions = AuthOptions.FromExisting(testAblyAuth.Options);
             customAuthOptions.UseTokenAuth = true;
 
@@ -160,13 +160,13 @@ namespace IO.Ably.Tests.AuthTests
             var testLogger1 = new TestLogger("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
             var client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger1; });
             var testAblyAuth = new TestAblyAuth(client.Options, client);
-            await testAblyAuth.AuthoriseAsync();
+            _ = await testAblyAuth.AuthoriseAsync();
             testLogger1.MessageSeen.Should().BeTrue();
 
             var testLogger2 = new TestLogger("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize");
             client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger2; });
             testAblyAuth = new TestAblyAuth(client.Options, client);
-            testAblyAuth.Authorise();
+            _ = testAblyAuth.Authorise();
             testLogger2.MessageSeen.Should().BeTrue();
 #pragma warning restore CS0618 // Type or member is obsolete
         }
