@@ -675,7 +675,7 @@ namespace IO.Ably.Realtime.Workflow
             if (Connection.State != ConnectionState.Connected)
             {
                 // We don't want to wait for the execution to finish
-                NotifyExternalClient(
+                _ = NotifyExternalClient(
                     () => { cmd.Request.Callback?.Invoke(null, PingRequest.DefaultError); },
                     "Notifying Ping callback because connection state is not Connected");
             }

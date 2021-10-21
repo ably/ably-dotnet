@@ -77,7 +77,7 @@ namespace IO.Ably.Rest
             var channelList = _channels.Keys.ToArray();
             foreach (var channelName in channelList)
             {
-                Release(channelName);
+                _ = Release(channelName);
             }
         }
 

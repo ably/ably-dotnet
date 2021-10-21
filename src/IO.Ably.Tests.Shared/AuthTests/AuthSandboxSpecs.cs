@@ -283,7 +283,7 @@ namespace IO.Ably.Tests
             });
             await Task.Delay(2000);
             // This makes sure we get server time
-            ((AblyAuth)mainClient.Auth).CreateTokenRequest();
+            _ = ((AblyAuth)mainClient.Auth).CreateTokenRequest();
 
             await mainClient.StatsAsync();
             ((AblyAuth)mainClient.Auth).CurrentToken.Should().NotBeSameAs(token);
