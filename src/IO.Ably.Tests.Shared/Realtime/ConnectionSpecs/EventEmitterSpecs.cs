@@ -498,7 +498,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTE6")]
         public void WithEventEmitter_WhenExceptionRaised_ExceptionIsCaughtAndLogged()
         {
-            string exceptionMessage = "Listener1 exception";
+            const string exceptionMessage = "Listener1 exception";
             bool handled1 = false;
             bool handled2 = false;
 

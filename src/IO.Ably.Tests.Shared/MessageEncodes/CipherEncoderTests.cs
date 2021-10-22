@@ -8,13 +8,13 @@ namespace IO.Ably.Tests.MessageEncodes
 {
     public class CipherEncoderTests
     {
-        private string _stringData;
-        private byte[] _binaryData = { 2, 3, 4, 5, 6 };
-        private byte[] _encryptedBinaryData;
-        private CipherEncoder _encoder;
-        private ChannelOptions _channelOptions;
-        private byte[] _encryptedData;
-        private IChannelCipher _crypto;
+        private readonly string _stringData;
+        private readonly byte[] _binaryData = { 2, 3, 4, 5, 6 };
+        private readonly byte[] _encryptedBinaryData;
+        private readonly CipherEncoder _encoder;
+        private readonly ChannelOptions _channelOptions;
+        private readonly byte[] _encryptedData;
+        private readonly IChannelCipher _crypto;
 
         public CipherEncoderTests(int keyLength = Crypto.DefaultKeylength, bool encrypt = false)
         {
@@ -201,8 +201,8 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_LeavesMessageUnencrypted()
             {
-                 var initialEncoding = "utf-8/cipher+aes-128-cbc";
-                 var encryptedValue = "test";
+                 const string initialEncoding = "utf-8/cipher+aes-128-cbc";
+                 const string encryptedValue = "test";
                  IPayload payload = new Message { Data = encryptedValue, Encoding = initialEncoding };
 
                  var result = _encoder.Decode(payload, _channelOptions.ToDecodingContext());

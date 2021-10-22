@@ -26,7 +26,7 @@ namespace IO.Ably.AcceptanceTests
             {
             }
 
-            public class TestObject
+            private class TestObject
             {
                 public string Name { get; set; }
 

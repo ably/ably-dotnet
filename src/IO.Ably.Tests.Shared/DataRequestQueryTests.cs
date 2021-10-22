@@ -3,12 +3,12 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
-    public class TestHttpHeaders : HttpHeaders
-    {
-    }
-
     public class DataRequestQueryTests
     {
+        private const string FirstQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
+        private const string CurrentQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
+        private const string NextQueryString = "?start=1380794881111&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
+
         public static HttpHeaders GetSampleHistoryRequestHeaders()
         {
             var headers = new TestHttpHeaders();
@@ -27,10 +27,6 @@ namespace IO.Ably.Tests
             headers.Add("Link", $"<./stats{NextQueryString}>; rel=\"next\"");
             return headers;
         }
-
-        public const string FirstQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
-        public const string CurrentQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
-        public const string NextQueryString = "?start=1380794881111&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
 
         [Fact]
         public void GetLinkQuery_WithHeadersAndAskingForNextLink_ReturnsCorrectRequestQuery()
@@ -59,6 +55,10 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal(firstDataRequest, actual);
+        }
+
+        private class TestHttpHeaders : HttpHeaders
+        {
         }
     }
 }

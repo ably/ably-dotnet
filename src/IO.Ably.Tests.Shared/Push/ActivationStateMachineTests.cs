@@ -552,7 +552,7 @@ namespace IO.Ably.Tests.Push
             public async Task GotPushDeviceDetails_ShouldSetStateToWaitingForDeviceRegistrationAndRegisterDeviceWithAblyRestApi()
             {
                 var (state, machine) = GetStateAndStateMachine();
-                var token = "token";
+                const string token = "token";
 
                 machine.LocalDevice = LocalDevice.Create(mobileDevice: MobileDevice);
                 machine.LocalDevice.Push.Recipient = new JObject();

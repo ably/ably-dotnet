@@ -224,7 +224,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
         {
-            int numberOfRetries = 2;
+            const int numberOfRetries = 2;
             var client = await GetRestClient(protocol, opts =>
             {
                 opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
@@ -284,7 +284,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k5")]
         public async Task IdempotentPublishing_WithClientSpecificMessage_ShouldRetry(Protocol protocol)
         {
-            int numberOfRetries = 2;
+            const int numberOfRetries = 2;
             var client = await GetRestClient(protocol, opts =>
             {
                 opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
@@ -526,7 +526,7 @@ namespace IO.Ably.Tests.Rest
             opts.Logger = logger;
             var channel1 = client.Channels.Get("persisted:encryption", opts);
 
-            var payload = "test payload";
+            const string payload = "test payload";
             await channel1.PublishAsync("test", payload);
 
             await Task.Delay(1000);
@@ -645,7 +645,7 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol);
             var channel1 = client.Channels.Get("persisted:encryption", GetOptions(_examples));
 
-            var payload = "test payload";
+            const string payload = "test payload";
             await channel1.PublishAsync("test", payload);
 
             var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));

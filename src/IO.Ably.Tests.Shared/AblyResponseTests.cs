@@ -39,7 +39,7 @@ namespace IO.Ably.Tests
         public void Ctor_WhenTypeIsJson_SetsTextResponse()
         {
             // Arrange
-            var text = "Test";
+            const string text = "Test";
 
             // Act
             var response = new AblyResponse(string.Empty, "application/json", text.GetBytes());

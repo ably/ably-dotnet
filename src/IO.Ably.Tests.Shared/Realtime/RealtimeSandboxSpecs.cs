@@ -75,8 +75,8 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC8a3")]
         public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(Protocol protocol)
         {
-            var validClientId1 = "RTC8";
-            var invalidClientId = "RTC8-incompatible-clientId";
+            const string validClientId1 = "RTC8";
+            const string invalidClientId = "RTC8-incompatible-clientId";
 
             // For a realtime client, Auth#authorize instructs the library to obtain
             // a token using the provided tokenParams and authOptions and upgrade
@@ -126,7 +126,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC8a3")]
         public async Task WithNotConnectedClient_WhenAuthorizeCalled_ShouldConnect(Protocol protocol)
         {
-            var validClientId1 = "RTC8";
+            const string validClientId1 = "RTC8";
 
             var client2 = await GetRealtimeClient(protocol, (opts, _) =>
             {
@@ -146,7 +146,7 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithConnectedClient_OnAuthUpdated_ShouldTimeOutIfNoResponseFromTheServer(Protocol protocol)
         {
-            var validClientId1 = "RTC8";
+            const string validClientId1 = "RTC8";
 
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {

@@ -325,7 +325,7 @@ namespace IO.Ably.Tests.Push
                     return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK });
                 });
 
-                var deviceId = "123";
+                const string deviceId = "123";
                 await client.Push.Admin.DeviceRegistrations.RemoveAsync(deviceId);
 
                 currentRequest.Url.Should().Be($"/push/deviceRegistrations/{deviceId}");

@@ -208,7 +208,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact(Skip = "Making sure the samples compile")]
         public async Task TransportSamples()
         {
-            var maxBufferSize = 64 * 1024;
+            const int maxBufferSize = 64 * 1024;
             var options = new ClientOptions();
             var websocketOptions = new MsWebSocketOptions { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
             options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
