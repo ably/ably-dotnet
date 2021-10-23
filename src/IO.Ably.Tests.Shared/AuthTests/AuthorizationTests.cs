@@ -301,12 +301,12 @@ namespace IO.Ably.Tests
                 Client = GetRestClient();
             }
 
-            public AblyRest Client { get; }
+            private AblyRest Client { get; }
         }
 
         public class ClientIdSpecs : AuthorizationTests
         {
-            private string _clientId = "123";
+            private const string ClientId = "123";
 
             public ClientIdSpecs(ITestOutputHelper output)
                 : base(output)
@@ -315,7 +315,7 @@ namespace IO.Ably.Tests
 
             private AblyRest GetRestClientWithClientId()
             {
-                return GetRestClient(null, options => options.ClientId = _clientId);
+                return GetRestClient(null, options => options.ClientId = ClientId);
             }
 
             [Fact]
@@ -381,7 +381,7 @@ namespace IO.Ably.Tests
                 // Arrange
                 var options = new ClientOptions(ValidKey) { TransportFactory = new FakeTransportFactory(), SkipInternetCheck = true };
                 var realtime = new AblyRealtime(options);
-                var clientId = "testId";
+                const string clientId = "testId";
 
                 // Act
                 realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
@@ -407,7 +407,7 @@ namespace IO.Ably.Tests
             {
                 var rest = new AblyRest(ValidKey);
                 var updateClientIdCalled = false;
-                var newClientId = "newClientId";
+                const string newClientId = "newClientId";
 
                 rest.AblyAuth.OnClientIdChanged = (tuple) =>
                 {
@@ -424,7 +424,7 @@ namespace IO.Ably.Tests
             {
                 var rest = new AblyRest(ValidKey);
                 var updateClientIdCalled = false;
-                var newClientId = "newClientId";
+                const string newClientId = "newClientId";
 
                 rest.AblyAuth.OnClientIdChanged = (tuple) =>
                 {
@@ -441,7 +441,7 @@ namespace IO.Ably.Tests
             {
                 var rest = new AblyRest(ValidKey);
                 var updateClientIdCalled = false;
-                var newClientId = "newClientId";
+                const string newClientId = "newClientId";
 
                 rest.AblyAuth.OnClientIdChanged = (tuple) =>
                 {

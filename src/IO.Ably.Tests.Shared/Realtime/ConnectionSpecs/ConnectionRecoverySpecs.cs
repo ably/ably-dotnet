@@ -51,7 +51,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             TransportParams.RecoveryKeyRegex.Match("1:2:3").Success.Should().BeTrue();
             TransportParams.RecoveryKeyRegex.Match("a:2:3").Success.Should().BeTrue();
 
-            var recoveryKey = "abcxyz:100:99";
+            const string recoveryKey = "abcxyz:100:99";
             var match = TransportParams.RecoveryKeyRegex.Match(recoveryKey);
             match.Success.Should().BeTrue();
             match.Groups[1].Value.Should().Be("abcxyz");

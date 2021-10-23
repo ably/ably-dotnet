@@ -226,8 +226,8 @@ namespace IO.Ably.Tests.AuthTests
         {
             var rest = GetRestClient();
 
-            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
-            var fakeApiKey = "foo.bar:baz";
+            const string capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            const string fakeApiKey = "foo.bar:baz";
             var cap = new Capability(capabilityString);
 
             var tokenParams = new TokenParams { Capability = cap };
@@ -249,8 +249,8 @@ namespace IO.Ably.Tests.AuthTests
         {
             var rest = GetRestClient();
 
-            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
-            var fakeApiKey = "foo.bar:baz";
+            const string capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            const string fakeApiKey = "foo.bar:baz";
             var cap = new Capability(capabilityString);
 
             var tokenParams = new TokenParams { Capability = cap };
@@ -274,8 +274,8 @@ namespace IO.Ably.Tests.AuthTests
         {
             var rest = GetRestClient();
 
-            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
-            var fakeApiKey = "foo.bar:baz";
+            const string capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            const string fakeApiKey = "foo.bar:baz";
             var cap = new Capability(capabilityString);
 
             var tokenParams = new TokenParams { Capability = cap };

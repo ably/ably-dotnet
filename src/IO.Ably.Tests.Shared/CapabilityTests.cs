@@ -68,7 +68,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void Capability_InitializedWith2Resources_AddsThemCorrectlyToAllowedResourced()
         {
-            var capabilityString = "{\"first\":[\"*\"],\"second\":[\"publish\"]}";
+            const string capabilityString = "{\"first\":[\"*\"],\"second\":[\"publish\"]}";
             var capability = new Capability(capabilityString);
 
             capability.Resources.Count.Should().Be(2);
@@ -79,7 +79,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void Capability_WithDefaultAllAll_AddsThemCorrectly()
         {
-            var capabilityString = "{\"*\":[\"*\"]}";
+            const string capabilityString = "{\"*\":[\"*\"]}";
             var capability = new Capability(capabilityString);
 
             capability.ToJson().Should().Be(capabilityString);

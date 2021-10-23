@@ -6,10 +6,10 @@ namespace IO.Ably.Tests.MessageEncodes
 {
     public class Base64EncoderTests
     {
-        private string _stringData;
-        private byte[] _binaryData;
-        private string _base64Data;
-        private Base64Encoder _encoder;
+        private readonly string _stringData;
+        private readonly byte[] _binaryData;
+        private readonly string _base64Data;
+        private readonly Base64Encoder _encoder;
 
         public Base64EncoderTests()
         {

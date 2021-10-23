@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
     public class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly Action _sendAsyncAction;
-        private Func<HttpRequestMessage, HttpResponseMessage> _getResponse;
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _getResponse;
 
         public HttpRequestMessage LastRequest { get; set; }
 

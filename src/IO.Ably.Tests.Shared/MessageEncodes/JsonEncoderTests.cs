@@ -7,11 +7,12 @@ namespace IO.Ably.Tests.MessageEncodes
 {
     public class JsonEncoderTests
     {
-        private object _objectData;
-        private string _jsonData;
-        private int[] _arrayData = new[] { 1, 2, 3 };
-        private string _jsonArrayData = "[1,2,3]";
-        private JsonEncoder _encoder;
+        private const string JsonArrayData = "[1,2,3]";
+
+        private readonly object _objectData;
+        private readonly string _jsonData;
+        private readonly int[] _arrayData = { 1, 2, 3 };
+        private readonly JsonEncoder _encoder;
 
         public JsonEncoderTests()
         {
@@ -99,7 +100,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_arrayData);
 
-                payload.Data.Should().Be(_jsonArrayData);
+                payload.Data.Should().Be(JsonArrayData);
                 payload.Encoding.Should().Be("json");
             }
 

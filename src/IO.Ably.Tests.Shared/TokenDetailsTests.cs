@@ -11,7 +11,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void FromJson_ParsesTokenCorrectly()
         {
-            string json = @"{
+            const string json = @"{
 	                            ""access_token"": {
 		                            ""token"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
 		                            ""key"": ""3lJG9Q"",

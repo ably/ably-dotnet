@@ -27,7 +27,7 @@ namespace IO.Ably.Tests
         public void Parse_WithValidJsonResponse_RetrievesCodeAndReasonFromJson()
         {
             // Arrange
-            var reason = "test";
+            const string reason = "test";
             var response = new AblyResponse
             {
                 TextResponse = $"{{ \"error\": {{ \"code\":{ErrorCodes.NotFound}, \"message\":\"{reason}\" }} }}",

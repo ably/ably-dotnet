@@ -280,7 +280,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_SendingMessage_DoesNot_EchoesItBack(Protocol protocol)
         {
-            var channelName = "echo_off_test";
+            const string channelName = "echo_off_test";
 
             // this should be logged in MsWebSocketTransport.CreateSocket
             var testLogger = new TestLogger("Connecting to web socket on url:");
@@ -708,7 +708,7 @@ namespace IO.Ably.Tests.Realtime
             WhenPublishingMessageWithCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageSuccessfully(
             Protocol protocol)
         {
-            var clientId = "client1";
+            const string clientId = "client1";
             var rest = await GetRestClient(protocol);
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
@@ -752,7 +752,7 @@ namespace IO.Ably.Tests.Realtime
             WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished(
             Protocol protocol)
         {
-            var clientId = "client1";
+            const string clientId = "client1";
             var rest = await GetRestClient(protocol);
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {

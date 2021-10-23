@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WhenRestoringConnection_UsesConnectionKey()
         {
             // Arrange
-            string targetKey = "1234567";
+            const string targetKey = "1234567";
             var client = GetClientWithFakeTransport();
             client.State.Connection.Key = targetKey;
 

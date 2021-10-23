@@ -610,7 +610,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
             var channelName = "RTN15c3".AddRandomSuffix();
-            var channelCount = 5;
+            const int channelCount = 5;
             await client.WaitForState(ConnectionState.Connected);
 
             List<RealtimeChannel> channels = new List<RealtimeChannel>();

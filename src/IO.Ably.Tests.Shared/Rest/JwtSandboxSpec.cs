@@ -13,7 +13,7 @@ namespace IO.Ably.Tests.Rest
     [Trait("type", "integration")]
     public class JwtSandboxSpec : SandboxSpecs
     {
-        private readonly string _echoServer = "https://echo.ably.io/createJWT";
+        private const string EchoServer = "https://echo.ably.io/createJWT";
 
         private readonly HttpClient _httpClient = new HttpClient();
 
@@ -136,7 +136,7 @@ namespace IO.Ably.Tests.Rest
 
             var client = await GetRestClient(protocol, options =>
             {
-                options.AuthUrl = new Uri(_echoServer);
+                options.AuthUrl = new Uri(EchoServer);
                 options.AuthParams = authParams;
                 options.Key = string.Empty;
             });
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests.Rest
                 secret = "invalid";
             }
 
-            var builder = new UriBuilder(_echoServer);
+            var builder = new UriBuilder(EchoServer);
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             query["keyName"] = key;

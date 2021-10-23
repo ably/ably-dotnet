@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
             RealtimeChannel channel = (RealtimeChannel)c;
             channel.SetChannelState(ChannelState.Attached);
 
-            var testString = "Testing, testing, testing";
+            const string testString = "Testing, testing, testing";
             var successfulProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 Channel = channel.Name,

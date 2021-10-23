@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = GetClientWithFakeTransport();
-            long targetSerial = 1234567;
+            const long targetSerial = 1234567;
             client.State.Connection.Serial = targetSerial;
 
             // Act

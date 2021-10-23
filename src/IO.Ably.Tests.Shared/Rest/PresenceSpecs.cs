@@ -61,8 +61,8 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP3a3")]
             public async Task WithClientIdAndConnectionId_ShouldSetQueryParameters()
             {
-                var clientId = "123";
-                var connectionId = "333";
+                const string clientId = "123";
+                const string connectionId = "333";
                 await _channel.Presence.GetAsync(clientId: clientId, connectionId: connectionId);
 
                 LastRequest.AssertContainsParameter("clientId", clientId);

@@ -414,7 +414,7 @@ namespace IO.Ably.Tests
         public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorizationHeader()
         {
             // Arrange
-            var tokenValue = "TokenValue";
+            const string tokenValue = "TokenValue";
             var rest = new AblyRest(opts => opts.Token = tokenValue);
             var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
             var expectedValue = "Bearer " + tokenValue.ToBase64();
@@ -435,7 +435,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthCanBeUsedOverHttpAndHttps(bool tls)
         {
             // Arrange
-            var tokenValue = "TokenValue";
+            const string tokenValue = "TokenValue";
             var rest = new AblyRest(opts =>
             {
                 opts.Token = tokenValue;
@@ -537,7 +537,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC15a")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
-                int interactions = 20;
+                const int interactions = 20;
                 _response.StatusCode = HttpStatusCode.BadGateway;
 
                 // The higher the retries the less chance the two lists will match

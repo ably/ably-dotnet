@@ -9,10 +9,10 @@ namespace IO.Ably.Tests
     {
         public class GetDefaultParamsSpecs : AblySpecs
         {
-            public const string KeyBase64 = "WUP6u0K7MXI5Zeo0VppPwg==";
-            public const string KeyBase64Url = "WUP6u0K7MXI5Zeo0VppPwg";
-            public const string Key256Base64 = "o9qXZoPGDNla50VnRwH7cGqIrpyagTxGsRgimKJbY40=";
-            public const string IvBase64 = "HO4cYSP8LybPYBPZPHQOtg==";
+            private const string KeyBase64 = "WUP6u0K7MXI5Zeo0VppPwg==";
+            private const string KeyBase64Url = "WUP6u0K7MXI5Zeo0VppPwg";
+            private const string Key256Base64 = "o9qXZoPGDNla50VnRwH7cGqIrpyagTxGsRgimKJbY40=";
+            private const string IvBase64 = "HO4cYSP8LybPYBPZPHQOtg==";
 
             [Fact]
             [Trait("spec", "RSE1a")]
@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
             {
                 var key = KeyBase64.FromBase64();
                 var iv = IvBase64.FromBase64();
-                var mode = CipherMode.CFB;
+                const CipherMode mode = CipherMode.CFB;
 
                 var result = Crypto.GetDefaultParams(key, iv, mode);
                 result.Key.Should().BeEquivalentTo(key);

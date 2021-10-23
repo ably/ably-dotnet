@@ -23,7 +23,7 @@ namespace IO.Ably.Tests
             FakeTransportFactory = new FakeTransportFactory();
         }
 
-        public List<AblyRealtime> RealtimeClients { get; set; } = new List<AblyRealtime>();
+        private List<AblyRealtime> RealtimeClients { get; } = new List<AblyRealtime>();
 
         protected FakeTransportFactory FakeTransportFactory { get; private set; }
 
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
             return client;
         }
 
-        internal AblyRealtime GetRealtimeClientWithFakeMessageHandler(ClientOptions options = null, FakeHttpMessageHandler fakeMessageHandler = null, IMobileDevice mobileDevice = null)
+        private static AblyRealtime GetRealtimeClientWithFakeMessageHandler(ClientOptions options = null, FakeHttpMessageHandler fakeMessageHandler = null, IMobileDevice mobileDevice = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests

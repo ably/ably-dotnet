@@ -15,7 +15,7 @@ namespace IO.Ably.Tests
     [Trait("type", "integration")]
     public class AuthSandboxSpecs : SandboxSpecs
     {
-        private string _errorUrl = "https://echo.ably.io/respondwith?status=500";
+        private const string ErrorUrl = "https://echo.ably.io/respondwith?status=500";
 
         public AuthSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
@@ -246,7 +246,7 @@ namespace IO.Ably.Tests
             var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.TokenDetails = token;
-                options.AuthUrl = new Uri(_errorUrl);
+                options.AuthUrl = new Uri(ErrorUrl);
                 options.AutoConnect = false;
             });
 
@@ -357,7 +357,7 @@ namespace IO.Ably.Tests
             void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
-                options.AuthUrl = new Uri(_errorUrl);
+                options.AuthUrl = new Uri(ErrorUrl);
                 options.RealtimeRequestTimeout = TimeSpan.FromSeconds(2);
                 options.HttpRequestTimeout = TimeSpan.FromSeconds(2);
             }

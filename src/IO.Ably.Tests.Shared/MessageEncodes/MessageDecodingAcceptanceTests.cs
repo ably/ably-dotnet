@@ -12,8 +12,8 @@ namespace IO.Ably.AcceptanceTests
     {
         public class WithBase64Message
         {
-            private byte[] _binaryData;
-            private string _base64Data;
+            private readonly byte[] _binaryData;
+            private readonly string _base64Data;
 
             public WithBase64Message()
             {
@@ -52,8 +52,8 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithFailedEncoding_ShouldLeaveOriginalDataAndEncodingInPayload()
             {
-                var initialEncoding = "utf-8/cipher+aes-128-cbc";
-                var encryptedValue = "test";
+                const string initialEncoding = "utf-8/cipher+aes-128-cbc";
+                const string encryptedValue = "test";
                 var payload = new Message { Data = encryptedValue, Encoding = initialEncoding };
 
                 var channelOptions =
