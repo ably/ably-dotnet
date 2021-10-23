@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Push
 {
     [Trait("spec", "RSH1")]
-    public class PushAdminTests
+    public static class PushAdminTests
     {
         public class GeneralTests : MockHttpRestSpecs
         {
