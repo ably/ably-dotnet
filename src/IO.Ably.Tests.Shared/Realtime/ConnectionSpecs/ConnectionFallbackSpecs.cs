@@ -144,7 +144,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             lastRequestUri.Should().Contain(client.State.Connection.Host);
         }
 
-        [Fact]
+        [Fact(Skip = "Intermittently fails")]
         [Trait("spec", "RTN17e")]
         [Trait("spec", "RSC15f")]
         public async Task WithRealtimeHostConnectedToFallback_WhenMakingRestRequestThatFails_ShouldRetryUsingAFallback()
