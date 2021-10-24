@@ -216,7 +216,7 @@ namespace IO.Ably.Tests.Push
             mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ClassData(typeof(RSH8eStateTheoryData))]
         [Trait("spec", "RSH8e")]
         internal async Task WhenClientIdChangesAfterInitialisation_StateMachineShouldReceive_GotPushDeviceDetailsEvent(Func<ActivationStateMachine, ActivationStateMachine.State> createCurrentState)
