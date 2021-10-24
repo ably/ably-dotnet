@@ -1001,9 +1001,9 @@ namespace IO.Ably.Tests.Realtime
             await channels[2].WaitForAttachedState();
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
-        [Trait(Skip = "Intermittently fails", "spec", "RTN15i")]
+        [Trait("spec", "RTN15i")]
         public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed(Protocol protocol)
         {
             /*

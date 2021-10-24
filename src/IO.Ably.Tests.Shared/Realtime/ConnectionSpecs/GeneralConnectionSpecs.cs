@@ -52,8 +52,8 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Should().BeNull("Transport shouldn't be created without calling connect when AutoConnect is false");
         }
 
-        [Fact]
-        [Trait(Skip = "Intermittently fails", "spec", "RTN19")]
+        [Fact(Skip = "Intermittently fails")]
+        [Trait("spec", "RTN19")]
         public async Task WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
         {
             var client = GetClientWithFakeTransport();
