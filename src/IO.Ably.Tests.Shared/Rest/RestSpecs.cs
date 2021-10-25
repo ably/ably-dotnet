@@ -678,7 +678,8 @@ namespace IO.Ably.Tests
                 var requestCount = 0;
 
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                Func<HttpRequestMessage, HttpResponseMessage> getResponse = _ =>
+
+                HttpResponseMessage GetResponse(HttpRequestMessage unused)
                 {
                     try
                     {
@@ -699,9 +700,9 @@ namespace IO.Ably.Tests
                     {
                         requestCount++;
                     }
-                };
+                }
 
-                var handler = new FakeHttpMessageHandler(getResponse);
+                var handler = new FakeHttpMessageHandler(GetResponse);
 
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
@@ -728,29 +729,26 @@ namespace IO.Ably.Tests
                 var requestCount = 0;
 
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                Func<HttpRequestMessage, HttpResponseMessage> getResponse = _ =>
+
+                HttpResponseMessage GetResponse(HttpRequestMessage unused)
                 {
                     try
                     {
-                        switch (requestCount)
+                        return requestCount switch
                         {
-                            case 0:
-                                return new HttpResponseMessage(HttpStatusCode.BadGateway);
-                            case 1:
-                                return new HttpResponseMessage(HttpStatusCode.OK);
-                            case 2:
-                                return new HttpResponseMessage(HttpStatusCode.BadGateway);
-                            default:
-                                return new HttpResponseMessage(HttpStatusCode.OK);
-                        }
+                            0 => new HttpResponseMessage(HttpStatusCode.BadGateway),
+                            1 => new HttpResponseMessage(HttpStatusCode.OK),
+                            2 => new HttpResponseMessage(HttpStatusCode.BadGateway),
+                            _ => new HttpResponseMessage(HttpStatusCode.OK)
+                        };
                     }
                     finally
                     {
                         requestCount++;
                     }
-                };
+                }
 
-                var handler = new FakeHttpMessageHandler(getResponse);
+                var handler = new FakeHttpMessageHandler(GetResponse);
 
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
@@ -785,13 +783,13 @@ namespace IO.Ably.Tests
             {
                 bool called = false;
 
-                Func<TokenParams, Task<object>> callback = (x) =>
+                Task<object> Callback(TokenParams x)
                 {
                     called = true;
                     return Task.FromResult<object>(new TokenDetails { Expires = DateTimeOffset.UtcNow.AddHours(1) });
-                };
+                }
 
-                await GetClient(callback).StatsAsync();
+                await GetClient(Callback).StatsAsync();
 
                 called.Should().BeTrue("Rest with Callback needs to request token using callback");
             }

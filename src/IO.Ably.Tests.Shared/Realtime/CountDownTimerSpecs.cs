@@ -120,10 +120,12 @@ namespace IO.Ably.Tests.Realtime
             var timeout = TimeSpan.FromMilliseconds(10);
             int called1 = 0;
             int called2 = 0;
+
             Action callback1 = () =>
             {
                 called1++;
             };
+
             Action callback2 = () =>
             {
                 called2++;

@@ -442,13 +442,17 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 var callbacks = new List<ValueTuple<bool, ErrorInfo>>();
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-                Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add((ack, err)); };
+
+                void Callback(bool ack, ErrorInfo err)
+                {
+                    callbacks.Add((ack, err));
+                }
 
                 // Act
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 1 }));
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, Count = 1 }));
 
@@ -514,13 +518,17 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 var callbacks = new List<ValueTuple<bool, ErrorInfo>>();
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-                Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add((ack, err)); };
+
+                void Callback(bool ack, ErrorInfo err)
+                {
+                    callbacks.Add((ack, err));
+                }
 
                 // Act
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 1 }));
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, Count = 1 }));
 
@@ -540,13 +548,18 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 var callbacks = new List<ValueTuple<bool, ErrorInfo>>();
 
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-                Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add((ack, err)); };
-                ErrorInfo error = new ErrorInfo("reason", 123);
+
+                void Callback(bool ack, ErrorInfo err)
+                {
+                    callbacks.Add((ack, err));
+                }
 
                 // Act
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
-                client.ExecuteCommand(SendMessageCommand.Create(message, callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
+                client.ExecuteCommand(SendMessageCommand.Create(message, Callback));
+
+                var error = new ErrorInfo("reason", 123);
 
                 client.ExecuteCommand(ProcessMessageCommand.Create(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3, Error = error }));
