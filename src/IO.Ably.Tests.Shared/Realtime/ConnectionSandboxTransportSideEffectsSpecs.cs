@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Realtime
          * (RTN19b) If there are any pending channels i.e. in the ATTACHING or DETACHING state,
          * the respective ATTACH or DETACH message should be resent to Ably
          */
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)

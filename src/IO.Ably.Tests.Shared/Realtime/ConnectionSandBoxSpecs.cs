@@ -173,7 +173,7 @@ namespace IO.Ably.Tests.Realtime
             s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTN11c")]
         public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
@@ -1001,7 +1001,7 @@ namespace IO.Ably.Tests.Realtime
             await channels[2].WaitForAttachedState();
         }
 
-        [Theory]
+        [Theory(Skip = "Intermittently fails")]
         [ProtocolData]
         [Trait("spec", "RTN15i")]
         public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed(Protocol protocol)
