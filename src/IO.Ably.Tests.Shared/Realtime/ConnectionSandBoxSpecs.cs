@@ -1119,12 +1119,10 @@ namespace IO.Ably.Tests.Realtime
             });
 
             var stateChanges = new List<ConnectionState>();
-            var errors = new List<ErrorInfo>();
 
             client.Connection.On((args) =>
             {
                 stateChanges.Add(args.Current);
-                errors.Add(args.Reason);
             });
 
             await client.Auth.AuthorizeAsync(new TokenParams { Ttl = TimeSpan.FromSeconds(5) });
@@ -1145,6 +1143,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             stateChanges.Count(x => x == ConnectionState.Connected).Should().BeGreaterThan(2);
+
             await client.WaitForState();
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
