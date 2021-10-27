@@ -28,16 +28,17 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ILogger _logger;
         private readonly string _name;
+        private readonly object _lock;
         private Timer _timer;
         private Action _elapsed;
         private TimeSpan _delay;
         private bool _aborted;
-        private readonly object _lock = new object();
 
         public CountdownTimer(string name, ILogger logger)
         {
             _logger = logger ?? DefaultLogger.LoggerInstance;
             _name = name;
+            _lock = new object();
         }
 
         public void Start(TimeSpan delay, Action elapsed)
