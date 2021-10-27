@@ -9,7 +9,7 @@ namespace IO.Ably.Tests.Push
     {
         public Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 
-        public bool RequestRegistrationTokenCalled { get; set; }
+        public bool RequestRegistrationTokenCalled { get; private set; }
 
         public void SendIntent(string name, Dictionary<string, object> extraParameters)
         {

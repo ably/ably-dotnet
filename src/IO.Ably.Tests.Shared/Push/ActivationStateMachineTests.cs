@@ -1258,7 +1258,7 @@ namespace IO.Ably.Tests.Push
                 {
                 }
 
-                public bool ValidateRegistrationCalled { get; set; }
+                public bool ValidateRegistrationCalled { get; private set; }
 
                 protected override async Task<Event> ValidateRegistration()
                 {

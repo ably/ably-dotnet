@@ -11,7 +11,7 @@ namespace IO.Ably.Tests
         private readonly Action _sendAsyncAction;
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _getResponse;
 
-        public HttpRequestMessage LastRequest { get; set; }
+        public HttpRequestMessage LastRequest { get; private set; }
 
         public List<HttpRequestMessage> Requests { get; } = new List<HttpRequestMessage>();
 
@@ -36,6 +36,6 @@ namespace IO.Ably.Tests
             return responseTask;
         }
 
-        public int NumberOfRequests { get; set; }
+        public int NumberOfRequests { get; private set; }
     }
 }
