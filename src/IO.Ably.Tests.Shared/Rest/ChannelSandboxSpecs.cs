@@ -495,9 +495,9 @@ namespace IO.Ably.Tests.Rest
 
         private class TestLoggerSink : ILoggerSink
         {
-            public LogLevel LastLoggedLevel { get; set; }
+            public LogLevel LastLoggedLevel { get; private set; }
 
-            public string LastMessage { get; set; }
+            public string LastMessage { get; private set; }
 
             public void LogEvent(LogLevel level, string message)
             {
