@@ -146,7 +146,7 @@ namespace IO.Ably.Tests
         protected Task<(AblyRealtime, IRealtimeChannel)> GetClientAndChannel(Action<ClientOptions> optionsAction = null) =>
             GetConnectedClient(optionsAction).MapAsync(x => (x, x.Channels.Get("test")));
 
-        protected Task<IRealtimeChannel> GetTestChannel(IRealtimeClient client = null, Action<ClientOptions> optionsAction = null, ChannelOptions channelOptions = null)
+        protected Task<IRealtimeChannel> GetTestChannel(IRealtimeClient client = null, ChannelOptions channelOptions = null)
         {
             if (client == null)
             {
