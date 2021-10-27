@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,13 +18,6 @@ namespace IO.Ably.Transport.States.Connection
         void Start(TimeSpan delay, Action onTimeOut);
 
         /// <summary>
-        /// Starts a timer with async onTimeOut method.
-        /// </summary>
-        /// <param name="delay">when to fire.</param>
-        /// <param name="onTimeOut">async action to execute.</param>
-        void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
-
-        /// <summary>
         /// Aborts the timer.
         /// </summary>
         /// <param name="trigger">whether to trigger the action. Default: false.</param>
@@ -32,35 +26,33 @@ namespace IO.Ably.Transport.States.Connection
 
     internal class CountdownTimer : ICountdownTimer, IDisposable
     {
-        internal ILogger Logger { get; private set; }
-
+        private readonly ILogger _logger;
         private readonly string _name;
         private Timer _timer;
-        private Action _elapsedSync;
-        private Func<Task> _elapsedAsync;
+        private Action _elapsed;
         private TimeSpan _delay;
         private bool _aborted;
         private readonly object _lock = new object();
 
         public CountdownTimer(string name, ILogger logger)
         {
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            _logger = logger ?? DefaultLogger.LoggerInstance;
             _name = name;
         }
 
-        public void Start(TimeSpan delay, Action elapsedSync)
+        public void Start(TimeSpan delay, Action elapsed)
         {
-            if (elapsedSync == null)
+            if (elapsed == null)
             {
-                throw new ArgumentNullException(nameof(elapsedSync));
+                throw new ArgumentNullException(nameof(elapsed));
             }
 
-            if (Logger.IsDebug)
+            if (_logger.IsDebug)
             {
-                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds.");
+                _logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds.");
             }
 
-            _elapsedSync = elapsedSync;
+            _elapsed = elapsed;
 
             if (_timer != null)
             {
@@ -84,73 +76,34 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimerOnElapsed()
         {
-            // Ignore the result but don't allow the Countdown timer to take down the process if an exception is thrown
-            // You never know what will happen if the Logger throws an exception :)
-            _ = OnTimerOnElapsedAsync();
-        }
-
-        private async Task OnTimerOnElapsedAsync()
-        {
             lock (_lock)
             {
                 if (_aborted)
                 {
-                    if (Logger.IsDebug)
+                    if (_logger.IsDebug)
                     {
-                        Logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                        _logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
                     }
 
                     return;
                 }
             }
 
+            Debug.Assert(_elapsed != null, "Did you forget to call Start?");
+
             try
             {
-                if (_elapsedSync != null)
+                if (_logger.IsDebug)
                 {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");
-                    }
-
-                    _elapsedSync();
+                    _logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");
                 }
-                else
-                {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling async action.");
-                    }
 
-                    await _elapsedAsync();
-                }
+                _elapsed();
             }
             catch (Exception ex)
             {
-                Logger.Error("Error in method called by timer.", ex);
+                _logger.Error("Error in method called by timer.", ex);
             }
-        }
-
-        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
-        {
-            if (onTimeOut == null)
-            {
-                throw new ArgumentNullException(nameof(onTimeOut));
-            }
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds");
-            }
-
-            if (_timer != null)
-            {
-                Abort();
-            }
-
-            _elapsedAsync = onTimeOut;
-
-            _timer = StartTimer(delay);
         }
 
         public void Abort(bool trigger = false)
@@ -165,9 +118,9 @@ namespace IO.Ably.Transport.States.Connection
                 _aborted = true;
             }
 
-            if (Logger.IsDebug)
+            if (_logger.IsDebug)
             {
-                Logger.Debug($"Aborting timer '{_name}'");
+                _logger.Debug($"Aborting timer '{_name}'");
             }
 
             if (_timer != null)

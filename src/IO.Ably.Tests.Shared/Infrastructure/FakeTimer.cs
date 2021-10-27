@@ -8,13 +8,9 @@ namespace IO.Ably.Tests
     {
         public Action OnTimeOut { get; private set; }
 
-        public Func<Task> OnTimeOutFunc { get; private set; }
-
         public TimeSpan LastDelay { get; set; }
 
-        public bool StartedWithAction { get; set; }
-
-        public bool StartedWithFunc { get; set; }
+        public bool StartedWithAction { get; private set; }
 
         public bool Aborted { get; set; }
 
@@ -22,13 +18,6 @@ namespace IO.Ably.Tests
         {
             OnTimeOut = onTimeOut;
             StartedWithAction = true;
-            LastDelay = delay;
-        }
-
-        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
-        {
-            OnTimeOutFunc = onTimeOut;
-            StartedWithFunc = true;
             LastDelay = delay;
         }
 
