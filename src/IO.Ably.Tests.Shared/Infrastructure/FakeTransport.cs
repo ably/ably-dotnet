@@ -32,8 +32,6 @@ namespace IO.Ably.Tests
 
         public bool CloseCalled { get; set; }
 
-        public bool AbortCalled { get; set; }
-
         public ProtocolMessage LastMessageSend => LastTransportData?.Original;
 
         public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
@@ -74,11 +72,6 @@ namespace IO.Ably.Tests
             SendAction(data);
             SentMessages.Add(data);
             return Result.Ok();
-        }
-
-        public void Abort(string reason)
-        {
-            AbortCalled = true;
         }
 
         public Action<RealtimeTransportData> SendAction = delegate { };
