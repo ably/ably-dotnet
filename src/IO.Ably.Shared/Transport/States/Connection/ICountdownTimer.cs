@@ -7,7 +7,7 @@ namespace IO.Ably.Transport.States.Connection
     /// <summary>
     /// Internal interface used for countdown timer.
     /// </summary>
-    public interface ICountdownTimer
+    internal interface ICountdownTimer
     {
         /// <summary>
         /// Starts a timer.
