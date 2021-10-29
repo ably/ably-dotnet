@@ -50,7 +50,6 @@ namespace IO.Ably.Tests
                     FirstQueryString);
 
             // Act
-            // Act
             var actual = PaginatedRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
 
             // Assert
