@@ -1425,6 +1425,55 @@ namespace IO.Ably.Tests.Realtime
             order.Should().BeInAscendingOrder();
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue ", "980")]
+
+        public async Task WhenReleasingChannelsBeforeTheyAreAttached_TheyShouldBeRemovedImmediately(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+
+            var channels = Enumerable.Range(1, 10).Select(_ => client.Channels.Get($"test".AddRandomSuffix())).ToList();
+
+            client.Channels.Should().HaveCount(10);
+            client.Channels.ReleaseAll();
+            client.Channels.Should().BeEmpty();
+            foreach (var channel in channels)
+            {
+                client.Channels.Exists(channel.Name).Should().BeFalse();
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue ", "980")]
+
+        public async Task WhenReleasingAttachedChannels_TheyShouldBeRemovedFromTheList(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            var channels = Enumerable.Range(1, 100).Select(_ => client.Channels.Get($"test".AddRandomSuffix())).ToList();
+
+            client.Connect();
+            foreach (var channel in channels)
+            {
+                await channel.AttachAsync();
+            }
+
+            client.Channels.Should().HaveCount(100);
+
+            client.Channels.ReleaseAll();
+
+            var taskAwaiter = new ConditionalAwaiter(() => client.Channels.Any() == false, () => $"Time elapsed: Channels {client.Channels.Count()}");
+            await taskAwaiter;
+
+            client.Channels.Should().BeEmpty();
+            foreach (var channel in channels)
+            {
+                client.Channels.Exists(channel.Name).Should().BeFalse();
+            }
+        }
+
         private static JObject GetAes128FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
