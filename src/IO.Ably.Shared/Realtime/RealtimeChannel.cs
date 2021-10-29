@@ -554,7 +554,7 @@ namespace IO.Ably.Realtime
 
             if (error != null)
             {
-                RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+                RealtimeClient.NotifyExternalClients(() => Error?.Invoke(this, new ChannelErrorEventArgs(error)));
             }
         }
 
@@ -564,6 +564,9 @@ namespace IO.Ably.Realtime
             DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
             Presence?.RemoveAllListeners();
+            StateChanged = null;
+            Error = null;
+            InternalStateChanged = null;
         }
 
         internal void AddUntilAttachParameter(PaginatedRequestParams query)
@@ -628,14 +631,14 @@ namespace IO.Ably.Realtime
             var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);
             HandleStateChange(state, error, protocolMessage);
 
-            InternalStateChanged.Invoke(this, channelStateChange);
+            InternalStateChanged?.Invoke(this, channelStateChange);
 
             // Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
             {
                 try
                 {
-                    StateChanged.Invoke(this, channelStateChange);
+                    StateChanged?.Invoke(this, channelStateChange);
                 }
                 catch (Exception ex)
                 {

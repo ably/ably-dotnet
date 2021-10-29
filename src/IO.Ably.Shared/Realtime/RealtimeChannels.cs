@@ -98,6 +98,26 @@ namespace IO.Ably.Realtime
         /// <inheritdoc/>
         public bool Release(string name)
         {
+            bool IsChannelStateOkForImmediateRelease(RealtimeChannel realtimeChannel)
+            {
+                var state = realtimeChannel.State;
+
+                return state == ChannelState.Initialized || state == ChannelState.Detached ||
+                       state == ChannelState.Failed;
+            }
+
+            bool RemoveChannel()
+            {
+                if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
+                {
+                    removedChannel.RemoveAllListeners();
+                    RemoveFromOrderedList(removedChannel);
+                    return true;
+                }
+
+                return false;
+            }
+
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Releasing channel #{name}");
@@ -108,35 +128,26 @@ namespace IO.Ably.Realtime
                 return false;
             }
 
-            void EventHandler(object s, ChannelStateChange args)
+            void DetachedCallback(bool detached, ErrorInfo error)
             {
-                if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
+                if (Logger.IsDebug)
                 {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
-                    }
-
-                    var detachedChannel = (RealtimeChannel)s;
-                    detachedChannel.InternalStateChanged -= EventHandler;
-
-                    if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
-                    {
-                        removedChannel.RemoveAllListeners();
-                        RemoveFromOrderedList(removedChannel);
-                    }
+                    Logger.Debug(
+                        error is null
+                            ? $"Channel #{name} was removed from Channel list. Detached successfully: {detached}."
+                            : $"Failed to cleanly detach channel #{name} before removing it from Channel list. Detach error: {error}.");
                 }
-                else
-                {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
-                    }
-                }
+
+                RemoveChannel();
             }
 
-            channel.InternalStateChanged += EventHandler;
-            channel.Detach();
+            if (IsChannelStateOkForImmediateRelease(channel))
+            {
+                return RemoveChannel();
+            }
+
+            channel.Detach(DetachedCallback);
+
             return true;
         }
 

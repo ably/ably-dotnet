@@ -51,10 +51,7 @@ namespace IO.Ably.Realtime
                 Waiting = false;
             }
 
-            if (error != null)
-            {
-                InvokeCallbacks(success, error);
-            }
+            InvokeCallbacks(success, error);
         }
 
         private void InvokeCallbacks(bool success, ErrorInfo error)
@@ -127,6 +124,24 @@ namespace IO.Ably.Realtime
                 Waiting = false;
             }
 
+            if (_channel.State == _awaitedState)
+            {
+                try
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug("Desired state reached, however the state change event didn't indicate it.");
+                    }
+
+                    InvokeCallbacks(true, null);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error invoking callback for - " + _name, e);
+                }
+            }
+
             _onTimeout?.Invoke();
 
             InvokeCallbacks(false, new ErrorInfo("Timeout exceeded for " + _name, ErrorCodes.InternalError));
@@ -155,7 +170,6 @@ namespace IO.Ably.Realtime
             if (args.Current == _awaitedState)
             {
                 Complete(true);
-                InvokeCallbacks(true, null);
             }
         }
 

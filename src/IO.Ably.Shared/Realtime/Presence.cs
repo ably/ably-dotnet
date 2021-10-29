@@ -84,6 +84,8 @@ namespace IO.Ably.Realtime
         /// </summary>
         internal void RemoveAllListeners()
         {
+            InitialSyncCompleted = null;
+            SyncCompleted = null;
             _handlers.RemoveAll();
         }
 
