@@ -25,6 +25,11 @@ namespace IO.Ably.Tests
 
         internal static async Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
         {
+            if (channel.State == awaitedState)
+            {
+                return;
+            }
+
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             var timespan = waitSpan.GetValueOrDefault(TimeSpan.FromSeconds(5));
             Result<bool> result = await channelAwaiter.WaitAsync(timespan);
