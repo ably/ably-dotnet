@@ -1425,17 +1425,6 @@ namespace IO.Ably.Tests.Realtime
             order.Should().BeInAscendingOrder();
         }
 
-        // [Theory]
-        // [ProtocolData]
-        // public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
-        // {
-        //    var client = await GetRealtimeClient(protocol);
-
-        // var channel = client.Channels.Get("test".AddRandomSuffix());
-        //    channel.Subscribe(delegate (Message message) { });
-        //    await channel.AttachAsync();
-        //    channel.State.Should().Be(ChannelState.Attached);
-        // }
         private static JObject GetAes128FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
