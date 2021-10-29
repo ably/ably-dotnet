@@ -32,7 +32,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual bool CanSend => false;
 
-        public virtual bool IsUpdate { get; set; }
+        public virtual bool IsUpdate { get; protected set; }
 
         public virtual ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonUnknown;
 

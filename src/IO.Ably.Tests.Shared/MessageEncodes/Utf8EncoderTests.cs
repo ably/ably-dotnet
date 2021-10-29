@@ -10,7 +10,7 @@ namespace IO.Ably.Tests.MessageEncodes
         private readonly byte[] _byteData;
         private readonly Utf8Encoder _encoder;
 
-        public Utf8EncoderTests()
+        protected Utf8EncoderTests()
         {
             _stringData = "random_string";
             _byteData = _stringData.GetBytes();

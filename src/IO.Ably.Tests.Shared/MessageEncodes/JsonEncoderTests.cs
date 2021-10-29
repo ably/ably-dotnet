@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.MessageEncodes
         private readonly int[] _arrayData = { 1, 2, 3 };
         private readonly JsonEncoder _encoder;
 
-        public JsonEncoderTests()
+        protected JsonEncoderTests()
         {
             _objectData = new { Test = "test", Best = "best" };
             _jsonData = JsonHelper.Serialize(_objectData);
