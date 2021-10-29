@@ -1112,7 +1112,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = await GetConnectedClient();
                     var channelParams = new ChannelParams { { "test", "blah" }, { "test2", "value" } };
                     var channelOptions = new ChannelOptions(channelParams: channelParams);
-                    var channel = await GetTestChannel(client, channelOptions: channelOptions);
+                    var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
                     channel.WaitForState(ChannelState.Attaching);
@@ -1131,7 +1131,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = await GetConnectedClient();
                     var modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish);
                     var channelOptions = new ChannelOptions(modes: modes);
-                    var channel = await GetTestChannel(client, channelOptions: channelOptions);
+                    var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
                     channel.WaitForState(ChannelState.Attaching);
@@ -1250,7 +1250,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7c")]
             public async Task ShouldImplicitlyAttachAChannel()
             {
-                var channel = await GetTestChannel(optionsAction: _switchBinaryOff);
+                var channel = await GetTestChannel();
                 channel.State.Should().Be(ChannelState.Initialized);
                 channel.Subscribe(message =>
                 {
