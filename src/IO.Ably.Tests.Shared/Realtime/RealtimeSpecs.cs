@@ -140,7 +140,7 @@ namespace IO.Ably.Tests
 
             Platform.Initialize();
 
-            var realtime = new AblyRealtime(new ClientOptions(ValidKey)
+            _ = new AblyRealtime(new ClientOptions(ValidKey)
             {
                 AutomaticNetworkStateMonitoring = enabled,
             });

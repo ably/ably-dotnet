@@ -233,9 +233,9 @@ namespace IO.Ably.Tests.AuthTests
             var tokenParams = new TokenParams { Capability = cap };
 
             var authOptions = new AuthOptions(fakeApiKey);
-            var result = await rest.AblyAuth.RequestTokenAsync(tokenParams, authOptions);
+            _ = await rest.AblyAuth.RequestTokenAsync(tokenParams, authOptions);
 
-            var tokenRequest = Requests[0].PostData as TokenRequest;
+            var tokenRequest = (TokenRequest)Requests[0].PostData;
             tokenRequest.Capability.Should().Be(cap);
             fakeApiKey.Should().StartWith(tokenRequest.KeyName);
 
@@ -280,9 +280,9 @@ namespace IO.Ably.Tests.AuthTests
 
             var tokenParams = new TokenParams { Capability = cap };
             var authOptions = new AuthOptions(fakeApiKey);
-            var result = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
+            _ = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
 
-            var tokenRequest = Requests[0].PostData as TokenRequest;
+            var tokenRequest = (TokenRequest)Requests[0].PostData;
             tokenRequest.Capability.Should().Be(cap);
             fakeApiKey.Should().StartWith(tokenRequest.KeyName);
 

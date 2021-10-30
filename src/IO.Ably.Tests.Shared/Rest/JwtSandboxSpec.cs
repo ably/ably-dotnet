@@ -102,7 +102,7 @@ namespace IO.Ably.Tests.Rest
             var didError = false;
             try
             {
-                var stats = await client.StatsAsync();
+                _ = await client.StatsAsync();
                 throw new Exception("This should not be reached");
             }
             catch (AblyException e)
