@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
 {
-    public class ActivationStateMachineTests
+    public static class ActivationStateMachineTests
     {
         public class GeneralTests : MockHttpRestSpecs, IDisposable
         {
