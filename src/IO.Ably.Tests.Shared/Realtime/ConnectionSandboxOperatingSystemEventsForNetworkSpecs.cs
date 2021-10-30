@@ -63,6 +63,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
+            states.Should().HaveCountGreaterThan(0);
 
             await WaitForState(client, ConnectionState.Connecting);
         }
