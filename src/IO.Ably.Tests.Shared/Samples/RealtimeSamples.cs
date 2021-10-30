@@ -10,6 +10,8 @@ using Xunit;
 
 namespace IO.Ably.Tests.GithubSamples
 {
+    // ReSharper disable all
+
     public class RealtimeSamples
     {
         private const string PlaceholderKey = "key.placeholder:placeholder";
@@ -215,4 +217,6 @@ namespace IO.Ably.Tests.GithubSamples
             var realtime = new AblyRealtime(options);
         }
     }
+
+    // ReSharper restore All
 }

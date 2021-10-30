@@ -8,6 +8,8 @@ using IO.Ably.Realtime;
 
 namespace IO.Ably.Tests.Samples
 {
+    // ReSharper disable All
+
     public static class DocumentationSamples
     {
         public static async Task AuthSamples1()
@@ -444,4 +446,6 @@ namespace IO.Ably.Tests.Samples
             Console.WriteLine($"Published this hour {thisHour.Inbound.All.All.Count}");
         }
     }
+
+    // ReSharper restore All
 }
