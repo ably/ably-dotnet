@@ -454,7 +454,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        public AuthorizationTests(ITestOutputHelper output)
+        protected AuthorizationTests(ITestOutputHelper output)
             : base(output)
         {
         }

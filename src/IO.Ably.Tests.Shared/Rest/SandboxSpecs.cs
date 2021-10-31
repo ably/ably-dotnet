@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
 
         protected ManualResetEvent ResetEvent { get; }
 
-        public IDisposable EnableDebugLogging()
+        protected IDisposable EnableDebugLogging()
         {
             Logger.LoggerSink = new OutputLoggerSink(Output);
             Logger.LogLevel = LogLevel.Debug;

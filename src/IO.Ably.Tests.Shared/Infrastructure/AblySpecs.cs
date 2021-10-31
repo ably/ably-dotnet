@@ -5,17 +5,17 @@ namespace IO.Ably.Tests
 {
     public abstract class AblySpecs
     {
-        public ITestOutputHelper Output { get; }
+        protected const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
 
-        public const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
+        protected ITestOutputHelper Output { get; }
 
-        public DateTimeOffset Now => NowFunc();
+        protected DateTimeOffset Now => NowFunc();
 
-        public Func<DateTimeOffset> NowFunc { get; set; }
+        protected Func<DateTimeOffset> NowFunc { get; set; }
 
         internal ILogger Logger { get; }
 
-        public void NowAdd(TimeSpan ts)
+        protected void NowAdd(TimeSpan ts)
         {
             DateTimeOffset n = Now.Add(ts);
             SetNowFunc(() => n);
