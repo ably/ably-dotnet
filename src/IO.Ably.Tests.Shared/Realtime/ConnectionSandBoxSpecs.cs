@@ -950,10 +950,12 @@ namespace IO.Ably.Tests.Realtime
             var aliveAt2 = aliveAt1;
 
             // RTN15g3 ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached
-            var channels = new List<RealtimeChannel>();
-            channels.Add(client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel);
-            channels.Add(client.Channels.Get("attaching".AddRandomSuffix()) as RealtimeChannel);
-            channels.Add(client.Channels.Get("suspended".AddRandomSuffix()) as RealtimeChannel);
+            var channels = new List<RealtimeChannel>
+            {
+                client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel,
+                client.Channels.Get("attaching".AddRandomSuffix()) as RealtimeChannel,
+                client.Channels.Get("suspended".AddRandomSuffix()) as RealtimeChannel,
+            };
             channels[2].State = ChannelState.Suspended;
 
             channels[0].Attach();

@@ -295,8 +295,7 @@ namespace IO.Ably.Tests.Rest
             var channelName = $"persisted:clientspecificmessage_test{suffix}";
             var channel = client.Channels.Get(channelName);
 
-            var payload = new Message($"test1{suffix}", "test1");
-            payload.Id = "client_id";
+            var payload = new Message($"test1{suffix}", "test1") { Id = "client_id" };
 
             // intercept the HTTP request overriding the RequestUri
             // to make it appear that a retry against another host has happened
@@ -550,12 +549,16 @@ namespace IO.Ably.Tests.Rest
 
             var httpClient = (await Fixture.GetSettings()).GetHttpClient();
 
-            JObject rawMessage = new JObject();
-            rawMessage["data"] = messageData["data"];
-            rawMessage["encoding"] = messageData["encoding"];
+            var rawMessage = new JObject
+            {
+                ["data"] = messageData["data"],
+                ["encoding"] = messageData["encoding"],
+            };
 
-            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post, Protocol.Json);
-            request.RequestBody = rawMessage.ToJson().GetBytes();
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post, Protocol.Json)
+            {
+                RequestBody = rawMessage.ToJson().GetBytes(),
+            };
 
             var client1 = await GetRestClient(protocol);
             await client1.AblyAuth.AddAuthHeader(request);
