@@ -1147,16 +1147,20 @@ namespace IO.Ably.Tests.Realtime
             {
                 // Set the first portion of the Id to match the connection id
                 // This is so the message does not appear synthesised
-                var p1 = new PresenceMessage(PresenceAction.Present, "client1");
-                p1.Id = "abcdef:1:1";
-                p1.ConnectionId = "abcdef";
-                p1.Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 1, 1, TimeSpan.Zero);
-                var p2 = new PresenceMessage(PresenceAction.Present, "client2");
+                var p1 = new PresenceMessage(PresenceAction.Present, "client1")
+                {
+                    Id = "abcdef:1:1",
+                    ConnectionId = "abcdef",
+                    Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 1, 1, TimeSpan.Zero),
+                };
 
-                // make the timestamps the same so we can get to the parsing part of the code
-                p2.Timestamp = p1.Timestamp;
-                p2.Id = "abcdef:this_should:error";
-                p2.ConnectionId = "abcdef";
+                var p2 = new PresenceMessage(PresenceAction.Present, "client2")
+                {
+                    // make the timestamps the same so we can get to the parsing part of the code
+                    Timestamp = p1.Timestamp,
+                    Id = "abcdef:this_should:error",
+                    ConnectionId = "abcdef",
+                };
 
                 bool exHandled = false;
                 try

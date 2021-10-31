@@ -87,8 +87,10 @@ namespace IO.Ably.Tests
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-            var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
-            ablyRequest.PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } };
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Post)
+            {
+                PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } },
+            };
 
             await client.Execute(ablyRequest);
             var content = handler.LastRequest.Content;
