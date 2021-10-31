@@ -10,27 +10,22 @@ namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler
     {
-        internal ILogger Logger { get; }
-
-        internal static readonly Base64Encoder Base64Encoder = new Base64Encoder();
-
-        public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
-        {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
-        };
+        private static readonly Base64Encoder Base64Encoder = new Base64Encoder();
 
         private static readonly Type[] UnsupportedTypes =
         {
-                typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
-                typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte),
+            typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
+            typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte),
         };
 
         private readonly Protocol _protocol;
 
-        public MessageHandler()
-            : this(DefaultLogger.LoggerInstance, Defaults.Protocol)
+        private static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-        }
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
+        };
+
+        private ILogger Logger { get; }
 
         public MessageHandler(ILogger logger, Protocol protocol)
         {
@@ -362,7 +357,7 @@ namespace IO.Ably.MessageEncoders
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug("Protocol:" + _protocol);
+                Logger.Debug($"Protocol: {_protocol}");
                 try
                 {
                     var responseBody = response.TextResponse;
@@ -372,7 +367,7 @@ namespace IO.Ably.MessageEncoders
                         responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
                     }
 #endif
-                    Logger.Debug("Response: " + responseBody);
+                    Logger.Debug($"Response: {responseBody}");
                 }
                 catch (Exception ex)
                 {
