@@ -30,7 +30,7 @@ namespace IO.Ably.Tests
             ExecutedCommands.Add(cmd);
         }
 
-        public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
+        public readonly List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
 
         public ITransport Transport { get; set; }
 
