@@ -1870,7 +1870,7 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (state.Current == ChannelState.Attached)
                             {
-                                var p = await channel.Presence.GetAsync();
+                                _ = await channel.Presence.GetAsync();
                             }
                         });
 

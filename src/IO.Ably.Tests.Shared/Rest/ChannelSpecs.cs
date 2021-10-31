@@ -60,8 +60,8 @@ namespace IO.Ably.Tests.Rest
             public void ShouldBeAbleToCheckIsAChannelExists()
             {
                 var client = GetRestClient();
-                var channel1 = client.Channels.Get("test");
-                var channel2 = client.Channels.Get("test1");
+                _ = client.Channels.Get("test");
+                _ = client.Channels.Get("test1");
 
                 client.Channels.Any(x => x.Name == "test").Should().BeTrue();
             }
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Rest
             public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
             {
                 var client = GetRestClient();
-                var channel = client.Channels.Get("first");
+                _ = client.Channels.Get("first");
                 client.Channels.Should().Contain(x => x.Name == "first");
                 client.Channels.Release("first");
                 client.Channels.Should().BeEmpty();
@@ -125,7 +125,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSN3c")]
             public void WhenAccessingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
             {
-                var channel = _client.Channels.Get("test");
+                _ = _client.Channels.Get("test");
                 var newOptions = new ChannelOptions(true);
                 var secondTime = _client.Channels.Get("test", newOptions);
                 ((RestChannel)secondTime).Options.Should().BeEquivalentTo(newOptions);

@@ -65,14 +65,14 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = await GetConnectedClient();
             ChannelOptions options = new ChannelOptions();
-            var channel = client.Channels.Get("test");
+            _ = client.Channels.Get("test");
 
             // Act
-            var channel2 = client.Channels.Get("test", options);
+            var existing = client.Channels.Get("test", options);
 
             // Assert
-            channel2.Should().NotBeNull();
-            Assert.Same(options, channel2.Options);
+            existing.Should().NotBeNull();
+            Assert.Same(options, existing.Options);
         }
 
         [Fact]
