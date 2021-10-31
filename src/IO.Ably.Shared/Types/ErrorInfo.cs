@@ -200,15 +200,6 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Creates an <see cref="AblyException"/> containing the current Error.
-        /// </summary>
-        /// <returns>AblyException.</returns>
-        public Exception AsException()
-        {
-            return new AblyException(this);
-        }
-
-        /// <summary>
         /// Checks if the current error's status code is retryable.
         /// </summary>
         /// <returns>true / false.</returns>

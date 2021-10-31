@@ -27,11 +27,6 @@ namespace IO.Ably.MessageEncoders
 
         private readonly Protocol _protocol;
 
-        public MessageHandler()
-            : this(DefaultLogger.LoggerInstance, Defaults.Protocol)
-        {
-        }
-
         public MessageHandler(ILogger logger, Protocol protocol)
         {
             Logger = logger;
