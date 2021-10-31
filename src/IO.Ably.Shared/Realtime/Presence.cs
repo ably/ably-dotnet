@@ -617,7 +617,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal void EndSync()
+        private void EndSync()
         {
             if (!IsSyncInProgress)
             {
@@ -653,7 +653,7 @@ namespace IO.Ably.Realtime
             OnSyncCompleted();
         }
 
-        internal void EnsureLocalPresenceEntered()
+        private void EnsureLocalPresenceEntered()
         {
             foreach (var item in InternalMap.Values)
             {
@@ -869,7 +869,7 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-        internal void OnSyncCompleted()
+        private void OnSyncCompleted()
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
         }

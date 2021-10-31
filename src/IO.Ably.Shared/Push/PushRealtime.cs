@@ -11,7 +11,7 @@ namespace IO.Ably.Push
         private readonly AblyRest _restClient;
         private readonly ILogger _logger;
 
-        internal ActivationStateMachine StateMachine { get; set; }
+        internal ActivationStateMachine StateMachine { get; private set; }
 
         internal PushRealtime(AblyRest restClient, ILogger logger)
         {
@@ -48,7 +48,7 @@ namespace IO.Ably.Push
             }
         }
 
-        internal void ClientIdUpdated(string newClientId)
+        private void ClientIdUpdated(string newClientId)
         {
             var currentStateIsNotNotActivated =
                 (StateMachine.CurrentState is ActivationStateMachine.NotActivated) == false;
