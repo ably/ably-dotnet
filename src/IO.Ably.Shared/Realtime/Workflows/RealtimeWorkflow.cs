@@ -426,11 +426,7 @@ namespace IO.Ably.Realtime.Workflow
                     }
 
                 case HandleConnectingErrorCommand cmd:
-
-                    // split into two parts
-                    // Errors come from error messages
-                    // Exceptions only come from Transport
-                    var error = cmd.Error ?? cmd.Exception.ErrorInfo;
+                    var error = cmd.Error ?? cmd.Exception?.ErrorInfo ?? ErrorInfo.ReasonUnknown;
 
                     if (error.IsTokenError)
                     {
