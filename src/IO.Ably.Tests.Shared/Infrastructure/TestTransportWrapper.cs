@@ -103,11 +103,6 @@ namespace IO.Ably.Tests.Infrastructure
             set => WrappedTransport.Listener = new TransportListenerWrapper(this, value, _handler);
         }
 
-        public void FakeTransportState(TransportState state, Exception ex = null)
-        {
-            Listener?.OnTransportEvent(Id, state, ex);
-        }
-
         public void FakeReceivedMessage(ProtocolMessage message)
         {
             var data = _handler.GetTransportData(message);

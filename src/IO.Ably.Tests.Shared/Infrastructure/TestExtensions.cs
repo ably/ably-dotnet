@@ -19,17 +19,6 @@ namespace IO.Ably.Tests.Infrastructure
             return connectionAwaiter.Wait();
         }
 
-        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
-        {
-            var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return channelAwaiter.WaitAsync();
-            }
-
-            return channelAwaiter.WaitAsync();
-        }
-
         internal static void ExecuteCommand(this IRealtimeClient client, RealtimeCommand command)
         {
             ((AblyRealtime)client).Workflow.QueueCommand(command);
