@@ -153,12 +153,14 @@ namespace IO.Ably.Realtime.Workflow
 
         public JObject WhatDoIHave()
         {
-            var stateJson = new JObject();
-            stateJson["connection"] = JObject.FromObject(Connection);
-            stateJson["pings"] = JArray.FromObject(PingRequests);
-            stateJson["attempts"] = JObject.FromObject(AttemptsInfo);
-            stateJson["pendingMessages"] = JArray.FromObject(PendingMessages);
-            stateJson["waitingForAck"] = JArray.FromObject(WaitingForAck);
+            var stateJson = new JObject
+            {
+                ["connection"] = JObject.FromObject(Connection),
+                ["pings"] = JArray.FromObject(PingRequests),
+                ["attempts"] = JObject.FromObject(AttemptsInfo),
+                ["pendingMessages"] = JArray.FromObject(PendingMessages),
+                ["waitingForAck"] = JArray.FromObject(WaitingForAck),
+            };
             return stateJson;
         }
     }

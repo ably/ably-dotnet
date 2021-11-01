@@ -11,20 +11,24 @@ namespace IO.Ably.Tests
 
         public static HttpHeaders GetSampleHistoryRequestHeaders()
         {
-            var headers = new TestHttpHeaders();
+            var headers = new TestHttpHeaders
+            {
+                { "Link", $"<./history{FirstQueryString}>; rel=\"first\"" },
+                { "Link", $"<./history{NextQueryString}>; rel=\"next\"" },
+                { "Link", $"<./history{CurrentQueryString}>; rel=\"current\"" },
+            };
 
-            headers.Add("Link", $"<./history{FirstQueryString}>; rel=\"first\"");
-            headers.Add("Link", $"<./history{NextQueryString}>; rel=\"next\"");
-            headers.Add("Link", $"<./history{CurrentQueryString}>; rel=\"current\"");
             return headers;
         }
 
         public static HttpHeaders GetSampleStatsRequestHeaders()
         {
-            var headers = new TestHttpHeaders();
+            var headers = new TestHttpHeaders
+            {
+                { "Link", $"<./stats{FirstQueryString}>; rel=\"first\"" },
+                { "Link", $"<./stats{NextQueryString}>; rel=\"next\"" },
+            };
 
-            headers.Add("Link", $"<./stats{FirstQueryString}>; rel=\"first\"");
-            headers.Add("Link", $"<./stats{NextQueryString}>; rel=\"next\"");
             return headers;
         }
 

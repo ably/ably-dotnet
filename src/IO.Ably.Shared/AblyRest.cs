@@ -14,9 +14,10 @@ namespace IO.Ably
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Needed properties to be internal for testing.")]
     public sealed class AblyRest : IRestClient
     {
+        private readonly object _deviceLock = new object();
+
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
         private LocalDevice _device;
-        private object _deviceLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyRest"/> class using an api key.</summary>
