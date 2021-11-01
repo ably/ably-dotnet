@@ -1433,7 +1433,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
 
-            var channels = Enumerable.Range(1, 10).Select(_ => client.Channels.Get($"test".AddRandomSuffix())).ToList();
+            var channels = Enumerable.Range(1, 10).Select(_ => client.Channels.Get("test".AddRandomSuffix())).ToList();
 
             client.Channels.Should().HaveCount(10);
             client.Channels.ReleaseAll();
@@ -1452,7 +1452,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
 
-            var channels = Enumerable.Range(1, 100).Select(_ => client.Channels.Get($"test".AddRandomSuffix())).ToList();
+            var channels = Enumerable.Range(1, 100).Select(_ => client.Channels.Get("test".AddRandomSuffix())).ToList();
 
             client.Connect();
             foreach (var channel in channels)
