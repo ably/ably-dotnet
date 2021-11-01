@@ -100,13 +100,6 @@ namespace IO.Ably
         /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
         /// </summary>
         /// <param name="query">initialise with a query string.</param>
-        public HttpValueCollection(string query)
-            : this(query, true) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpValueCollection"/> class.
-        /// </summary>
-        /// <param name="query">initialise with a query string.</param>
         /// <param name="urlencoded">is the query url encoded.</param>
         public HttpValueCollection(string query, bool urlencoded)
         {
