@@ -11,18 +11,18 @@ namespace IO.Ably.Tests
     {
         private static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
-        private static readonly Dictionary<string, TestEnvironmentSettings> _settings = new Dictionary<string, TestEnvironmentSettings>();
+        private static readonly Dictionary<string, TestEnvironmentSettings> Settings = new Dictionary<string, TestEnvironmentSettings>();
 
-        public async Task<TestEnvironmentSettings> GetSettings(string environment = null)
+        public static async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
             environment = environment ?? "sandbox";
-            if (_settings.ContainsKey(environment))
+            if (Settings.ContainsKey(environment))
             {
-                return _settings[environment];
+                return Settings[environment];
             }
 
-            _settings[environment] = await Initialise();
-            return _settings[environment];
+            Settings[environment] = await Initialise();
+            return Settings[environment];
         }
 
         private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")

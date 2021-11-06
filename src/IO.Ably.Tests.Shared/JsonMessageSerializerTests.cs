@@ -20,8 +20,8 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { new[] { new Message() } }; // 1 empty message
                 yield return new object[] { new[] { new Message(), new Message() } }; // 2 empty messages
-                yield return new object[] { new[] { new Message(), new Message("test", null) } }; // 1 empty, 1 message
-                yield return new object[] { new[] { new Message("test", null), new Message("attach", null) } }; // 2 messages
+                yield return new object[] { new[] { new Message(), new Message("test") } }; // 1 empty, 1 message
+                yield return new object[] { new[] { new Message("test"), new Message("attach") } }; // 2 messages
             }
         }
 
@@ -39,10 +39,10 @@ namespace IO.Ably.Tests
             get
             {
                 yield return new object[] { "[]", new Message[] { } };
-                yield return new object[] { "[{\"name\":\"test\"}]", new[] { new Message("test", null) } };
-                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new[] { new Message("test", null), new Message("attach", null) } };
+                yield return new object[] { "[{\"name\":\"test\"}]", new[] { new Message("test") } };
+                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new[] { new Message("test"), new Message("attach") } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new[] { new Message(null, "test") } };
-                yield return new object[] { "[{}]", new[] { new Message(null, null) } };
+                yield return new object[] { "[{}]", new[] { new Message(null) } };
                 yield return new object[] { "[{\"data\":[1234,4321]}]", new[] { new Message(null, new JArray(1234, 4321)) } };
             }
         }

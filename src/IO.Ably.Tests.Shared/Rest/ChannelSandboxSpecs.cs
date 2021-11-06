@@ -28,14 +28,6 @@ namespace IO.Ably.Tests.Rest
             _examples256 = JObject.Parse(ResourceHelper.GetResource("crypto-data-256.json"));
         }
 
-        public ChannelOptions GetOptions(JObject data)
-        {
-            var key = (string)data["key"];
-            var iv = (string)data["iv"];
-            var cipherParams = new CipherParams("aes", key, CipherMode.CBC, iv);
-            return new ChannelOptions(cipherParams);
-        }
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1c")]
@@ -547,7 +539,7 @@ namespace IO.Ably.Tests.Rest
         {
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
 
-            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+            var httpClient = (await AblySandboxFixture.GetSettings()).GetHttpClient();
 
             var rawMessage = new JObject
             {
@@ -591,7 +583,7 @@ namespace IO.Ably.Tests.Rest
             JObject messageData)
         {
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
-            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+            var httpClient = (await AblySandboxFixture.GetSettings()).GetHttpClient();
             var expectedType = (string)messageData["expectedType"];
 
             var client1 = await GetRestClient(protocol);
@@ -673,6 +665,14 @@ namespace IO.Ably.Tests.Rest
                 default:
                     return data;
             }
+        }
+
+        private static ChannelOptions GetOptions(JObject data)
+        {
+            var key = (string)data["key"];
+            var iv = (string)data["iv"];
+            var cipherParams = new CipherParams("aes", key, CipherMode.CBC, iv);
+            return new ChannelOptions(cipherParams);
         }
     }
 }

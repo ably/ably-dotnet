@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connected);
             didDisconnect.Should().BeTrue();
 
-            await channel.WaitForState(ChannelState.Attached);
+            await channel.WaitForAttachedState();
 
             var attachCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach);
             attachCount.Should().Be(2);

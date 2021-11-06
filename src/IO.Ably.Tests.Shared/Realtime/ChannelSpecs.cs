@@ -579,7 +579,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await ReceiveAttachedMessage(client);
 
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.WaitForAttachedState();
             }
 
             [Theory]

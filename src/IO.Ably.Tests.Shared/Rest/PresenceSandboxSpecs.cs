@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.Rest
         public async Task WithCorrectCipherParams_DecryptsMessagesCorrectly(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var channel = client.Channels.Get(TestEnvironmentSettings.PresenceChannelName, new ChannelOptions(settings.CipherParams));
 
             var presence = await channel.Presence.GetAsync();

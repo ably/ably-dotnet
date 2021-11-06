@@ -270,7 +270,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(options => options.AutoConnect = false);
 
             var channelOptions1 = new ChannelOptions(true);
-            var channelOptions2 = new ChannelOptions(false);
+            var channelOptions2 = new ChannelOptions();
             var channel = client.Channels.Get("Test", channelOptions1);
             var channel2 = client.Channels.Get("Test", channelOptions2);
 
@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
                 Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
                 Params = { { "test", "best" }, { "best", "test" } },
             };
-            var channelOptions2 = new ChannelOptions(false)
+            var channelOptions2 = new ChannelOptions
             {
                 Modes = new ChannelModes(ChannelMode.Publish, ChannelMode.Presence),
                 Params = { { "best", "test" }, { "test", "best" }, },
@@ -315,7 +315,7 @@ namespace IO.Ably.Tests.Realtime
                 Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
                 Params = { { "test", "best" }, },
             };
-            var channelOptions2 = new ChannelOptions(false)
+            var channelOptions2 = new ChannelOptions
             {
                 Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
             };

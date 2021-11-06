@@ -129,7 +129,7 @@ namespace IO.Ably.Tests
 
             var testParams = new Dictionary<string, string> { { "prefix", _channelNamePrefix } };
 
-            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams, null, null);
+            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             paginatedResponse.Should().NotBeNull();
@@ -158,7 +158,7 @@ namespace IO.Ably.Tests
 
             var testParams = new Dictionary<string, string> { { "prefix", _channelNamePrefix }, { "limit", "1" } };
 
-            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams, null, null);
+            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             paginatedResponse.Should().NotBeNull();
@@ -200,7 +200,7 @@ namespace IO.Ably.Tests
             var body1 = JToken.Parse("{ \"name\": \"rsc19test\", \"data\": \"from-json-string\" }");
             var body2 = JToken.FromObject(new Message("rsc19test", "from-message"));
 
-            var paginatedResponse = await client.Request(HttpMethod.Post, _channelMessagesPath, null, body1, null);
+            var paginatedResponse = await client.Request(HttpMethod.Post, _channelMessagesPath, null, body1);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             paginatedResponse.Should().NotBeNull();
@@ -210,7 +210,7 @@ namespace IO.Ably.Tests
             paginatedResponse.ErrorMessage.Should().BeNull();
             paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
 
-            await client.Request(HttpMethod.Post, _channelMessagesPath, null, body2, null);
+            await client.Request(HttpMethod.Post, _channelMessagesPath, null, body2);
 
             var ch = client.Channels.Get(_channelName);
             var body3 = new Message("rsc19test", "from-publish");
