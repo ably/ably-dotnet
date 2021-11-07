@@ -53,7 +53,7 @@ namespace IO.Ably.Tests
 
             private static TokenRequest CreateDefaultTokenRequest(AblyRest client)
             {
-                return JsonHelper.Deserialize<TokenRequest>(client.Auth.CreateTokenRequestAsync(null, null).Result);
+                return JsonHelper.Deserialize<TokenRequest>(client.Auth.CreateTokenRequestAsync().Result);
             }
 
             [Fact]
@@ -222,7 +222,7 @@ namespace IO.Ably.Tests
             public async Task WithTimeStampOverridesDefault()
             {
                 var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
-                var data = await CreateTokenRequest(Client, new TokenParams { Timestamp = date }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Timestamp = date });
                 data.Timestamp.Should().Be(date);
             }
 
@@ -243,7 +243,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9e")]
             public async Task WithTtlOverridesDefault()
             {
-                var data = await CreateTokenRequest(Client, new TokenParams { Ttl = TimeSpan.FromHours(2) }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Ttl = TimeSpan.FromHours(2) });
 
                 data.Ttl.Should().Be(TimeSpan.FromHours(2));
             }
@@ -270,14 +270,14 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WithNonceOverridesDefault()
             {
-                var data = await CreateTokenRequest(Client, new TokenParams { Nonce = "Blah" }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { Nonce = "Blah" });
                 data.Nonce.Should().Be("Blah");
             }
 
             [Fact]
             public async Task WithClientIdOverridesDefault()
             {
-                var data = await CreateTokenRequest(Client, new TokenParams { ClientId = "123" }, null);
+                var data = await CreateTokenRequest(Client, new TokenParams { ClientId = "123" });
                 data.ClientId.Should().Be("123");
             }
 
@@ -285,14 +285,14 @@ namespace IO.Ably.Tests
             public async Task WithOutKeyIdThrowsException()
             {
                 var client = new AblyRest(new ClientOptions { UseTokenAuth = true });
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync());
             }
 
             [Fact]
             public async Task WithOutKeyValueThrowsException()
             {
                 var client = new AblyRest(new ClientOptions { Key = "111.222" });
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync());
             }
 
             public CreateTokenRequestSpecs(ITestOutputHelper output)

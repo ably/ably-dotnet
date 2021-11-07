@@ -269,7 +269,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null));
 
-                client.ExecuteCommand(SetClosedStateCommand.Create(null));
+                client.ExecuteCommand(SetClosedStateCommand.Create());
 
                 await client.ProcessCommands(); // Wait for the command to be executed
 
@@ -309,7 +309,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null));
 
-                client.ExecuteCommand(SetClosedStateCommand.Create(null));
+                client.ExecuteCommand(SetClosedStateCommand.Create());
 
                 await client.ProcessCommands(); // Wait for the command to be executed
 

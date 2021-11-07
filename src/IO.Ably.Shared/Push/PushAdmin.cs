@@ -456,7 +456,7 @@ namespace IO.Ably.Push
             }
         }
 
-        internal void AddDeviceAuthenticationToRequest(AblyRequest request, LocalDevice device)
+        internal static void AddDeviceAuthenticationToRequest(AblyRequest request, LocalDevice device)
         {
             if (device is null)
             {

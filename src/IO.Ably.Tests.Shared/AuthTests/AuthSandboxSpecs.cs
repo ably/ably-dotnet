@@ -537,7 +537,7 @@ namespace IO.Ably.Tests
             var ably = await GetRestClient(protocol);
             var options = ably.Options;
 
-            var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability, ttl), null);
+            var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability, ttl));
 
             var key = options.ParseKey();
             var appId = key.KeyName.Split('.').First();
@@ -555,9 +555,9 @@ namespace IO.Ably.Tests
             capability.AddResource("foo").AllowPublish();
 
             var ably = await GetRestClient(protocol);
-            var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null);
+            var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability));
 
-            var options = await Fixture.GetSettings();
+            var options = await AblySandboxFixture.GetSettings();
             var httpTokenAbly =
                 new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = false });
             var httpsTokenAbly =
@@ -596,7 +596,7 @@ namespace IO.Ably.Tests
 
             var ably = await GetRestClient(protocol);
 
-            var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null).Result;
+            var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability)).Result;
 
             var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
 
@@ -649,7 +649,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthWithoutClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
             var client = await GetRestClient(protocol, opts => opts.QueryTime = true);
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync();
             var tokenClient = new AblyRest(new ClientOptions
             {
@@ -672,7 +672,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthWithoutClientIdAndAMessageWithExplicitId_ShouldThrow(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync();
             var tokenClient = new AblyRest(new ClientOptions
             {
@@ -692,7 +692,7 @@ namespace IO.Ably.Tests
             Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
@@ -717,7 +717,7 @@ namespace IO.Ably.Tests
                 Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
@@ -740,7 +740,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
             var authUrlClient = new AblyRest(new ClientOptions
@@ -764,7 +764,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
 
             var authUrlClient = new AblyRest(new ClientOptions
@@ -789,7 +789,7 @@ namespace IO.Ably.Tests
         {
             var ablyRest = await GetRestClient(protocol);
             var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var tokenJson = token.ToJson();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
 
@@ -811,7 +811,7 @@ namespace IO.Ably.Tests
         {
             var ablyRest = await GetRestClient(protocol);
             var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var incorrectJson = $"[{token.ToJson()}]";
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
 
@@ -842,7 +842,7 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task TokenAuthCallbackWithTokenDetailsReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
@@ -865,7 +865,7 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task TokenAuthCallbackWithTokenRequestReturned_ShouldBeAbleToGetATokenAndPublishWithNewToken(Protocol protocol)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {

@@ -783,7 +783,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
             var authUrlClient = new AblyRealtime(new ClientOptions

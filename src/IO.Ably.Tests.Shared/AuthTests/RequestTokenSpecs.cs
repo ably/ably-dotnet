@@ -99,7 +99,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
 
-            client.Auth.RequestTokenAsync(new TokenParams(), null);
+            client.Auth.RequestTokenAsync(new TokenParams());
 
             var data = LastRequest.PostData as TokenRequest;
             Assert.Equal(client.Options.ParseKey().KeyName, data.KeyName);
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var client = GetRestClient();
 
-            await client.Auth.RequestTokenAsync(tokenParams, null);
+            await client.Auth.RequestTokenAsync(tokenParams);
 
             var data = LastRequest.PostData as TokenRequest;
             Assert.Equal(Capability.AllowAll, data.Capability);
@@ -126,7 +126,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var client = GetRestClient();
 
-            await client.Auth.RequestTokenAsync(tokenParams, null);
+            await client.Auth.RequestTokenAsync(tokenParams);
 
             var data = LastRequest.PostData as TokenRequest;
             date.Should().BeCloseTo(data.Timestamp.Value);
@@ -138,7 +138,7 @@ namespace IO.Ably.Tests.AuthTests
             var tokenParams = new TokenParams();
 
             var client = GetRestClient();
-            await client.Auth.RequestTokenAsync(tokenParams, null);
+            await client.Auth.RequestTokenAsync(tokenParams);
 
             var data = LastRequest.PostData as TokenRequest;
             Now.Should().BeCloseTo(data.Timestamp.Value, 200);
@@ -308,7 +308,7 @@ namespace IO.Ably.Tests.AuthTests
                     });
 
             // Act
-            await rest.Auth.RequestTokenAsync(null, null);
+            await rest.Auth.RequestTokenAsync();
 
             // Expected will be { "ttl" : "intvalue", "Test" :"Test" }
             var expectedAuthParams = new Dictionary<string, string>
@@ -389,7 +389,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var tokenParams = new TokenParams { Capability = new Capability() };
 
-            await rest.Auth.RequestTokenAsync(tokenParams, null);
+            await rest.Auth.RequestTokenAsync(tokenParams);
 
             var expectedParams = new Dictionary<string, string>
                                      {
@@ -514,7 +514,7 @@ namespace IO.Ably.Tests.AuthTests
                                   };
 
             // Act
-            await rest.Auth.RequestTokenAsync(tokenParams, null);
+            await rest.Auth.RequestTokenAsync(tokenParams);
         }
 
         public RequestTokenSpecs(ITestOutputHelper output)

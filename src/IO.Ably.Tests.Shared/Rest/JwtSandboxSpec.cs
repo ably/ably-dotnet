@@ -121,7 +121,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSA8c")]
         public async Task Jwt_Request_ReturnType(Protocol protocol)
         {
-            var defaultOptions = (await Fixture.GetSettings()).CreateDefaultOptions();
+            var defaultOptions = (await AblySandboxFixture.GetSettings()).CreateDefaultOptions();
             var keyParts = defaultOptions.Key.Split(':');
             var key = keyParts[0];
             var secret = keyParts[1];
@@ -183,7 +183,7 @@ namespace IO.Ably.Tests.Rest
             string jwtType = "",
             int encrypted = 0)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             var keyParts = defaultOptions.Key.Split(':');
             if (keyParts.Length != 2)

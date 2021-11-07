@@ -11,9 +11,9 @@ namespace IO.Ably.Tests
     [Trait("type", "integration")]
     public class StatsSandBoxSpecs : SandboxSpecs
     {
-        public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
+        private static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
-        public async Task<List<Stats>> GetStats(Protocol protocol)
+        private async Task<List<Stats>> GetStats(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var result = await client.StatsAsync(new StatsRequestParams { Start = StartInterval.AddMinutes(-2), End = StartInterval.AddMinutes(1) });

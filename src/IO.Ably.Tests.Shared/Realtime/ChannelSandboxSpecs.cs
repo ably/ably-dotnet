@@ -158,12 +158,12 @@ namespace IO.Ably.Tests.Realtime
             channelWithAttachResume.AttachResume = true;
             var channel1Messages = new List<Message>();
             channelWithAttachResume.Subscribe(channel1Messages.Add);
-            await channelWithAttachResume.WaitForState(ChannelState.Attached);
+            await channelWithAttachResume.WaitForAttachedState();
             var channelWithoutAttachResume = client2.Channels.Get("Test", new ChannelOptions().WithRewind(1));
 
             var channel2Messages = new List<Message>();
             channelWithoutAttachResume.Subscribe(channel2Messages.Add);
-            await channelWithoutAttachResume.WaitForState(ChannelState.Attached);
+            await channelWithoutAttachResume.WaitForAttachedState();
 
             await Task.Delay(2000);
 
@@ -245,7 +245,7 @@ namespace IO.Ably.Tests.Realtime
             var tsc = new TaskCompletionAwaiter(10000, 3);
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
-            await target.WaitForState(ChannelState.Attached);
+            await target.WaitForAttachedState();
 
             ConcurrentQueue<Message> messagesReceived = new ConcurrentQueue<Message>();
 
@@ -402,7 +402,7 @@ namespace IO.Ably.Tests.Realtime
                     msg = m;
                     tsc.SetCompleted();
                 });
-            await subCh.WaitForState(ChannelState.Attached);
+            await subCh.WaitForAttachedState();
 
             var pubCh = pubClient.Channels.Get(channelName);
             await pubCh.PublishAsync("foo", "bar");
@@ -434,7 +434,7 @@ namespace IO.Ably.Tests.Realtime
                     tsc.SetCompleted();
                 });
 
-            await subCh.WaitForState(ChannelState.Attached);
+            await subCh.WaitForAttachedState();
 
             var pubClient = await GetRealtimeClient(protocol);
             var pubCh = pubClient.Channels.Get(channelName);
@@ -475,7 +475,7 @@ namespace IO.Ably.Tests.Realtime
                     msg = m;
                     tsc.SetCompleted();
                 });
-            await subCh.WaitForState(ChannelState.Attached);
+            await subCh.WaitForAttachedState();
 
             var pubCh = pubClient.Channels.Get(channelName);
             pubCh.Publish("foo", "bar");
@@ -1137,7 +1137,8 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "RTL13a".AddRandomSuffix();
             var channel = client.Channels.Get(channelName);
             channel.Attach();
-            await channel.WaitForState(ChannelState.Attached);
+
+            await channel.WaitForAttachedState();
             channel.State.Should().Be(ChannelState.Attached);
 
             // block attach messages being sent causing the attach to timeout
@@ -1484,7 +1485,7 @@ namespace IO.Ably.Tests.Realtime
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-256.json"));
         }
 
-        private ChannelOptions GetOptions(JObject data)
+        private static ChannelOptions GetOptions(JObject data)
         {
             var key = (string)data["key"];
             var iv = (string)data["iv"];
@@ -1492,7 +1493,7 @@ namespace IO.Ably.Tests.Realtime
             return new ChannelOptions(cipherParams);
         }
 
-        private object DecodeData(string data, string encoding)
+        private static object DecodeData(string data, string encoding)
         {
             if (encoding == "json")
             {

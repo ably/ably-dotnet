@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get(GetTestChannelName());
 
                 await channel.AttachAsync();
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.WaitForAttachedState();
 
                 channel.Presence.SyncComplete.Should().BeTrue();
             }
@@ -259,7 +259,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var channel2 = client2.Channels.Get(channel2Name);
                 channel2.Attach();
-                await channel2.WaitForState(ChannelState.Attached);
+                await channel2.WaitForAttachedState();
                 channel2.State.Should().BeEquivalentTo(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
@@ -326,7 +326,7 @@ namespace IO.Ably.Tests.Realtime
                     var rChannel = rest.Channels.Get(channelName);
 
                     await rtChannel.Presence.EnterAsync();
-                    await rtChannel.WaitForState(ChannelState.Attached);
+                    await rtChannel.WaitForAttachedState();
                     _ = await rtChannel.Presence.WaitSync();
 
                     return (rtChannel, rChannel);
@@ -386,7 +386,7 @@ namespace IO.Ably.Tests.Realtime
 
                     await realtimeClient.WaitForState(ConnectionState.Disconnected);
                     await realtimeClient.WaitForState(ConnectionState.Connected);
-                    await realtimeChannel.WaitForState(ChannelState.Attached);
+                    await realtimeChannel.WaitForAttachedState();
                     _ = await realtimeChannel.Presence.WaitSync();
 
                     // Wait for a second because the Rest call returns [] if done straight away
@@ -1072,7 +1072,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var channel = client.Channels.Get(channelName);
                 channel.Attach();
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.WaitForAttachedState();
                 channel.State.Should().BeEquivalentTo(ChannelState.Attached);
 
                 static PresenceMessage[] TestPresence1()

@@ -7,7 +7,7 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
-        private static readonly object _lock = new object();
+        private static readonly object Lock = new object();
 
         static Platform()
         {
@@ -29,7 +29,7 @@ namespace IO.Ably
 
         public void RegisterOsNetworkStateChanged()
         {
-            lock (_lock)
+            lock (Lock)
             {
                 if (HookedUpToNetworkEvents == false)
                 {

@@ -70,7 +70,7 @@ namespace IO.Ably.Tests
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
         {
-            var settings = await Fixture.GetSettings(environment);
+            var settings = await AblySandboxFixture.GetSettings(environment);
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             optionsAction?.Invoke(defaultOptions);
@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
             Action<ClientOptions, TestEnvironmentSettings> optionsAction,
             Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await AblySandboxFixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
