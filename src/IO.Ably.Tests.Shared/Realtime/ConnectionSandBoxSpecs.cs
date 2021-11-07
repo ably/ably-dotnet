@@ -432,7 +432,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c1".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             var connectionId = client.Connection.Id;
             await channel.AttachAsync();
@@ -482,12 +482,12 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithError(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c1".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             var connectionId = client.Connection.Id;
 
             // inject fake error messages into protocol messages
-            var transportFactory = client.Options.TransportFactory as TestTransportFactory;
+            var transportFactory = (TestTransportFactory)client.Options.TransportFactory;
             transportFactory.OnTransportCreated += wrapper =>
             {
                 wrapper.BeforeDataProcessed = message =>
@@ -568,7 +568,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c3".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             channel.Attach();
             await channel.WaitForAttachedState();
@@ -659,7 +659,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError_EmitsErrorOnChannel(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c3".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             channel.Attach();
             channel.Once(ChannelEvent.Attached, _ =>
@@ -691,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
             });
-            var channel = client.Channels.Get("RTN15c4".AddRandomSuffix()) as RealtimeChannel;
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c4".AddRandomSuffix());
             channel.Attach();
             await client.WaitForState(ConnectionState.Connected);
 
