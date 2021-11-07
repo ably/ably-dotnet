@@ -15,7 +15,7 @@ namespace IO.Ably
         private string _realtimeHost;
         private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
-#if !MSGPACK
+#if MSGPACK
         private bool _useBinaryProtocol;
 #endif
         private string[] _fallbackHosts;
@@ -292,7 +292,12 @@ namespace IO.Ably
 #else
             get { return false; }
 #endif
+
+#if MSGPACK
             set { _useBinaryProtocol = value; }
+#else
+            set { _ = value; }
+#endif
         }
 
         /// <summary>
