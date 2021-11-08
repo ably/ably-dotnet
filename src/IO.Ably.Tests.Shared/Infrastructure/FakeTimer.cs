@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Tests
