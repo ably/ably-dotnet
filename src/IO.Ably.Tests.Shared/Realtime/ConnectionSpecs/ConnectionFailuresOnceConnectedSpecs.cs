@@ -80,7 +80,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await SetupConnectedClient();
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
             {
@@ -99,6 +99,9 @@ namespace IO.Ably.Tests.Realtime
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
             await client.ProcessCommands();
+
+            states.Should().NotBeEmpty();
+            errors.Should().NotBeEmpty();
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
@@ -178,7 +181,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await SetupConnectedClient();
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
             {
@@ -201,6 +204,9 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connecting);
             await client.ProcessCommands();
+
+            states.Should().NotBeEmpty();
+            errors.Should().NotBeEmpty();
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
