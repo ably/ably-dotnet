@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.Push
                 var request = new AblyRequest("/", HttpMethod.Get);
                 var localDevice = new LocalDevice() { DeviceIdentityToken = "test" };
 
-                var rest = GetRestClient();
+                _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
                 request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Push
                 var request = new AblyRequest("/", HttpMethod.Get);
                 var localDevice = new LocalDevice() { DeviceSecret = "test" };
 
-                var rest = GetRestClient();
+                _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
                 request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader).WhichValue.Should().Be("test");
@@ -51,7 +51,7 @@ namespace IO.Ably.Tests.Push
                 var request = new AblyRequest("/", HttpMethod.Get);
                 var localDevice = new LocalDevice() { DeviceIdentityToken = "test", DeviceSecret = "secret" };
 
-                var rest = GetRestClient();
+                _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
                 request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Push
                 var request = new AblyRequest("/", HttpMethod.Get);
                 var localDevice = new LocalDevice();
 
-                var rest = GetRestClient();
+                _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
                 request.Headers.Should().BeEmpty();
