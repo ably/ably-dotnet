@@ -384,11 +384,12 @@ namespace IO.Ably.Realtime.Workflow
             {
 #if DEBUG
                 throw new ArgumentException("Cannot create a TokenError command with an error that is not a token error.");
-#endif
+#else
                 DefaultLogger.Warning("Cannot create a TokenError command with an error that is not a token error");
 
                 // TODO: Sentry alert
                 return EmptyCommand.Instance;
+#endif
             }
 
             return new HandleConnectingTokenErrorCommand(error);
