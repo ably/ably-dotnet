@@ -123,7 +123,7 @@ namespace IO.Ably.Tests
             var client = new AblyRest(options);
 
             // Assert
-            var auth = client.Auth as AblyAuth;
+            var auth = (AblyAuth)client.Auth;
             auth.Options.Should().BeSameAs(options);
         }
 
