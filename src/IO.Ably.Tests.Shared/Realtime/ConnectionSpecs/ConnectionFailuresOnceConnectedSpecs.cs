@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h2")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToDisconnectedAndEmitError()
         {
-            var client = await SetupConnectedClient(failRenewal: true);
+            var client = await SetupConnectedClient(ConnectedClientErrors.FailRenewal);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -148,7 +148,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WhenConnectionFailsWithTokenErrorButTokenIsNotRenewable_ShouldTransitionDirectlyToFailedWithError()
         {
-            var client = await SetupConnectedClient(renewable: false);
+            var client = await SetupConnectedClient(ConnectedClientErrors.RenewalNotSupported);
 
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
@@ -255,12 +255,20 @@ namespace IO.Ably.Tests.Realtime
             client.State.WaitingForAck.Should().HaveCount(2);
         }
 
-        private Task<AblyRealtime> SetupConnectedClient(bool failRenewal = false, bool renewable = true)
+        [Flags]
+        private enum ConnectedClientErrors
+        {
+            None = 1,
+            RenewalNotSupported = 2,
+            FailRenewal = 4,
+        }
+
+        private Task<AblyRealtime> SetupConnectedClient(ConnectedClientErrors errors = ConnectedClientErrors.None)
         {
             return GetConnectedClient(
                 opts =>
                 {
-                    if (renewable == false)
+                    if (errors.HasFlag(ConnectedClientErrors.RenewalNotSupported))
                     {
                         opts.Key = string.Empty; // clear the key to make the token non renewable
                     }
@@ -271,7 +279,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        if (failRenewal)
+                        if (errors.HasFlag(ConnectedClientErrors.FailRenewal))
                         {
                             throw new AblyException(new ErrorInfo("Failed to renew token", FailedRenewalErrorCode));
                         }
