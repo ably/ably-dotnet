@@ -20,125 +20,79 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_Start_StartsCountdown()
         {
             // Arrange
-            var timer = new CountdownTimer("Test timer", Logger);
-            var timeout = TimeSpan.FromMilliseconds(50);
-            int called = 0;
-            Action callback = () => called++;
+            var timer = CreateCountdownTimer();
+            var callCounter = new CallCounter();
 
             // Act
-            timer.Start(timeout, callback);
-            for (var i = 0; i < 20; i++)
-            {
-                if (called == 0)
-                {
-                    await Task.Delay(50);
-                }
-                else
-                {
-                    break;
-                }
-            }
+            timer.Start(50, callCounter.Invoke);
+            await Process(callCounter);
 
             // Assert
-            called.Should().Be(1);
+            callCounter.Count.Should().Be(1);
         }
 
         [Fact]
         public async Task CountdownTimer_Abort_StopsCountdown()
         {
             // Arrange
-            var timer = new CountdownTimer("Test timer", Logger);
-            var timeout = TimeSpan.FromMilliseconds(50);
-            int called = 0;
-            Action callback = () => called++;
-            timer.Start(timeout, callback);
+            var timer = CreateCountdownTimer();
+            var callCounter = new CallCounter();
+            timer.Start(50, callCounter.Invoke);
 
             // Act
             timer.Abort();
-            for (var i = 0; i < 20; i++)
-            {
-                if (called == 0)
-                {
-                    await Task.Delay(50);
-                }
-                else
-                {
-                    break;
-                }
-            }
+            await Process(callCounter);
 
             // Assert
-            called.Should().Be(0);
+            callCounter.Count.Should().Be(0);
         }
 
         [Fact]
         public async Task CountdownTimer_AbortStart_StartsNewCountdown()
         {
+            const int millisecondStartDelay = 100;
+
             // Arrange
-            var timer = CreateTimer();
-
-            var timeout = TimeSpan.FromMilliseconds(100);
-            int called = 0;
-            void Callback()
-            {
-                Interlocked.Increment(ref called);
-            }
-
-            timer.Start(timeout, Callback);
+            var timer = CreateCountdownTimer();
+            var callCounter = new CallCounter();
+            timer.Start(millisecondStartDelay, callCounter.Invoke);
 
             // Act
             timer.Abort();
-            timer.Start(timeout, Callback);
-
-            for (var i = 0; i < 20; i++)
-            {
-                if (called == 0)
-                {
-                    await Task.Delay(50);
-                }
-                else
-                {
-                    break;
-                }
-            }
+            timer.Start(millisecondStartDelay, callCounter.Invoke);
+            await Process(callCounter);
 
             // Assert
-            called.Should().Be(1);
-        }
-
-        private CountdownTimer CreateTimer()
-        {
-            return new CountdownTimer("Test timer", Logger);
+            callCounter.Count.Should().Be(1);
         }
 
         [Fact]
         [Trait("intermittent", "true")]
         public async Task CountdownTimer_StartTwice_AbortsOldTimer()
         {
+            const int millisecondStartDelay = 10;
+
             // Arrange
-            CountdownTimer timer = CreateTimer();
-            var timeout = TimeSpan.FromMilliseconds(10);
-            int called1 = 0;
-            int called2 = 0;
-
-            Action callback1 = () =>
-            {
-                called1++;
-            };
-
-            Action callback2 = () =>
-            {
-                called2++;
-            };
+            var timer = CreateCountdownTimer();
+            var callCounter1 = new CallCounter();
+            var callCounter2 = new CallCounter();
 
             // Act
-            timer.Start(timeout, callback1);
-            timer.Start(timeout, callback2);
+            timer.Start(millisecondStartDelay, callCounter1.Invoke);
+            timer.Start(millisecondStartDelay, callCounter2.Invoke);
             await Task.Delay(250);
+            await Process(callCounter2);
 
+            // Assert
+            callCounter2.Count.Should().Be(1);
+            callCounter1.Count.Should().Be(0);
+        }
+
+        private static async Task Process(CallCounter callCounter)
+        {
             for (var i = 0; i < 20; i++)
             {
-                if (called2 == 0)
+                if (callCounter.Count == 0)
                 {
                     await Task.Delay(50);
                 }
@@ -147,10 +101,34 @@ namespace IO.Ably.Tests.Realtime
                     break;
                 }
             }
+        }
 
-            // Assert
-            called2.Should().Be(1);
-            called1.Should().Be(0);
+        private CountdownTimer CreateCountdownTimer()
+        {
+            return new CountdownTimer("Test timer", Logger);
+        }
+
+        private class CallCounter
+        {
+            public CallCounter()
+            {
+                Count = 0;
+            }
+
+            public int Count { get; private set;  }
+
+            public void Invoke()
+            {
+                Count++;
+            }
+        }
+    }
+
+    internal static class CountdownTimerExtensions
+    {
+        public static void Start(this CountdownTimer timer, int milliseconds, Action elapsed)
+        {
+            timer.Start(TimeSpan.FromMilliseconds(milliseconds), elapsed);
         }
     }
 }
