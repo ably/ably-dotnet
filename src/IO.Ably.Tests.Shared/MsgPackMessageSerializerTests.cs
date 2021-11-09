@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+﻿#if MSGPACK
+using FluentAssertions;
 
 namespace IO.Ably.Tests
 {
-#if MSGPACK
     public class GenerateMsgPackSerializers
     {
         [Fact(Skip="true")]
@@ -490,5 +490,5 @@ namespace IO.Ably.Tests
         {
         }
     }
-#endif
 }
+#endif
