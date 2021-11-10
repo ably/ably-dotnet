@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -199,6 +200,7 @@ namespace IO.Ably.Tests.Realtime
 
             var firstTransport = LastCreatedTransport;
             var connectionKey = client.Connection.Key;
+            Debug.Assert(client.Connection.Serial.HasValue, "Expected a serial number, got null");
             var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
 
