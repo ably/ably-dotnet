@@ -225,7 +225,6 @@ namespace IO.Ably.Realtime.Workflow
                             return new RealtimeCommand[] { CompleteWorkflowCommand.Create().TriggeredBy(command) };
                         }
 
-                        break;
                     case CompleteWorkflowCommand _:
                         _heartbeatMonitorCancellationTokenSource.Cancel();
                         Channels.ReleaseAll();
