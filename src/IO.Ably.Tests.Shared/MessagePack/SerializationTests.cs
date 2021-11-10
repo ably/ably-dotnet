@@ -1,11 +1,11 @@
-﻿namespace IO.Ably.Tests.MessagePack
+﻿#if MSGPACK
+namespace IO.Ably.Tests.MessagePack
 {
-#if MSGPACK
     public class MessagePackSerializationTests : AblySpecs
     {
         public MessagePackSerializationTests(ITestOutputHelper output) : base(output)
         {
-            
+
         }
 
         [Fact]
@@ -141,21 +141,19 @@
         public void CanDeserialiseTokenResponse()
         {
             var value = @"{
-	""access_token"": {
-		""token"": ""_SYo4Q.D3WmHhU"",
-		""keyName"": ""_SYo4Q.j8mhAQ"",
-		""issued"": 1449163326485,
-		""expires"": 1449163326485,
-		""capability"": {
-			""*"": [
-				""*""
-			]
-		},
-		""clientId"": ""123""
-	}
-}";
-
-
+	            ""access_token"": {
+		            ""token"": ""_SYo4Q.D3WmHhU"",
+		            ""keyName"": ""_SYo4Q.j8mhAQ"",
+		            ""issued"": 1449163326485,
+		            ""expires"": 1449163326485,
+		            ""capability"": {
+			            ""*"": [
+				            ""*""
+			            ]
+		            },
+		            ""clientId"": ""123""
+	            }
+            }";
 
             var response = JsonHelper.Deserialize<TokenResponse>(value);
 
@@ -167,5 +165,5 @@
             response.AccessToken.Expires.Should().Be(((long)1449163326485).FromUnixTimeInMilliseconds());
         }
     }
-#endif
 }
+#endif
