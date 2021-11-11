@@ -7,7 +7,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {
-    public class FakeTransport : ITransport
+    public sealed class FakeTransport : ITransport
     {
         public TransportParams Parameters { get; }
 
@@ -24,11 +24,7 @@ namespace IO.Ably.Tests
             Parameters = parameters;
         }
 
-        public bool ConnectCalled
-        {
-            get => _connectCalled;
-            set => _connectCalled = value;
-        }
+        public bool ConnectCalled { get; private set; }
 
         public bool CloseCalled { get; set; }
 
@@ -74,18 +70,11 @@ namespace IO.Ably.Tests
             return Result.Ok();
         }
 
-        public Action<RealtimeTransportData> SendAction = delegate { };
-
-        private volatile bool _connectCalled;
+        public Action<RealtimeTransportData> SendAction = obj => { };
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            // No op. Note: ITransport derives from IDisposable
         }
     }
 }
