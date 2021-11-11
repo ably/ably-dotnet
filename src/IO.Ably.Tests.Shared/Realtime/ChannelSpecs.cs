@@ -1534,10 +1534,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL8")]
         public class UnsubscribeSpecs : ChannelSpecs
         {
-            private readonly Action<Message> _handler = message =>
-            {
-                throw new AssertionFailedException("This handler should no longer be called");
-            };
+            private readonly Action<Message> _handler = message => throw new AssertionFailedException("This handler should no longer be called");
 
             [Fact]
             [Trait("spec", "RTL8a")]

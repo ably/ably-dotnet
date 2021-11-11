@@ -484,7 +484,7 @@ namespace IO.Ably.Tests.AuthTests
             var rest = GetRestClient();
             var options = new AuthOptions { AuthUrl = new Uri("http://authUrl") };
 
-            rest.ExecuteHttpRequest = (x) => { throw new AblyException("Testing"); };
+            rest.ExecuteHttpRequest = (x) => throw new AblyException("Testing");
 
             var tokenParams = new TokenParams { Capability = new Capability() };
 
