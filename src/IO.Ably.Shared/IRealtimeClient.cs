@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using IO.Ably.Push;
 using IO.Ably.Realtime;
 
 namespace IO.Ably
@@ -28,10 +29,10 @@ namespace IO.Ably
         /// <summary>A reference to the connection object for this library instance.</summary>
         Connection Connection { get; }
 
-        // /// <summary>
-        // /// Methods for managing Push notifications subscriptions and device registrations.
-        // /// </summary>
-        // PushRest Push { get; }
+        /// <summary>
+        /// Methods for managing Push notifications subscriptions and device registrations.
+        /// </summary>
+        PushRealtime Push { get; }
 
         /// <summary>
         /// Current client id.
@@ -40,6 +41,11 @@ namespace IO.Ably
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         RealtimeChannels Channels { get; }
+
+        /// <summary>
+        /// The local device instance represents the current state of the device in respect of it being a target for push notifications.
+        /// </summary>
+        LocalDevice Device { get; }
 
         /// <summary>
         /// Retrieves the ably service time.

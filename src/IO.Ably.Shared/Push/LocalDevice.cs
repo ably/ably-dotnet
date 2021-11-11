@@ -19,7 +19,10 @@ namespace IO.Ably.Push
 
         internal Action<string> ClientIdUpdated { get; set; } = (newClientId) => { };
 
-        internal bool IsRegistered => DeviceIdentityToken.IsNotEmpty();
+        /// <summary>
+        /// Checks if the device is registered to receive push notifications.
+        /// </summary>
+        public bool IsRegistered => DeviceIdentityToken.IsNotEmpty();
 
         internal bool IsCreated => Id.IsNotEmpty() && DeviceSecret.IsNotEmpty();
 
