@@ -158,6 +158,79 @@ namespace IO.Ably.Tests.Push
                 machine.CurrentState.Should().BeSameAs(finalState);
             }
 
+            [Fact]
+            public async Task UpdateRegistrationTokenWithSameToken_DoesNotHandleEvent()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                const string token = "token";
+
+                ActivationStateMachine.Event handledEvent = null;
+                var initialState = new FakeState(machine, "InitialState");
+                initialState.CanHandleEventFunc = @event =>
+                {
+                    handledEvent = @event;
+                    return true;
+                };
+                machine.CurrentState = initialState;
+
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+
+                // Act
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", token)));
+
+                // Assert
+                handledEvent.Should().BeNull();
+            }
+
+            [Fact]
+            public async Task UpdateRegistrationTokenWithNewToken_ShouldSaveItAndPushEvent_GotPushDeviceDetails()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                const string token = "token";
+                const string tokenValue = "newToken";
+
+                ActivationStateMachine.Event handledEvent = null;
+                var initialState = new FakeState(machine, "InitialState");
+                initialState.CanHandleEventFunc = @event =>
+                {
+                    handledEvent = @event;
+                    return true;
+                };
+                machine.CurrentState = initialState;
+
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", tokenValue)));
+
+                machine.LocalDevice.RegistrationToken.Token.Should().Be(tokenValue);
+                handledEvent.Should().NotBeNull().And.BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
+            }
+
+            [Fact]
+            public async Task UpdateRegistrationTokenWithError_ShouldPushEvent_GettingPushDeviceDetailsFailedAndPassTheError()
+            {
+                // Arrange
+                var machine = GetStateMachine();
+                ErrorInfo error = new ErrorInfo("TestError");
+
+                ActivationStateMachine.Event handledEvent = null;
+                var initialState = new FakeState(machine, "InitialState");
+                initialState.CanHandleEventFunc = @event =>
+                {
+                    handledEvent = @event;
+                    return true;
+                };
+                machine.CurrentState = initialState;
+
+                machine.UpdateRegistrationToken(Result.Fail<RegistrationToken>(error));
+                handledEvent.Should().NotBeNull()
+                    .And.BeOfType<ActivationStateMachine.GettingPushDeviceDetailsFailed>();
+
+                ((ActivationStateMachine.GettingPushDeviceDetailsFailed)handledEvent).Reason.Should().BeSameAs(error);
+            }
+
             public GeneralTests(ITestOutputHelper output)
                 : base(output)
             {

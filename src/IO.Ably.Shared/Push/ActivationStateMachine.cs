@@ -258,7 +258,42 @@ namespace IO.Ably.Push
 
         public void UpdateRegistrationToken(Result<RegistrationToken> tokenResult)
         {
-            throw new NotImplementedException();
+            if (tokenResult.IsSuccess)
+            {
+                var token = tokenResult.Value;
+                var previous = LocalDevice.RegistrationToken;
+                if (previous != null)
+                {
+                    if (previous.Token.EqualsTo(token.Token))
+                    {
+                        return;
+                    }
+                }
+
+                if (_logger.IsDebug)
+                {
+                    _logger.Debug($"Updating registration token to ${token.ToJson()}");
+                }
+
+                LocalDevice.RegistrationToken = token;
+                PersistLocalDevice();
+
+                _ = HandleEvent(new GotPushDeviceDetails());
+            }
+            else
+            {
+                if (tokenResult.Error != null)
+                {
+                    _logger.Error($"Failed to get a new registration token. Error: {tokenResult.Error.Message}, code: {tokenResult.Error.Code}", tokenResult.Error.InnerException);
+                }
+
+                _ = HandleEvent(new GettingPushDeviceDetailsFailed(tokenResult.Error));
+            }
+
+            void PersistLocalDevice()
+            {
+                LocalDevice.PersistLocalDevice(MobileDevice, LocalDevice);
+            }
         }
 
         private void SetDeviceIdentityToken(string deviceIdentityToken)
