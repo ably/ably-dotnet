@@ -67,6 +67,8 @@ namespace IO.Ably.Push
             {
                 throw new AblyException("Realtime push is not enabled. Please initialise Ably by calling (AblyAndroidMobileDevice / AblyAppleMobileDevice).Initialize() before calling `Activate`");
             }
+
+            _ = StateMachine.HandleEvent(new ActivationStateMachine.CalledActivate());
         }
 
         /// <summary>
@@ -78,6 +80,8 @@ namespace IO.Ably.Push
             {
                 throw new AblyException("Realtime push is not enabled. Please initialise Ably by calling (AblyAndroidMobileDevice / AblyAppleMobileDevice).Initialize() before calling `Deactivate`");
             }
+
+            _ = StateMachine.HandleEvent(new ActivationStateMachine.CalledDeactivate());
         }
 
         /// <summary>
