@@ -697,13 +697,13 @@ namespace IO.Ably.Tests.Realtime
                 attachTask.Result.Error.Should().NotBeNull();
             }
 
-            private async new Task SetState(
+            private new static async Task SetState(
                 IRealtimeChannel channel,
                 ChannelState state,
                 ErrorInfo error = null,
                 ProtocolMessage message = null)
             {
-                (channel as RealtimeChannel).SetChannelState(state, error, message);
+                ((RealtimeChannel)channel).SetChannelState(state, error, message);
                 await Task.Delay(10);
             }
 
