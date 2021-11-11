@@ -109,9 +109,8 @@ namespace IO.Ably.Realtime
             {
                 if (_pushChannel is null)
                 {
-                    // TODO: Provide a link for setting up push notifications for supported devices.
-                    throw new AblyException(
-                        "The current device is does not support or is not configured for Push notifications.");
+                    Logger.Warning("The current device is does not support or is not configured for Push notifications.");
+                    return null;
                 }
 
                 return _pushChannel;
