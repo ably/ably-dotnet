@@ -144,7 +144,8 @@ namespace IO.Ably
                 return new JArray(resource.AllowedOperations.First());
             }
 
-            return new JArray(resource.AllowedOperations.ToArray());
+            // Up-casting here: but in this case it's OK since we're reading, rather than writing.
+            return new JArray(resource.AllowedOperations.Cast<object>().ToArray());
         }
 
         private static string CleanUpWhiteSpace(string jsonString)
