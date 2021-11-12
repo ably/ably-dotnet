@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using static System.String;
 
 namespace IO.Ably
@@ -31,22 +32,12 @@ namespace IO.Ably
 
         public static string SafeTrim(this string input)
         {
-            if (input.IsEmpty())
-            {
-                return input;
-            }
-
-            return input.Trim();
+            return input.IsEmpty() ? Empty : input.Trim();
         }
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
-            if (input == null)
-            {
-                return Empty;
-            }
-
-            return string.Join(delimiter, input.Where(IsNotEmpty));
+            return input == null ? Empty : Join(delimiter, input.Where(IsNotEmpty));
         }
 
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
@@ -57,7 +48,7 @@ namespace IO.Ably
         public static byte[] ToByteArray(this string hex)
         {
             int numberChars = hex.Length;
-            byte[] bytes = new byte[numberChars / 2];
+            var bytes = new byte[numberChars / 2];
             for (int i = 0; i < numberChars; i += 2)
             {
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
