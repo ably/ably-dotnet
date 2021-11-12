@@ -217,7 +217,7 @@ namespace IO.Ably.Tests.Push
                     var client = GetRestClient(request =>
                     {
                         currentRequest = request;
-                        return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = "[]"});
+                        return Task.FromResult(new AblyResponse() { StatusCode = HttpStatusCode.OK, TextResponse = "[]" });
                     });
 
                     await client.Push.Admin.DeviceRegistrations.List(query);
