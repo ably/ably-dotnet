@@ -381,7 +381,7 @@ namespace IO.Ably.MessageEncoders
                 return (List<Stats>)MsgPackHelper.Deserialise(response.Body, typeof(List<Stats>));
             }
 #endif
-            return JsonHelper.Deserialize<List<T>>(body);
+            return JsonHelper.Deserialize<List<T>>(body) ?? new List<T>();
         }
 
         private static int GetLimit(AblyRequest request)
