@@ -13,7 +13,10 @@ namespace IO.Ably
     /// </summary>
     public class PaginatedRequestParams
     {
-        internal static readonly PaginatedRequestParams Empty = new PaginatedRequestParams();
+        /// <summary>
+        /// Instance of empty paginated request params.
+        /// </summary>
+        public static readonly PaginatedRequestParams Empty = new PaginatedRequestParams();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaginatedRequestParams"/> class.
