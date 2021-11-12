@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using static System.String;
-
 namespace IO.Ably
 {
     internal static class StringExtensions
     {
         public static bool IsNotEmpty(this string text)
         {
-            return IsNullOrEmpty(text) == false;
+            return string.IsNullOrEmpty(text) == false;
         }
 
         public static bool IsEmpty(this string text)
         {
-            return IsNullOrEmpty(text);
+            return string.IsNullOrEmpty(text);
         }
 
         public static bool IsJson(this string input)
@@ -32,12 +30,12 @@ namespace IO.Ably
 
         public static string SafeTrim(this string input)
         {
-            return input.IsEmpty() ? Empty : input.Trim();
+            return input.IsEmpty() ? input : input.Trim();
         }
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
-            return input == null ? Empty : Join(delimiter, input.Where(IsNotEmpty));
+            return input == null ? string.Empty : string.Join(delimiter, input.Where(IsNotEmpty));
         }
 
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
