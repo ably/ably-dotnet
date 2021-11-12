@@ -547,7 +547,7 @@ namespace IO.Ably.Tests.Rest
                 ["encoding"] = messageData["encoding"],
             };
 
-            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post, Protocol.Json)
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post)
             {
                 RequestBody = rawMessage.ToJson().GetBytes(),
             };
@@ -605,7 +605,7 @@ namespace IO.Ably.Tests.Rest
 
             await Task.Delay(1000);
 
-            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get, Protocol.Json);
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get);
             await client1.AblyAuth.AddAuthHeader(request);
             var response = await httpClient.Execute(request);
 

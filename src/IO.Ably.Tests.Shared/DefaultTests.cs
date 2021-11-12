@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace IO.Ably.Tests.Shared
 {
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests.Shared
                 "b.ably-realtime.com",
                 "c.ably-realtime.com",
                 "d.ably-realtime.com",
-                "e.ably-realtime.com"
+                "e.ably-realtime.com",
             };
             var fallbackHosts = Defaults.FallbackHosts;
             Assert.Equal(expectedFallBackHosts, fallbackHosts);
@@ -30,10 +31,16 @@ namespace IO.Ably.Tests.Shared
                 "sandbox-b-fallback.ably-realtime.com",
                 "sandbox-c-fallback.ably-realtime.com",
                 "sandbox-d-fallback.ably-realtime.com",
-                "sandbox-e-fallback.ably-realtime.com"
+                "sandbox-e-fallback.ably-realtime.com",
             };
             var fallbackHosts = Defaults.GetEnvironmentFallbackHosts("sandbox");
             Assert.Equal(expectedFallBackHosts, fallbackHosts);
+        }
+
+        [Fact]
+        public void Defaults_ProtocolIsJson()
+        {
+            Defaults.Protocol.Should().Be(Protocol.Json);
         }
     }
 }
