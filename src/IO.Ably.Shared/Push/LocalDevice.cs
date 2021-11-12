@@ -162,7 +162,7 @@ namespace IO.Ably.Push
             return true;
         }
 
-        private static void PersistLocalDevice(IMobileDevice mobileDevice, LocalDevice localDevice)
+        internal static void PersistLocalDevice(IMobileDevice mobileDevice, LocalDevice localDevice)
         {
             mobileDevice.SetPreference(PersistKeys.Device.DeviceId, localDevice.Id, PersistKeys.Device.SharedName);
             mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
