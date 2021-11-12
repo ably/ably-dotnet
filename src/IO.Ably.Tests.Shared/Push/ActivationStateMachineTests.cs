@@ -595,21 +595,21 @@ namespace IO.Ably.Tests.Push
 
             [Fact]
             [Trait("spec", "RSH3b4")]
-            public async Task ShouldBeAbleToHandleGettingDeviceRegistrationFailed()
+            public async Task ShouldBeAbleToHandleGettingPushDeviceDetailsFailed()
             {
                 var state = GetState();
-                state.CanHandleEvent(new ActivationStateMachine.GettingDeviceRegistrationFailed(new ErrorInfo())).Should().BeTrue();
+                state.CanHandleEvent(new ActivationStateMachine.GettingPushDeviceDetailsFailed(new ErrorInfo())).Should().BeTrue();
             }
 
             [Fact]
             [Trait("spec", "RSH3b4")]
             [Trait("spec", "RSH3c3b")]
-            public async Task GettingDeviceRegistrationFailed_ShouldTransitionToNotActivated()
+            public async Task GettingPushDeviceDetailsFailed_ShouldTransitionToNotActivated()
             {
                 var state = GetState();
 
                 var (nextState, nextEventFunc) =
-                    await state.Transition(new ActivationStateMachine.GettingDeviceRegistrationFailed(new ErrorInfo()));
+                    await state.Transition(new ActivationStateMachine.GettingPushDeviceDetailsFailed(new ErrorInfo()));
 
                 nextState.Should().BeOfType<ActivationStateMachine.NotActivated>();
                 (await nextEventFunc()).Should().BeNull();
@@ -618,7 +618,7 @@ namespace IO.Ably.Tests.Push
             [Fact]
             [Trait("spec", "RSH3b4")]
             [Trait("spec", "RSH3c3a")]
-            public async Task GettingDeviceRegistrationFailed_ShouldTriggerActivatedCallbackAndPassErrorInfo()
+            public async Task GettingPushDeviceDetailsFailed_ShouldTriggerActivatedCallbackAndPassErrorInfo()
             {
                 var state = GetState();
 
@@ -631,7 +631,7 @@ namespace IO.Ably.Tests.Push
                     return Task.CompletedTask;
                 };
 
-                await state.Transition(new ActivationStateMachine.GettingDeviceRegistrationFailed(errorInfo));
+                await state.Transition(new ActivationStateMachine.GettingPushDeviceDetailsFailed(errorInfo));
                 (await awaiter.Task).Should().BeTrue();
             }
 

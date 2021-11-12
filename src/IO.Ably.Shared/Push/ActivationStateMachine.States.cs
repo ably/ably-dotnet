@@ -19,7 +19,7 @@ namespace IO.Ably.Push
                 return EmptyNextEventFunc;
             }
 
-            return async () => nextEvent;
+            return () => Task.FromResult(nextEvent);
         }
 
         public abstract class State
@@ -86,7 +86,6 @@ namespace IO.Ably.Push
             }
         }
 
-        // Stub for now
         public sealed class WaitingForPushDeviceDetails : State
         {
             public WaitingForPushDeviceDetails(ActivationStateMachine machine)
@@ -101,7 +100,7 @@ namespace IO.Ably.Push
                 return @event is CalledActivate
                        || @event is CalledDeactivate
                        || @event is GotPushDeviceDetails
-                       || @event is GettingDeviceRegistrationFailed;
+                       || @event is GettingPushDeviceDetailsFailed;
             }
 
             public override async Task<(State, Func<Task<Event>>)> Transition(Event @event)
@@ -113,7 +112,7 @@ namespace IO.Ably.Push
                     case CalledDeactivate _:
                         Machine.TriggerDeactivatedCallback();
                         return (new NotActivated(Machine), EmptyNextEventFunc);
-                    case GettingDeviceRegistrationFailed failedEvent:
+                    case GettingPushDeviceDetailsFailed failedEvent:
                         Machine.TriggerActivatedCallback(failedEvent.Reason);
                         return (new NotActivated(Machine), EmptyNextEventFunc);
                     case GotPushDeviceDetails _:

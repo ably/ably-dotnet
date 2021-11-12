@@ -24,6 +24,14 @@
             }
         }
 
+        public sealed class GettingPushDeviceDetailsFailed : ErrorEvent
+        {
+            public GettingPushDeviceDetailsFailed(ErrorInfo reason)
+                : base(reason)
+            {
+            }
+        }
+
         public sealed class GettingDeviceRegistrationFailed : ErrorEvent
         {
             public GettingDeviceRegistrationFailed(ErrorInfo reason)
