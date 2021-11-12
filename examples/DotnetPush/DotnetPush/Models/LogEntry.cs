@@ -1,7 +1,41 @@
-﻿using IO.Ably;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using IO.Ably;
 
 namespace DotnetPush.Models
 {
+    /// <summary>
+    /// Used to keep data from remote messages.
+    /// </summary>
+    public class PushNotification
+    {
+        /// <summary>
+        /// Title.
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Body.
+        /// </summary>
+        public string Body { get; set; }
+
+        /// <summary>
+        /// Flattened Data dictionary.
+        /// </summary>
+        public string DataText => Data == null ? "No data" : string.Join(" | ", Data.Select(kv => $"{kv.Key}-{kv.Value}"));
+
+        /// <summary>
+        /// Additional data.
+        /// </summary>
+        public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// When the phone received the message.
+        /// </summary>
+        public DateTimeOffset Received { get; set; }
+    }
+
     /// <summary>
     /// Class used to keep Ably log entries.
     /// </summary>

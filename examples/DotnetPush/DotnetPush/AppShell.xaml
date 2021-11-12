@@ -84,6 +84,9 @@
     <FlyoutItem Title="Channels" Icon="icon_feed.png">
       <ShellContent Route="ChannelsPage" ContentTemplate="{DataTemplate local:ChannelsPage}" />
     </FlyoutItem>
+    <FlyoutItem Title="Notifications" Icon="icon_feed.png">
+      <ShellContent Route="NotificationsPage" ContentTemplate="{DataTemplate local:NotificationsPage}" />
+    </FlyoutItem>
     <FlyoutItem Title="State" Icon="icon_feed.png">
       <ShellContent Route="StatePage" ContentTemplate="{DataTemplate local:StatePage}" />
     </FlyoutItem>

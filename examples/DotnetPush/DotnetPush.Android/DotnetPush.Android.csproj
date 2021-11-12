@@ -122,9 +122,9 @@
     <AndroidResource Include="Resources\drawable\icon_feed.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\IO.Ably.Android\IO.Ably.Android.csproj">
-      <Project>{24b6fc97-9d3d-46ae-b5cb-47458354bee1}</Project>
-      <Name>IO.Ably.Android</Name>
+    <ProjectReference Include="..\..\..\src\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj">
+      <Project>{97ed15e5-6546-4437-bf4f-b929700ce922}</Project>
+      <Name>IO.Ably.NETStandard20</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\IO.Ably.Push.Android\IO.Ably.Push.Android.csproj">
       <Project>{f0010aa8-63c3-47d7-95e9-a5d1d04da325}</Project>

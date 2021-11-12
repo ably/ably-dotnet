@@ -14,6 +14,7 @@ namespace DotnetPush.Droid
     [Activity(Label = "DotnetPush", Icon = "@mipmap/logo", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
+        internal static PushNotificationReceiver Receiver = new PushNotificationReceiver();
         private AppLoggerSink _loggerSink;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -27,7 +28,7 @@ namespace DotnetPush.Droid
             // Initialise the Firebase application
             FirebaseApp.InitializeApp(this);
             var realtime = Configure(new PushCallbacks());
-            LoadApplication(new App(realtime, _loggerSink));
+            LoadApplication(new App(realtime, _loggerSink, Receiver));
         }
 
         public IRealtimeClient Configure(PushCallbacks callbacks)

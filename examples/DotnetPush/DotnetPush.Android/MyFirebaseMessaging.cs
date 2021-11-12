@@ -4,18 +4,11 @@ using Android.Support.V4.App;
 using Firebase.Messaging;
 using System;
 using System.Collections.Generic;
+using DotnetPush.Models;
 using IO.Ably.Push.Android;
 
 namespace DotnetPush.Droid
 {
-    public class PushNotification
-    {
-        public string Title { get; set; }
-        public string Body { get; set; }
-
-        public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string>();
-    }
-
     [Service]
     [IntentFilter(new[] { "com.google.firebase.MESSAGING_EVENT" })]
     public class MyFirebaseMessaging : FirebaseMessagingService
@@ -35,25 +28,25 @@ namespace DotnetPush.Droid
         public override void OnMessageReceived(RemoteMessage remoteMessage)
         {
             var notification = remoteMessage.GetNotification();
-            var title = notification.Title;
-            var body = notification.Body;
+
+            var title = notification?.Title;
+            var body = notification?.Body;
 
             PushNotification push = new PushNotification
             {
                 Title = title ?? "",
                 Body = body ?? "",
-
+                Data = new Dictionary<string, string> (remoteMessage.Data),
+                Received = DateTimeOffset.Now
             };
+
+            MainActivity.Receiver.Notify(push);
 
             if (remoteMessage.Data.Count >= 1)
             {
-                push.Data = new Dictionary<string, string> (remoteMessage.Data);
-
                 SendNotification(push);
             }
         }
-
-        public const string PushNotificationAction = "MyFirebaseMessaging.PUSH_NOTIFICATION_MESSAGE";
 
         /// <summary>
         /// Handles the notification to ensure the Notification manager is updated to alert the user
