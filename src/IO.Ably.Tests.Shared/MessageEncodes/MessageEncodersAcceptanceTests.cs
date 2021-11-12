@@ -221,6 +221,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -233,12 +234,14 @@ namespace IO.Ably.AcceptanceTests
                 var payload = GetPayload();
                 payload.Data.Should().Be("test");
                 payload.Encoding.Should().BeNull();
+#endif
             }
 
             [Fact]
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -252,12 +255,14 @@ namespace IO.Ably.AcceptanceTests
                 var payload = GetPayload();
                 (payload.Data as byte[]).Should().BeEquivalentTo(bytes);
                 payload.Encoding.Should().BeNull();
+#endif
             }
 
             [Fact]
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -273,6 +278,7 @@ namespace IO.Ably.AcceptanceTests
                 var payload = GetPayload();
                 payload.Data.Should().Be(JsonHelper.Serialize(obj));
                 payload.Encoding.Should().Be("json");
+#endif
             }
 
             private Message GetPayload()
@@ -311,6 +317,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -327,11 +334,13 @@ namespace IO.Ably.AcceptanceTests
                 payload.Encoding.Should().Be("cipher+aes-256-cbc");
                 var encryptedBytes = payload.Data as byte[];
                 Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
+#endif
             }
 
             [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -345,11 +354,13 @@ namespace IO.Ably.AcceptanceTests
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
                 var encryptedBytes = payload.Data as byte[];
                 Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
+#endif
             }
 
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
+#if MSGPACK
                 if (!Defaults.MsgPackEnabled)
                 {
                     return;
@@ -365,6 +376,7 @@ namespace IO.Ably.AcceptanceTests
                 var encryptedBytes = payload.Data as byte[];
                 var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
+#endif
             }
         }
     }
