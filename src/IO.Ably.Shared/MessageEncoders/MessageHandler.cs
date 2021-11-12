@@ -293,24 +293,22 @@ namespace IO.Ably.MessageEncoders
         {
             LogResponse(response);
             var result = Paginated(request, response, executeDataQueryRequest);
+
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
                 var context = request.ChannelOptions.ToDecodingContext();
                 typedResult?.Items.AddRange(ParseMessagesResponse(response, context));
             }
-
-            if (typeof(T) == typeof(Stats))
-            {
-                var typedResult = result as PaginatedResult<Stats>;
-                typedResult?.Items.AddRange(ParseStatsResponse(response));
-            }
-
-            if (typeof(T) == typeof(PresenceMessage))
+            else if (typeof(T) == typeof(PresenceMessage))
             {
                 var typedResult = result as PaginatedResult<PresenceMessage>;
                 var context = request.ChannelOptions.ToDecodingContext();
                 typedResult?.Items.AddRange(ParsePresenceMessages(response, context));
+            }
+            else
+            {
+                result?.Items.AddRange(ParseOther<T>(response));
             }
 
             return result;
@@ -376,7 +374,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private static IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
+        private static IEnumerable<T> ParseOther<T>(AblyResponse response)
         {
             var body = response.TextResponse;
 #if MSGPACK
@@ -385,7 +383,7 @@ namespace IO.Ably.MessageEncoders
                 return (List<Stats>)MsgPackHelper.Deserialise(response.Body, typeof(List<Stats>));
             }
 #endif
-            return JsonHelper.Deserialize<List<Stats>>(body);
+            return JsonHelper.Deserialize<List<T>>(body) ?? new List<T>();
         }
 
         private static int GetLimit(AblyRequest request)
