@@ -47,7 +47,7 @@ namespace IO.Ably
                 return _loggerInstance;
             }
 
-            set => _loggerInstance = value;
+            private set => _loggerInstance = value;
         }
 
         /// <summary>Maximum level to log.</summary>

@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "550655012125",
+    "project_id": "ablypush-49222",
+    "storage_bucket": "ablypush-49222.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550655012125:android:4cd03a3f726167609785f4",
+        "android_client_info": {
+          "package_name": "com.ably.dotnet_push"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "550655012125-6f7gu4mk6mb17esk725ptdukmmgk71m2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxIyZ-orGSHC6fuEjSNzKFMWX5eGEud68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "550655012125-6f7gu4mk6mb17esk725ptdukmmgk71m2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550655012125:android:06af2a4867583f289785f4",
+        "android_client_info": {
+          "package_name": "io.ably.example.androidpushexample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "550655012125-6f7gu4mk6mb17esk725ptdukmmgk71m2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxIyZ-orGSHC6fuEjSNzKFMWX5eGEud68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "550655012125-6f7gu4mk6mb17esk725ptdukmmgk71m2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
