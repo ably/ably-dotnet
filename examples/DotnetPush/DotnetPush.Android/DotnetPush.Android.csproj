@@ -130,7 +130,7 @@
       <Name>IO.Ably.Push.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\DotnetPush\DotnetPush.csproj">
-      <Project>{181C3DF6-5C17-4A68-83B9-1CEBE3DE5445}</Project>
+      <Project>{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}</Project>
       <Name>DotnetPush</Name>
     </ProjectReference>
   </ItemGroup>

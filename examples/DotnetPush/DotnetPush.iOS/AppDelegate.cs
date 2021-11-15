@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
+using DotnetPush.Models;
 using Foundation;
 using IO.Ably;
+using IO.Ably.Push;
 using IO.Ably.Push.iOS;
 using UIKit;
+using UserNotifications;
 using Xamarin.Essentials;
+using Xamarin.Forms.Platform.iOS;
 
 namespace DotnetPush.iOS
 {
@@ -14,20 +18,49 @@ namespace DotnetPush.iOS
     // User Interface of the application, as well as listening (and optionally responding) to
     // application events from iOS.
     [Register("AppDelegate")]
-    public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
+    public partial class AppDelegate : FormsApplicationDelegate,
+        IUNUserNotificationCenterDelegate
     {
-        private AblyRealtime _realtime;
+        private IRealtimeClient _realtime;
         private AppLoggerSink _loggerSink;
+        static readonly PushNotificationReceiver Receiver = new PushNotificationReceiver();
+
+        private Task LogCallback(string name, ErrorInfo error)
+        {
+            var noError = error is null;
+            _loggerSink.LogEvent(LogLevel.Debug, noError ? $"{name} callback." : $"{name} callback with error - {error.Message}");
+            return Task.CompletedTask;
+        }
 
         private void InitialiseAbly()
         {
             _loggerSink = new AppLoggerSink();
 
-            AblyAppleMobileDevice.Initialise();
             var savedClientId = Preferences.Get("ABLY_CLIENT_ID", "", "Ably_Device");
+
+            var callbacks = new PushCallbacks
+            {
+                ActivatedCallback = error => LogCallback("Activated", error),
+                DeactivatedCallback = error => LogCallback("Deactivated", error),
+                SyncRegistrationFailedCallback = error => LogCallback("SyncRegistrationFailed", error)
+            };
+            _realtime = AppleMobileDevice.Initialise(GetAblyOptions(savedClientId), callbacks);
+
+            _realtime.Connect();
+        }
+
+        //
+        // This method is invoked when the application has loaded and is ready to run. In this
+        // method you should instantiate the window, load the UI into it and then make the window
+        // visible.
+        //
+        // You have 17 seconds to return from this method, or iOS will terminate your application.
+        //
+        private ClientOptions GetAblyOptions(string savedClientId)
+        {
             var options = new ClientOptions();
             options.Key = "GJvITg.Jnks6w:IUoxrgaHjIw5LHQG"; // TODO: Remove and delete Martin's app.
-            options.LogHandler = (ILoggerSink)_loggerSink;
+            options.LogHandler = _loggerSink;
             options.LogLevel = LogLevel.Debug;
             // This is just to make testing easier.
             // In a normal app this will usually be set to Secure.GetString(ContentResolver, Secure.AndroidId);
@@ -39,22 +72,16 @@ namespace DotnetPush.iOS
             {
                 options.ClientId = Guid.NewGuid().ToString("D");
             }
-            _realtime = new AblyRealtime(options);
-            _realtime.Connect();
-        }
 
-        //
-        // This method is invoked when the application has loaded and is ready to run. In this
-        // method you should instantiate the window, load the UI into it and then make the window
-        // visible.
-        //
-        // You have 17 seconds to return from this method, or iOS will terminate your application.
-        //
+            return options;
+        }
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
             InitialiseAbly();
-            LoadApplication(new App(_realtime, _loggerSink));
+            LoadApplication(new App(_realtime, _loggerSink, Receiver));
+
+            UNUserNotificationCenter.Current.Delegate = this;
 
             return base.FinishedLaunching(app, options);
         }
@@ -62,7 +89,7 @@ namespace DotnetPush.iOS
         public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
         {
             var token = deviceToken;
-            AblyAppleMobileDevice.OnNewRegistrationToken(token, _realtime);
+            AppleMobileDevice.OnNewRegistrationToken(token);
         }
 
         public override void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error)
@@ -70,9 +97,10 @@ namespace DotnetPush.iOS
             var ablyError =
                 new ErrorInfo($"Failed to get Registration token for push notifications: {error.LocalizedDescription}");
 
-            AblyAppleMobileDevice.OnRegistrationTokenFailed(ablyError, _realtime);
+            AppleMobileDevice.OnRegistrationTokenFailed(ablyError);
         }
 
+        // For versions previous to IOS10. It is otherwise deprecated.
         public override void ReceivedRemoteNotification (UIApplication application, NSDictionary userInfo)
         {
             NSDictionary aps = userInfo.ObjectForKey(new NSString("aps")) as NSDictionary;
@@ -89,29 +117,57 @@ namespace DotnetPush.iOS
 
         public override void DidReceiveRemoteNotification(UIApplication application, NSDictionary userInfo, Action<UIBackgroundFetchResult> completionHandler)
         {
+
+            var notification = new PushNotification() { Received = DateTimeOffset.UtcNow };
+            var alert = "";
             NSDictionary aps = userInfo.ObjectForKey(new NSString("aps")) as NSDictionary;
-            string alert = "Foreground: ";
-            if (aps.ContainsKey(new NSString("title")))
-                alert += (aps[new NSString("alert")] as NSString).ToString();
-            //show alert
+            if (IsDataNotification(aps))
+            {
+                alert += "Background";
+                notification.Title = "Background notification";
+                notification.Data = Convert(userInfo);
+            }
+            else
+            {
+                NSDictionary alertDetails = aps?.ObjectForKey(new NSString("alert")) as NSDictionary;
+                notification.Title = GetProperty(alertDetails, "title");
+                notification.Body = GetProperty(alertDetails, "body");
+                notification.Data = Convert(aps);
+                alert += "Foreground - " + notification.Title;
+            }
+
+            Receiver.Notify(notification);
+
             if (!string.IsNullOrEmpty(alert))
             {
                 UIAlertView avAlert = new UIAlertView("Notification", alert, null, "OK", null);
                 avAlert.Show();
             }
+
+            bool IsDataNotification(NSDictionary dict) => dict.ContainsKey(new NSString("content-available"));
+
+            string GetProperty(NSDictionary dict, string key)
+            {
+                if (dict is null)
+                {
+                    return string.Empty;
+                }
+
+                return dict.ContainsKey(new NSString(key))
+                    ? ((NSString)dict[new NSString(key)]).ToString()
+                    : string.Empty;
+            }
         }
 
-        public void ShowErrorMessage(string message)
+        private static Dictionary<string, string> Convert(NSDictionary nativeDict)
         {
-            var alertWindow = new UIWindow(UIScreen.MainScreen.Bounds);
-            alertWindow.RootViewController = new UIViewController();
+            if (nativeDict is null)
+            {
+                return new Dictionary<string, string>();
+            }
 
-            var alertController = UIAlertController.Create("Error", message, UIAlertControllerStyle.Alert);
-            alertController.AddAction(UIAlertAction.Create("Close", UIAlertActionStyle.Cancel, _ => alertWindow.Hidden = true));
-
-            alertWindow.WindowLevel = UIWindowLevel.Alert + 1;
-            alertWindow.MakeKeyAndVisible();
-            alertWindow.RootViewController?.PresentViewController(alertController, true, null);
+            return nativeDict.ToDictionary<KeyValuePair<NSObject, NSObject>, string, string>(
+                item => (NSString) item.Key, item => item.Value.ToString());
         }
     }
 }
