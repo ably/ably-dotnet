@@ -69,10 +69,10 @@ namespace DotnetPush.iOS
 
             _realtime = new AblyRealtime(options);
             _realtime.Connect();
-        }
 
             return options;
         }
+
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
