@@ -597,7 +597,9 @@ namespace IO.Ably.Tests.Realtime
             var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived.FirstOrDefault(x => x.Action == ProtocolMessage.MessageAction.Connected);
 
             protocolMessage.Should().NotBeNull();
+            Debug.Assert(protocolMessage != null, "Expected a non-null 'TestTransportWrapper', got null");
             protocolMessage.ConnectionId.Should().NotBe(oldConnectionId);
+
             client.Connection.Id.Should().NotBe(oldConnectionId);
             client.Connection.Key.Should().NotBe(oldKey);
             client.Connection.MessageSerial.Should().Be(0);
