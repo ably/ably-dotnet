@@ -10,6 +10,12 @@ namespace IO.Ably.Push
     /// </summary>
     public class LocalDevice : DeviceDetails
     {
+        private const string JsonTokenTypeParameterName = "transportType";
+        private const string JsonAndroidTokenParameterName = "registrationToken";
+        private const string JsonAppleTokenParameterName = "deviceToken";
+        private const string AndroidTokenType = "fcm";
+        private const string AppleTokenType = "apns";
+
         /// <summary>
         /// Devices that have completed registration have an identity token assigned to them by the push service.
         /// It can be used to authenticate Push Admin requests.
@@ -28,19 +34,7 @@ namespace IO.Ably.Push
 
         internal RegistrationToken RegistrationToken
         {
-            get
-            {
-                var recipient = Push?.Recipient;
-                if (recipient != null)
-                {
-                    return new RegistrationToken(
-                        (string)recipient.GetValue("transportType"),
-                        (string)recipient.GetValue("registrationToken"));
-                }
-
-                return null;
-            }
-
+            get => GetRegistrationToken(Push?.Recipient);
             set
             {
                 if (value == null)
@@ -48,13 +42,53 @@ namespace IO.Ably.Push
                     return;
                 }
 
-                var obj = new JObject
-                {
-                    { "transportType", value.Type },
-                    { "registrationToken", value.Token },
-                };
+                Push.Recipient = RegistrationTokenToPushRecipientJson(value);
+            }
+        }
 
-                Push.Recipient = obj;
+        private static JObject RegistrationTokenToPushRecipientJson(RegistrationToken token)
+        {
+            switch (token.Type)
+            {
+                case AppleTokenType:
+                    return new JObject
+                    {
+                        { JsonTokenTypeParameterName, token.Type },
+                        { JsonAppleTokenParameterName, token.Token }
+                    };
+                case AndroidTokenType:
+                    return new JObject
+                    {
+                        { JsonTokenTypeParameterName, token.Type },
+                        { JsonAndroidTokenParameterName, token.Token }
+                    };
+                default:
+                    throw new AblyException(
+                        $"Unsupported token type. Supported values: `{AppleTokenType}` and `{AndroidTokenType}`");
+            }
+        }
+
+        private static RegistrationToken GetRegistrationToken(JObject recipient)
+        {
+            if (recipient == null)
+            {
+                return null;
+            }
+
+            var type = (string)recipient.GetValue(JsonTokenTypeParameterName);
+            switch (type)
+            {
+                case AndroidTokenType:
+                    return new RegistrationToken(
+                        type,
+                        (string)recipient.GetValue(JsonAndroidTokenParameterName));
+                case AppleTokenType:
+                    return new RegistrationToken(
+                        type,
+                        (string)recipient.GetValue(JsonAppleTokenParameterName));
+                default:
+                    throw new AblyException(
+                        $"Invalid token parameter type. Supported types are: `{AndroidTokenType}` and `{AppleTokenType}`");
             }
         }
 
@@ -171,6 +205,17 @@ namespace IO.Ably.Push
             mobileDevice.SetPreference(PersistKeys.Device.ClientId, localDevice.ClientId, PersistKeys.Device.SharedName);
             mobileDevice.SetPreference(PersistKeys.Device.DeviceSecret, localDevice.DeviceSecret, PersistKeys.Device.SharedName);
             mobileDevice.SetPreference(PersistKeys.Device.DeviceToken, localDevice.DeviceIdentityToken, PersistKeys.Device.SharedName);
+        }
+
+        internal static void PersistRegistrationToken(IMobileDevice mobileDevice, RegistrationToken token)
+        {
+            if (token.Type.IsEmpty() || token.Token.IsEmpty())
+            {
+                return;
+            }
+
+            mobileDevice.SetPreference(PersistKeys.Device.TokenType, token.Type, PersistKeys.Device.SharedName);
+            mobileDevice.SetPreference(PersistKeys.Device.Token, token.Token, PersistKeys.Device.SharedName);
         }
 
         private static void Debug(string message) => DefaultLogger.Debug($"LocalDevice: {message}");
