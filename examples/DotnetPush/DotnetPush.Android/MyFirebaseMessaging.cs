@@ -13,7 +13,7 @@ namespace DotnetPush.Droid
     [IntentFilter(new[] { "com.google.firebase.MESSAGING_EVENT" })]
     public class MyFirebaseMessaging : FirebaseMessagingService
     {
-        private string notificationChannelId = "AblyChannel"; // Random number - don't know if it needs to be specific
+        private const string NotificationChannelId = "AblyChannel"; // Random number - don't know if it needs to be specific
         private NotificationManager _notificationManager;
 
         public override void OnNewToken(String token)
@@ -34,8 +34,8 @@ namespace DotnetPush.Droid
 
             PushNotification push = new PushNotification
             {
-                Title = title ?? "",
-                Body = body ?? "",
+                Title = title ?? string.Empty,
+                Body = body ?? string.Empty,
                 Data = new Dictionary<string, string> (remoteMessage.Data),
                 Received = DateTimeOffset.Now
             };
@@ -55,7 +55,7 @@ namespace DotnetPush.Droid
         {
             // Create relevant non-repeatable Id to allow multiple notifications to be displayed in the Notification Manager
 
-            Intent intent = new Intent(this, typeof(MainActivity));
+            var intent = new Intent(this, typeof(MainActivity));
             intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
             intent.PutExtra("Title", push.Title);
             intent.PutExtra("Body", push.Body);
@@ -70,9 +70,9 @@ namespace DotnetPush.Droid
             bigTextStyle.SetSummaryText(push.Body);
             bigTextStyle.SetSummaryText(String.Empty);
 
-            Int64 timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            long timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-            Notification notification = new NotificationCompat.Builder(this, notificationChannelId)
+            Notification notification = new NotificationCompat.Builder(this, NotificationChannelId)
             .SetSmallIcon(Resource.Drawable.ably_logo)
             .SetContentTitle(push.Title)
             .SetContentText(push.Body)
