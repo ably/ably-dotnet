@@ -1063,7 +1063,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             client.Connect();
 
-            await WaitForState(client, ConnectionState.Connected);
+            await WaitForConnectedState(client);
 
             var channel1 = client.Channels.Get("test");
             channel1.On(x => stateChanges.Add(x));
@@ -1080,9 +1080,14 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.Transport.Close(false);
             await Task.Delay(1000);
 
-            await WaitForState(client, ConnectionState.Connected);
+            await WaitForConnectedState(client);
 
             stateChanges.Should().Contain(x => x.Current == ChannelState.Detached);
+
+            Task WaitForConnectedState(AblyRealtime rt)
+            {
+                return WaitForState(rt);
+            }
         }
 
         [Theory]
