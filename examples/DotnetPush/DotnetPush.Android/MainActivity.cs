@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
@@ -17,6 +18,13 @@ namespace DotnetPush.Droid
         internal static PushNotificationReceiver Receiver = new PushNotificationReceiver();
         private AppLoggerSink _loggerSink;
 
+        private Task LogCallback(string name, ErrorInfo error)
+        {
+            var noError = error is null;
+            _loggerSink.LogEvent(LogLevel.Debug, noError ? $"{name} callback." : $"{name} callback with error - {error.Message}");
+            return Task.CompletedTask;
+        }
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -27,7 +35,13 @@ namespace DotnetPush.Droid
 
             // Initialise the Firebase application
             FirebaseApp.InitializeApp(this);
-            var realtime = Configure(new PushCallbacks());
+            var callbacks = new PushCallbacks()
+            {
+                ActivatedCallback = error => LogCallback("Activated", error),
+                DeactivatedCallback = error => LogCallback("Deactivated", error),
+                SyncRegistrationFailedCallback = error => LogCallback("SyncRegistrationFailed", error)
+            };
+            var realtime = Configure(callbacks);
             LoadApplication(new App(realtime, _loggerSink, Receiver));
         }
 
