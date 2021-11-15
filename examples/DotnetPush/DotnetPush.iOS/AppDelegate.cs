@@ -32,16 +32,8 @@ namespace DotnetPush.iOS
             options.Key = "<key>";
             options.LogHandler = (ILoggerSink)_loggerSink;
             options.LogLevel = LogLevel.Debug;
-            // This is just to make testing easier.
-            // In a normal app this will usually be set to Secure.GetString(ContentResolver, Secure.AndroidId);
-            if (string.IsNullOrWhiteSpace(savedClientId) == false)
-            {
-                options.ClientId = savedClientId;
-            }
-            else
-            {
-                options.ClientId = Guid.NewGuid().ToString("D");
-            }
+            options.ClientId = string.IsNullOrWhiteSpace(savedClientId) ? Guid.NewGuid().ToString("D") : savedClientId;
+
             _realtime = new AblyRealtime(options);
             _realtime.Connect();
         }
