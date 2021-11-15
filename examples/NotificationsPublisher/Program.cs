@@ -12,6 +12,7 @@ namespace NotificationsPublisher
 {
     static class Publisher
     {
+        private const string AblyKeyFileName = "key.secret";
         static readonly AppLogger Logger = new ();
 
         static Window CreateLogsWindow()
@@ -58,16 +59,13 @@ namespace NotificationsPublisher
                 Height = Dim.Fill() - 1
             };
 
-            // Channel
-            // ChannelText
-
             var channelLabel = new Label("Channel: ") { X = 1, Y = 1, Width = 10 };
-            var channelMessage = new TextField("") { X = Pos.Right(channelLabel), Y = 1, Width = Dim.Percent(80) };
+            var channelMessage = new TextField(string.Empty) { X = Pos.Right(channelLabel), Y = 1, Width = Dim.Percent(80) };
 
             var messageFrame = new FrameView("Message") { X = 1, Y = Pos.Bottom(channelLabel), Height = Dim.Fill(1) - 2, Width = Dim.Percent(90) };
 
             var messageNameLabel = new Label("Name:") { X = 1, Y = 1, Width = 10};
-            var messageNameText = new TextField("") { X = Pos.Right(messageNameLabel), Y = Pos.Top(messageNameLabel), Width = Dim.Percent(90) };
+            var messageNameText = new TextField(string.Empty) { X = Pos.Right(messageNameLabel), Y = Pos.Top(messageNameLabel), Width = Dim.Percent(90) };
 
             var messageDataLabel = new Label("Data:") { X = 1, Y = Pos.Bottom(messageNameText) + 1, Width = 10};
             var messageDataText = new TextView() { X = Pos.Right(messageDataLabel), Y = Pos.Top(messageDataLabel), Width = Dim.Percent(90),
@@ -242,7 +240,7 @@ namespace NotificationsPublisher
 
             bool CheckAblyInitialized(MainLoop arg)
             {
-                keyText.Text = ablyKey;
+                keyText.Text = _ablyKey;
                 if (Ably is not null)
                 {
                     connectionStatusText.Text = Ably.Connection.State.ToString();
@@ -252,13 +250,13 @@ namespace NotificationsPublisher
             }
         }
 
-        private static string ablyKey = "";
+        private static string _ablyKey = string.Empty;
 
         static string GetCurrentKey()
         {
-            if (File.Exists("key.secret"))
+            if (File.Exists(AblyKeyFileName))
             {
-                return File.ReadAllText("key.secret");
+                return File.ReadAllText(AblyKeyFileName);
             }
 
             return null;
@@ -266,14 +264,14 @@ namespace NotificationsPublisher
 
         static void SaveKey(string key)
         {
-            File.WriteAllText("key.secret", key, Encoding.UTF8);
+            File.WriteAllText(AblyKeyFileName, key, Encoding.UTF8);
         }
 
         static void Configure()
         {
             void InitialiseAbly(string key)
             {
-                ablyKey = key;
+                _ablyKey = key;
                 var options = new ClientOptions(key)
                 {
                     LogHandler = Logger,
@@ -299,7 +297,7 @@ namespace NotificationsPublisher
                 cancelButton);
 
             var keyLabel = new Label("Ably Key: ") { X = 1, Y = 2 };
-            var keyText = new TextField(ablyKey)
+            var keyText = new TextField(_ablyKey)
             {
                 X = Pos.Left(keyLabel),
                 Y = Pos.Bottom(keyLabel) + 1,
@@ -316,9 +314,9 @@ namespace NotificationsPublisher
 
             void OkButton()
             {
-                ablyKey = keyText.Text.ToString();
-                SaveKey(ablyKey);
-                InitialiseAbly(ablyKey);
+                _ablyKey = keyText.Text.ToString();
+                SaveKey(_ablyKey);
+                InitialiseAbly(_ablyKey);
                 Application.RequestStop();
             }
 
@@ -369,20 +367,20 @@ namespace NotificationsPublisher
                     {
                         Ably?.Connect();
                     }),
-                    new MenuItem("_Disconnect", "", () =>
+                    new MenuItem("_Disconnect", string.Empty, () =>
                     {
                         Ably?.Connection.Close();
                     }),
-                    new MenuItem("_Logs", "", () =>
+                    new MenuItem("_Logs", string.Empty, () =>
                     {
                         running = ShowLogsWindow;
                         Application.RequestStop();
                     }),
-                    new MenuItem("_Quit", "", Quit)
+                    new MenuItem("_Quit", string.Empty, Quit)
                 }),
                 new MenuBarItem("_Messages", new MenuItem[]
                 {
-                    new MenuItem("_Send", "", () =>
+                    new MenuItem("_Send", string.Empty, () =>
                     {
                         HideWindows();
                         messageWindow.Visible = true;
@@ -404,7 +402,7 @@ namespace NotificationsPublisher
                         running = InitApp;
                         Application.RequestStop();
                     }),
-                    new MenuItem("_Quit", "", Quit)
+                    new MenuItem("_Quit", string.Empty, Quit)
                 })
             });
         }
