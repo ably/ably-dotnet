@@ -36,9 +36,10 @@ namespace DotnetPush.Droid
             var options = new ClientOptions();
             options.LogHandler = _loggerSink;
             options.LogLevel = LogLevel.Debug;
-            // Using an API on a mobile device is not best practise.
-            // Better provider an AuthUrl so a backend deals with storing keys
-            options.Key = "GJvITg.ZwK8rQ:VqRp350wVM13-sQb";
+            // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+            // recommended for security reasons. Please, review Ably's best practise guide on Authentication
+            // https://ably.com/documentation/best-practice-guide#auth
+            options.Key = "<key>";
 
             // If we have already created a clientId for this instance then load it back.
             var savedClientId = AblySettings.ClientId;

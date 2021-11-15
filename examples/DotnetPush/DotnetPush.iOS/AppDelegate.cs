@@ -26,7 +26,10 @@ namespace DotnetPush.iOS
             AblyAppleMobileDevice.Initialise();
             var savedClientId = Preferences.Get("ABLY_CLIENT_ID", "", "Ably_Device");
             var options = new ClientOptions();
-            options.Key = "GJvITg.Jnks6w:IUoxrgaHjIw5LHQG"; // TODO: Remove and delete Martin's app.
+            // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+            // recommended for security reasons. Please, review ably's best practise guide on Authentication
+            // https://ably.com/documentation/best-practice-guide#auth
+            options.Key = "<key>";
             options.LogHandler = (ILoggerSink)_loggerSink;
             options.LogLevel = LogLevel.Debug;
             // This is just to make testing easier.
