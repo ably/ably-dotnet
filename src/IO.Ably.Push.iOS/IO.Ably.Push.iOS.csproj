@@ -31,17 +31,33 @@
         <ConsolePause>false</ConsolePause>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="OpenTK-1.0" />
         <Reference Include="System" />
+        <Reference Include="System.Drawing.Common.dll" />
+        <Reference Include="System.Numerics" />
         <Reference Include="System.Xml" />
         <Reference Include="System.Core" />
+        <Reference Include="Xamarin.Essentials, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\packages\Xamarin.Essentials.1.6.1\lib\xamarinios10\Xamarin.Essentials.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
         <Reference Include="Xamarin.iOS" />
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Resources\" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="HelloiOSWorld.cs" />
+        <Compile Include="AppleMobileDevice.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj">
+        <Project>{97ed15e5-6546-4437-bf4f-b929700ce922}</Project>
+        <Name>IO.Ably.NETStandard20</Name>
+      </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
