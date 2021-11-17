@@ -1604,7 +1604,7 @@ namespace IO.Ably.Tests.Realtime
 
                 LastRequest.QueryParameters.Should()
                     .ContainKey("fromSerial")
-                    .WhichValue.Should().Be("101");
+                    .WhoseValue.Should().Be("101");
             }
 
             [Fact]

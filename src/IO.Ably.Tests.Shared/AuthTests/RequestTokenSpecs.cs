@@ -129,7 +129,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams);
 
             var data = LastRequest.PostData as TokenRequest;
-            date.Should().BeCloseTo(data.Timestamp.Value);
+            date.Should().BeCloseTo(data.Timestamp.Value, TimeSpan.FromMilliseconds(20));
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams);
 
             var data = LastRequest.PostData as TokenRequest;
-            Now.Should().BeCloseTo(data.Timestamp.Value, 200);
+            Now.Should().BeCloseTo(data.Timestamp.Value, TimeSpan.FromMilliseconds(200));
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace IO.Ably.Tests.AuthTests
 
                     // Assert
                     var data = x.PostData as TokenRequest;
-                    data.Timestamp.Should().BeCloseTo(currentTime, 100);
+                    data.Timestamp.Should().BeCloseTo(currentTime, TimeSpan.FromMilliseconds(100));
                     return DummyTokenResponse.ToTask();
                 };
             var tokenParams = new TokenParams

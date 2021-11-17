@@ -167,7 +167,7 @@ namespace IO.Ably.Tests.Push
 
                 async Task<AblyResponse> RequestHandler(AblyRequest request)
                 {
-                    request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should()
+                    request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should()
                         .Be(deviceIdentityToken);
 
                     taskAwaiter.SetCompleted();
@@ -288,12 +288,12 @@ namespace IO.Ably.Tests.Push
                     request.Url.Should().Be("/push/channelSubscriptions");
                     request.Method.Should().Be(HttpMethod.Delete);
                     var queryParams = request.QueryParameters;
-                    queryParams.Should().ContainKey("deviceId").WhichValue.Should().Be(deviceId);
-                    queryParams.Should().ContainKey("channel").WhichValue.Should().Be(channelName);
+                    queryParams.Should().ContainKey("deviceId").WhoseValue.Should().Be(deviceId);
+                    queryParams.Should().ContainKey("channel").WhoseValue.Should().Be(channelName);
                     queryParams.Should().NotContainKey("clientId");
 
                     // Check the auth header RSH7c3
-                    request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should()
+                    request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should()
                         .Be(deviceIdentityToken);
 
                     taskAwaiter.SetCompleted();
@@ -358,8 +358,8 @@ namespace IO.Ably.Tests.Push
                     request.Url.Should().Be("/push/channelSubscriptions");
                     request.Method.Should().Be(HttpMethod.Delete);
                     var queryParams = request.QueryParameters;
-                    queryParams.Should().ContainKey("clientId").WhichValue.Should().Be(clientId);
-                    queryParams.Should().ContainKey("channel").WhichValue.Should().Be(channelName);
+                    queryParams.Should().ContainKey("clientId").WhoseValue.Should().Be(clientId);
+                    queryParams.Should().ContainKey("channel").WhoseValue.Should().Be(channelName);
                     queryParams.Should().NotContainKey("deviceId");
 
                     taskAwaiter.SetCompleted();
@@ -397,10 +397,10 @@ namespace IO.Ably.Tests.Push
                     request.Url.Should().Be("/push/channelSubscriptions");
                     request.Method.Should().Be(HttpMethod.Get);
                     var queryParams = request.QueryParameters;
-                    queryParams.Should().ContainKey("clientId").WhichValue.Should().Be(clientId);
-                    queryParams.Should().ContainKey("channel").WhichValue.Should().Be(channelName);
-                    queryParams.Should().ContainKey("deviceId").WhichValue.Should().Be(deviceid);
-                    queryParams.Should().ContainKey("concatFilters").WhichValue.Should().Be("true");
+                    queryParams.Should().ContainKey("clientId").WhoseValue.Should().Be(clientId);
+                    queryParams.Should().ContainKey("channel").WhoseValue.Should().Be(channelName);
+                    queryParams.Should().ContainKey("deviceId").WhoseValue.Should().Be(deviceid);
+                    queryParams.Should().ContainKey("concatFilters").WhoseValue.Should().Be("true");
 
                     taskAwaiter.SetCompleted();
                     return new AblyResponse { TextResponse = JsonConvert.SerializeObject(new List<PushChannelSubscription>()) };

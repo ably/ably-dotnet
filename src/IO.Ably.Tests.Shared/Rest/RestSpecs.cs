@@ -200,7 +200,7 @@ namespace IO.Ably.Tests
 
                 await client.StatsAsync();
 
-                client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+                client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires, TimeSpan.FromMilliseconds(20));
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
