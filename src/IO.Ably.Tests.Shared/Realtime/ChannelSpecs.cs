@@ -111,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
                     Done();
                 });
 
-                (channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
+                ((RealtimeChannel)channel).SetChannelState((ChannelState)channelEvent);
 
                 WaitOne();
 
@@ -178,7 +178,7 @@ namespace IO.Ably.Tests.Realtime
                     Done();
                 });
 
-                (channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
+                ((RealtimeChannel)channel).SetChannelState(ChannelState.Attached, error);
 
                 WaitOne();
 
@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
             {
                 var client = await GetConnectedClient();
-                var channel = client.Channels.Get("test") as RealtimeChannel;
+                var channel = (RealtimeChannel)client.Channels.Get("test");
                 bool stateDidChange = false;
 
                 // set initial state
@@ -326,7 +326,7 @@ namespace IO.Ably.Tests.Realtime
                 var (client, channel) = await GetClientAndChannel();
 
                 var error = new ErrorInfo();
-                (channel as RealtimeChannel).SetChannelState(state);
+                ((RealtimeChannel)channel).SetChannelState(state);
                 client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
                 { Error = error });
 
@@ -345,7 +345,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var (client, channel) = await GetClientAndChannel();
 
-                (channel as RealtimeChannel).SetChannelState(state);
+                ((RealtimeChannel)channel).SetChannelState(state);
 
                 client.Close();
 
@@ -370,7 +370,7 @@ namespace IO.Ably.Tests.Realtime
                 client.Workflow.QueueCommand(SetSuspendedStateCommand.Create(null));
                 await client.WaitForState(ConnectionState.Suspended);
 
-                (channel as RealtimeChannel).SetChannelState(ChannelState.Suspended);
+                ((RealtimeChannel)channel).SetChannelState(ChannelState.Suspended);
 
                 client.Workflow.QueueCommand(SetConnectedStateCommand.Create(ConnectedProtocolMessage, false));
 
@@ -401,7 +401,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var (client, channel) = await GetClientAndChannel();
 
-                (channel as RealtimeChannel).SetChannelState(state);
+                ((RealtimeChannel)channel).SetChannelState(state);
 
                 client.Close();
 
@@ -425,7 +425,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var (client, channel) = await GetClientAndChannel();
 
-                (channel as RealtimeChannel).SetChannelState(state);
+                ((RealtimeChannel)channel).SetChannelState(state);
 
                 client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
 
@@ -910,7 +910,7 @@ namespace IO.Ably.Tests.Realtime
                 ErrorInfo error = null,
                 ProtocolMessage message = null)
             {
-                (channel as RealtimeChannel).SetChannelState(state, error, message);
+                ((RealtimeChannel)channel).SetChannelState(state, error, message);
             }
 
             public ChannelDetachSpecs(ITestOutputHelper output)
@@ -1165,7 +1165,7 @@ namespace IO.Ably.Tests.Realtime
                 ChannelState state)
             {
                 var client = await GetConnectedClient();
-                var channel = client.Channels.Get("test") as RealtimeChannel;
+                var channel = (RealtimeChannel)client.Channels.Get("test");
                 var expectedError = new ErrorInfo();
 
                 channel.Attach();
@@ -1631,7 +1631,7 @@ namespace IO.Ably.Tests.Realtime
             ErrorInfo error = null,
             ProtocolMessage message = null)
         {
-            (channel as RealtimeChannel).SetChannelState(state, error, message);
+            ((RealtimeChannel)channel).SetChannelState(state, error, message);
         }
 
         public ChannelSpecs(ITestOutputHelper output)

@@ -237,6 +237,7 @@ namespace IO.Ably.Tests.Realtime
 
                     PresenceMessage factualMsg = n < presenceMessages.Count ? presenceMessages[n++] : null;
                     factualMsg.Should().NotBeNull();
+                    Debug.Assert(factualMsg != null, $"Expected '{factualMsg}' to be non-null");
                     factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
                     factualMsg.Action.Should().BeEquivalentTo(testMsg.Action, "message was not emitted on the presence object with original action");
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
