@@ -58,6 +58,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallbackTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonDeserializationBugTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JDiff.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonMessageSerializerTests.cs" />
