@@ -448,7 +448,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var token = await rest.Auth.RequestTokenAsync(tokenRequest, options);
             token.Should().NotBeNull();
-            dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
+            dateTime.Should().BeCloseTo(token.Issued, TimeSpan.FromSeconds(1));
         }
 
         [Fact]
