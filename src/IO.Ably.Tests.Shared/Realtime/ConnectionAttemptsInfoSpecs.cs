@@ -45,21 +45,16 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
-            var currentDate = DateTimeOffset.UtcNow;
-            Func<DateTimeOffset> now = () => currentDate;
+            var now = new Now();
+            var state = new RealtimeState(null, now.ValueFn);
 
-            // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
-            // ReSharper disable once AccessToModifiedClosure
-            DateTimeOffset NowWrapperFn() => now();
-            var state = new RealtimeState(null, now);
-
-            state.AttemptsInfo.Attempts.Add(new ConnectionAttempt(NowWrapperFn()));
+            state.AttemptsInfo.Attempts.Add(new ConnectionAttempt(now.Value));
 
             // Move now to default ConnectionStateTtl - 1 second
-            currentDate = DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl);
-            state.ShouldSuspend(now).Should().BeTrue("When time is equal"); // =
-            currentDate = DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl).AddSeconds(60);
-            state.ShouldSuspend(now).Should().BeTrue("When time is greater than"); // >
+            now.Reset(DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl));
+            state.ShouldSuspend(now.ValueFn).Should().BeTrue("When time is equal"); // =
+            now.Reset(DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl).AddSeconds(60));
+            state.ShouldSuspend(now.ValueFn).Should().BeTrue("When time is greater than"); // >
         }
 
         [Fact]

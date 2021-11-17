@@ -47,6 +47,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransportFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteroperabilityMessagePayloadDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\MiscUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\Now.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\NowTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ProtocolDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ResourceHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TaskCompleterAwaiterTests.cs" />

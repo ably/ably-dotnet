@@ -305,17 +305,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WhenItMovesFromDisconnectedToSuspended_ShouldTryDefaultHostAgain()
         {
-            var now = DateTimeOffset.UtcNow;
-            Func<DateTimeOffset> testNow = () => now;
+            var now = new Now();
 
             var client = await GetConnectedClient(opts =>
             {
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
-                opts.NowFunc = testNow;
+                opts.NowFunc = now.ValueFn;
             });
 
-            List<string> realtimeHosts = new List<string>();
+            var realtimeHosts = new List<string>();
             FakeTransportFactory.InitialiseFakeTransport = p => realtimeHosts.Add(p.Parameters.Host);
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
@@ -326,7 +325,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.WaitForState(ConnectionState.Connecting);
 
             // Add 1 more second than the ConnectionStateTtl
-            now = now.Add(client.State.Connection.ConnectionStateTtl).AddSeconds(1);
+            now.Reset(now.Value.Add(client.State.Connection.ConnectionStateTtl).AddSeconds(1));
 
             // Return an error which will trip the Suspended state check
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
