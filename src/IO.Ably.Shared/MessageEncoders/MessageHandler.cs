@@ -102,6 +102,7 @@ namespace IO.Ably.MessageEncoders
                     request.ChannelOptions);
             }
 
+#if MSGPACK
             byte[] result;
             if (_protocol == Protocol.Json || !Defaults.MsgPackEnabled)
             {
@@ -109,11 +110,11 @@ namespace IO.Ably.MessageEncoders
             }
             else
             {
-#if MSGPACK
                 result = MsgPackHelper.Serialise(request.PostData);
-#endif
             }
-
+#else
+            byte[] result = JsonHelper.Serialize(request.PostData).GetBytes();
+#endif
             if (Logger.IsDebug)
             {
                 Logger.Debug("Request body: " + result.GetText());
@@ -524,11 +525,11 @@ namespace IO.Ably.MessageEncoders
 
         private bool IsMsgPack()
         {
-            bool isMsgPack = false;
 #if MSGPACK
-            isMsgPack = _protocol == Protocol.MsgPack;
+            return _protocol == Protocol.MsgPack;
+#else
+            return false;
 #endif
-            return isMsgPack;
         }
 
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null)
