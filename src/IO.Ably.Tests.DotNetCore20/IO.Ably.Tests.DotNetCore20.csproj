@@ -87,10 +87,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <ReferencePathWithRefAssemblies Update="\Users\tom.kirbygreen\.nuget\packages\fluentassertions\6.2.0\lib\netcoreapp3.0\FluentAssertions.dll" />
-  </ItemGroup>
-
   <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" />
 
 </Project>
