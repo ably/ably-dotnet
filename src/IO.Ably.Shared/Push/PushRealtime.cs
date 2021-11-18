@@ -6,7 +6,7 @@ namespace IO.Ably.Push
     /// <summary>
     /// Push Apis for Realtime clients.
     /// </summary>
-    public class PushRealtime : IDisposable
+    public sealed class PushRealtime : IDisposable
     {
         private readonly AblyRest _restClient;
         private readonly ILogger _logger;
