@@ -405,14 +405,15 @@ namespace IO.Ably.MessageEncoders
         {
             ProtocolMessage protocolMessage;
 
+#if MSGPACK
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (IsMsgPack() && Defaults.MsgPackEnabled)
             {
-#if MSGPACK
+
                 protocolMessage = (ProtocolMessage) MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
-#endif
             }
             else
+#endif
             {
                 protocolMessage = JsonHelper.Deserialize<ProtocolMessage>(data.Text);
             }
@@ -506,15 +507,15 @@ namespace IO.Ably.MessageEncoders
         {
             RealtimeTransportData data;
 
+#if MSGPACK
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (IsMsgPack() && Defaults.MsgPackEnabled)
             {
-#if MSGPACK
                 var bytes = MsgPackHelper.Serialise(protocolMessage);
                 data = new RealtimeTransportData(bytes) {Original = protocolMessage};
-#endif
             }
             else
+#endif
             {
                 var text = JsonHelper.Serialize(protocolMessage);
                 data = new RealtimeTransportData(text) { Original = protocolMessage };
@@ -523,14 +524,12 @@ namespace IO.Ably.MessageEncoders
             return data;
         }
 
+#if MSGPACK
         private bool IsMsgPack()
         {
-#if MSGPACK
             return _protocol == Protocol.MsgPack;
-#else
-            return false;
-#endif
         }
+#endif
 
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null)
             where T : IMessage
