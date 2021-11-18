@@ -189,16 +189,16 @@ namespace IO.Ably.Realtime
         }
 
         /// <inheritdoc/>
-        IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator()
-        {
-            lock (_orderedChannels)
-            {
-                return _orderedChannels.ToList().GetEnumerator();
-            }
-        }
+        IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the channel collection.
+        /// </summary>
+        /// <returns>An object that can be used to iterate through the channel collection.</returns>
+        protected IEnumerator<IRealtimeChannel> GetEnumerator()
         {
             lock (_orderedChannels)
             {
