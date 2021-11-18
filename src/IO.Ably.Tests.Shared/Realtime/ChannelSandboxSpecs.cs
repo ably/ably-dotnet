@@ -33,7 +33,7 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             target.Name.Should().BeEquivalentTo("test");
-            target.State.Should().BeEquivalentTo(ChannelState.Initialized);
+            target.State.Should().Be(ChannelState.Initialized);
         }
 
         [Theory]
@@ -57,15 +57,15 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             signal.WaitOne(10000);
             stateChanges.Count.Should().Be(1);
-            stateChanges[0].Current.Should().BeEquivalentTo(ChannelState.Attaching);
+            stateChanges[0].Current.Should().Be(ChannelState.Attaching);
             stateChanges[0].Error.Should().BeNull();
-            target.State.Should().BeEquivalentTo(ChannelState.Attaching);
+            target.State.Should().Be(ChannelState.Attaching);
 
             signal.WaitOne(10000);
             stateChanges.Count.Should().Be(2);
-            stateChanges[1].Current.Should().BeEquivalentTo(ChannelState.Attached);
+            stateChanges[1].Current.Should().Be(ChannelState.Attached);
             stateChanges[1].Error.Should().BeNull();
-            target.State.Should().BeEquivalentTo(ChannelState.Attached);
+            target.State.Should().Be(ChannelState.Attached);
         }
 
         [Theory]
@@ -202,7 +202,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.AttachAsync();
 
             channel.Modes.Should().HaveCount(2);
-            channel.Modes.Should().BeEquivalentTo(ChannelMode.Presence, ChannelMode.Subscribe);
+            channel.Modes.Should().BeEquivalentTo(new[] { ChannelMode.Presence, ChannelMode.Subscribe });
         }
 
         [Theory]
@@ -1187,7 +1187,7 @@ namespace IO.Ably.Tests.Realtime
             stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
 
             // retry should happen after ChannelRetryTimeout has elapsed (TL3l7)
-            (end - start).Should().BeCloseTo(requestTimeout, 500);
+            (end - start).Should().BeCloseTo(requestTimeout, TimeSpan.FromMilliseconds(500));
 
             client.Close();
         }
@@ -1273,7 +1273,7 @@ namespace IO.Ably.Tests.Realtime
             stateChange2.Error.Message.Should().Be(detachedMessage.Error.Message);
 
             // retry should happen after SuspendedRetryTimeout has elapsed
-            (end - start).Should().BeCloseTo(requestTimeout, 2000);
+            (end - start).Should().BeCloseTo(requestTimeout, TimeSpan.FromMilliseconds(2000));
         }
 
         [Theory]

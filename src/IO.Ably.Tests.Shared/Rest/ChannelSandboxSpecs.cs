@@ -505,7 +505,7 @@ namespace IO.Ably.Tests.Rest
             var loggerSink = new TestLoggerSink();
             ILogger logger = InternalLogger.Create(LogLevel.Error, loggerSink);
 
-            logger.LogLevel.Should().BeEquivalentTo(LogLevel.Error);
+            logger.LogLevel.Should().Be(LogLevel.Error);
             logger.IsDebug.Should().Be(false);
 
             var client = await GetRestClient(protocol, options =>

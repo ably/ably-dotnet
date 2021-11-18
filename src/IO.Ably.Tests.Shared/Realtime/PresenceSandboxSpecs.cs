@@ -133,7 +133,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
 
-                channel.State.Should().BeEquivalentTo(ChannelState.Attached);
+                channel.State.Should().Be(ChannelState.Attached);
 
                 const string wontPass = "Won't pass newness test";
 
@@ -239,14 +239,14 @@ namespace IO.Ably.Tests.Realtime
                     factualMsg.Should().NotBeNull();
                     Debug.Assert(factualMsg != null, $"Expected '{factualMsg}' to be non-null");
                     factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
-                    factualMsg.Action.Should().BeEquivalentTo(testMsg.Action, "message was not emitted on the presence object with original action");
+                    factualMsg.Action.Should().Be(testMsg.Action, "message was not emitted on the presence object with original action");
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
                     {
                         ClientId = testMsg.ClientId,
                         WaitForSync = false
                     });
                     presentMessage.FirstOrDefault().Should().NotBeNull();
-                    presentMessage.FirstOrDefault()?.Action.Should().BeEquivalentTo(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
+                    presentMessage.FirstOrDefault()?.Action.Should().Be(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
                 }
 
                 presenceMessages.Count.Should().Be(n, "the number of messages received didn't match the number of test messages sent.");
@@ -256,12 +256,12 @@ namespace IO.Ably.Tests.Realtime
 
                 var client2 = await GetRealtimeClient(protocol);
                 await client2.WaitForState(ConnectionState.Connected);
-                client2.Connection.State.Should().BeEquivalentTo(ConnectionState.Connected);
+                client2.Connection.State.Should().Be(ConnectionState.Connected);
 
                 var channel2 = client2.Channels.Get(channel2Name);
                 channel2.Attach();
                 await channel2.WaitForAttachedState();
-                channel2.State.Should().BeEquivalentTo(ChannelState.Attached);
+                channel2.State.Should().Be(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
                 ProtocolMessage syncMessage = new ProtocolMessage
@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
                 for (int i = 0; i < syncPresenceMessages.Count; i++)
                 {
                     syncPresenceMessages[i].Id.Should().BeEquivalentTo(presenceMessages[i].Id, "result should be the same in case of SYNC");
-                    syncPresenceMessages[i].Action.Should().BeEquivalentTo(presenceMessages[i].Action, "result should be the same in case of SYNC");
+                    syncPresenceMessages[i].Action.Should().Be(presenceMessages[i].Action, "result should be the same in case of SYNC");
                 }
             }
 
@@ -674,7 +674,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
-                channel.State.Should().BeEquivalentTo(ChannelState.Attached);
+                channel.State.Should().Be(ChannelState.Attached);
 
                 static PresenceMessage[] TestPresence1()
                 {
@@ -830,7 +830,7 @@ namespace IO.Ably.Tests.Realtime
                     PresenceMessage factualMsg = presenceMessagesLog[i];
                     PresenceMessage correctMsg = correctPresenceHistory[i];
                     factualMsg.ClientId.Should().BeEquivalentTo(correctMsg.ClientId);
-                    factualMsg.Action.Should().BeEquivalentTo(correctMsg.Action);
+                    factualMsg.Action.Should().Be(correctMsg.Action);
                 }
             }
 
@@ -1040,7 +1040,7 @@ namespace IO.Ably.Tests.Realtime
                     {
                         leaveMsg.ClientId.Should().StartWith("local");
                         leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action should be leave");
-                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time");
+                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(200), "timestamp should be current time");
                         leaveMsg.Id.Should().BeNull("Id should be null");
                         leaveCount++;
                         partialDone(); // should be called twice
@@ -1069,12 +1069,12 @@ namespace IO.Ably.Tests.Realtime
 
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
-                client.Connection.State.Should().BeEquivalentTo(ConnectionState.Connected);
+                client.Connection.State.Should().Be(ConnectionState.Connected);
 
                 var channel = client.Channels.Get(channelName);
                 channel.Attach();
                 await channel.WaitForAttachedState();
-                channel.State.Should().BeEquivalentTo(ChannelState.Attached);
+                channel.State.Should().Be(ChannelState.Attached);
 
                 static PresenceMessage[] TestPresence1()
                 {

@@ -35,7 +35,7 @@ namespace IO.Ably.Tests
 
             // server time should be similar to the system time
             // here we allow the system clock to be 15 minutes fast or slow
-            serverTime.Should().BeCloseTo(DateTimeOffset.UtcNow, (int)TimeSpan.FromMinutes(15).TotalMilliseconds);
+            serverTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(15));
 
             // server time is UTC so there should be no time zone offset
             serverTime.Offset.Ticks.Should().Be(0);
