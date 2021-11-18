@@ -12,7 +12,7 @@ namespace IO.Ably.Push
     /// <summary>
     /// Push Admin APIs.
     /// </summary>
-    public class PushAdmin : IPushChannelSubscriptions, IDeviceRegistrations
+    public sealed class PushAdmin : IPushChannelSubscriptions, IDeviceRegistrations
     {
         private const string ChannelSubUrl = "/push/channelSubscriptions";
 
