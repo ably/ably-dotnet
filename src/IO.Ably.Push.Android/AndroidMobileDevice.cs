@@ -13,6 +13,7 @@ namespace IO.Ably.Push.Android
 {
     public class AndroidMobileDevice : IMobileDevice
     {
+        private const string TokenType = "fcm";
         private readonly ILogger _logger;
         private static AblyRealtime _realtimeInstance;
 
@@ -29,11 +30,16 @@ namespace IO.Ably.Push.Android
         /// <param name="ablyClientOptions">ClientOptions used to initialise the AblyRealtime instanced used to setup the ActivationStat.</param>
         /// <param name="configureCallbacks">Option action which can be used to configure callbacks. It's especially useful to subscribe/unsubscribe to push channels when a device is activated / deactivated.</param>
         /// <returns>Initialised Ably instance which supports push notification registrations.</returns>
-        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, Action<PushCallbacks> configureCallbacks = null)
+        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, Action<PushCallbacks> configureCallbacks)
         {
             var callbacks = new PushCallbacks();
             configureCallbacks?.Invoke(callbacks);
-            var androidMobileDevice = new AndroidMobileDevice(callbacks, DefaultLogger.LoggerInstance);
+            return Initialise(ablyClientOptions, callbacks);
+        }
+
+        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, PushCallbacks callbacks = null)
+        {
+            var androidMobileDevice = new AndroidMobileDevice(callbacks ?? new PushCallbacks(), DefaultLogger.LoggerInstance);
             IoC.MobileDevice = androidMobileDevice;
             // Create the instance of ably used for Push registrations
             _realtimeInstance = new AblyRealtime(ablyClientOptions, androidMobileDevice);
@@ -41,36 +47,23 @@ namespace IO.Ably.Push.Android
             return _realtimeInstance;
         }
 
-        private Context Context => Application.Context;
-
-        public void SendIntent(string name, Dictionary<string, object> extraParameters)
+        public static void OnNewRegistrationToken(string token)
         {
-            if (name.IsNotEmpty())
+            if (_realtimeInstance is null)
             {
-                throw new ArgumentException("Please provide name when sending intent.", nameof(name));
+                throw new AblyException(
+                    "No realtime instance was registered. Please initiasize your instance using AndroidMobileDevice.Initialise(options, configureCallbacks).");
             }
 
-            var action = "io.ably.broadcast." + name.ToLower();
-            try
-            {
-                Intent intent = new Intent(action);
-                if (extraParameters.Any())
-                {
-                    foreach (var pair in extraParameters)
-                    {
-                        intent.PutExtra(pair.Key, pair.Value.ToString());
-                    }
-                }
+            var logger = _realtimeInstance.Logger;
+            logger.Debug($"Received OnNewRegistrationToken with token {token}");
 
-                LocalBroadcastManager.GetInstance(Context).SendBroadcast(intent);
-            }
-            catch (Exception e)
-            {
-                _logger.Error($"Error sending intent {action}", e);
-                // Log
-                throw new AblyException(e);
-            }
+            var pushRealtime = _realtimeInstance.Push;
+            var registrationToken = new RegistrationToken(TokenType, token);
+            pushRealtime.StateMachine.UpdateRegistrationToken(Result.Ok(registrationToken));
         }
+
+        private Context Context => Application.Context;
 
         public void SetPreference(string key, string value, string groupName)
         {
@@ -79,7 +72,7 @@ namespace IO.Ably.Push.Android
 
         public string GetPreference(string key, string groupName)
         {
-            return Preferences.Get(key, groupName);
+            return Preferences.Get(key, null, groupName);
         }
 
         public void RemovePreference(string key, string groupName)
@@ -94,35 +87,87 @@ namespace IO.Ably.Push.Android
 
         public void RequestRegistrationToken(Action<Result<RegistrationToken>> callback)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _logger.Debug("Requesting a new Registration token");
+                var messagingInstance = FirebaseMessaging.Instance;
+                var resultTask = messagingInstance.GetToken();
+
+                resultTask.AddOnCompleteListener(new RequestTokenCompleteListener(callback, _logger));
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Error while requesting a new Registration token.", e);
+                var errorInfo = new ErrorInfo($"Failed to request AndroidToken. Error: {e?.Message}.", 50000, HttpStatusCode.InternalServerError, e);
+                callback(Result.Fail<RegistrationToken>(errorInfo));
+            }
         }
 
         public PushCallbacks Callbacks { get; }
-        public string DevicePlatform { get; } = "android"; // TODO: Update how we get Mobile Device.
-        public string FormFactor { get; } = "tbc"; // TODO: Update how we pull form factor.
+        public string DevicePlatform => "android"; // TODO: Update how we get Mobile Device.
 
-        public class RequestTokenCompleteListener : Java.Lang.Object, IOnCompleteListener
+        public string FormFactor
         {
-            private readonly Action<Result<string>> _callback;
+            get
+            {
+                var idiom = DeviceInfo.Idiom;
 
-            public RequestTokenCompleteListener(Action<Result<string>> callback)
+                if (idiom == DeviceIdiom.Watch)
+                {
+                    return DeviceFormFactor.Watch;
+                }
+
+                if (idiom == DeviceIdiom.TV)
+                {
+                    return DeviceFormFactor.Tv;
+                }
+
+                if (idiom == DeviceIdiom.Tablet)
+                {
+                    return DeviceFormFactor.Tablet;
+                }
+
+                if (idiom == DeviceIdiom.Phone)
+                {
+                    return DeviceFormFactor.Phone;
+                }
+
+                if (idiom == DeviceIdiom.Desktop)
+                {
+                    return DeviceFormFactor.Desktop;
+                }
+
+                return DeviceFormFactor.Other;
+            }
+        }
+
+        private class RequestTokenCompleteListener : Java.Lang.Object, IOnCompleteListener
+        {
+            private readonly Action<Result<RegistrationToken>> _callback;
+            private readonly ILogger _logger;
+
+            internal RequestTokenCompleteListener(Action<Result<RegistrationToken>> callback, ILogger logger)
             {
                 _callback = callback;
+                _logger = logger;
             }
 
             public void OnComplete(Task task)
             {
                 if (task.IsSuccessful)
                 {
-                    _callback(Result.Ok((string) task.Result));
+                    var token = new RegistrationToken(TokenType, (string)task.Result);
+                    _logger.Debug($"Token request operation completed. Token: {token.Token}");
+                    _callback(Result.Ok(token));
                 }
                 else
                 {
-                    // TODO: Log
                     var exception = task.Exception;
                     var errorInfo = new ErrorInfo($"Failed to return valid AndroidToken. Error: {exception?.Message}.",
                         ErrorCodes.InternalError, HttpStatusCode.InternalServerError, exception);
-                    _callback(Result.Fail<string>(errorInfo));
+
+                    _logger.Debug($"Error requesting new push notification token. Message: {errorInfo}");
+                    _callback(Result.Fail<RegistrationToken>(errorInfo));
                 }
             }
         }

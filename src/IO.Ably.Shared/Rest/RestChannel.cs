@@ -52,9 +52,8 @@ namespace IO.Ably.Rest
             {
                 if (_pushChannel is null)
                 {
-                    // TODO: Provide a link for setting up push notifications for supported devices.
-                    throw new AblyException(
-                        "The current device is does not support or is not configured for Push notifications.");
+                    _ablyRest.Logger.Debug("The current device is not configured for push notifications.");
+                    return null;
                 }
 
                 return _pushChannel;

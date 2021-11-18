@@ -61,31 +61,10 @@ namespace IO.Ably.Tests.Push
         public class WhenPlatformDoesNotSupportPushNotifications : AblyRealtimeSpecs
         {
             [Fact]
-            public void RealtimeChannel_ShouldThrowWhenAccessingPushProperty()
+            public void RealtimeChannel_ShouldReturnNull()
             {
                 var channel = GetRealtimeClient().Channels.Get("test");
-                Func<PushChannel> getPushChannel = () => channel.Push;
-
-                getPushChannel.Should().Throw<AblyException>();
-            }
-
-            [Fact]
-            public void RestChannel_ShouldInitialisePushChannel()
-            {
-                var restClient = GetRealtimeClient().RestClient;
-                var channel = restClient.Channels.Get("test");
-                Func<PushChannel> getPushChannel = () => channel.Push;
-
-                getPushChannel.Should().Throw<AblyException>();
-            }
-
-            [Fact]
-            public void RestChannel_WhenRestClientInitialisedDirectly_ShouldInitialisePushChannel()
-            {
-                var channel = GetRestClient().Channels.Get("test");
-                Func<PushChannel> getPushChannel = () => channel.Push;
-
-                getPushChannel.Should().Throw<AblyException>();
+                channel.Push.Should().BeNull();
             }
 
             private AblyRealtime GetRealtimeClient()

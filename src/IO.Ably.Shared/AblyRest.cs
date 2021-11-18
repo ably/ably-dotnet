@@ -93,7 +93,7 @@ namespace IO.Ably
         /// <summary>
         /// The local device instance represents the current state of the device in respect of it being a target for push notifications.
         /// </summary>
-        internal LocalDevice Device
+        public LocalDevice Device
         {
             get
             {
@@ -112,7 +112,7 @@ namespace IO.Ably
 
                 return null;
             }
-            set => _device = value; // The setting is only for testing purposes
+            internal set => _device = value; // The setting is only for testing purposes
         }
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;

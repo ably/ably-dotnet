@@ -9,13 +9,6 @@ namespace IO.Ably.Push
     public interface IMobileDevice
     {
         /// <summary>
-        /// Trigger Intent(Android) or ... (Apple).
-        /// </summary>
-        /// <param name="name">name of the intent. It will be prepended with io.ably.broadcast..</param>
-        /// <param name="extraParameters">extra parameters set for the intent.</param>
-        void SendIntent(string name, Dictionary<string, object> extraParameters);
-
-        /// <summary>
         /// Persist a preferences on the mobile device. TODO: Add info specific to Android and iOS.
         /// </summary>
         /// <param name="key">Key.</param>
