@@ -26,7 +26,7 @@ namespace IO.Ably.Realtime.Workflow
     /// Channel presence and Channel state management, everything else could be found in this class. It does make it rather long but
     /// the logic block are rather small and easy to understand.
     /// </summary>
-    internal class RealtimeWorkflow : IQueueCommand
+    internal class RealtimeWorkflow : IQueueCommand, IDisposable
     {
         private readonly CancellationTokenSource _heartbeatMonitorCancellationTokenSource;
 
@@ -34,6 +34,7 @@ namespace IO.Ably.Realtime.Workflow
         // way of figuring out when processing has finished
         private volatile bool _processingCommand;
         private bool _heartbeatMonitorDisconnectRequested;
+        private bool _disposedValue;
 
         private AblyRealtime Client { get; }
 
@@ -1072,6 +1073,26 @@ namespace IO.Ably.Realtime.Workflow
 
             count = default(int);
             return false;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _heartbeatMonitorCancellationTokenSource.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
