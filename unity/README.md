@@ -1,13 +1,17 @@
 # ably-unity
-  Ably `unity` project is under `ably-dotnet` folder. Use unity editor to open thr project.
+  Ably `unity` project is under `ably-dotnet` folder. Use unity-hub to open the project with LTS unity version.
 
 ## Requirements
-1. Unity - Unity game engine (Currently using LTS 2020.3.19f1) 
-2. Unity script editor - Visual studio (Official IDE)/ Visual studio code (Editor)/ Rider (Intellij IDE)
-3. Git - VCS for ably-dotnet
+1. Git - VCS for ably-dotnet
+2. Unity - Unity game engine (Currently using LTS 2020.3.19f1) 
+3. Unity script editor - Visual studio (Official IDE)/ Visual studio code (Editor)/ Rider (Intellij IDE)
 
-## Installation and setup
-**1.** **Unity -** 
+## Installation
+**1.** **Git -**
+- Download and install git binary from here https://git-scm.com/downloads (ignore if already installed)
+- Clone the code using `git clone https://github.com/ably/ably-dotnet`
+- 
+**2.** **Unity -** 
 - Install unity hub (https://unity3d.com/get-unity/download) to manage unity projects and different versions of unity
 - Open unity hub after installation.
 
@@ -33,15 +37,32 @@
 ![](readme_images/unity_modules.PNG) 
 - Select `Windows Build Support (IL2CPP)`  to add support for IL2CPP build support for windows, click on `DONE` to install the module
 
-**2.** **Visual studio -**
-- Install official LTS visual studio from https://visualstudio.microsoft.com/downloads/.
+**3.** **Visual studio -**
 - Visual studio community is free to use so it can be downloaded and installed using ***visual studio installer***.
+- Install official visual studio installer from https://visualstudio.microsoft.com/downloads/.
 - ***Visual studio installer*** is used to manage different versions of visual studio along with necessary plugins/individual components for each version of visual studio. 
+- Install and open visual studio installer 
 
+1. Install visual studio  
+- Two tabs are visible showing `Installed` and `Available` Visual studio versions.
+![](readme_images/visual_studio_installer.PNG)  
+- For none installed, it will open a new window showing visual studio components that needs to be installed
+- Click on .Net Desktop development and check list of components on the right nav bar.
+![](readme_images/vsi_modify_1.PNG)
+![](readme_images/vsi_individual_1.PNG)
+- Click on Game development with Unity for adding unity editor scripting support
+![](readme_images/vsi_modify_2.PNG)
+- Go to `Individual components` tab and select following components
+![](readme_images/vsi_individual_2.PNG)  
+- Click on modify button on the right-bottom to install visual studio
+- Follow https://www.youtube.com/watch?v=FBo5Cso-ufE for detailed information on visual studio installation.
 
-**3.** **Git -**
-- Download and install git binary from here https://git-scm.com/downloads (ignore if already installed)
-- Clone the code using `git clone https://github.com/ably/ably-dotnet`
+2. Update/Repair/Modify installed visual studio
+- Open visual studio installer, it should show installed visual studio as below
+![](readme_images/visual_studio_installer.PNG)
+- Click on `Modify` to open original component installation window as below.
+![](readme_images/vsi_modify_1.PNG)
+- Check missing components and click on `Modify` to install them again.
 
 ## Running tests
 
