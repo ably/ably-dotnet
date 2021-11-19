@@ -113,6 +113,7 @@ Via GUI
 - All the tests should be available and shown under `EditMode.dll`
 - Double click on `EditMode.dll` to run the tests or `right click` and `Run` the tests
 
+![](readme_images/editmode_tests.PNG)
 
 Via console
 ```bash
@@ -125,7 +126,9 @@ Via GUI
 - At the bottom-left corner in the test runner window, click on `PlayMode` tab
 - All the tests should be available and shown under `PlayMode.dll`
 - Double click on `PlayMode.dll` to run the tests or `right click` and `Run` the tests
-  
+
+![](readme_images/playmode_tests.PNG)  
+
 Via console
 ```bash
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults playmode-results.xml -testPlatform playmode
@@ -135,6 +138,8 @@ Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\Un
 Via GUI 
 - Right click on `Assets` under `project` window tab at top-left corner.
 - Click on `Export Package` -> `Export` to export the standalone unity package.
+
+![](readme_images/export_package.PNG)
 
 Via Console 
 ```bash
