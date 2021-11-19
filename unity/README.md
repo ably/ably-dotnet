@@ -1,5 +1,5 @@
 # **ably-unity**
-  Ably `unity` project is under `ably-dotnet` folder. Use unity-hub to open the project with LTS unity version.
+  Ably `unity` project is under cloned `ably-dotnet` folder. Use unity-hub to open the project with LTS unity version.
 
 ## **Requirements**
 1. Git - VCS for ably-dotnet
@@ -8,15 +8,15 @@
 
 ## **Installation**
 **1.** **Git -**
-- Download and install git binary from here https://git-scm.com/downloads (ignore if already installed)
+- Download and install git binary from https://git-scm.com/downloads (ignore if already installed)
 - Clone the code using `git clone https://github.com/ably/ably-dotnet`
-- 
+
 **2.** **Unity -** 
 - Install unity hub (https://unity3d.com/get-unity/download) to manage unity projects and different versions of unity
 - Open unity hub after installation.
 
 1. Unity projects - 
-- Unity projects are visible as below as a part of Unity Hub (list should be empty for none active projects)
+- Unity projects are visible as a part of Unity Hub (list should be empty for none active projects)
   
 ![](readme_images/unity_projects.PNG)
 - Please note, for each unity project, a specific unity version is specified, it can be changed by clicking on the visible version and selecting dropdown menu of installed unity versions.
@@ -46,9 +46,9 @@
 
 **3.** **Visual studio -**
 - Visual studio community is free to use so it can be downloaded and installed using ***visual studio installer***.
-- Install official visual studio installer from https://visualstudio.microsoft.com/downloads/.
+- Download official visual studio installer from https://visualstudio.microsoft.com/downloads/.
 - ***Visual studio installer*** is used to manage different versions of visual studio along with necessary plugins/individual components for each version of visual studio. 
-- Install and open visual studio installer 
+- Install and open visual studio installer.
 
 1. Install visual studio  
 - Two tabs are visible showing `Installed` and `Available` Visual studio versions.
