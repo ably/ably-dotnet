@@ -97,19 +97,46 @@
 ![](readme_images/unity_custom_layout.PNG)  
 - Now we have a test runner windows at bottom-left along with user-friendly editor layout.
 
+### **Disable assembly validation error**
+- Unity internally has `NewtonSoftJson` package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll`(https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
+- So, it gives assembly validation error in the console while building the project, to resolve issue, disable `Assembly Validation`
+- Go to `Edit -> Project Settings -> Player -> Assembly Version Validation`, uncheck the box and click on apply.
+
+![](readme_images/assembly_version_validation.PNG)
+
 ## **Running tests**
 
-1. Run editmode tests
+1. **Run editmode tests**
+
+Via GUI 
+- At the bottom-left corner in the test runner window, click on `EditMode` tab
+- All the tests should be available and shown under `EditMode.dll`
+- Double click on `EditMode.dll` to run the tests or `right click` and `Run` the tests
+
+
+Via console
 ```bash
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults editmode-results.xml -testPlatform editmode
 ```
 
-2. Run playmode tests
+1. **Run playmode tests**
+   
+Via GUI
+- At the bottom-left corner in the test runner window, click on `PlayMode` tab
+- All the tests should be available and shown under `PlayMode.dll`
+- Double click on `PlayMode.dll` to run the tests or `right click` and `Run` the tests
+  
+Via console
 ```bash
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults playmode-results.xml -testPlatform playmode
 ```
 
-## Export unitypackage
+## **Export unitypackage**
+Via GUI 
+- Right click on `Assets` under `project` window tab at top-left corner.
+- Click on `Export Package` -> `Export` to export the standalone unity package.
+
+Via Console 
 ```bash
 Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -exportPackage 'Assets' 'ably.unitypackage'
 ```
