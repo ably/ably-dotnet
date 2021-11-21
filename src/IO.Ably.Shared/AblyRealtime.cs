@@ -219,7 +219,7 @@ namespace IO.Ably
         /// Once disposed, it closes the connection and the library can't be used again.
         /// </summary>
         /// <param name="disposing">Whether the dispose method triggered it directly.</param>
-        protected void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (Disposed)
             {
