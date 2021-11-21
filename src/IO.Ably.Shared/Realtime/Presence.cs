@@ -14,7 +14,7 @@ namespace IO.Ably.Realtime
     /// <summary>
     /// A class that provides access to presence operations and state for the associated Channel.
     /// </summary>
-    public sealed partial class Presence
+    public sealed partial class Presence : IDisposable
     {
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -22,6 +22,7 @@ namespace IO.Ably.Realtime
         private readonly IConnectionManager _connection;
         private string _currentSyncChannelSerial;
         private bool _initialSyncCompleted;
+        private bool _disposedValue;
 
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
         {
@@ -884,6 +885,36 @@ namespace IO.Ably.Realtime
         private void OnInitialSyncCompleted()
         {
             InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Dispose(bool disposing) executes in two distinct scenarios. If disposing equals true, the method has
+        /// been called directly or indirectly by a user's code. Managed and unmanaged resources can be disposed.
+        /// If disposing equals false, the method has been called by the runtime from inside the finalizer and
+        /// you should not referenceother objects. Only unmanaged resources can be disposed.
+        /// </summary>
+        /// <param name="disposing">Refer to the summary.</param>
+        private void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _handlers.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Implement IDisposable.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
