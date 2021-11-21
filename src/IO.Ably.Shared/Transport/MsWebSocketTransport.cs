@@ -349,6 +349,7 @@ namespace IO.Ably.Transport
             _disposed = true;
         }
 
+#pragma warning disable CA1063  // Implement IDisposable correctly.
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -361,6 +362,7 @@ namespace IO.Ably.Transport
             // and based on profiling this speeds up the release of objects
             // and reduces memory bloat considerably
         }
+#pragma warning default CA1063  // Implement IDisposable correctly.
 
         /// <summary>
         /// Finalizes an instance of the <see cref="MsWebSocketTransport"/> class.
