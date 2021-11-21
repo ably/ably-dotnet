@@ -5,6 +5,7 @@
 1. Git - VCS for ably-dotnet
 2. Unity - Unity game engine (Currently using LTS 2020.3.19f1) 
 3. Unity script editor - Visual studio (Official IDE)/ Visual studio code (Editor)/ Rider (Intellij IDE)
+4. Basics of unity ![Official Unity Manual](https://docs.unity3d.com/Manual/index.html) and ![Unity Beginner Manual](https://docs.google.com/document/d/1TJSKoqsElTjnAVKy-nFcARGHthwv18PFdt8pnuorxvw/edit?usp=sharing) (Ignore if already know) 
 
 ## **Installation**
 **1.** **Git -**
@@ -145,3 +146,8 @@ Via Console
 ```bash
 Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -exportPackage 'Assets' 'ably.unitypackage'
 ```
+
+## **CI/CD using gameCI**
+- Currently, unity project testing and packaging is done using ![gameCI](https://game.ci/)
+- `Unity License File (ulf)` is created using gameCI provided github action and added as a `UNITY_LICENSE` github secret.
+- To learn more about unity CI using gameCI github actions, follow ![gameCI github actions](https://game.ci/docs/github/getting-started)
