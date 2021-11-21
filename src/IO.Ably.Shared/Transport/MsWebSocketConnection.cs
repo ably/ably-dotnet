@@ -354,6 +354,7 @@ namespace IO.Ably.Transport
             _disposed = true;
         }
 
+#pragma warning disable CA1063  // Implement IDisposable correctly.
         /// <summary>
         /// Cleans up resources and disconnects the websocket.
         /// </summary>
@@ -368,6 +369,7 @@ namespace IO.Ably.Transport
             // and based on profiling this speeds up the release of objects
             // and reduces memory bloat considerably
         }
+#pragma warning default CA1063  // Implement IDisposable correctly.
 
         /// <summary>
         /// Attempt to query the backlog length of the queue.
