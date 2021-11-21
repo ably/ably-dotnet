@@ -135,7 +135,14 @@ namespace IO.Ably.Rest
         }
 
         /// <inheritdoc/>
-        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(PaginatedRequestParams query)
+        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(PaginatedRequestParams query) => GetAsync(query);
+
+        /// <summary>
+        /// Obtain the set of members currently present for a channel.
+        /// </summary>
+        /// <param name="query"><see cref="PaginatedRequestParams"/> query.</param>
+        /// <returns><see cref="PaginatedResult{T}"/> of Presence messages.</returns>
+        protected virtual Task<PaginatedResult<PresenceMessage>> GetAsync(PaginatedRequestParams query)
         {
             if (query == null)
             {
