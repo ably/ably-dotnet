@@ -32,11 +32,6 @@ namespace IO.Ably.Tests.Push
             return null;
         }
 
-        public void RemovePreference(string key, string groupName)
-        {
-            Settings.Remove($"{groupName}:{key}");
-        }
-
         public void ClearPreferences(string groupName)
         {
             var keysToRemove = new List<string>();
