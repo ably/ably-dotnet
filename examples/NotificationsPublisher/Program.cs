@@ -1,7 +1,5 @@
 ﻿using System;
-using System.ComponentModel.Design;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using IO.Ably;
 using IO.Ably.Types;
@@ -10,12 +8,12 @@ using Terminal.Gui;
 
 namespace NotificationsPublisher
 {
-    static class Publisher
+    internal static class Publisher
     {
         private const string AblyKeyFileName = "key.secret";
-        static readonly AppLogger Logger = new ();
+        private static readonly AppLogger Logger = new ();
 
-        static Window CreateLogsWindow()
+        private static Window CreateLogsWindow()
         {
             var win = new Window("Logs")
             {
@@ -49,7 +47,7 @@ namespace NotificationsPublisher
             return win;
         }
 
-        static Window CreateMessagesWindow()
+        private static Window CreateMessagesWindow()
         {
             var win = new Window("Messages")
             {
@@ -60,23 +58,34 @@ namespace NotificationsPublisher
             };
 
             var channelLabel = new Label("Channel: ") { X = 1, Y = 1, Width = 10 };
-            var channelMessage = new TextField(string.Empty) { X = Pos.Right(channelLabel), Y = 1, Width = Dim.Percent(80) };
+            var channelMessage = new TextField(string.Empty)
+                { X = Pos.Right(channelLabel), Y = 1, Width = Dim.Percent(80) };
 
-            var messageFrame = new FrameView("Message") { X = 1, Y = Pos.Bottom(channelLabel), Height = Dim.Fill(1) - 2, Width = Dim.Percent(90) };
+            var messageFrame = new FrameView("Message")
+                { X = 1, Y = Pos.Bottom(channelLabel), Height = Dim.Fill(1) - 2, Width = Dim.Percent(90) };
 
-            var messageNameLabel = new Label("Name:") { X = 1, Y = 1, Width = 10};
-            var messageNameText = new TextField(string.Empty) { X = Pos.Right(messageNameLabel), Y = Pos.Top(messageNameLabel), Width = Dim.Percent(90) };
+            var messageNameLabel = new Label("Name:") { X = 1, Y = 1, Width = 10 };
+            var messageNameText = new TextField(string.Empty)
+                { X = Pos.Right(messageNameLabel), Y = Pos.Top(messageNameLabel), Width = Dim.Percent(90) };
 
-            var messageDataLabel = new Label("Data:") { X = 1, Y = Pos.Bottom(messageNameText) + 1, Width = 10};
-            var messageDataText = new TextView() { X = Pos.Right(messageDataLabel), Y = Pos.Top(messageDataLabel), Width = Dim.Percent(90),
+            var messageDataLabel = new Label("Data:") { X = 1, Y = Pos.Bottom(messageNameText) + 1, Width = 10 };
+            var messageDataText = new TextView()
+            {
+                X = Pos.Right(messageDataLabel), Y = Pos.Top(messageDataLabel), Width = Dim.Percent(90),
                 Multiline = true, Height = 5, ColorScheme = Colors.Dialog,
-                Border = new Border() { BorderStyle = BorderStyle.Single, BorderBrush = Color.Black, BorderThickness = new Thickness(1)}};
+                Border = new Border()
+                    { BorderStyle = BorderStyle.Single, BorderBrush = Color.Black, BorderThickness = new Thickness(1) }
+            };
 
-            var messageExtrasLabel = new Label("Extras:") { X = 1, Y = Pos.Bottom(messageDataText) + 1, Width = 10};
+            var messageExtrasLabel = new Label("Extras:") { X = 1, Y = Pos.Bottom(messageDataText) + 1, Width = 10 };
 
-            var messageExtrasText = new TextView() { X = Pos.Right(messageExtrasLabel), Y = Pos.Top(messageExtrasLabel), Width = Dim.Percent(90),
+            var messageExtrasText = new TextView()
+            {
+                X = Pos.Right(messageExtrasLabel), Y = Pos.Top(messageExtrasLabel), Width = Dim.Percent(90),
                 Multiline = true, Height = 10, ColorScheme = Colors.Dialog,
-                Border = new Border() { BorderStyle = BorderStyle.Single, BorderBrush = Color.Black, BorderThickness = new Thickness(1)}};
+                Border = new Border()
+                    { BorderStyle = BorderStyle.Single, BorderBrush = Color.Black, BorderThickness = new Thickness(1) }
+            };
 
             var pushNotificationExtraButton = new Button("Push notification")
             {
@@ -85,6 +94,7 @@ namespace NotificationsPublisher
             };
 
             pushNotificationExtraButton.Clicked += PushNotificationExtraButtonOnClicked;
+
             void PushNotificationExtraButtonOnClicked()
             {
                 messageExtrasText.Text = @"{
@@ -98,7 +108,6 @@ namespace NotificationsPublisher
 }
 ";
             }
-
 
             var pushNotificationWithDataExtraButton = new Button("Push with data")
             {
@@ -126,7 +135,15 @@ namespace NotificationsPublisher
 ";
             }
 
-            messageFrame.Add(messageNameLabel, messageNameText, messageDataLabel, messageDataText, messageExtrasLabel, messageExtrasText, pushNotificationExtraButton, pushNotificationWithDataExtraButton);
+            messageFrame.Add(
+                messageNameLabel,
+                messageNameText,
+                messageDataLabel,
+                messageDataText,
+                messageExtrasLabel,
+                messageExtrasText,
+                pushNotificationExtraButton,
+                pushNotificationWithDataExtraButton);
 
             var sendButton = new Button("Send")
             {
@@ -210,8 +227,7 @@ namespace NotificationsPublisher
             // Button 2 (Push with background data)
         }
 
-
-        static Window CreateMainWindow()
+        private static Window CreateMainWindow()
         {
             var win = new Window("Hello")
             {
@@ -224,8 +240,10 @@ namespace NotificationsPublisher
             var keyLabel = new Label("Ably Key: ") { X = 1, Y = 1 };
             var keyText = new Label() { X = Pos.Right(keyLabel), Y = Pos.Top(keyLabel) };
 
-            var connectionStatusLabel = new Label("Connection: ") { X = Pos.Left(keyLabel), Y = Pos.Bottom(keyLabel) + 1 };
-            var connectionStatusText = new Label() { X = Pos.Right(connectionStatusLabel), Y = Pos.Top(connectionStatusLabel) };
+            var connectionStatusLabel = new Label("Connection: ")
+                { X = Pos.Left(keyLabel), Y = Pos.Bottom(keyLabel) + 1 };
+            var connectionStatusText = new Label()
+                { X = Pos.Right(connectionStatusLabel), Y = Pos.Top(connectionStatusLabel) };
 
             Application.MainLoop.AddTimeout(TimeSpan.FromMilliseconds(500), CheckAblyInitialized);
 
@@ -233,8 +251,7 @@ namespace NotificationsPublisher
                 keyLabel,
                 keyText,
                 connectionStatusLabel,
-                connectionStatusText
-            );
+                connectionStatusText);
 
             return win;
 
@@ -252,22 +269,11 @@ namespace NotificationsPublisher
 
         private static string _ablyKey = string.Empty;
 
-        static string GetCurrentKey()
-        {
-            if (File.Exists(AblyKeyFileName))
-            {
-                return File.ReadAllText(AblyKeyFileName);
-            }
+        private static string GetCurrentKey() => File.Exists(AblyKeyFileName) ? File.ReadAllText(AblyKeyFileName) : null;
 
-            return null;
-        }
+        private static void SaveKey(string key) => File.WriteAllText(AblyKeyFileName, key, Encoding.UTF8);
 
-        static void SaveKey(string key)
-        {
-            File.WriteAllText(AblyKeyFileName, key, Encoding.UTF8);
-        }
-
-        static void Configure()
+        private static void Configure()
         {
             void InitialiseAbly(string key)
             {
@@ -292,7 +298,9 @@ namespace NotificationsPublisher
             var cancelButton = new Button("Cancel");
 
             var d = new Dialog(
-                "New File", 50, 20,
+                "New File",
+                50,
+                20,
                 okButton,
                 cancelButton);
 
@@ -319,10 +327,9 @@ namespace NotificationsPublisher
                 InitialiseAbly(_ablyKey);
                 Application.RequestStop();
             }
-
         }
 
-        static Window HelloWindow()
+        private static Window HelloWindow()
         {
             var win = new Window("Hello")
             {
@@ -335,55 +342,46 @@ namespace NotificationsPublisher
             return win;
         }
 
-        static void Quit()
+        private static void Quit()
         {
             var n = MessageBox.Query(50, 7, "Quit Demo", "Are you sure you want to quit this demo?", "Yes", "No");
             if (n == 0)
             {
-                running = null;
+                _running = null;
                 Application.Top.Running = false;
             }
-        }
-
-        static void Close()
-        {
-            MessageBox.ErrorQuery(50, 7, "Error", "There is nothing to close", "Ok");
         }
 
         public static IRealtimeClient Ably;
 
         private static MenuBar _menu = null;
 
-        static MenuBar CreateMenu()
+        private static MenuBar CreateMenu()
         {
             if (_menu is not null)
+            {
                 return _menu;
+            }
 
             _menu = new MenuBar(new MenuBarItem[]
             {
-                new MenuBarItem("Commands", new MenuItem[]
+                new ("Commands", new MenuItem[]
                 {
-                    new MenuItem("_Connect", "Connect Ably", () =>
+                    new ("_Connect", "Connect Ably", () => { Ably?.Connect(); }),
+                    new ("_Disconnect", string.Empty, () => { Ably?.Connection.Close(); }),
+                    new ("_Logs", string.Empty, () =>
                     {
-                        Ably?.Connect();
-                    }),
-                    new MenuItem("_Disconnect", string.Empty, () =>
-                    {
-                        Ably?.Connection.Close();
-                    }),
-                    new MenuItem("_Logs", string.Empty, () =>
-                    {
-                        running = ShowLogsWindow;
+                        _running = ShowLogsWindow;
                         Application.RequestStop();
                     }),
-                    new MenuItem("_Quit", string.Empty, Quit)
+                    new ("_Quit", string.Empty, Quit)
                 }),
-                new MenuBarItem("_Messages", new MenuItem[]
+                new ("_Messages", new MenuItem[]
                 {
-                    new MenuItem("_Send", string.Empty, () =>
+                    new ("_Send", string.Empty, () =>
                     {
                         HideWindows();
-                        messageWindow.Visible = true;
+                        _messageWindow.Visible = true;
                     }),
                 })
             });
@@ -391,73 +389,73 @@ namespace NotificationsPublisher
             return _menu;
         }
 
-        static MenuBar CreateLogsMenu()
+        private static MenuBar CreateLogsMenu()
         {
             return new MenuBar(new MenuBarItem[]
             {
-                new MenuBarItem("Commands", new MenuItem[]
+                new ("Commands", new MenuItem[]
                 {
-                    new MenuItem("_Back", string.Empty, () =>
+                    new ("_Back", string.Empty, () =>
                     {
-                        running = InitApp;
+                        _running = InitApp;
                         Application.RequestStop();
                     }),
-                    new MenuItem("_Quit", string.Empty, Quit)
+                    new ("_Quit", string.Empty, Quit)
                 })
             });
         }
 
-        public static Action running = InitApp;
+        private static Action _running = InitApp;
 
-        public static void ShowLogsWindow()
+        private static void ShowLogsWindow()
         {
             var top = Application.Top;
-            logsWindow = CreateLogsWindow();
-            top.Add(logsWindow, CreateLogsMenu());
+            _logsWindow = CreateLogsWindow();
+            top.Add(_logsWindow, CreateLogsMenu());
 
             Application.Run();
         }
 
-        static void Main()
+        private static void Main()
         {
             Console.OutputEncoding = System.Text.Encoding.Default;
 
             Application.Init();
             Application.HeightAsBuffer = true;
 
-            while (running != null)
+            while (_running != null)
             {
-                running.Invoke();
+                _running.Invoke();
             }
 
             Application.Shutdown();
         }
 
-        private static Window mainWindow;
-        private static Window helloWindow;
-        private static Window logsWindow;
-        private static Window messageWindow;
+        private static Window _mainWindow;
+        private static Window _helloWindow;
+        private static Window _logsWindow;
+        private static Window _messageWindow;
 
-        private static Window[] windows;
+        private static Window[] _windows;
 
         private static void HideWindows()
         {
-            foreach (var window in windows)
+            foreach (var window in _windows)
             {
                 window.Visible = false;
             }
         }
 
-        static void InitApp()
+        private static void InitApp()
         {
             var top = Application.Top;
-            mainWindow = CreateMainWindow();
-            helloWindow = HelloWindow();
-            helloWindow.Visible = false;
-            messageWindow = CreateMessagesWindow();
-            messageWindow.Visible = false;
-            windows = new[] { mainWindow, helloWindow, messageWindow };
-            top.Add(mainWindow, helloWindow, messageWindow, CreateMenu());
+            _mainWindow = CreateMainWindow();
+            _helloWindow = HelloWindow();
+            _helloWindow.Visible = false;
+            _messageWindow = CreateMessagesWindow();
+            _messageWindow.Visible = false;
+            _windows = new[] { _mainWindow, _helloWindow, _messageWindow };
+            top.Add(_mainWindow, _helloWindow, _messageWindow, CreateMenu());
 
             var timer = Application.MainLoop.AddTimeout(TimeSpan.FromSeconds(1), loop =>
             {
