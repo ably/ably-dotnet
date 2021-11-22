@@ -8,8 +8,8 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-#if !PACKAGE
 [assembly: InternalsVisibleTo("IO.Ably.Push.Android")]
 [assembly: InternalsVisibleTo("IO.Ably.Push.iOS")]
+#if !PACKAGE
 [assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
 #endif

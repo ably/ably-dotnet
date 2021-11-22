@@ -213,7 +213,7 @@ namespace IO.Ably.Tests.Push
             {
                 // Arrange
                 var machine = GetStateMachine();
-                ErrorInfo error = new ErrorInfo("TestError");
+                var error = new ErrorInfo("TestError");
 
                 ActivationStateMachine.Event handledEvent = null;
                 var initialState = new FakeState(machine, "InitialState");
