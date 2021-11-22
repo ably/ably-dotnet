@@ -140,6 +140,14 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="..\..\..\src\stylecop.json"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\..\src\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll"/>
+    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll"/>
+    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll"/>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
   </ItemGroup>
