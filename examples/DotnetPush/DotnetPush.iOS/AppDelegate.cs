@@ -23,7 +23,7 @@ namespace DotnetPush.iOS
     {
         private IRealtimeClient _realtime;
         private AppLoggerSink _loggerSink;
-        static readonly PushNotificationReceiver Receiver = new PushNotificationReceiver();
+        private static readonly PushNotificationReceiver Receiver = new PushNotificationReceiver();
 
         private Task LogCallback(string name, ErrorInfo error)
         {
@@ -36,36 +36,31 @@ namespace DotnetPush.iOS
         {
             _loggerSink = new AppLoggerSink();
 
-            var savedClientId = Preferences.Get("ABLY_CLIENT_ID", "", "Ably_Device");
+            var savedClientId = Preferences.Get("ABLY_CLIENT_ID", string.Empty, "Ably_Device");
 
             var callbacks = new PushCallbacks
             {
                 ActivatedCallback = error => LogCallback("Activated", error),
                 DeactivatedCallback = error => LogCallback("Deactivated", error),
-                SyncRegistrationFailedCallback = error => LogCallback("SyncRegistrationFailed", error)
+                SyncRegistrationFailedCallback = error => LogCallback("SyncRegistrationFailed", error),
             };
             _realtime = AppleMobileDevice.Initialise(GetAblyOptions(savedClientId), callbacks);
 
             _realtime.Connect();
         }
 
-        //
-        // This method is invoked when the application has loaded and is ready to run. In this
-        // method you should instantiate the window, load the UI into it and then make the window
-        // visible.
-        //
-        // You have 17 seconds to return from this method, or iOS will terminate your application.
-        //
         private ClientOptions GetAblyOptions(string savedClientId)
         {
-            var options = new ClientOptions();
-            // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
-            // recommended for security reasons. Please, review ably's best practise guide on Authentication
-            // https://ably.com/documentation/best-practice-guide#auth
-            options.Key = "<key>";
-            options.LogHandler = (ILoggerSink)_loggerSink;
-            options.LogLevel = LogLevel.Debug;
-            options.ClientId = string.IsNullOrWhiteSpace(savedClientId) ? Guid.NewGuid().ToString("D") : savedClientId;
+            var options = new ClientOptions
+            {
+                // https://ably.com/documentation/best-practice-guide#auth
+                // recommended for security reasons. Please, review ably's best practise guide on Authentication
+                // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+                Key = "<key>",
+                LogHandler = (ILoggerSink)_loggerSink,
+                LogLevel = LogLevel.Debug,
+                ClientId = string.IsNullOrWhiteSpace(savedClientId) ? Guid.NewGuid().ToString("D") : savedClientId,
+            };
 
             _realtime = new AblyRealtime(options);
             _realtime.Connect();
@@ -73,9 +68,10 @@ namespace DotnetPush.iOS
             return options;
         }
 
+        /// <inheritdoc/>
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            global::Xamarin.Forms.Forms.Init();
+            Xamarin.Forms.Forms.Init();
             InitialiseAbly();
             LoadApplication(new App(_realtime, _loggerSink, Receiver));
 
@@ -84,12 +80,14 @@ namespace DotnetPush.iOS
             return base.FinishedLaunching(app, options);
         }
 
+        /// <inheritdoc/>
         public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
         {
             var token = deviceToken;
             AppleMobileDevice.OnNewRegistrationToken(token);
         }
 
+        /// <inheritdoc/>
         public override void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error)
         {
             var ablyError =
@@ -99,13 +97,15 @@ namespace DotnetPush.iOS
         }
 
         // For versions previous to IOS10. It is otherwise deprecated.
-        public override void ReceivedRemoteNotification (UIApplication application, NSDictionary userInfo)
+        public override void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
         {
             NSDictionary aps = userInfo.ObjectForKey(new NSString("aps")) as NSDictionary;
             string alert = "Background: ";
             if (aps.ContainsKey(new NSString("alert")))
-                alert += (aps[new NSString("alert")] as NSString).ToString();
-            //show alert
+            {
+                alert += ((NSString)aps[new NSString("alert")]).ToString();
+            }
+
             if (!string.IsNullOrEmpty(alert))
             {
                 UIAlertView avAlert = new UIAlertView("Notification", alert, null, "OK", null);
@@ -113,11 +113,11 @@ namespace DotnetPush.iOS
             }
         }
 
+        /// <inheritdoc/>
         public override void DidReceiveRemoteNotification(UIApplication application, NSDictionary userInfo, Action<UIBackgroundFetchResult> completionHandler)
         {
-
             var notification = new PushNotification() { Received = DateTimeOffset.UtcNow };
-            var alert = "";
+            var alert = string.Empty;
             NSDictionary aps = userInfo.ObjectForKey(new NSString("aps")) as NSDictionary;
             if (IsDataNotification(aps))
             {
@@ -165,7 +165,7 @@ namespace DotnetPush.iOS
             }
 
             return nativeDict.ToDictionary<KeyValuePair<NSObject, NSObject>, string, string>(
-                item => (NSString) item.Key, item => item.Value.ToString());
+                item => (NSString)item.Key, item => item.Value.ToString());
         }
     }
 }

@@ -35,6 +35,7 @@
         <WarningLevel>4</WarningLevel>
         <AndroidLinkMode>None</AndroidLinkMode>
         <DocumentationFile>bin\Debug\DotnetPush.Android.xml</DocumentationFile>
+        <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <DebugSymbols>true</DebugSymbols>

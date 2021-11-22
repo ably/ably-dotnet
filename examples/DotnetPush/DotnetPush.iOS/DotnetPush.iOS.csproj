@@ -13,6 +13,7 @@
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>DotnetPush.iOS</AssemblyName>
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
     <ProvisioningType>automatic</ProvisioningType>
@@ -28,6 +29,7 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>None</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <CodesignProvision>VS: com.companyname.DotnetPush Development</CodesignProvision>
     <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
   </PropertyGroup>
@@ -38,6 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchLink>None</MtouchLink>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <MtouchArch>x86_64</MtouchArch>
     <CodesignProvision>VS: com.companyname.DotnetPush Development</CodesignProvision>
     <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
@@ -55,6 +58,7 @@
     <MtouchDebug>true</MtouchDebug>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <MtouchInterpreter>-all</MtouchInterpreter>
     <CodesignProvision>Local development</CodesignProvision>
   </PropertyGroup>
@@ -65,13 +69,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
+    <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <CodesignProvision>Local development</CodesignProvision>
     <MtouchLink>SdkOnly</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
+    <Compile Include="Application.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
@@ -140,12 +145,12 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="..\..\..\src\stylecop.json"/>
+    <AdditionalFiles Include="..\..\..\src\stylecop.json" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\..\src\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll"/>
-    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll"/>
-    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll"/>
+    <Analyzer Include="..\..\..\src\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll" />
+    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\..\src\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />

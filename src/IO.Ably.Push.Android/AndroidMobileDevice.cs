@@ -22,7 +22,7 @@ namespace IO.Ably.Push.Android
         }
 
         /// <summary>
-        /// Initialises the Android MobileDevice implementation as well initialised the AblyRealtime client that is used to subscribe to Firebase push notifications.
+        /// Initialises the Android MobileDevice implementation and the AblyRealtime client that is used to subscribe to Firebase push notifications.
         /// Use this method to initialise your AblyRealtime if you want to register the device for push notifications.
         /// </summary>
         /// <param name="ablyClientOptions">ClientOptions used to initialise the AblyRealtime instanced used to setup the ActivationStat.</param>
@@ -36,7 +36,7 @@ namespace IO.Ably.Push.Android
         }
 
         /// <summary>
-        /// Initialises the Android MobileDevice implementation as well initialised the AblyRealtime client that is used to subscribe to Firebase push notifications.
+        /// Initialises the Android MobileDevice implementation and the AblyRealtime client that is used to subscribe to Firebase push notifications.
         /// Use this method to initialise your AblyRealtime if you want to register the device for push notifications.
         /// </summary>
         /// <param name="ablyClientOptions">ClientOptions used to initialise the AblyRealtime instanced used to setup the ActivationStat.</param>
