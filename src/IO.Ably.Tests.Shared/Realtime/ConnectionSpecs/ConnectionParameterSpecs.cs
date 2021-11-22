@@ -33,7 +33,7 @@ namespace IO.Ably.Tests.Realtime
 #pragma warning disable 162
             _ = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
             LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should().Be(format);
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhoseValue.Should().Be(format);
 #pragma warning restore 162
         }
 
@@ -48,7 +48,7 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Parameters.EchoMessages.Should().Be(echo);
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("echo")
-                .WhichValue.Should().Be(echo.ToString().ToLower());
+                .WhoseValue.Should().Be(echo.ToString().ToLower());
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Parameters.ClientId.Should().Be(clientId);
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("clientId")
-                .WhichValue.Should().Be(clientId);
+                .WhoseValue.Should().Be(clientId);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetConnectedClient();
             LastCreatedTransport.Parameters.AuthValue.Should().Be(client.Options.Key);
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("key").WhichValue.Should().Be(client.Options.Key);
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("key").WhoseValue.Should().Be(client.Options.Key);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Parameters.AuthValue.Should().Be(tokenString);
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("accessToken")
-                .WhichValue.Should().Be(tokenString);
+                .WhoseValue.Should().Be(tokenString);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.Realtime
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
-                .WhichValue.Should().Be(Defaults.ProtocolVersion);
+                .WhoseValue.Should().Be(Defaults.ProtocolVersion);
         }
 
         [Fact]

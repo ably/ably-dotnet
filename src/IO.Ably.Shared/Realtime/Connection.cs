@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
@@ -176,7 +177,14 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
         /// </summary>
-        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
+        public string RecoveryKey
+        {
+            get
+            {
+                Debug.Assert(Serial.HasValue, "Expected a Value, found none");
+                return ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
+            }
+        }
 
         /// <summary>
         /// Gets the current connections time to live.

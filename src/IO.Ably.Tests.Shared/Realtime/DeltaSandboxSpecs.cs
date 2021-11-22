@@ -270,7 +270,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await channel.WaitForState(ChannelState.Attaching);
 
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.WaitForAttachedState();
 
                 var result = await taskAwaiter;
 

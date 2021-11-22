@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -147,7 +148,8 @@ namespace IO.Ably.Tests
                 request.ClientId.Should().Be("123");
                 request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
                 request.Ttl.Should().Be(TimeSpan.FromHours(2));
-                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(1));
+                Debug.Assert(request.Timestamp.HasValue, "Expected a 'Value', got none.");
+                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(1), TimeSpan.FromMilliseconds(100));
                 request.Nonce.Should().Be("defaultnonce");
             }
 
@@ -170,7 +172,8 @@ namespace IO.Ably.Tests
                 request.Capability.Should().Be(Capability.Empty);
                 request.ClientId.Should().Be("999");
                 request.Ttl.Should().Be(TimeSpan.FromHours(1));
-                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(10), 500);
+                Debug.Assert(request.Timestamp.HasValue, "Expected a 'Value', got none.");
+                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(10), TimeSpan.FromMilliseconds(500));
                 request.Nonce.Should().Be("overrideNonce");
             }
 
@@ -214,7 +217,8 @@ namespace IO.Ably.Tests
             public async Task WithNoTimeStampInRequest_ShouldUseSystemType()
             {
                 var request = await CreateTokenRequest(Client);
-                request.Timestamp.Value.Should().BeCloseTo(Now, 500);
+                Debug.Assert(request.Timestamp.HasValue, "Expected a 'Value', got none.");
+                request.Timestamp.Value.Should().BeCloseTo(Now, TimeSpan.FromMilliseconds(500));
             }
 
             [Fact]
@@ -236,7 +240,7 @@ namespace IO.Ably.Tests
                 var authOptions = client.AblyAuth.CurrentAuthOptions;
                 authOptions.QueryTime = true;
                 var data = await CreateTokenRequest(client, null, authOptions);
-                data.Timestamp.Should().BeCloseTo(currentTime);
+                data.Timestamp.Should().BeCloseTo(currentTime, TimeSpan.FromMilliseconds(20));
             }
 
             [Fact]

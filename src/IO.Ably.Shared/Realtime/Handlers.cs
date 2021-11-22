@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal class Handlers<T> where T : IMessage
+    internal class Handlers<T> : IDisposable
+        where T : IMessage
     {
         private readonly List<MessageHandlerAction<T>> _handlers = new List<MessageHandlerAction<T>>();
         private readonly Dictionary<string, List<MessageHandlerAction<T>>> _specificHandlers = new Dictionary<string, List<MessageHandlerAction<T>>>();
@@ -151,6 +153,11 @@ namespace IO.Ably.Realtime
             }
 
             return state;
+        }
+
+        public void Dispose()
+        {
+            _lock.Dispose();
         }
     }
 }

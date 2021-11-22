@@ -206,6 +206,7 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
+#if MSGPACK
         [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
@@ -277,12 +278,8 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-#if MSGPACK
                 var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
                 return messages.First();
-#else
-                return null;
-#endif
             }
         }
 
@@ -300,12 +297,8 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-#if MSGPACK
                 var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
                 return messages.First();
-#else
-                return null;
-#endif
             }
 
             [Fact]
@@ -367,5 +360,6 @@ namespace IO.Ably.AcceptanceTests
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }
+#endif
     }
 }

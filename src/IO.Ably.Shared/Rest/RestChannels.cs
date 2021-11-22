@@ -88,16 +88,16 @@ namespace IO.Ably.Rest
         }
 
         /// <inheritdoc/>
-        IEnumerator<IRestChannel> IEnumerable<IRestChannel>.GetEnumerator()
-        {
-            lock (_orderedChannels)
-            {
-                return _orderedChannels.ToList().GetEnumerator();
-            }
-        }
+        IEnumerator<IRestChannel> IEnumerable<IRestChannel>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the channels collection.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the channels collection.</returns>
+        protected virtual IEnumerator<IRestChannel> GetEnumerator()
         {
             lock (_orderedChannels)
             {

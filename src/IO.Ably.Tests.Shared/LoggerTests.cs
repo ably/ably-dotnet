@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using FluentAssertions.Primitives;
 using Xunit;
 
 namespace IO.Ably.AcceptanceTests
@@ -17,7 +18,7 @@ namespace IO.Ably.AcceptanceTests
                 sink.LastLevel.Should().BeNull();
                 sink.LastMessage.Should().BeNull();
 
-                logger.LogLevel.Should().BeEquivalentTo(Defaults.DefaultLogLevel);
+                logger.LogLevel.Should().Be(Defaults.DefaultLogLevel);
                 logger.LogLevel = LogLevel.Debug;
 
                 // null destination shouldn't throw
@@ -28,15 +29,15 @@ namespace IO.Ably.AcceptanceTests
 
                 // Basic messages
                 logger.Error("Test Error Message");
-                sink.LastLevel.Should().BeEquivalentTo(LogLevel.Error);
+                sink.LastLevel.Should().Be(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");
 
                 logger.Debug("Test Info Message");
-                sink.LastLevel.Should().BeEquivalentTo(LogLevel.Debug);
+                sink.LastLevel.Should().Be(LogLevel.Debug);
                 sink.LastMessage.Should().EndWith("Test Info Message");
 
                 logger.Debug("Test Debug Message");
-                sink.LastLevel.Should().BeEquivalentTo(LogLevel.Debug);
+                sink.LastLevel.Should().Be(LogLevel.Debug);
                 sink.LastMessage.Should().EndWith("Test Debug Message");
 
                 // Verify the log level works
@@ -44,7 +45,7 @@ namespace IO.Ably.AcceptanceTests
                 logger.Error("Test Error Message");
                 logger.Debug("Test Info Message");
                 logger.Debug("Test Debug Message");
-                sink.LastLevel.Should().BeEquivalentTo(LogLevel.Error);
+                sink.LastLevel.Should().Be(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");
 
                 // Revert the level
@@ -68,12 +69,12 @@ namespace IO.Ably.AcceptanceTests
             var logger1 = InternalLogger.Create();
             var logger2 = InternalLogger.Create();
 
-            logger1.LogLevel.Should().BeEquivalentTo(logger2.LogLevel);
+            logger1.LogLevel.Should().Be(logger2.LogLevel);
             logger1.LogLevel = LogLevel.Debug;
             logger2.LogLevel = LogLevel.Error;
 
-            logger1.LogLevel.Should().BeEquivalentTo(LogLevel.Debug);
-            logger2.LogLevel.Should().BeEquivalentTo(LogLevel.Error);
+            logger1.LogLevel.Should().Be(LogLevel.Debug);
+            logger2.LogLevel.Should().Be(LogLevel.Error);
             logger1.LogLevel.Should().NotBe(logger2.LogLevel);
         }
 

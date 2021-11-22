@@ -47,6 +47,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeTransportFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\InteroperabilityMessagePayloadDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\MiscUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\Now.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\NowTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ProtocolDataAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ResourceHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TaskCompleterAwaiterTests.cs" />
@@ -56,6 +58,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallbackTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonDeserializationBugTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JDiff.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonMessageSerializerTests.cs" />

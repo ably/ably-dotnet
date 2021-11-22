@@ -68,7 +68,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
             currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
-            currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+            currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires, TimeSpan.FromMilliseconds(20));
             raisedErrors.Should().BeEmpty("No errors should be raised!");
         }
 
@@ -267,7 +267,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
             var elapsed = await client.WaitForState(ConnectionState.Connecting);
-            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 1000);
+            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, TimeSpan.FromMilliseconds(1000));
         }
 
         private static Task WaitForConnectingOrSuspended(AblyRealtime client)
