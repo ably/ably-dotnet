@@ -23,6 +23,7 @@
         <DebugType>full</DebugType>
         <Optimize>false</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
+        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
@@ -32,6 +33,7 @@
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
+        <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
