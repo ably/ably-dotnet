@@ -7,13 +7,16 @@ namespace DotnetPush
     /// </summary>
     public static class AblySettings
     {
+        private const string AuthKeyPreferenceKey = "ABLY_AUTH_KEY";
+        private const string ClientIdPreferenceKey = "ABLY_CLIENT_ID";
+
         /// <summary>
         /// ClientId.
         /// </summary>
         public static string ClientId
         {
-            get => Preferences.Get("ABLY_CLIENT_ID", string.Empty, "Ably_Device");
-            set => Preferences.Set("ABLY_CLIENT_ID", value, "Ably_Device");
+            get => Preferences.Get(ClientIdPreferenceKey, string.Empty, "Ably_Device");
+            set => Preferences.Set(ClientIdPreferenceKey, value, "Ably_Device");
         }
 
         /// <summary>
@@ -21,8 +24,8 @@ namespace DotnetPush
         /// </summary>
         public static string AblyKey
         {
-            get => Preferences.Get("ABLY_AUTH_KEY", string.Empty, "Ably_Device");
-            set => Preferences.Set("ABLY_AUTH_KEY", value, "Ably_Device");
+            get => Preferences.Get(AuthKeyPreferenceKey, string.Empty, "Ably_Device");
+            set => Preferences.Set(AuthKeyPreferenceKey, value, "Ably_Device");
         }
     }
 }
