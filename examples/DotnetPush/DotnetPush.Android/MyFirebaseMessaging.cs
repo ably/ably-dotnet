@@ -13,7 +13,7 @@ namespace DotnetPush.Droid
     [IntentFilter(new[] { "com.google.firebase.MESSAGING_EVENT" })]
     public class MyFirebaseMessaging : FirebaseMessagingService
     {
-        private const string NotificationChannelId = "AblyChannel"; // Random number - don't know if it needs to be specific
+        private const string NotificationChannelId = "AblyChannel";
         private NotificationManager _notificationManager;
 
         public override void OnNewToken(String token)
@@ -23,7 +23,6 @@ namespace DotnetPush.Droid
 
         /// <summary>
         /// When the app receives a notification, this method is called
-        ///
         /// </summary>
         public override void OnMessageReceived(RemoteMessage remoteMessage)
         {
