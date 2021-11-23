@@ -72,11 +72,6 @@ namespace IO.Ably.Tests.Push
                 return new AblyRealtime(new ClientOptions(ValidKey) { AutoConnect = false });
             }
 
-            private AblyRest GetRestClient()
-            {
-                return new AblyRest(new ClientOptions(ValidKey));
-            }
-
             public WhenPlatformDoesNotSupportPushNotifications(ITestOutputHelper output)
                 : base(output)
             {
