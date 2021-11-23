@@ -42,8 +42,6 @@
     <MtouchLink>None</MtouchLink>
     <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <MtouchArch>x86_64</MtouchArch>
-    <CodesignProvision>VS: com.companyname.DotnetPush Development</CodesignProvision>
-    <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,7 +52,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
-    <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
@@ -70,7 +67,6 @@
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
     <CodeAnalysisRuleSet>..\..\..\src\IO.Ably.ruleset</CodeAnalysisRuleSet>
-    <CodesignKey>Apple Development: Martin Georgiev (M8ZL9UMJP9)</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <CodesignProvision>Local development</CodesignProvision>
     <MtouchLink>SdkOnly</MtouchLink>

@@ -56,14 +56,16 @@ namespace DotnetPush.Droid
         /// <returns>returns a realtime client which can be used in the app.</returns>
         public IRealtimeClient Configure(PushCallbacks callbacks)
         {
-            var options = new ClientOptions();
-            options.LogHandler = _loggerSink;
-            options.LogLevel = LogLevel.Debug;
+            var options = new ClientOptions
+            {
+                LogHandler = _loggerSink,
+                LogLevel = LogLevel.Debug,
 
-            // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
-            // recommended for security reasons. Please, review Ably's best practise guide on Authentication
-            // https://ably.com/documentation/best-practice-guide#auth
-            options.Key = "<key>";
+                // https://ably.com/documentation/best-practice-guide#auth
+                // recommended for security reasons. Please, review Ably's best practise guide on Authentication
+                // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+                Key = "<key>"
+            };
 
             // If we have already created a clientId for this instance then load it back.
             var savedClientId = AblySettings.ClientId;
