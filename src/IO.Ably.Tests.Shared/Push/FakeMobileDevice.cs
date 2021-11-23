@@ -11,11 +11,6 @@ namespace IO.Ably.Tests.Push
 
         public bool RequestRegistrationTokenCalled { get; private set; }
 
-        public void SendIntent(string name, Dictionary<string, object> extraParameters)
-        {
-            throw new NotImplementedException();
-        }
-
         public void SetPreference(string key, string value, string groupName)
         {
             Settings[$"{groupName}:{key}"] = value;
