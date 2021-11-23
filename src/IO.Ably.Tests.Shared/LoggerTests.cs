@@ -1,6 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using FluentAssertions.Primitives;
 using Xunit;
 
 namespace IO.Ably.AcceptanceTests
