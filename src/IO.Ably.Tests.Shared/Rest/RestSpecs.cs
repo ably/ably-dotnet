@@ -248,7 +248,7 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSC11")]
-        public class HostSpecs : AblySpecs
+        public sealed class HostSpecs : AblySpecs, IDisposable
         {
             private readonly FakeHttpMessageHandler _handler;
 
@@ -373,6 +373,11 @@ namespace IO.Ably.Tests
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
             }
+
+            public void Dispose()
+            {
+                _handler?.Dispose();
+            }
         }
 
         [Fact]
@@ -449,7 +454,7 @@ namespace IO.Ably.Tests
             // If it throws the test will fail
         }
 
-        public class FallbackSpecs : AblySpecs
+        public sealed class FallbackSpecs : AblySpecs, IDisposable
         {
             private readonly FakeHttpMessageHandler _handler;
             private readonly HttpResponseMessage _response;
@@ -768,6 +773,12 @@ namespace IO.Ably.Tests
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
+            }
+
+            public void Dispose()
+            {
+                _handler?.Dispose();
+                _response?.Dispose();
             }
         }
 

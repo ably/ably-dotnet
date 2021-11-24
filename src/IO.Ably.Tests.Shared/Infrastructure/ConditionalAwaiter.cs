@@ -7,7 +7,7 @@ using Timer = System.Timers.Timer;
 
 namespace IO.Ably.Tests.Infrastructure
 {
-    public class ConditionalAwaiter
+    public sealed class ConditionalAwaiter : IDisposable
     {
         private readonly Func<bool> _condition;
         private readonly Func<string> _getError;
@@ -54,6 +54,11 @@ namespace IO.Ably.Tests.Infrastructure
                 _timer.Elapsed -= TimerOnElapsed;
                 _timer.Dispose();
             }
+        }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
         }
     }
 }
