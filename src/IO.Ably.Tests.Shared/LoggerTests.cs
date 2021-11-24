@@ -4,7 +4,7 @@ using Xunit;
 
 namespace IO.Ably.AcceptanceTests
 {
-    public class LoggerTests : IDisposable
+    public sealed class LoggerTests : IDisposable
     {
         [Fact]
         public void TestLogger()
