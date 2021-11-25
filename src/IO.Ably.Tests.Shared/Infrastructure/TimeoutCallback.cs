@@ -5,7 +5,7 @@ using IO.Ably.Tests.Infrastructure;
 
 namespace IO.Ably.Tests
 {
-    internal class TimeoutCallback<T>
+    internal sealed class TimeoutCallback<T> : IDisposable
     {
         private readonly TaskCompletionAwaiter _tca;
 
@@ -23,6 +23,11 @@ namespace IO.Ably.Tests
                 callback(csc);
                 _tca.SetCompleted();
             };
+        }
+
+        public void Dispose()
+        {
+            _tca.Dispose();
         }
     }
 }

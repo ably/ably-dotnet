@@ -16,6 +16,7 @@ namespace IO.Ably.Tests
         protected const string TestChannelName = "test";
 
         private readonly AutoResetEvent _signal = new AutoResetEvent(false);
+        private bool _disposedValue;
 
         protected AblyRealtimeSpecs(ITestOutputHelper output)
             : base(output)
@@ -37,19 +38,30 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            foreach (var client in RealtimeClients)
-            {
-                try
-                {
-                    client.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Output?.WriteLine("Error disposing Client: " + ex.Message);
-                }
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            _signal?.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                foreach (var client in RealtimeClients)
+                {
+                    try
+                    {
+                        client.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Output?.WriteLine("Error disposing Client: " + ex.Message);
+                    }
+                }
+
+                _signal?.Dispose();
+
+                _disposedValue = true;
+            }
         }
 
         internal AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, IMobileDevice mobileDevice = null)

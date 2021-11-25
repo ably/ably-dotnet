@@ -1987,7 +1987,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
-        private class PresenceAwaiter
+        private sealed class PresenceAwaiter : IDisposable
         {
             private IRealtimeChannel _channel;
             private TaskCompletionAwaiter _tsc;
@@ -2005,6 +2005,11 @@ namespace IO.Ably.Tests.Realtime
             {
                 _tsc = new TaskCompletionAwaiter(10000, count);
                 return await _tsc.Task;
+            }
+
+            public void Dispose()
+            {
+                _tsc?.Dispose();
             }
         }
     }
