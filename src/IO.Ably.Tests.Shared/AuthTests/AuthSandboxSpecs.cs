@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
         {
             var authClient = await GetRestClient(protocol);
             var token = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123" });
-            var helper = new RSA4Helper(this);
+            var helper = new Rsa4Helper(this);
             var restClient = await helper.GetRestClientWithRequests(protocol, token, invalidateKey: true);
             helper.Requests.Count.Should().Be(0);
             await restClient.TimeAsync();
@@ -57,7 +57,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4a2")]
         public async Task RestClient_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
         {
-            var helper = new RSA4Helper(this);
+            var helper = new Rsa4Helper(this);
 
             // Get a very short lived token and wait for it to expire
             var authClient = await GetRestClient(protocol);
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4a2")]
         public async Task RealtimeClient_NewInstanceWithExpiredToken_ShouldNotRetryAndHaveError(Protocol protocol)
         {
-            var helper = new RSA4Helper(this);
+            var helper = new Rsa4Helper(this);
             var authClient = await GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(1) });
             await Task.Delay(TimeSpan.FromMilliseconds(2));
@@ -132,7 +132,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4a")]
         public async Task RealtimeClient_ConnectedWithExpiringToken_WhenTokenExpired_ShouldNotRetryAndHaveError(Protocol protocol)
         {
-            var helper = new RSA4Helper(this);
+            var helper = new Rsa4Helper(this);
 
             // Create a token that is valid long enough for a successful connection to occur
             var authClient = await GetRestClient(protocol);
@@ -158,7 +158,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4b")]
         public async Task RealtimeWithAuthError_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
-            var helper = new RSA4Helper(this);
+            var helper = new Rsa4Helper(this);
 
             var restClient = await GetRestClient(protocol);
             var token = await restClient.Auth.AuthorizeAsync(new TokenParams
@@ -905,17 +905,17 @@ namespace IO.Ably.Tests
         /// Helper methods that return an AblyRest or AblyRealtime instance and a list of AblyRequest that
         /// will contain all the HTTP requests the client attempts
         /// </summary>
-        private class RSA4Helper
+        private class Rsa4Helper
         {
-            private AuthSandboxSpecs Specs { get; set; }
-
-            public List<AblyRequest> Requests { get; set; }
-
-            public RSA4Helper(AuthSandboxSpecs specs)
+            public Rsa4Helper(AuthSandboxSpecs specs)
             {
                 Requests = new List<AblyRequest>();
                 Specs = specs;
             }
+
+            public List<AblyRequest> Requests { get; }
+
+            private AuthSandboxSpecs Specs { get; }
 
             public async Task<AblyRest> GetRestClientWithRequests(Protocol protocol, TokenDetails token, bool invalidateKey, Action<ClientOptions> optionsAction = null)
             {
