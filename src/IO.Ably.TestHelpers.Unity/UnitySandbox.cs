@@ -7,18 +7,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Push;
 using IO.Ably.Realtime;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace IO.Ably.TestHelpers.Unity
 {
-    public abstract class UnitySandboxSpecs : AblySandboxFixture, IDisposable
+    public abstract class UnitySandboxSpecs: IDisposable
     {
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
-        protected UnitySandboxSpecs(AblySandboxFixture fixture)
+        protected UnitySandboxSpecs()
         {
             ResetEvent = new ManualResetEvent(false);
-            Fixture = fixture;
             Logger = DefaultLogger.LoggerInstance;
 
             // Reset time in case other tests have changed it
@@ -29,9 +29,21 @@ namespace IO.Ably.TestHelpers.Unity
             // Logger.LogLevel = LogLevel.Debug;
         }
 
+        [OneTimeSetUp]
+        public void Init()
+        {
+            Fixture = new AblySandboxFixture();
+        }
+
+        [OneTimeTearDown]
+        public void Cleanup()
+        {
+            Dispose();
+        }
+
         internal ILogger Logger { get; set; }
 
-        protected AblySandboxFixture Fixture { get; }
+        protected AblySandboxFixture Fixture { get; set; }
 
         protected ManualResetEvent ResetEvent { get; }
 
@@ -133,7 +145,6 @@ namespace IO.Ably.TestHelpers.Unity
         }
 
         protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
-
         {
             return WaitForState(realtime, waitSpan: waitSpan);
         }
