@@ -1075,7 +1075,7 @@ namespace IO.Ably.Realtime.Workflow
             return false;
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {
@@ -1090,9 +1090,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            Dispose(true);
         }
     }
 }
