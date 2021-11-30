@@ -12,13 +12,14 @@ using NUnit.Framework.Internal;
 
 namespace IO.Ably.TestHelpers.Unity
 {
-    public abstract class UnitySandboxSpecs: IDisposable
+    public class UnitySandboxSpecs: IDisposable
     {
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
-        protected UnitySandboxSpecs()
+        protected internal UnitySandboxSpecs(AblySandboxFixture fixture)
         {
             ResetEvent = new ManualResetEvent(false);
+            Fixture = fixture;
             Logger = DefaultLogger.LoggerInstance;
 
             // Reset time in case other tests have changed it
@@ -27,18 +28,6 @@ namespace IO.Ably.TestHelpers.Unity
             // Very useful for debugging failing tests.
             // Logger.LoggerSink = new OutputLoggerSink(output);
             // Logger.LogLevel = LogLevel.Debug;
-        }
-
-        [OneTimeSetUp]
-        public void Init()
-        {
-            Fixture = new AblySandboxFixture();
-        }
-
-        [OneTimeTearDown]
-        public void Cleanup()
-        {
-            Dispose();
         }
 
         internal ILogger Logger { get; set; }
@@ -77,7 +66,7 @@ namespace IO.Ably.TestHelpers.Unity
             ResetEvent?.Dispose();
         }
 
-        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
+        protected internal async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
         {
             var settings = await Fixture.GetSettings(environment);
             var defaultOptions = settings.CreateDefaultOptions();
@@ -86,14 +75,14 @@ namespace IO.Ably.TestHelpers.Unity
             return new AblyRest(defaultOptions);
         }
 
-        protected async Task<AblyRealtime> GetRealtimeClient(
+        protected internal async Task<AblyRealtime> GetRealtimeClient(
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
         {
             return await GetRealtimeClient(protocol, optionsAction, null);
         }
 
-        protected async Task<AblyRealtime> GetRealtimeClient(
+        protected internal async Task<AblyRealtime> GetRealtimeClient(
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction,
             Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc)

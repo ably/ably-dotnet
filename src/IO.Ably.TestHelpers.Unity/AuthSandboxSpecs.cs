@@ -9,11 +9,22 @@ using NUnit.Framework;
 
 namespace IO.Ably.TestHelpers.Unity
 {
-    public class AuthSandboxSpecs : UnitySandboxSpecs
+    [TestFixture]
+    public class AuthSandboxSpecs
     {
-        public AuthSandboxSpecs(AblySandboxFixture fixture) : base(fixture)
+        [OneTimeSetUp]
+        public void OneTimeInit()
         {
+            UnitySandbox = new UnitySandboxSpecs(new AblySandboxFixture());
         }
+
+        [OneTimeTearDown]
+        public void OneTimeCleanup()
+        {
+            UnitySandbox.Dispose();
+        }
+
+        public UnitySandboxSpecs UnitySandbox { get; set; }
 
         private class RSA4Helper
         {
@@ -43,7 +54,7 @@ namespace IO.Ably.TestHelpers.Unity
                     optionsAction = DefaultOptionsAction;
                 }
 
-                var restClient = await Specs.GetRestClient(protocol, optionsAction);
+                var restClient = await Specs.UnitySandbox.GetRestClient(protocol, optionsAction);
 
                 // intercept http calls to demonstrate that the client did not attempt to request a new token
                 var execute = restClient.ExecuteHttpRequest;
@@ -75,7 +86,7 @@ namespace IO.Ably.TestHelpers.Unity
                     optionsAction = DefaultOptionsAction;
                 }
 
-                var realtimeClient = await Specs.GetRealtimeClient(protocol, optionsAction, (options, device) => restClient);
+                var realtimeClient = await Specs.UnitySandbox.GetRealtimeClient(protocol, optionsAction, (options, device) => restClient);
                 return realtimeClient;
             }
 
@@ -93,7 +104,7 @@ namespace IO.Ably.TestHelpers.Unity
             var helper = new RSA4Helper(this);
 
             // Create a token that is valid long enough for a successful connection to occur
-            var authClient = await GetRestClient(protocol);
+            var authClient = await UnitySandbox.GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(8000) });
 
             // get a realtime client with no Key, AuthUrl, or authCallback
