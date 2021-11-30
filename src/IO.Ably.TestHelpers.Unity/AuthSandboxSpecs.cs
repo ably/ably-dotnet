@@ -12,14 +12,22 @@ namespace IO.Ably.TestHelpers.Unity
     [TestFixture]
     public class AuthSandboxSpecs
     {
+        private AblySandboxFixture _sandboxFixture;
+
         [OneTimeSetUp]
         public void OneTimeInit()
         {
-            UnitySandbox = new UnitySandboxSpecs(new AblySandboxFixture());
+            _sandboxFixture = new AblySandboxFixture();
         }
 
-        [OneTimeTearDown]
-        public void OneTimeCleanup()
+        [SetUp]
+        public void Init()
+        {
+            UnitySandbox = new UnitySandboxSpecs(_sandboxFixture);
+        }
+
+        [TearDown]
+        public void TearDown()
         {
             UnitySandbox.Dispose();
         }
@@ -99,8 +107,9 @@ namespace IO.Ably.TestHelpers.Unity
         }
 
         [Test]
-        public async Task RealtimeClient_ConnectedWithExpiringToken_WhenTokenExpired_ShouldNotRetryAndHaveError(Protocol protocol)
+        public async Task RealtimeClient_ConnectedWithExpiringToken_WhenTokenExpired_ShouldNotRetryAndHaveError()
         {
+            var protocol = Protocol.Json;
             var helper = new RSA4Helper(this);
 
             // Create a token that is valid long enough for a successful connection to occur
