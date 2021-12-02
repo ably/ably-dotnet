@@ -11,6 +11,8 @@ namespace DotnetPush.ViewModels
     /// </summary>
     public class StateViewModel : BaseViewModel
     {
+        private const string DeviceSettingSharedName = "Ably_Device";
+        private const string StateMachineSettingSharedName = "Ably_StateMachine";
         private readonly Action<string> _displayAlert;
         private StateModel _state;
 
@@ -37,8 +39,8 @@ namespace DotnetPush.ViewModels
 
         private async Task ClearState()
         {
-            Preferences.Clear("Ably_StateMachine"); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
-            Preferences.Clear("Ably_Device"); // Cannot use PersistKeys.Device.SharedName because it is internal.
+            Preferences.Clear(StateMachineSettingSharedName); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
+            Preferences.Clear(DeviceSettingSharedName); // Cannot use PersistKeys.Device.SharedName because it is internal.
             _displayAlert("State cleared. Restart the application");
             await LoadState();
         }
@@ -54,8 +56,8 @@ namespace DotnetPush.ViewModels
 
         private Task LoadState()
         {
-            string GetStateMachineProperty(string key) => Preferences.Get(key, "[not set]", "Ably_StateMachine"); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
-            string GetDeviceProperty(string key) => Preferences.Get(key, "[not set]", "Ably_Device"); // Cannot use PersistKeys.Device.SharedName because it is internal.
+            string GetStateMachineProperty(string key) => Preferences.Get(key, "[not set]", StateMachineSettingSharedName); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
+            string GetDeviceProperty(string key) => Preferences.Get(key, "[not set]", DeviceSettingSharedName); // Cannot use PersistKeys.Device.SharedName because it is internal.
 
             var model = new StateModel
             {
