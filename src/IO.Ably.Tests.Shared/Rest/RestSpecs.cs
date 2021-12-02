@@ -200,7 +200,7 @@ namespace IO.Ably.Tests
 
                 await client.StatsAsync();
 
-                client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+                client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires, TimeSpan.FromMilliseconds(20));
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
@@ -248,7 +248,7 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSC11")]
-        public class HostSpecs : AblySpecs
+        public sealed class HostSpecs : AblySpecs, IDisposable
         {
             private readonly FakeHttpMessageHandler _handler;
 
@@ -373,6 +373,11 @@ namespace IO.Ably.Tests
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
             }
+
+            public void Dispose()
+            {
+                _handler?.Dispose();
+            }
         }
 
         [Fact]
@@ -397,7 +402,7 @@ namespace IO.Ably.Tests
             // Arrange
             var rest = new AblyRest(ValidKey);
             ApiKey key = ApiKey.Parse(ValidKey);
-            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var request = new AblyRequest("/test", HttpMethod.Get);
             var expectedValue = "Basic " + key.ToString().ToBase64();
 
             // Act
@@ -416,7 +421,7 @@ namespace IO.Ably.Tests
             // Arrange
             const string tokenValue = "TokenValue";
             var rest = new AblyRest(opts => opts.Token = tokenValue);
-            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var request = new AblyRequest("/test", HttpMethod.Get);
             var expectedValue = "Bearer " + tokenValue.ToBase64();
 
             // Act
@@ -441,7 +446,7 @@ namespace IO.Ably.Tests
                 opts.Token = tokenValue;
                 opts.Tls = tls;
             });
-            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var request = new AblyRequest("/test", HttpMethod.Get);
 
             // Act
             await rest.AblyAuth.AddAuthHeader(request);
@@ -449,7 +454,7 @@ namespace IO.Ably.Tests
             // If it throws the test will fail
         }
 
-        public class FallbackSpecs : AblySpecs
+        public sealed class FallbackSpecs : AblySpecs, IDisposable
         {
             private readonly FakeHttpMessageHandler _handler;
             private readonly HttpResponseMessage _response;
@@ -768,6 +773,12 @@ namespace IO.Ably.Tests
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
+            }
+
+            public void Dispose()
+            {
+                _handler?.Dispose();
+                _response?.Dispose();
             }
         }
 

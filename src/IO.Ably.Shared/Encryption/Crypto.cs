@@ -86,7 +86,9 @@ namespace IO.Ably.Encryption
     /// </summary>
     public static class Crypto
     {
+#pragma warning disable SYSLIB0023
         private static readonly RNGCryptoServiceProvider SecureRandom = new RNGCryptoServiceProvider();
+#pragma warning restore SYSLIB0023
 
         private const int IdempotentGeneratedIdLength = 9;
 

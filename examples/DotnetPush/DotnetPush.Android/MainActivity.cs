@@ -2,17 +2,20 @@
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
-using Android.Runtime;
 using Android.OS;
-using IO.Ably.Push.Android;
+using Android.Runtime;
 using Firebase;
 using IO.Ably;
 using IO.Ably.Push;
+using IO.Ably.Push.Android;
 using Xamarin.Essentials;
 
 namespace DotnetPush.Droid
 {
-    [Activity(Label = "DotnetPush", Icon = "@mipmap/logo", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
+    /// <summary>
+    /// Xamarin forms MainActivity.
+    /// </summary>
+    [Activity(Label = "DotnetPush", Icon = "@mipmap/logo", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         internal static PushNotificationReceiver Receiver = new PushNotificationReceiver();
@@ -25,6 +28,7 @@ namespace DotnetPush.Droid
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -45,15 +49,23 @@ namespace DotnetPush.Droid
             LoadApplication(new App(realtime, _loggerSink, Receiver));
         }
 
+        /// <summary>
+        /// Configures a Realtime client and initialises <see cref="AndroidMobileDevice"/> which facilitates push notifications.
+        /// </summary>
+        /// <param name="callbacks">Callbacks for when the device is Activated, Deactivated or a SyncRegistration failed.</param>
+        /// <returns>returns a realtime client which can be used in the app.</returns>
         public IRealtimeClient Configure(PushCallbacks callbacks)
         {
-            var options = new ClientOptions();
-            options.LogHandler = _loggerSink;
-            options.LogLevel = LogLevel.Debug;
-            // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
-            // recommended for security reasons. Please, review Ably's best practise guide on Authentication
-            // https://ably.com/documentation/best-practice-guide#auth
-            options.Key = "<key>";
+            var options = new ClientOptions
+            {
+                LogHandler = _loggerSink,
+                LogLevel = LogLevel.Debug,
+
+                // https://ably.com/documentation/best-practice-guide#auth
+                // recommended for security reasons. Please, review Ably's best practise guide on Authentication
+                // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+                Key = "<key>"
+            };
 
             // If we have already created a clientId for this instance then load it back.
             var savedClientId = AblySettings.ClientId;
@@ -70,6 +82,7 @@ namespace DotnetPush.Droid
             return AndroidMobileDevice.Initialise(options, callbacks);
         }
 
+        /// <inheritdoc/>
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

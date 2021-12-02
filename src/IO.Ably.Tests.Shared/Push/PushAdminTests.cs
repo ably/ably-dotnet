@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.Push
                 _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should().Be("test");
             }
 
             [Fact]
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests.Push
                 _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader).WhichValue.Should().Be("test");
+                request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader).WhoseValue.Should().Be("test");
             }
 
             [Fact]
@@ -54,7 +54,7 @@ namespace IO.Ably.Tests.Push
                 _ = GetRestClient();
                 PushAdmin.AddDeviceAuthenticationToRequest(request, localDevice);
 
-                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("test");
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should().Be("test");
                 request.Headers.Should().NotContainKey(Defaults.DeviceSecretHeader);
             }
 
@@ -232,11 +232,11 @@ namespace IO.Ably.Tests.Push
 
                 var deviceIdRequest = await ListDevices(ListDeviceDetailsRequest.WithDeviceId("123"));
                 deviceIdRequest.Url.Should().Be("/push/deviceRegistrations");
-                deviceIdRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("123");
+                deviceIdRequest.QueryParameters.Should().ContainKey("deviceId").WhoseValue.Should().Be("123");
 
                 var clientIdRequest = await ListDevices(ListDeviceDetailsRequest.WithClientId("234"));
                 clientIdRequest.Url.Should().Be("/push/deviceRegistrations");
-                clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("234");
+                clientIdRequest.QueryParameters.Should().ContainKey("clientId").WhoseValue.Should().Be("234");
             }
 
             [Fact]
@@ -369,8 +369,8 @@ namespace IO.Ably.Tests.Push
                     });
 
                 currentRequest.Url.Should().Be("/push/deviceRegistrations");
-                currentRequest.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("test");
-                currentRequest.QueryParameters.Should().ContainKey("random").WhichValue.Should().Be("boo");
+                currentRequest.QueryParameters.Should().ContainKey("deviceId").WhoseValue.Should().Be("test");
+                currentRequest.QueryParameters.Should().ContainKey("random").WhoseValue.Should().Be("boo");
             }
 
             [Fact]
@@ -391,7 +391,7 @@ namespace IO.Ably.Tests.Push
                         { "deviceId", "123" },
                     });
 
-                currentRequest.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
+                currentRequest.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should().Be("token");
             }
 
             public DeviceRegistrationTests(ITestOutputHelper output)
@@ -437,23 +437,23 @@ namespace IO.Ably.Tests.Push
                 }
 
                 var emptyFilterRequest = await CallList(ListSubscriptionsRequest.Empty(100));
-                emptyFilterRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("100");
+                emptyFilterRequest.QueryParameters.Should().ContainKey("limit").WhoseValue.Should().Be("100");
 
                 var channelDeviceIdRequest =
                     await CallList(ListSubscriptionsRequest.WithDeviceId("test-channel", "device123"));
 
                 channelDeviceIdRequest.QueryParameters.Should().ContainKey("channel")
-                    .WhichValue.Should().Be("test-channel");
+                    .WhoseValue.Should().Be("test-channel");
                 channelDeviceIdRequest.QueryParameters.Should().ContainKey("deviceId")
-                    .WhichValue.Should().Be("device123");
+                    .WhoseValue.Should().Be("device123");
 
                 var channelClientIdRequest =
                     await CallList(ListSubscriptionsRequest.WithClientId("test-channel", "clientId123"));
 
                 channelClientIdRequest.QueryParameters.Should().ContainKey("channel")
-                    .WhichValue.Should().Be("test-channel");
+                    .WhoseValue.Should().Be("test-channel");
                 channelClientIdRequest.QueryParameters.Should().ContainKey("clientId")
-                    .WhichValue.Should().Be("clientId123");
+                    .WhoseValue.Should().Be("clientId123");
             }
 
             [Fact]
@@ -477,7 +477,7 @@ namespace IO.Ably.Tests.Push
                 request.Url.Should().Be("/push/channels");
 
                 var limitRequest = await CallListChannels(new PaginatedRequestParams { Limit = 150 });
-                limitRequest.QueryParameters.Should().ContainKey("limit").WhichValue.Should().Be("150");
+                limitRequest.QueryParameters.Should().ContainKey("limit").WhoseValue.Should().Be("150");
             }
 
             [Fact]
@@ -547,7 +547,7 @@ namespace IO.Ably.Tests.Push
                 var sub = PushChannelSubscription.ForDevice("test", "123");
                 await rest.Push.Admin.ChannelSubscriptions.SaveAsync(sub);
 
-                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhichValue.Should().Be("token");
+                request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should().Be("token");
             }
 
             [Fact]
@@ -571,13 +571,13 @@ namespace IO.Ably.Tests.Push
                 request.Url.Should().Be("/push/channelSubscriptions");
                 request.Method.Should().Be(HttpMethod.Delete);
 
-                request.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
-                request.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("device");
+                request.QueryParameters.Should().ContainKey("channel").WhoseValue.Should().Be("channel");
+                request.QueryParameters.Should().ContainKey("deviceId").WhoseValue.Should().Be("device");
 
                 var requestWithClientId = await CallRemove(PushChannelSubscription.ForClientId("channel", "123"));
 
-                requestWithClientId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("channel");
-                requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhichValue.Should().Be("123");
+                requestWithClientId.QueryParameters.Should().ContainKey("channel").WhoseValue.Should().Be("channel");
+                requestWithClientId.QueryParameters.Should().ContainKey("clientId").WhoseValue.Should().Be("123");
             }
 
             [Fact]
@@ -604,12 +604,12 @@ namespace IO.Ably.Tests.Push
 
                 var requestWithChannelAndDeviceId = await CallRemoveWhere(new Dictionary<string, string>() { { "channel", "test" }, { "deviceId", "best" } });
 
-                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("channel").WhichValue.Should().Be("test");
-                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("deviceId").WhichValue.Should().Be("best");
+                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("channel").WhoseValue.Should().Be("test");
+                requestWithChannelAndDeviceId.QueryParameters.Should().ContainKey("deviceId").WhoseValue.Should().Be("best");
 
                 var requestWithRandomParameter = await CallRemoveWhere(new Dictionary<string, string>() { { "random", "value" } });
 
-                requestWithRandomParameter.QueryParameters.Should().ContainKey("random").WhichValue.Should().Be("value");
+                requestWithRandomParameter.QueryParameters.Should().ContainKey("random").WhoseValue.Should().Be("value");
             }
 
             public ChannelSubscriptionsTests(ITestOutputHelper output)

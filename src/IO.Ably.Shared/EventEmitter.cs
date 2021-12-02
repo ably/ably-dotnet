@@ -103,7 +103,7 @@ namespace IO.Ably
     /// </summary>
     /// <typeparam name="TState">Type of Event.</typeparam>
     /// <typeparam name="TArgs">Type of args passed to the listeners.</typeparam>
-    public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs>
+    public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs>, IDisposable
         where TState : struct
         where TArgs : EventArgs
     {
@@ -116,6 +116,7 @@ namespace IO.Ably
 
         private readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private bool _disposedValue;
 
         internal JArray GetState()
         {
@@ -418,6 +419,36 @@ namespace IO.Ably
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Dispose(bool disposing) executes in two distinct scenarios. If disposing equals true, the method has
+        /// been called directly or indirectly by a user's code. Managed and unmanaged resources can be disposed.
+        /// If disposing equals false, the method has been called by the runtime from inside the finalizer and
+        /// you should not referenceother objects. Only unmanaged resources can be disposed.
+        /// </summary>
+        /// <param name="disposing">Refer to the summary.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _lock.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Implement IDisposable.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

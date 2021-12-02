@@ -244,7 +244,7 @@ namespace IO.Ably.Tests.Realtime
             var channel7 = client.Channels.Get("test7");
 
             client.Channels.Should().HaveCount(6);
-            client.Channels.Should().BeEquivalentTo(channel1, channel2, channel4, channel5, channel6, channel7);
+            client.Channels.Should().BeEquivalentTo(new[] { channel1, channel2, channel4, channel5, channel6, channel7 });
         }
 
         [Fact]

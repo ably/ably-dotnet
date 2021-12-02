@@ -72,7 +72,7 @@ namespace IO.Ably.Tests.Realtime
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
             currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
-            currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+            currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires, TimeSpan.Zero);
         }
 
         [Fact(Skip = "Intermittently fails")]
@@ -212,9 +212,9 @@ namespace IO.Ably.Tests.Realtime
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
-                .WhichValue.Should().Be(connectionKey);
+                .WhoseValue.Should().Be(connectionKey);
             urlParams.Should().ContainKey("connection_serial")
-                .WhichValue.Should().Be(serial.ToString());
+                .WhoseValue.Should().Be(serial.ToString());
             LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }
 

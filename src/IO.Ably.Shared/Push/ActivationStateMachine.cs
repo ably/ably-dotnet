@@ -8,7 +8,7 @@ using IO.Ably.Utils;
 
 namespace IO.Ably.Push
 {
-    internal partial class ActivationStateMachine
+    internal partial class ActivationStateMachine : IDisposable
     {
         private readonly SemaphoreSlim _handleEventsLock = new SemaphoreSlim(1, 1);
         private readonly AblyRest _restClient;
@@ -388,6 +388,21 @@ namespace IO.Ably.Push
         {
             CurrentState = new NotActivated(this);
             PendingEvents.Clear();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Dispose managed resources.
+                _handleEventsLock.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -7,6 +7,7 @@ using Xamarin.Essentials;
 
 namespace IO.Ably.Push.iOS
 {
+    /// <inheritdoc />
     public class AppleMobileDevice : IMobileDevice
     {
         private const string TokenType = "apns";
@@ -32,7 +33,14 @@ namespace IO.Ably.Push.iOS
             return Initialise(ablyClientOptions, callbacks);
         }
 
-        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, PushCallbacks callbacks)
+        /// <summary>
+        /// Initialises the Apple MobileDevice implementation and the AblyRealtime client that is used to subscribe to the Apple notification service.
+        /// Use this method to initialise your AblyRealtime if you want to register the device for push notifications.
+        /// </summary>
+        /// <param name="ablyClientOptions">ClientOptions used to initialise the AblyRealtime instanced used to setup the ActivationStat.</param>
+        /// <param name="callbacks">Optional callbacks class. It's especially useful to subscribe/unsubscribe to push channels when a device is activated / deactivated.</param>
+        /// <returns>Initialised Ably instance which supports push notification registrations.</returns>
+        public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, PushCallbacks callbacks = null)
         {
             var mobileDevice = new AppleMobileDevice(callbacks, DefaultLogger.LoggerInstance);
             IoC.MobileDevice = mobileDevice;
@@ -41,6 +49,10 @@ namespace IO.Ably.Push.iOS
             return _realtimeInstance;
         }
 
+        /// <summary>
+        /// This method should be called by the application when a new token is generated on the device.
+        /// </summary>
+        /// <param name="tokenData">New device token data.</param>
         public static void OnNewRegistrationToken(NSData tokenData)
         {
             if (tokenData != null)
@@ -48,7 +60,7 @@ namespace IO.Ably.Push.iOS
                 try
                 {
                     var token = ConvertTokenToString(tokenData);
-                    // Call the state machine to register the new token
+
                     var realtimePush = _realtimeInstance.Push;
                     var tokenResult = Result.Ok(new RegistrationToken(TokenType, token));
                     realtimePush.StateMachine.UpdateRegistrationToken(tokenResult);
@@ -70,9 +82,12 @@ namespace IO.Ably.Push.iOS
             }
         }
 
+        /// <summary>
+        /// Called by the device when the registration token fails registration.
+        /// </summary>
+        /// <param name="error">Error.</param>
         public static void OnRegistrationTokenFailed(ErrorInfo error)
         {
-            // Call the state machine to register the new token
             var realtimePush = _realtimeInstance.Push;
             realtimePush.StateMachine.UpdateRegistrationToken(Result.Fail<RegistrationToken>(error));
         }
@@ -104,13 +119,15 @@ namespace IO.Ably.Push.iOS
             Preferences.Clear(groupName);
         }
 
-        public void RequestRegistrationToken(Action<Result<RegistrationToken>> _) // For IOS integration the callback is not used
+        /// <inheritdoc/>
+        public void RequestRegistrationToken(Action<Result<RegistrationToken>> unusedAction) // For IOS integration the callback is not used
         {
             if (UIDevice.CurrentDevice.CheckSystemVersion(10, 0))
             {
-                UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert |
-                                                                      UNAuthorizationOptions.Sound |
-                                                                      UNAuthorizationOptions.Sound,
+                UNUserNotificationCenter.Current.RequestAuthorization(
+                    UNAuthorizationOptions.Alert |
+                          UNAuthorizationOptions.Sound |
+                          UNAuthorizationOptions.Sound,
                     (granted, error) =>
                     {
                         if (granted)
@@ -139,7 +156,9 @@ namespace IO.Ably.Push.iOS
             }
         }
 
+        /// <inheritdoc/>
         public string DevicePlatform => "ios";
+
         /// <inheritdoc/>
         public string FormFactor
         {

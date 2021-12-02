@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
 {
-    public class LocalDeviceTests : MockHttpRestSpecs, IDisposable
+    public sealed class LocalDeviceTests : MockHttpRestSpecs, IDisposable
     {
         [Fact]
         [Trait("spec", "RSH3a2b")]

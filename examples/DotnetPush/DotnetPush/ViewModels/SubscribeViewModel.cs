@@ -22,10 +22,6 @@ namespace DotnetPush.ViewModels
 
             ClientId = Ably.ClientId;
 
-            // pushRealtime.OnActivationSta teMachineChangeState((current, next) =>
-            // {
-            //     CurrentState = next;
-            // });
             ActivatePush = new Command(() => Ably.Push.Activate());
             DeactivatePush = new Command(() => Ably.Push.Deactivate());
         }

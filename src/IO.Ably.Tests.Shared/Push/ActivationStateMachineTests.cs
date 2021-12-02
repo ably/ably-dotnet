@@ -16,7 +16,7 @@ namespace IO.Ably.Tests.Push
 {
     public static class ActivationStateMachineTests
     {
-        public class GeneralTests : MockHttpRestSpecs, IDisposable
+        public sealed class GeneralTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH4")]
@@ -174,10 +174,10 @@ namespace IO.Ably.Tests.Push
                 };
                 machine.CurrentState = initialState;
 
-                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("apns", token);
 
                 // Act
-                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", token)));
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("apns", token)));
 
                 // Assert
                 handledEvent.Should().BeNull();
@@ -200,9 +200,9 @@ namespace IO.Ably.Tests.Push
                 };
                 machine.CurrentState = initialState;
 
-                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("fcm", token);
 
-                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", tokenValue)));
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("fcm", tokenValue)));
 
                 machine.LocalDevice.RegistrationToken.Token.Should().Be(tokenValue);
                 handledEvent.Should().NotBeNull().And.BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
@@ -313,7 +313,7 @@ namespace IO.Ably.Tests.Push
             }
         }
 
-        public class NotActivatedStateTests : MockHttpRestSpecs, IDisposable
+        public sealed class NotActivatedStateTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3a1")]
@@ -484,7 +484,7 @@ namespace IO.Ably.Tests.Push
                 var (state, stateMachine) = GetStateAndStateMachine();
 
                 var localDevice = LocalDevice.Create("123");
-                localDevice.RegistrationToken = new RegistrationToken("test", "token");
+                localDevice.RegistrationToken = new RegistrationToken("fcm", "token");
                 stateMachine.LocalDevice = localDevice;
 
                 var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
@@ -554,7 +554,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3b")]
-        public class WaitingForPushDeviceDetailsTests : MockHttpRestSpecs, IDisposable
+        public sealed class WaitingForPushDeviceDetailsTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3b1")]
@@ -739,7 +739,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3c")]
-        public class WaitingForDeviceRegistrationTests : MockHttpRestSpecs, IDisposable
+        public sealed class WaitingForDeviceRegistrationTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3c1")]
@@ -868,7 +868,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3d")]
-        public class WaitingForNewPushDeviceDetailsTests : MockHttpRestSpecs, IDisposable
+        public sealed class WaitingForNewPushDeviceDetailsTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3d1")]
@@ -1055,7 +1055,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3e")]
-        public class WaitingForRegistrationSync : MockHttpRestSpecs, IDisposable
+        public sealed class WaitingForRegistrationSync : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3e1")]
@@ -1225,7 +1225,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3f")]
-        public class AfterRegistrationSyncFailedTests : MockHttpRestSpecs, IDisposable
+        public sealed class AfterRegistrationSyncFailedTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3f1")]
@@ -1348,7 +1348,7 @@ namespace IO.Ably.Tests.Push
         }
 
         [Trait("spec", "RSH3g")]
-        public class WaitingForDeregistrationTests : MockHttpRestSpecs, IDisposable
+        public sealed class WaitingForDeregistrationTests : MockHttpRestSpecs, IDisposable
         {
             [Fact]
             [Trait("spec", "RSH3g1")]

@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
 {
     public abstract class MockHttpRestSpecs : AblySpecs
     {
-        internal virtual AblyResponse DefaultResponse { get; }
+        internal virtual AblyResponse DefaultResponse { get; } = AblyResponse.EmptyResponse;
 
         internal AblyRequest LastRequest => Requests.LastOrDefault();
 
@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
                     return handleRequestFunc(request);
                 }
 
-                return (DefaultResponse ?? AblyResponse.EmptyResponse).ToTask();
+                return DefaultResponse.ToTask();
             };
             return client;
         }

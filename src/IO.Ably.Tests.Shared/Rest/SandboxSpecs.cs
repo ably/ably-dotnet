@@ -14,6 +14,7 @@ namespace IO.Ably.Tests
     public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>, IDisposable
     {
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
+        private bool _disposedValue;
 
         protected SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
@@ -52,20 +53,31 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
-            foreach (var client in _realtimeClients)
-            {
-                try
-                {
-                    client.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Output?.WriteLine("Error disposing Client: " + ex.Message);
-                }
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            ResetEvent?.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
+                foreach (var client in _realtimeClients)
+                {
+                    try
+                    {
+                        client.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Output?.WriteLine("Error disposing Client: " + ex.Message);
+                    }
+                }
+
+                ResetEvent?.Dispose();
+
+                _disposedValue = true;
+            }
         }
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)

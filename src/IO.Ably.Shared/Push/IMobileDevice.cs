@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace IO.Ably.Push
 {
@@ -23,13 +22,6 @@ namespace IO.Ably.Push
         /// <param name="groupName">Group name.</param>
         /// <returns>The value of the preference or null if it doesn't exist.</returns>
         string GetPreference(string key, string groupName);
-
-        /// <summary>
-        /// Deletes a preference from the mobile device if it exists.
-        /// </summary>
-        /// <param name="key">Preference key.</param>
-        /// <param name="groupName">Group the key belongs to.</param>
-        void RemovePreference(string key, string groupName);
 
         /// <summary>
         /// Remove a whole group of preferences.
