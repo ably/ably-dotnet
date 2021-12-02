@@ -6,7 +6,7 @@ namespace IO.Ably.Tests.Infrastructure
     /// <summary>
     /// Count a certain number of ticks and complete or timeout
     /// </summary>
-    internal class TaskCountAwaiter
+    internal sealed class TaskCountAwaiter : IDisposable
     {
         private readonly TaskCompletionAwaiter _awaiter;
         private int _index;
@@ -31,6 +31,11 @@ namespace IO.Ably.Tests.Infrastructure
             {
                 _awaiter.SetCompleted();
             }
+        }
+
+        public void Dispose()
+        {
+            _awaiter.Dispose();
         }
     }
 }

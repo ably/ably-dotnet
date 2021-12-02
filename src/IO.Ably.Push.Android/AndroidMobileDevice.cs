@@ -88,11 +88,6 @@ namespace IO.Ably.Push.Android
             return Preferences.Get(key, null, groupName);
         }
 
-        /// <inheritdoc/>
-        public void RemovePreference(string key, string groupName)
-        {
-            Preferences.Remove(key, groupName);
-        }
 
         /// <inheritdoc/>
         public void ClearPreferences(string groupName)

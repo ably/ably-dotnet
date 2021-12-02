@@ -765,7 +765,7 @@ namespace IO.Ably.Tests
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await AblySandboxFixture.GetSettings();
-            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeDataString(token.ToJson());
 
             var authUrlClient = new AblyRest(new ClientOptions
             {
@@ -791,7 +791,7 @@ namespace IO.Ably.Tests
             var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await AblySandboxFixture.GetSettings();
             var tokenJson = token.ToJson();
-            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeDataString(tokenJson);
 
             var client = new AblyRealtime(new ClientOptions
                                                  {
@@ -813,7 +813,7 @@ namespace IO.Ably.Tests
             var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await AblySandboxFixture.GetSettings();
             var incorrectJson = $"[{token.ToJson()}]";
-            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeDataString(incorrectJson);
 
             var client = new AblyRealtime(new ClientOptions
                                               {
