@@ -37,8 +37,8 @@ namespace DotnetPush.ViewModels
 
         private async Task ClearState()
         {
-            Preferences.Clear("Ably_StateMachine");
-            Preferences.Clear("Ably_Device");
+            Preferences.Clear("Ably_StateMachine"); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
+            Preferences.Clear("Ably_Device"); // Cannot use PersistKeys.Device.SharedName because it is internal.
             _displayAlert("State cleared. Restart the application");
             await LoadState();
         }
@@ -54,19 +54,26 @@ namespace DotnetPush.ViewModels
 
         private Task LoadState()
         {
-            string GetStateMachineProperty(string key) => Preferences.Get(key, "[not set]", "Ably_StateMachine");
-            string GetDeviceProperty(string key) => Preferences.Get(key, "[not set]", "Ably_Device");
+            string GetStateMachineProperty(string key) => Preferences.Get(key, "[not set]", "Ably_StateMachine"); // Cannot use PersistKeys.StateMachine.SharedName because it is internal.
+            string GetDeviceProperty(string key) => Preferences.Get(key, "[not set]", "Ably_Device"); // Cannot use PersistKeys.Device.SharedName because it is internal.
 
-            var model = new StateModel();
-            model.StateMachine.CurrentState = GetStateMachineProperty("ABLY_PUSH_CURRENT_STATE");
-            model.StateMachine.PendingEvents = GetStateMachineProperty("ABLY_PUSH_PENDING_EVENTS");
-
-            model.Device.Token = GetDeviceProperty("ABLY_REGISTRATION_TOKEN");
-            model.Device.TokenType = GetDeviceProperty("ABLY_REGISTRATION_TOKEN_TYPE");
-            model.Device.DeviceToken = GetDeviceProperty("ABLY_DEVICE_IDENTITY_TOKEN");
-            model.Device.DeviceSecret = GetDeviceProperty("ABLY_DEVICE_SECRET");
-            model.Device.ClientId = GetDeviceProperty("ABLY_CLIENT_ID");
-            model.Device.DeviceId = GetDeviceProperty("ABLY_DEVICE_ID");
+            var model = new StateModel
+            {
+                StateMachine =
+                {
+                    CurrentState = GetStateMachineProperty("ABLY_PUSH_CURRENT_STATE"),
+                    PendingEvents = GetStateMachineProperty("ABLY_PUSH_PENDING_EVENTS")
+                },
+                Device =
+                {
+                    Token = GetDeviceProperty("ABLY_REGISTRATION_TOKEN"),
+                    TokenType = GetDeviceProperty("ABLY_REGISTRATION_TOKEN_TYPE"),
+                    DeviceToken = GetDeviceProperty("ABLY_DEVICE_IDENTITY_TOKEN"),
+                    DeviceSecret = GetDeviceProperty("ABLY_DEVICE_SECRET"),
+                    ClientId = GetDeviceProperty("ABLY_CLIENT_ID"),
+                    DeviceId = GetDeviceProperty("ABLY_DEVICE_ID")
+                }
+            };
 
             State = model;
 

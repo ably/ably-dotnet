@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
-using Android.Runtime;
 using Android.OS;
-using IO.Ably.Push.Android;
+using Android.Runtime;
 using Firebase;
 using IO.Ably;
 using IO.Ably.Push;
+using IO.Ably.Push.Android;
 using Xamarin.Essentials;
 
 namespace DotnetPush.Droid

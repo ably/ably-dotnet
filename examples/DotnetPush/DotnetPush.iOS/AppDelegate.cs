@@ -36,7 +36,7 @@ namespace DotnetPush.iOS
         {
             _loggerSink = new AppLoggerSink();
 
-            var savedClientId = Preferences.Get("ABLY_CLIENT_ID", string.Empty, "Ably_Device");
+            var savedClientId = Preferences.Get("ABLY_CLIENT_ID", string.Empty);
 
             var callbacks = new PushCallbacks
             {
