@@ -55,7 +55,7 @@ namespace DotnetPush.iOS
             {
                 // https://ably.com/documentation/best-practice-guide#auth
                 // recommended for security reasons. Please, review Ably's best practise guide on Authentication
-                // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not
+                // Please provide a way for AblyRealtime to connect to the services. Having API keys on mobile devices is not recommended.
                 Key = "<key>",
                 LogHandler = (ILoggerSink)_loggerSink,
                 LogLevel = LogLevel.Debug,
