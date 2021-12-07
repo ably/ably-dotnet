@@ -20,9 +20,7 @@ namespace IO.Ably.Realtime
 
         private ConcurrentDictionary<string, RealtimeChannel> Channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
-        private readonly List<IRealtimeChannel> _orderedChannels = new List<IRealtimeChannel>();
-
-        private readonly object _orderedListLock = new object();
+        private readonly LockedList<IRealtimeChannel> _orderedChannels = new LockedList<IRealtimeChannel>();
 
         private readonly AblyRealtime _realtimeClient;
         private readonly IMobileDevice _mobileDevice;
@@ -74,7 +72,7 @@ namespace IO.Ably.Realtime
 
                     return realtimeChannel;
                 });
-                AddToOrderedList(result);
+                _orderedChannels.Add(result);
             }
             else
             {
@@ -111,7 +109,7 @@ namespace IO.Ably.Realtime
                 if (Channels.TryRemove(name, out RealtimeChannel removedChannel))
                 {
                     removedChannel.RemoveAllListeners();
-                    RemoveFromOrderedList(removedChannel);
+                    _orderedChannels.Remove(removedChannel);
                     return true;
                 }
 
@@ -172,7 +170,7 @@ namespace IO.Ably.Realtime
                     if (success)
                     {
                         channel.RemoveAllListeners();
-                        RemoveFromOrderedList(channel);
+                        _orderedChannels.Remove(channel);
                     }
                 }
             }
@@ -246,31 +244,6 @@ namespace IO.Ably.Realtime
                      * transitions all the channels to INITIALIZED */
                     channel.SetChannelState(ChannelState.Initialized);
                     break;
-            }
-        }
-
-        private void AddToOrderedList(RealtimeChannel channel)
-        {
-            if (_orderedChannels.Contains(channel) == false)
-            {
-                lock (_orderedListLock)
-                {
-                    if (_orderedChannels.Contains(channel) == false)
-                    {
-                        _orderedChannels.Add(channel);
-                    }
-                }
-            }
-        }
-
-        private void RemoveFromOrderedList(RealtimeChannel channel)
-        {
-            lock (_orderedListLock)
-            {
-                if (_orderedChannels.Contains(channel))
-                {
-                    _orderedChannels.Remove(channel);
-                }
             }
         }
     }

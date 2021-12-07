@@ -168,6 +168,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpPaginatedResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\IMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\LockedList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\Message.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\MessageExtras.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\OperatingSystem.cs" />
