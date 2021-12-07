@@ -70,7 +70,7 @@ namespace DotnetPush.ViewModels
         }
 
         /// <summary>
-        /// Triggers PropertyChanged event for a cert.
+        /// Triggers PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">name of the property which value has changed.</param>
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

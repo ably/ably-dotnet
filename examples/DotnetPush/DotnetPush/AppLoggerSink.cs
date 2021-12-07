@@ -32,7 +32,11 @@ namespace DotnetPush
         {
             lock (_lock)
             {
-                Messages.Add(new LogEntry(level, message));
+                // We don't want to log the heartbeat events otherwise the logs get really busy.
+                if (message.Contains("Heartbeat") == false)
+                {
+                    Messages.Add(new LogEntry(level, message));
+                }
             }
         }
     }

@@ -276,7 +276,7 @@ namespace IO.Ably.Push
                 }
 
                 LocalDevice.RegistrationToken = token;
-                PersistLocalDevice();
+                LocalDevice.PersistRegistrationToken(MobileDevice, token);
 
                 _ = HandleEvent(new GotPushDeviceDetails());
             }
@@ -288,11 +288,6 @@ namespace IO.Ably.Push
                 }
 
                 _ = HandleEvent(new GettingPushDeviceDetailsFailed(tokenResult.Error));
-            }
-
-            void PersistLocalDevice()
-            {
-                LocalDevice.PersistLocalDevice(MobileDevice, LocalDevice);
             }
         }
 

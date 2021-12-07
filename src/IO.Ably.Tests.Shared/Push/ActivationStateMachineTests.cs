@@ -174,10 +174,10 @@ namespace IO.Ably.Tests.Push
                 };
                 machine.CurrentState = initialState;
 
-                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("apns", token);
 
                 // Act
-                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", token)));
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("apns", token)));
 
                 // Assert
                 handledEvent.Should().BeNull();
@@ -200,9 +200,9 @@ namespace IO.Ably.Tests.Push
                 };
                 machine.CurrentState = initialState;
 
-                machine.LocalDevice.RegistrationToken = new RegistrationToken("type", token);
+                machine.LocalDevice.RegistrationToken = new RegistrationToken("fcm", token);
 
-                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("type", tokenValue)));
+                machine.UpdateRegistrationToken(Result.Ok(new RegistrationToken("fcm", tokenValue)));
 
                 machine.LocalDevice.RegistrationToken.Token.Should().Be(tokenValue);
                 handledEvent.Should().NotBeNull().And.BeOfType<ActivationStateMachine.GotPushDeviceDetails>();
@@ -484,7 +484,7 @@ namespace IO.Ably.Tests.Push
                 var (state, stateMachine) = GetStateAndStateMachine();
 
                 var localDevice = LocalDevice.Create("123");
-                localDevice.RegistrationToken = new RegistrationToken("test", "token");
+                localDevice.RegistrationToken = new RegistrationToken("fcm", "token");
                 stateMachine.LocalDevice = localDevice;
 
                 var (nextState, nextEventFunc) = await state.Transition(new ActivationStateMachine.CalledActivate());
