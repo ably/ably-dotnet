@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace IO.Ably
 {
+    [SuppressMessage("ReSharper", "InconsistentlySynchronizedField", Justification = "Double-check locking pattern used.")]
     internal sealed class LockedList<T> : IEnumerable<T>
     {
         private readonly List<T> _items = new List<T>();
