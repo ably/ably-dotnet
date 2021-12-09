@@ -13,9 +13,9 @@ You can start the app using `dotnet run`
 
 When you run the app for the first time you will be asked to enter an Ably `key` which will be saved in a file called `key.secret` in the current directory. 
 Once the key is entered and stored the app can: 
-- Connect to ably
+- Connect to Ably
 - Disconnect 
-- View ably logs
+- View Ably logs
 - Send messages to a channel
 
 ### Sending
