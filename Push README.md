@@ -1,10 +1,12 @@
 # Push Notifications
 
-Push Notifications allow you to reach users who have your application in the foreground, background and terminated, including when your application is not connected to Ably. Push notifications allow you to run code and show alerts to the user. On iOS, Ably connects to [APNs](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) to send messages to devices. On Android, Ably connects to [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/) to send messages to devices. As both services do not guarantee message delivery and may even throttle messages to specific devices based on battery level, message frequency, and other criteria, messages may arrive much later than sent or ignored.
+Push Notifications allow you to reach users irrespective of whether your application is running in the foreground, the background or has been terminated, even when your application is not connected to Ably.
+
+On iOS, Ably connects to [APNs](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) to send messages to devices. On Android, Ably connects to [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/) to send messages to devices. As both services do not guarantee message delivery and may even throttle messages to specific devices based on battery level, message frequency, and other criteria, messages may arrive much later than sent or ignored.
 
 ## Known Limitations
  
-- Requires initialising AblyRealtime: Currently activating push notifications for a device requires an instance of AblyRealtime which gets instantiated when the application starts up. Please, submit an issue if you do not require a realtime instance and would like to use the xamarin push notifications without using an AblyRealtime connection. For the time being when calling `(AndroidMobileDevice|AppleMobileDevice).Initialise` please set `ClientOptions.AutoConnect` to `false` which will keep the AblyRealtime instance from using any resources.
+- Requires initialising `AblyRealtime`: Currently activating push notifications for a device requires an instance of `AblyRealtime` which gets instantiated when the application starts up. Please, submit an issue if you do not require a realtime instance and would like to use Xamarin push notifications without using an `AblyRealtime` connection. For the time being when calling `(AndroidMobileDevice|AppleMobileDevice).Initialise` please set `ClientOptions.AutoConnect` to `false` which will keep the `AblyRealtime` instance from using any resources.
 
 ## Supported platforms
 
@@ -26,8 +28,8 @@ To get push notifications setup in your own app, read [Setting up your own app](
     - You can leave `Debug signing certificate SHA-1` empty.
     - Download the generated `google-services.json` file
     - Place `google-services.json` in `example/android/app/`. We have `gitignore`d this file since it is associated with our Firebase project, but it is [not sensitive](https://stackoverflow.com/questions/37358340/should-i-add-the-google-services-json-from-firebase-to-my-repository), so you can commit it to share it with other developers/colleagues.
-- Provide ably with the FCM server key: In your [firebase project settings](https://knowledge.ably.com/where-can-i-find-my-google/firebase-cloud-messaging-api-key), create or use an existing cloud messaging server key, and enter it in your Ably app's dashboard (App > Notifications tab > Push Notifications Setup > Setup Push Notifications).
-- You can follow the excellent [Android push notifications tutorial](https://ably.com/tutorials/android-push-notifications#setup-ably-account) which includes screenshots for the steps you need to take to link your ably account with Firebase messaging.
+- Provide Ably with the FCM server key: In your [firebase project settings](https://knowledge.ably.com/where-can-i-find-my-google/firebase-cloud-messaging-api-key), create or use an existing cloud messaging server key, and enter it in your Ably app's dashboard (App > Notifications tab > Push Notifications Setup > Setup Push Notifications).
+- You can follow the excellent [Android push notifications tutorial](https://ably.com/tutorials/android-push-notifications#setup-ably-account) which includes screenshots for the steps you need to take to link your Ably account with Firebase messaging.
 
 ### iOS
 
@@ -48,11 +50,11 @@ To get push notifications setup in your own app, read [Setting up your own app](
 
 Devices need to be [activated](#device-activation) with Ably once. Once activated, you can use their device ID, client ID or push token (APNs device token/ FCM registration token) to push messages to them using the Ably dashboard or a [Push Admin](https://ably.com/documentation/general/push/admin) (SDKs which provide push admin functionality, such as the .net sdk, [Ably-java](https://github.com/ably/ably-java), [Ably-js](https://github.com/ably/ably-js), etc.). However, to send push notifications through Ably channels, devices need to [subscribe to a channel for push notifications](#subscribing-to-channels-for-push-notifications). Once subscribed, messages on that channel with a [push payload](#sending-messages) will be sent to devices which are subscribed to that channel.
 
-The DotNetPush app contains an example of how to use the Push Notification functionality. (TODO: Add links to github once PRs have been approved)
+The [DotNetPush app](https://github.com/ably/ably-dotnet/tree/main/examples/DotnetPush) contains an example of how to use the Push Notification functionality. For Android devices please refer to [MainActivity.cs](https://github.com/ably/ably-dotnet/blob/main/examples/DotnetPush/DotnetPush.Android/MainActivity.cs) and [MyFirebaseMessaging.cs](https://github.com/ably/ably-dotnet/blob/main/examples/DotnetPush/DotnetPush.Android/MyFirebaseMessaging.cs). For iOS please refer to [AppDelegate](https://github.com/ably/ably-dotnet/blob/main/examples/DotnetPush/DotnetPush.iOS/AppDelegate.cs).
 
 ### Device activation
 
-- The first step is to initialise the specific mobile device. You can achieve this by using either `AppleMobileDevice.Initialise` or `AndroidModileDevice.Initialise`. To initialise you need to pass a valid Ably `ClientOptions` which will be used to initialise the ably realtime client and an instance of `PushCallbacks` which you can use to recieve notification when the device is `Activated`, `Deactivated` or `SyncRegistrationFailed`.
+- The first step is to initialise the specific mobile device. You can achieve this by using either `AppleMobileDevice.Initialise` or `AndroidModileDevice.Initialise`. To initialise you need to pass a valid Ably `ClientOptions` which will be used to initialise the Ably realtime client and an instance of `PushCallbacks` which you can use to recieve notification when the device is `Activated`, `Deactivated` or `SyncRegistrationFailed`.
 - The initialise method will create an instance of `IRealtimeClient` which can be used to activate push notifications for the device by calling `client.Push.Activate()`. 
 - Active is not guaranteed to happen straight away. The developer will be notified by calling `ActivatedCallback` which was passed to the `Initialise` method when hooking up push notifications
 
@@ -124,6 +126,7 @@ Shows a notification to the user immediately when it is received by their device
 **iOS**: This is known as an [alert push notification](https://developer.apple.com/documentation/usernotifications/). An alert notification can be [customised](https://developer.apple.com/documentation/usernotificationsui/customizing_the_appearance_of_notifications).
 
 This is how you construct a message with a push notification. Normal subscribers will only receive the message where devices subscribed to that channel will receive the Push notification.
+
 ```csharp
 var extrasText = @"{
     ""push"": {
@@ -194,7 +197,7 @@ For examples of handling incoming messages and dealing with notifications, see [
 
 **Android**: If the app is in the background / terminated, you cannot configure / disable notification messages as they are automatically shown to the user by Firebase Messaging Android SDK. To create notifications which launch the application to a certain page (notifications which contain deep links or app links), or notifications which contain buttons / actions, images, and inline replies, you should send a data message and create a notification when the message is received. 
 
-**iOS**: If the app is in the background / terminated, the ably sdk doesn't provide the functionality to configure / extend alert notifications on iOS, and these will automatically be shown to the user.
+**iOS**: If the app is in the background / terminated, the Ably sdk doesn't provide the functionality to configure / extend alert notifications on iOS, and these will automatically be shown to the user.
 
 ### Deactivating the device
 
