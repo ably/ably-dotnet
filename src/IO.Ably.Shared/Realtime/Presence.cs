@@ -891,7 +891,7 @@ namespace IO.Ably.Realtime
         /// Dispose(bool disposing) executes in two distinct scenarios. If disposing equals true, the method has
         /// been called directly or indirectly by a user's code. Managed and unmanaged resources can be disposed.
         /// If disposing equals false, the method has been called by the runtime from inside the finalizer and
-        /// you should not referenceother objects. Only unmanaged resources can be disposed.
+        /// you should not reference other objects. Only unmanaged resources can be disposed.
         /// </summary>
         /// <param name="disposing">Refer to the summary.</param>
         private void Dispose(bool disposing)
@@ -913,8 +913,7 @@ namespace IO.Ably.Realtime
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            Dispose(true);
         }
     }
 }
