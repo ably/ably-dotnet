@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -9,6 +10,8 @@ namespace IO.Ably.Tests
 {
     public sealed class FakeTransport : ITransport
     {
+        private Action<RealtimeTransportData> _sendAction = obj => { };
+
         public TransportParams Parameters { get; }
 
         public FakeTransport(TransportState? state = null)
@@ -65,12 +68,20 @@ namespace IO.Ably.Tests
 
         public Result Send(RealtimeTransportData data)
         {
-            SendAction(data);
+            _sendAction(data);
             SentMessages.Add(data);
             return Result.Ok();
         }
 
-        public Action<RealtimeTransportData> SendAction = obj => { };
+        public void SetSendAction(Action<RealtimeTransportData> action)
+        {
+            _sendAction = action;
+        }
+
+        public void SetSendAction(Func<RealtimeTransportData, Task> action)
+        {
+            SetSendAction(data => { _ = action(data); });
+        }
 
         public void Dispose()
         {
