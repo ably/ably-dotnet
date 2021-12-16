@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.Realtime
             SetNowFunc(() => DateTimeOffset.UtcNow);
             var client = await GetConnectedClient();
 
-            FakeTransportFactory.LastCreatedTransport.SendAction = async message =>
+            FakeTransportFactory.LastCreatedTransport.SetSendAction(async message =>
             {
                 NowAdd(TimeSpan.FromMilliseconds(100));
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
@@ -31,7 +31,8 @@ namespace IO.Ably.Tests.Realtime
                         Id = message.Original.Id,
                     });
                 }
-            };
+            });
+
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();

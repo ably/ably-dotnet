@@ -80,13 +80,13 @@ namespace IO.Ably.Tests.Realtime
                 states.Add(args);
             });
 
-            LastCreatedTransport.SendAction = message =>
+            LastCreatedTransport.SetSendAction(message =>
             {
                 if (message.Original.Action == ProtocolMessage.MessageAction.Close)
                 {
                     LastCreatedTransport.Close(false);
                 }
-            };
+            });
 
             client.Close();
 

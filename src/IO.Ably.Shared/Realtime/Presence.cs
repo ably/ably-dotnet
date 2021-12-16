@@ -264,6 +264,17 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
+        /// Subscribe to presence events with a specific action on the associated Channel. This implicitly
+        /// attaches the Channel if it is not already attached.
+        /// </summary>
+        /// <param name="action">action to be observed.</param>
+        /// <param name="handler">handler to be notified for the arrival of presence messages.</param>
+        public void Subscribe(PresenceAction action, Func<PresenceMessage, Task> handler)
+        {
+            Subscribe(action, message => { _ = handler(message); });
+        }
+
+        /// <summary>
         /// Unsubscribe a previously subscribed handler.
         /// </summary>
         /// <param name="handler">the handler to be unsubscribed.</param>
