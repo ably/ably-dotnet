@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
+using IO.Ably.Types;
 using NUnit.Framework;
 
 namespace IO.Ably.TestHelpers.Unity
@@ -60,6 +62,16 @@ namespace IO.Ably.TestHelpers.Unity
         public static Func<DateTimeOffset> NowFunc()
         {
             return Defaults.NowFunc();
+        }
+
+        internal static TestTransportWrapper GetTestTransport(this IRealtimeClient client)
+        {
+            return ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
+        }
+
+        public static void FakeProtocolMessageReceived(this AblyRealtime client, ProtocolMessage message)
+        {
+            client.Workflow.QueueCommand(ProcessMessageCommand.Create(message));
         }
 
         public static async Task WaitFor(int timeoutMs, int taskCount, Action<Action> action, Action onFail = null)
