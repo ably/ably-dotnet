@@ -398,7 +398,7 @@ namespace IO.Ably
         /// which used to prevent the library from initialising.
         /// Default: true.
         /// </summary>
-        public bool AutomaticNetworkStateMonitoring { get; set; } = true;
+        public bool AutomaticNetworkStateMonitoring { get; set; } = false;
 
         /// <summary>
         /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server

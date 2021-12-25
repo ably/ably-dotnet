@@ -7,7 +7,7 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
-        internal static bool _hookedUpToNetworkEvents = false;
+        internal static bool _hookedUpToNetworkEvents = true;
         private static readonly object _lock = new object();
 
         public string PlatformId => "framework";
