@@ -13,4 +13,6 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("IO.Ably.Push.iOS")]
 [assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
 [assembly: InternalsVisibleTo("IO.Ably.TestHelpers.Unity")]
+[assembly: InternalsVisibleTo("Assets.Ably.Tests.EditMode")]
+[assembly: InternalsVisibleTo("Assets.Ably.Tests.PlayMode")]
 #endif
