@@ -38,7 +38,8 @@ namespace IO.Ably.TestHelpers.Unity
                 settings.Environment = environment;
             }
 
-            JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("test-app-setup.json"));
+            // JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("test-app-setup.json"));
+            JObject testAppSpec = JObject.Parse(TestAppSetup._testAppSetup);
 
             var cipher = testAppSpec["cipher"];
             settings.CipherParams = new CipherParams(
