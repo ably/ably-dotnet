@@ -34,7 +34,7 @@ namespace IO.Ably.TestHelpers.Unity
 
         protected AblySandboxFixture Fixture { get; set; }
 
-        protected ManualResetEvent ResetEvent { get; }
+        internal ManualResetEvent ResetEvent { get; }
 
         public IDisposable EnableDebugLogging()
         {
@@ -99,7 +99,7 @@ namespace IO.Ably.TestHelpers.Unity
             return client;
         }
 
-        protected async Task WaitFor(Action<Action> done)
+        internal async Task WaitFor(Action<Action> done)
         {
             await TestHelpers.WaitFor(10000, 1, done);
         }
@@ -123,7 +123,7 @@ namespace IO.Ably.TestHelpers.Unity
             }
         }
 
-        protected async Task WaitFor(int timeoutMs, Action<Action> done, Action onFail = null)
+        internal async Task WaitFor(int timeoutMs, Action<Action> done, Action onFail = null)
         {
             await TestHelpers.WaitFor(timeoutMs, 1, done, onFail);
         }
