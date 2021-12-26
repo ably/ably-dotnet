@@ -14,15 +14,16 @@ namespace IO.Ably.Tests.Rest
         {
         }
 
-        [Theory(Skip = "Keeps failing")]
+        [Theory]
         [ProtocolData]
         public async Task GetsChannelPresence(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
+
             var channel = client.Channels.Get(TestEnvironmentSettings.PresenceChannelName);
+            channel.Should().NotBeNull();
 
             var presence = await channel.Presence.GetAsync();
-
             presence.Items.Should().HaveCount(6);
         }
 
