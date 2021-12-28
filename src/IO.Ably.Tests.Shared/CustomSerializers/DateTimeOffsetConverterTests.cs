@@ -27,6 +27,19 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
             serializedJToken["DateTimeOffset"].Should().NotBeNull(); // check that json property/key exists
             serializedJToken["DateTimeOffset"].Type.Should().Be(JTokenType.Integer); // check type of the property
             serializedJToken["DateTimeOffset"].Value<long>().Should().Be(1388534400000);
+
+
+            var message = new Message
+            {
+                Id = "my-id",
+                Data = new TestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero))
+            };
+
+            serializedDateTimeOffset = JsonHelper.Serialize(message);
+            serializedJToken = JToken.Parse(serializedDateTimeOffset);
+            serializedJToken["data"]["DateTimeOffset"].Should().NotBeNull(); // check that json property/key exists
+            serializedJToken["data"]["DateTimeOffset"].Type.Should().Be(JTokenType.Integer); // check type of the property
+            serializedJToken["data"]["DateTimeOffset"].Value<long>().Should().Be(1388534400000);
         }
 
         [Fact]
