@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.Realtime
             * Test presence message map behaviour (RTP2 features)
             * Tests RTP2a, RTP2b1, RTP2b2, RTP2c, RTP2d, RTP2g, RTP18c, RTP6a features
             */
-            [Theory(Skip = "Keeps failing")]
+            [Theory(Skip = "Test is failing")]
             [ProtocolData]
             [Trait("spec", "RTP2")]
             [Trait("spec", "RTP2a")]
@@ -131,6 +131,9 @@ namespace IO.Ably.Tests.Realtime
                 await client.WaitForState(ConnectionState.Connected);
 
                 var channel = client.Channels.Get(channelName);
+
+                channel.State.Should().Be(ChannelState.Initialized);
+
                 await channel.AttachAsync();
 
                 channel.State.Should().Be(ChannelState.Attached);
@@ -213,6 +216,24 @@ namespace IO.Ably.Tests.Realtime
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
                         Data = wontPass,
                     },
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:2",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
+                        Data = wontPass,
+                    },
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:3",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
+                        Data = wontPass,
+                    },
                 };
 
                 foreach (var presenceMessage in testData)
@@ -243,7 +264,7 @@ namespace IO.Ably.Tests.Realtime
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
                     {
                         ClientId = testMsg.ClientId,
-                        WaitForSync = false
+                        WaitForSync = true
                     });
                     presentMessage.FirstOrDefault().Should().NotBeNull();
                     presentMessage.FirstOrDefault()?.Action.Should().Be(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
