@@ -177,6 +177,46 @@ namespace IO.Ably.Tests.Realtime
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
                         Data = string.Empty,
                     },
+                    /* Should be newer than previous one */
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:1",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
+                        Data = string.Empty,
+                    },
+                    /* Should be newer than previous one */
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:2",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
+                        Data = string.Empty,
+                    },
+                    /* Should be newer than previous one */
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:3",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
+                        Data = string.Empty,
+                    },
+                    /* Should be newer than previous one */
+                    new PresenceMessage
+                    {
+                        Action = PresenceAction.Update,
+                        ClientId = "2",
+                        ConnectionId = "2",
+                        Id = "2:3:4",
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
+                        Data = string.Empty,
+                    },
                     /* Shouldn't pass newness test because of message serial, timestamp doesn't matter in this case */
                     new PresenceMessage
                     {
@@ -281,6 +321,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var channel2 = client2.Channels.Get(channel2Name);
                 channel2.Attach();
+                channel2.State.Should().Be(ChannelState.Attaching);
                 await channel2.WaitForAttachedState();
                 channel2.State.Should().Be(ChannelState.Attached);
 
