@@ -33,6 +33,12 @@
         <WarningLevel>4</WarningLevel>
         <ConsolePause>false</ConsolePause>
     </PropertyGroup>
+    <PropertyGroup>
+        <SignAssembly>true</SignAssembly>
+    </PropertyGroup>
+    <PropertyGroup>
+        <AssemblyOriginatorKeyFile>IO.Ably.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
     <ItemGroup>
         <Reference Include="OpenTK-1.0" />
         <Reference Include="System" />
@@ -54,6 +60,7 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
+        <None Include="IO.Ably.snk" />
         <None Include="packages.config" />
         <AdditionalFiles Include="..\stylecop.json" />
     </ItemGroup>
