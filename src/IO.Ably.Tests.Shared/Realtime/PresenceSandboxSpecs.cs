@@ -911,7 +911,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            [Theory(Skip = "Keeps failing")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP19")]
             public async Task
