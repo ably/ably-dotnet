@@ -7,7 +7,6 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
 {
     public class DateTimeOffsetConverterTests
     {
-
         internal class TestClass
         {
             public TestClass(DateTimeOffset data)
@@ -28,7 +27,6 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
             serializedJToken["DateTimeOffset"].Type.Should().Be(JTokenType.Integer); // check type of the property
             serializedJToken["DateTimeOffset"].Value<long>().Should().Be(1388534400000);
 
-
             var message = new Message
             {
                 Id = "my-id",
@@ -46,10 +44,8 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
         public void ShouldPreserveTimezoneInformation()
         {
             var originalDateTimeOffset = new TestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
-
             var serializedDateTimeOffset = JsonHelper.Serialize(originalDateTimeOffset);
             var deserializedDateTimeOffset = JsonHelper.Deserialize<TestClass>(serializedDateTimeOffset);
-
             deserializedDateTimeOffset.DateTimeOffset.Should().Be(originalDateTimeOffset.DateTimeOffset);
         }
 
@@ -60,7 +56,6 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
             var serializedDateTimeOffset = JsonHelper.Serialize(originalDateTimeOffset);
             var serializedJToken = JToken.Parse(serializedDateTimeOffset);
             serializedJToken["DateTimeOffset"].Should().BeNull();
-
             var deserializedDateTimeOffset = JsonHelper.Deserialize<TestClass>(serializedDateTimeOffset);
             deserializedDateTimeOffset.DateTimeOffset.Should().Be(DateTimeOffset.MinValue);
         }
@@ -91,7 +86,6 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
             var serializedDateTimeOffset = JsonHelper.Serialize(originalDateTimeOffset);
             var serializedJToken = JToken.Parse(serializedDateTimeOffset);
             serializedJToken["DateTimeOffset"].Should().BeNull();
-
             var deserializedDateTimeOffset = JsonHelper.Deserialize<NullableTestClass>(serializedDateTimeOffset);
             deserializedDateTimeOffset.DateTimeOffset.Should().BeNull();
         }
