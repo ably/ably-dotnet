@@ -89,5 +89,14 @@ namespace IO.Ably.Tests.Shared.CustomSerializers
             var deserializedDateTimeOffset = JsonHelper.Deserialize<NullableTestClass>(serializedDateTimeOffset);
             deserializedDateTimeOffset.DateTimeOffset.Should().BeNull();
         }
+
+        [Fact]
+        public void ShouldPreserveTimezoneInformationForNullableDateTime()
+        {
+            var originalDateTimeOffset = new NullableTestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
+            var serializedDateTimeOffset = JsonHelper.Serialize(originalDateTimeOffset);
+            var deserializedDateTimeOffset = JsonHelper.Deserialize<NullableTestClass>(serializedDateTimeOffset);
+            deserializedDateTimeOffset.DateTimeOffset.Should().Be(originalDateTimeOffset.DateTimeOffset);
+        }
     }
 }
