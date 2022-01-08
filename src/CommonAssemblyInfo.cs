@@ -5,14 +5,14 @@ using System.Reflection;
 [assembly: AssemblyCompany("Ably Realtime")]
 [assembly: AssemblyDescription("Client for ably.io realtime service")]
 [assembly: AssemblyProduct("Ably .Net Library")]
-[assembly: AssemblyVersion("1.2.5")]
-[assembly: AssemblyFileVersion("1.2.5")]
+[assembly: AssemblyVersion("1.2.6")]
+[assembly: AssemblyFileVersion("1.2.6")]
 namespace System {
     internal static class AssemblyVersionInformation {
-        internal const string AssemblyCompany = "Ably Realtime";
-        internal const string AssemblyDescription = "Client for ably.io realtime service";
-        internal const string AssemblyProduct = "Ably .Net Library";
-        internal const string AssemblyVersion = "1.2.5";
-        internal const string AssemblyFileVersion = "1.2.5";
+        internal const System.String AssemblyCompany = "Ably Realtime";
+        internal const System.String AssemblyDescription = "Client for ably.io realtime service";
+        internal const System.String AssemblyProduct = "Ably .Net Library";
+        internal const System.String AssemblyVersion = "1.2.6";
+        internal const System.String AssemblyFileVersion = "1.2.6";
     }
 }
