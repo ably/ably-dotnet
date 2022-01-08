@@ -60,7 +60,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestTransportWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TimeoutCallbackTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)JsonDeserializationBugTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\DateTimeOffsetConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JDiff.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonMessageSerializerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LoggerTests.cs" />
