@@ -131,9 +131,6 @@ namespace IO.Ably.Tests.Realtime
                 await client.WaitForState(ConnectionState.Connected);
 
                 var channel = client.Channels.Get(channelName);
-
-                channel.State.Should().Be(ChannelState.Initialized);
-
                 await channel.AttachAsync();
 
                 channel.State.Should().Be(ChannelState.Attached);
@@ -177,46 +174,6 @@ namespace IO.Ably.Tests.Realtime
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
                         Data = string.Empty,
                     },
-                    /* Should be newer than previous one */
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:1",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
-                        Data = string.Empty,
-                    },
-                    /* Should be newer than previous one */
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:2",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
-                        Data = string.Empty,
-                    },
-                    /* Should be newer than previous one */
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:3",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
-                        Data = string.Empty,
-                    },
-                    /* Should be newer than previous one */
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:4",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
-                        Data = string.Empty,
-                    },
                     /* Shouldn't pass newness test because of message serial, timestamp doesn't matter in this case */
                     new PresenceMessage
                     {
@@ -256,24 +213,6 @@ namespace IO.Ably.Tests.Realtime
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
                         Data = wontPass,
                     },
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:2",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
-                        Data = wontPass,
-                    },
-                    new PresenceMessage
-                    {
-                        Action = PresenceAction.Update,
-                        ClientId = "2",
-                        ConnectionId = "2",
-                        Id = "2:3:3",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
-                        Data = wontPass,
-                    },
                 };
 
                 foreach (var presenceMessage in testData)
@@ -304,7 +243,7 @@ namespace IO.Ably.Tests.Realtime
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
                     {
                         ClientId = testMsg.ClientId,
-                        WaitForSync = true
+                        WaitForSync = false
                     });
                     presentMessage.FirstOrDefault().Should().NotBeNull();
                     presentMessage.FirstOrDefault()?.Action.Should().Be(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
