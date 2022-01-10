@@ -8,6 +8,10 @@
 
 - Additional code quality fixes (see [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.5...1.2.6))
 
+**Fixed bugs:**
+
+- Call to Release \(and ReleaseAll\) does not impact channels in RealtimeChannels [\#980](https://github.com/ably/ably-dotnet/issues/980)
+
 ## [1.2.5](https://github.com/ably/ably-dotnet/tree/1.2.5) (2021-07-02)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.4...1.2.5)
