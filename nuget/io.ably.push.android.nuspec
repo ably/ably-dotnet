@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
-        <id>ably.push.android</id>
+        <id>ably.io.push.android</id>
         <version>$version$</version>
-        <title>ably.push.android</title>
+        <title>Ably Push Android</title>
         <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
-        <id>ably.push.ios</id>
+        <id>ably.io.push.ios</id>
         <version>$version$</version>
-        <title>ably.push.ios</title>
+        <title>Ably Push iOS</title>
         <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
@@ -15,11 +15,6 @@
         <copyright>©2022 Ably</copyright>
         <language />
         <dependencies>
-
-          <group>
-
-          </group>
-
           <group targetFramework="xamarinios10">
               <dependency id="ably.io" version="[1.2.7,2.0.0]" />
               <dependency id="Xamarin.Essentials" version="1.6.1" />
