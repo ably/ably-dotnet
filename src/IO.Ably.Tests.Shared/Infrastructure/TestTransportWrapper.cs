@@ -27,16 +27,17 @@ namespace IO.Ably.Tests.Infrastructure
 
             public void OnTransportDataReceived(RealtimeTransportData data)
             {
-                if (data.Original != null && _wrappedTransport.BlockReceiveActions.Contains(data.Original.Action))
-                {
-                    return;
-                }
-
                 ProtocolMessage msg = null;
                 try
                 {
                     msg = _handler.ParseRealtimeData(data);
                     ProtocolMessagesReceived.Add(msg);
+
+                    if (_wrappedTransport.BlockReceiveActions.Contains(msg.Action))
+                    {
+                        return;
+                    }
+
                     if (_wrappedTransport.BeforeDataProcessed != null)
                     {
                         _wrappedTransport.BeforeDataProcessed?.Invoke(msg);

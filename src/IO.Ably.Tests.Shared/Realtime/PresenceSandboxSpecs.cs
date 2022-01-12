@@ -130,6 +130,9 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
 
+                // Block ably server sent sync action
+                client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Sync);
+
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
 
@@ -143,9 +146,6 @@ namespace IO.Ably.Tests.Realtime
                     x.Data.Should().NotBe(wontPass, "message did not pass the newness test");
                     receivedPresenceMsgs.Add(x);
                 });
-
-                // Block ably server sent sync action
-                client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Sync);
 
                 /* Test message newness criteria as described in RTP2b */
                 PresenceMessage[] testData = new[]
