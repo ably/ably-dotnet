@@ -144,6 +144,9 @@ namespace IO.Ably.Tests.Realtime
                     receivedPresenceMsgs.Add(x);
                 });
 
+                // Block ably server sent sync action
+                client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Sync);
+
                 /* Test message newness criteria as described in RTP2b */
                 PresenceMessage[] testData = new[]
                 {
@@ -227,29 +230,29 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.ProcessCommands();
 
-                // int n = 0;
-                // foreach (var testMsg in testData)
-                // {
-                //     if (testMsg.Data.ToString() == wontPass)
-                //     {
-                //         continue;
-                //     }
-                //
-                //     PresenceMessage factualMsg = n < receivedPresenceMsgs.Count ? receivedPresenceMsgs[n++] : null;
-                //     factualMsg.Should().NotBeNull();
-                //     Debug.Assert(factualMsg != null, $"Expected '{factualMsg}' to be non-null");
-                //     factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
-                //     factualMsg.Action.Should().Be(testMsg.Action, "message was not emitted on the presence object with original action");
-                //     var presenceMessages = await channel.Presence.GetAsync(new Presence.GetParams
-                //     {
-                //         ClientId = testMsg.ClientId,
-                //         WaitForSync = false
-                //     });
-                //     presenceMessages.FirstOrDefault().Should().NotBeNull();
-                //     presenceMessages.FirstOrDefault()?.Action.Should().Be(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
-                // }
+                int n = 0;
+                foreach (var testMsg in testData)
+                {
+                    if (testMsg.Data.ToString() == wontPass)
+                    {
+                        continue;
+                    }
 
-                // receivedPresenceMsgs.Count.Should().Be(n, "the number of messages received didn't match the number of test messages sent.");
+                    PresenceMessage factualMsg = n < receivedPresenceMsgs.Count ? receivedPresenceMsgs[n++] : null;
+                    factualMsg.Should().NotBeNull();
+                    Debug.Assert(factualMsg != null, $"Expected '{factualMsg}' to be non-null");
+                    factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
+                    factualMsg.Action.Should().Be(testMsg.Action, "message was not emitted on the presence object with original action");
+                    var presenceMessages = await channel.Presence.GetAsync(new Presence.GetParams
+                    {
+                        ClientId = testMsg.ClientId,
+                        WaitForSync = false
+                    });
+                    presenceMessages.FirstOrDefault().Should().NotBeNull();
+                    presenceMessages.FirstOrDefault()?.Action.Should().Be(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
+                }
+
+                receivedPresenceMsgs.Count.Should().Be(n, "the number of messages received didn't match the number of test messages sent.");
 
                 /* Repeat the process now as a part of SYNC and verify everything is exactly the same */
                 var channel2Name = "presence_map_tests_sync_newness".AddRandomSuffix();

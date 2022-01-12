@@ -27,6 +27,11 @@ namespace IO.Ably.Tests.Infrastructure
 
             public void OnTransportDataReceived(RealtimeTransportData data)
             {
+                if (data.Original != null && _wrappedTransport.BlockReceiveActions.Contains(data.Original.Action))
+                {
+                    return;
+                }
+
                 ProtocolMessage msg = null;
                 try
                 {
@@ -80,6 +85,8 @@ namespace IO.Ably.Tests.Infrastructure
         public List<ProtocolMessage> ProtocolMessagesSent { get; set; } = new List<ProtocolMessage>();
 
         public List<ProtocolMessage.MessageAction> BlockSendActions { get; set; } = new List<ProtocolMessage.MessageAction>();
+
+        public List<ProtocolMessage.MessageAction> BlockReceiveActions { get; set; } = new List<ProtocolMessage.MessageAction>();
 
         public Action<ProtocolMessage> BeforeDataProcessed;
         public Action<ProtocolMessage> AfterDataReceived;
