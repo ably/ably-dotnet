@@ -403,7 +403,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            [Theory(Skip = "Keeps failing")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP17")]
             [Trait("spec", "RTP17b")]
