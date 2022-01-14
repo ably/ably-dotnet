@@ -63,13 +63,19 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
 
+                client.BeforeProtocolMessageProcessed(message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Attached)
+                    {
+                        message.Flags &= ~(int)ProtocolMessage.Flag.HasPresence; // unset has_presence/members bit
+                    }
+                });
+
                 var channel = client.Channels.Get(GetTestChannelName());
 
                 await channel.AttachAsync();
 
                 channel.State.Should().Be(ChannelState.Attached);
-
-                // await channel.WaitForAttachedState();
 
                 channel.Presence.SyncComplete.Should().BeTrue();
             }
