@@ -137,7 +137,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel.AttachAsync();
 
                 channel.State.Should().Be(ChannelState.Attached);
-                List<PresenceMessage> receivedPresenceMsgs = new List<PresenceMessage>();
+                var receivedPresenceMsgs = new List<PresenceMessage>();
 
                 const string wontPass = "Won't pass newness test";
                 // Subscribing to new presence messages
@@ -148,7 +148,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 /* Test message newness criteria as described in RTP2b */
-                PresenceMessage[] testData = new[]
+                var testData = new[]
                 {
                     new PresenceMessage
                     {
@@ -230,7 +230,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.ProcessCommands();
 
-                int n = 0;
+                var n = 0;
                 foreach (var testMsg in testData)
                 {
                     if (testMsg.Data.ToString() == wontPass)
@@ -238,7 +238,7 @@ namespace IO.Ably.Tests.Realtime
                         continue;
                     }
 
-                    PresenceMessage factualMsg = n < receivedPresenceMsgs.Count ? receivedPresenceMsgs[n++] : null;
+                    var factualMsg = n < receivedPresenceMsgs.Count ? receivedPresenceMsgs[n++] : null;
                     factualMsg.Should().NotBeNull();
                     Debug.Assert(factualMsg != null, $"Expected '{factualMsg}' to be non-null");
                     factualMsg.Id.Should().BeEquivalentTo(testMsg.Id);
@@ -268,7 +268,7 @@ namespace IO.Ably.Tests.Realtime
                 channel2.State.Should().Be(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
-                ProtocolMessage syncMessage = new ProtocolMessage
+                var syncMessage = new ProtocolMessage
                 {
                     Channel = channel2Name,
                     Action = ProtocolMessage.MessageAction.Sync,
@@ -276,7 +276,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var counter = new TaskCountAwaiter(receivedPresenceMsgs.Count, 5000);
-                List<PresenceMessage> syncPresenceMessages = new List<PresenceMessage>();
+                var syncPresenceMessages = new List<PresenceMessage>();
                 channel2.Presence.Subscribe(x =>
                 {
                     x.Data.Should().NotBe(wontPass, "message did not pass the newness test");
@@ -290,7 +290,7 @@ namespace IO.Ably.Tests.Realtime
 
                 syncPresenceMessages.Count.Should().Be(receivedPresenceMsgs.Count);
 
-                for (int i = 0; i < syncPresenceMessages.Count; i++)
+                for (var i = 0; i < syncPresenceMessages.Count; i++)
                 {
                     syncPresenceMessages[i].Id.Should().BeEquivalentTo(receivedPresenceMsgs[i].Id, "result should be the same in case of SYNC");
                     syncPresenceMessages[i].Action.Should().Be(receivedPresenceMsgs[i].Action, "result should be the same in case of SYNC");
