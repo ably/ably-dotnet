@@ -230,7 +230,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.ProcessCommands();
 
-                var n = 0;
+                int n = 0;
                 foreach (var testMsg in testData)
                 {
                     if (testMsg.Data.ToString() == wontPass)
@@ -290,7 +290,7 @@ namespace IO.Ably.Tests.Realtime
 
                 syncPresenceMessages.Count.Should().Be(receivedPresenceMsgs.Count);
 
-                for (var i = 0; i < syncPresenceMessages.Count; i++)
+                for (int i = 0; i < syncPresenceMessages.Count; i++)
                 {
                     syncPresenceMessages[i].Id.Should().BeEquivalentTo(receivedPresenceMsgs[i].Id, "result should be the same in case of SYNC");
                     syncPresenceMessages[i].Action.Should().Be(receivedPresenceMsgs[i].Action, "result should be the same in case of SYNC");
