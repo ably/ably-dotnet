@@ -81,7 +81,7 @@ A Portable Class Library version is not available. Portable Class Libraries are 
 
 The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/documentation/general/push/admin), [Device Push Notifications](https://ably.com/documentation/realtime/push). 
 
-The [Push Readme]('Push Readme.md') describes:
+The [Push Readme](Push_README.md) describes:
 - How to setup Push notifications on Xamarin mobile apps
 - How to use the Push Admin api to send push notifications directly to a devices or a client
 - How to subscribe to channels that support push notification
