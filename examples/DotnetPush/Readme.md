@@ -4,7 +4,7 @@ DotNet push is built for testing Push notifications. It can be used as a startin
 
 ## Setup
 
-To setup the projects you need to get setup for push notifications. Read the `Push_README.md` in the root of the repository first. 
+To setup the projects you need to get setup for push notifications. Read the `PushNotifications.md` in the root of the repository first. 
 
 For Android you need to use an emulator with Google Services enabled or a physical device, for Apple you need to have a physical device as Push notifications do not work on the emulator. 
 
