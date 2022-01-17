@@ -77,15 +77,19 @@ Implementation note for Unity. The library creates a number of threads and all c
 
 A Portable Class Library version is not available. Portable Class Libraries are now considered deprecated and shared code should be packaged in .NET Standard Libraries. More information can be found [here](https://docs.microsoft.com/en-us/xamarin/cross-platform/app-fundamentals/code-sharing).
 
+## Push notification
+
+The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/documentation/general/push/admin), [Device Push Notifications](https://ably.com/documentation/realtime/push). 
+
+The [Push Notifications Readme](PushNotifications.md) describes:
+- How to setup Push notifications on Xamarin mobile apps
+- How to use the Push Admin api to send push notifications directly to a devices or a client
+- How to subscribe to channels that support push notification
+- How to send Ably messages that include a notification
+
 ## Known Limitations
 
-This client library is currently *not compatible* with some of the Ably features:
-
-| Feature | 
-|:--- |
-| [Push Notification target](https://www.ably.io/documentation/general/push/activate-subscribe#subscribing) |
-| [Push Notification admin](https://www.ably.io/documentation/general/push/admin) |
-| [Custom `transportParams`](https://www.ably.io/documentation/realtime/usage#client-options) |
+* Browser push notifications in Blazor are not supported.
 
 ## Documentation
 

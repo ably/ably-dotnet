@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		IO.Ably.ruleset = IO.Ably.ruleset
 		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
-		..\Push README.md = ..\Push README.md
+		..\PushNotifications.md = ..\PushNotifications.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably", "Ably", "{8A0F718E-2168-4CC7-8F7B-A65508B52B0F}"
