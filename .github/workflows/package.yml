@@ -1,0 +1,57 @@
+name: Package ably
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Ably version'
+        required: true
+
+jobs:
+  package-library:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+      - name: Download dotnet framework
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Download fake-cli
+        run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
+      - name: Package
+        run: ./package.cmd ${{ github.event.inputs.version }}
+      - name: Archive package
+        uses: actions/upload-artifact@v2
+        with:
+          name: save-nuget-package
+          path: |
+            *.nuget
+
+  package-push:
+    runs-on: macos-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+      - name: Download dotnet framework
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Download fake-cli
+        run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
+      - name: Restore packages
+        run: |
+          nuget restore ./src/IO.Ably.Xamarin.sln
+      - name: Package 
+        run: ./package-push.sh ${{ github.event.inputs.version }}
+      - name: Archive package
+        uses: actions/upload-artifact@v2
+        with:
+          name: save-nuget-package
+          path: |
+            *.nuget
+      
