@@ -50,6 +50,17 @@ namespace IO.Ably.Tests
             transport.BlockSendActions.Add(action);
         }
 
+        internal static void BlockActionFromReceiving(this IRealtimeClient client, ProtocolMessage.MessageAction action)
+        {
+            var transport = (TestTransportWrapper)((AblyRealtime)client).ConnectionManager.Transport;
+            if (transport is null)
+            {
+                throw new Exception("Client is not using test transport so you can't add BlockedActions");
+            }
+
+            transport.BlockReceiveActions.Add(action);
+        }
+
         internal static void SimulateLostConnectionAndState(this AblyRealtime client)
         {
             client.State.Connection.Id = string.Empty;
