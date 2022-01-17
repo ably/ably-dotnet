@@ -978,7 +978,7 @@ namespace IO.Ably.Tests.Realtime
                 members.Any(m => m.ClientId == localMessage.ClientId).Should().BeFalse();
             }
 
-            [Theory(Skip = "Keeps failing")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP19a")]
             [Trait("spec", "RTP6b")]
@@ -994,9 +994,18 @@ namespace IO.Ably.Tests.Realtime
 
                 var channelName = "RTP19a".AddRandomSuffix();
                 var client = await GetRealtimeClient(protocol);
-                await client.WaitForState();
-                var channel = client.Channels.Get(channelName);
+                await client.WaitForState(ConnectionState.Connected);
 
+                // Remove HAS_PRESENCE Flag from Attached message
+                client.BeforeProtocolMessageProcessed(message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Attached)
+                    {
+                        message.Flags &= ~(int)ProtocolMessage.Flag.HasPresence; // unset has_presence/members bit
+                    }
+                });
+
+                var channel = client.Channels.Get(channelName);
                 var localMessage1 = new PresenceMessage
                 {
                     Action = PresenceAction.Enter,
@@ -1054,7 +1063,7 @@ namespace IO.Ably.Tests.Realtime
                     });
                 });
 
-                hasPresence.Should().BeFalse("ATTACHED message was received without a HAS_PRESENCE flag");
+                hasPresence.Should().BeFalse("ATTACHED message was received with a HAS_PRESENCE flag");
                 leaveCount.Should().Be(2, "should emit a LEAVE event for each existing member");
 
                 var members = await channel.Presence.GetAsync();
