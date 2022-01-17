@@ -32,6 +32,12 @@ namespace IO.Ably.Tests.Infrastructure
                 {
                     msg = _handler.ParseRealtimeData(data);
                     ProtocolMessagesReceived.Add(msg);
+
+                    if (_wrappedTransport.BlockReceiveActions.Contains(msg.Action))
+                    {
+                        return;
+                    }
+
                     if (_wrappedTransport.BeforeDataProcessed != null)
                     {
                         _wrappedTransport.BeforeDataProcessed?.Invoke(msg);
@@ -80,6 +86,8 @@ namespace IO.Ably.Tests.Infrastructure
         public List<ProtocolMessage> ProtocolMessagesSent { get; set; } = new List<ProtocolMessage>();
 
         public List<ProtocolMessage.MessageAction> BlockSendActions { get; set; } = new List<ProtocolMessage.MessageAction>();
+
+        public List<ProtocolMessage.MessageAction> BlockReceiveActions { get; set; } = new List<ProtocolMessage.MessageAction>();
 
         public Action<ProtocolMessage> BeforeDataProcessed;
         public Action<ProtocolMessage> AfterDataReceived;
