@@ -55,16 +55,27 @@ namespace IO.Ably.Tests.Realtime
             }
 
             // TODO: Add tests to makes sure Presence messages id, timestamp and connectionId are set
-            [Theory(Skip = "Keeps failing")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP1")]
             public async Task WhenAttachingToAChannelWithNoMembers_PresenceShouldBeConsideredInSync(Protocol protocol)
             {
                 var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+
+                client.BeforeProtocolMessageProcessed(message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Attached)
+                    {
+                        message.Flags &= ~(int)ProtocolMessage.Flag.HasPresence; // unset has_presence/members bit
+                    }
+                });
+
                 var channel = client.Channels.Get(GetTestChannelName());
 
                 await channel.AttachAsync();
                 await channel.WaitForAttachedState();
+                channel.State.Should().Be(ChannelState.Attached);
 
                 channel.Presence.SyncComplete.Should().BeTrue();
             }
