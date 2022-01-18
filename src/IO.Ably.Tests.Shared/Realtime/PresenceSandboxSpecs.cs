@@ -1319,7 +1319,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Close();
                 }
 
-                [Theory(Skip = "Keeps failing")]
+                [Theory]
                 [ProtocolData(ChannelState.Failed)]
                 [ProtocolData(ChannelState.Detached)]
                 [Trait("spec", "RTP5a")]
@@ -1329,6 +1329,8 @@ namespace IO.Ably.Tests.Realtime
                     await client.WaitForState();
 
                     var channel = GetRandomChannel(client, "RTP5a");
+                    channel.Attach();
+                    await channel.WaitForAttachedState();
 
                     var result = await channel.Presence.EnterClientAsync("123", null);
                     result.IsSuccess.Should().BeTrue();
