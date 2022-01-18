@@ -407,7 +407,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            [Theory(Skip = "failed with timeout while waiting for tasks")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP17")]
             [Trait("spec", "RTP17b")]
@@ -423,11 +423,19 @@ namespace IO.Ably.Tests.Realtime
                 await clientA.WaitForState(ConnectionState.Connected);
 
                 var channelA = clientA.Channels.Get(channelName);
+                channelA.Attach();
+                channelA.State.Should().Be(ChannelState.Attaching);
+                await channelA.WaitForAttachedState();
+                channelA.State.Should().Be(ChannelState.Attached);
 
                 var clientB = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "B"; });
                 await clientB.WaitForState(ConnectionState.Connected);
 
                 var channelB = clientB.Channels.Get(channelName);
+                channelB.Attach();
+                channelB.State.Should().Be(ChannelState.Attaching);
+                await channelB.WaitForAttachedState();
+                channelB.State.Should().Be(ChannelState.Attached);
 
                 // ENTER
                 PresenceMessage msgA = null, msgB = null;
