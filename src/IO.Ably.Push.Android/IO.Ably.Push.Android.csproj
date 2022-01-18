@@ -38,6 +38,9 @@
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Package|AnyCPU' ">
+      <OutputPath>bin\Package\</OutputPath>
+    </PropertyGroup>
     <PropertyGroup>
         <SignAssembly>true</SignAssembly>
     </PropertyGroup>
@@ -318,6 +321,9 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="..\CommonAssemblyInfo.cs">
+          <Link>Properties\CommonAssemblyInfo.cs</Link>
+        </Compile>
         <Compile Include="AndroidMobileDevice.cs" />
         <Compile Include="Resources\Resource.Designer.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

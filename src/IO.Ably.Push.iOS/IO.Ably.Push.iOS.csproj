@@ -33,6 +33,9 @@
         <WarningLevel>4</WarningLevel>
         <ConsolePause>false</ConsolePause>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Package|AnyCPU' ">
+      <OutputPath>bin\Package\</OutputPath>
+    </PropertyGroup>
     <PropertyGroup>
         <SignAssembly>true</SignAssembly>
     </PropertyGroup>
@@ -56,6 +59,9 @@
         <Folder Include="Resources\" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="..\CommonAssemblyInfo.cs">
+          <Link>Properties\CommonAssemblyInfo.cs</Link>
+        </Compile>
         <Compile Include="AppleMobileDevice.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
