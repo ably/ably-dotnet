@@ -43,6 +43,7 @@ let testResultsDir = Path.combine buildDir "tests"
 let packageDir = Path.combine buildDir "package"
 let configuration = DotNet.Release
 let packageSolution = "src/IO.Ably.Package.sln"
+let pushPackageSolution = "src/IO.Ably.PackagePush.sln"
 let buildMode = Environment.environVarOrDefault "buildMode" "Release"
 
 let cli = """
@@ -399,6 +400,24 @@ Target.create "Package - Build All" (fun _ ->
   MSBuild.build setParams packageSolution
 )
 
+Target.create "Push Package - Build All" (fun _ -> 
+  let setParams (defaults:MSBuildParams) =
+        { defaults with
+            Verbosity = Some(Quiet)
+            Targets = ["Build"]
+            Properties =
+                [
+                    "Optimize", "True"
+                    "DebugSymbols", "True"
+                    "Configuration", "Package"
+                    "StyleCopEnabled", "True"
+                    "Package", "True"
+                    "DefineConstants", "PACKAGE"
+                ]
+         }
+  MSBuild.build setParams pushPackageSolution
+)
+
 Target.create "Package - Merge json.net" (fun _ -> 
   let projectsToMerge = [ "IO.Ably.Android"; "IO.Ably.iOS"; "IO.Ably.NETFramework" ]
   let binFolderPaths = projectsToMerge 
@@ -427,6 +446,28 @@ Target.create "Package - Create nuget" (fun _ ->
   |> ignore      
 )
 
+Target.create "Package - Push" (fun _ -> 
+  CreateProcess.fromRawCommand "nuget" 
+      [
+        "pack"
+        "./nuget/io.ably.push.android.nuspec"
+        "-properties"
+        sprintf "version=%s;configuration=Release" version 
+        ]
+  |> Proc.run // start with the above configuration
+  |> ignore     
+
+  CreateProcess.fromRawCommand "nuget" 
+      [
+        "pack"
+        "./nuget/io.ably.push.ios.nuspec"
+        "-properties"
+        sprintf "version=%s;configuration=Release" version 
+        ]
+  |> Proc.run // start with the above configuration
+  |> ignore   
+)
+
 Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
@@ -441,6 +482,9 @@ Target.create "Test.NetStandard.Integration.WithRetry" ignore
 Target.create "Test.NetStandard.Integration" ignore
 
 Target.create "Package" ignore
+Target.create "PushPackage" ignore
+
+
 
 "Clean"
   ==> "Restore"
@@ -465,6 +509,12 @@ Target.create "Package" ignore
   ==> "Package - Merge json.net"
   ==> "Package - Create nuget"
   ==> "Package"
+
+"Prepare"
+  ==> "Version"
+  ==> "Push Package - Build All"
+  ==> "Package - Push"
+  ==> "PushPackage"
 
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"

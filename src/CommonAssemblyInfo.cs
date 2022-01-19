@@ -3,7 +3,6 @@
 using System.Reflection;
 
 [assembly: AssemblyCompany("Ably Realtime")]
-[assembly: AssemblyDescription("Client for ably.io realtime service")]
 [assembly: AssemblyProduct("Ably .Net Library")]
 [assembly: AssemblyVersion("1.2.6")]
 [assembly: AssemblyFileVersion("1.2.6")]

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>ably.io.push.ios</id>
+        <version>$version$</version>
+        <title>Ably Push iOS</title>
+        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
+        <owners>Ably Real-time Ltd</owners>
+        <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
+        <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Ably .NET library to enable push notifications on iOS devices.</description>
+        <copyright>©2022 Ably</copyright>
+        <language />
+        <dependencies>
+          <group targetFramework="xamarinios10">
+              <dependency id="ably.io" version="[1.2.7,2.0.0]" />
+              <dependency id="Xamarin.Essentials" version="1.6.1" />
+          </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\src\IO.Ably.Push.iOS\bin\Package\IO.Ably.Push.*" target="lib\xamarinios" />
+    </files>
+</package>

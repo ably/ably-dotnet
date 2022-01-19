@@ -30,7 +30,14 @@ namespace IO.Ably.Realtime
 
         public bool IsSyncInProgress
         {
-            get => _isSyncInProgress;
+            get
+            {
+                lock (_lock)
+                {
+                    return _isSyncInProgress;
+                }
+            }
+
             private set
             {
                 lock (_lock)

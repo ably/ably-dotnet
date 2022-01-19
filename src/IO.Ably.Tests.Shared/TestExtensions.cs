@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
 
         internal static void BlockActionFromSending(this IRealtimeClient client, ProtocolMessage.MessageAction action)
         {
-            var transport = ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
+            var transport = (TestTransportWrapper)((AblyRealtime)client).ConnectionManager.Transport;
             if (transport is null)
             {
                 throw new Exception("Client is not using test transport so you can't add BlockedActions");

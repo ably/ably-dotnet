@@ -768,9 +768,7 @@ namespace IO.Ably.Realtime
 
             if (hasPresence)
             {
-                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
-                     * the presence map should be considered in sync immediately
-                     * with no members present on the channel */
+                // RTP1 If [HAS_PRESENCE] flag is 1, should set presence sync as active (Doesn't necessarily mean members are available)
                 if (Logger.IsDebug)
                 {
                     Logger.Debug(
