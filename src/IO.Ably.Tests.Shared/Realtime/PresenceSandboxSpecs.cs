@@ -431,10 +431,22 @@ namespace IO.Ably.Tests.Realtime
 
                 var channelName = "RTP17".AddRandomSuffix();
                 var clientA = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "A"; });
+                await clientA.WaitForState(ConnectionState.Connected);
+
                 var channelA = clientA.Channels.Get(channelName);
+                channelA.Attach();
+                channelA.State.Should().Be(ChannelState.Attaching);
+                await channelA.WaitForAttachedState();
+                channelA.State.Should().Be(ChannelState.Attached);
 
                 var clientB = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "B"; });
+                await clientB.WaitForState(ConnectionState.Connected);
+
                 var channelB = clientB.Channels.Get(channelName);
+                channelB.Attach();
+                channelB.State.Should().Be(ChannelState.Attaching);
+                await channelB.WaitForAttachedState();
+                channelB.State.Should().Be(ChannelState.Attached);
 
                 // ENTER
                 PresenceMessage msgA = null, msgB = null;
@@ -1318,7 +1330,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Close();
                 }
 
-                [Theory(Skip = "Keeps failing")]
+                [Theory]
                 [ProtocolData(ChannelState.Failed)]
                 [ProtocolData(ChannelState.Detached)]
                 [Trait("spec", "RTP5a")]
@@ -1328,6 +1340,8 @@ namespace IO.Ably.Tests.Realtime
                     await client.WaitForState();
 
                     var channel = GetRandomChannel(client, "RTP5a");
+                    channel.Attach();
+                    await channel.WaitForAttachedState();
 
                     var result = await channel.Presence.EnterClientAsync("123", null);
                     result.IsSuccess.Should().BeTrue();
