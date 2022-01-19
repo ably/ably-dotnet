@@ -106,7 +106,6 @@ Target.create "Version" (fun _ ->
   AssemblyInfoFile.createCSharp "./src/CommonAssemblyInfo.cs"
       [   
           AssemblyInfo.Company "Ably Realtime"
-          AssemblyInfo.Description "Client for ably.io realtime service"
           AssemblyInfo.Product "Ably .Net Library"
           AssemblyInfo.Version version
           AssemblyInfo.FileVersion version
