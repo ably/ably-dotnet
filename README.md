@@ -9,24 +9,6 @@ _[Ably](https://ably.com) is the platform that powers synchronized digital exper
 
 This is a .NET client library for Ably. The library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
-## Xamarin and VS 2017
-
-There is an open issue for versions 1.1.14 and above when working with Xamarim Projects and Visual Studio 2017. Ably (1.1.14) was compiled using MsBuild that came with VS 2019 which causes an issue when a Xamarin app is compiled using VS 2017. More information can be found in this [Stack Overflow post](https://stackoverflow.com/questions/58032635/updating-nuget-caused-exception-unhandled-system-typeloadexception/58064929#58064929). 
-Until we resolve the issue you can either use version 1.1.13 or update to using Visual Studio 2019. Please create an support issue if this is causing problems. 
-
-
-## Significant changes in 1.1.15
-
-Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
-Here is a list of the significant changes. You can find a full list in the release notes.
-
-1. [Breaking] `Presence` and `IRealtimeChannel` no longer implement the `IDisposable` interface. They don't hold on to any unmanaged resources and there was no need to expose the `Dispose` function.
-2. [Breaking] `ITransport` has acquired an `Id` property and `ITransportListener.OnTransportEvent` has an `Id` parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated.
-3. `ClientOptions.CaptureCurrentSynchronizationContext` has been deprecated and defaulted to `false`. It will be removed in future versions. You need to make sure that you don't directly update UI elements if you are building a WPF or Xamarin.Forms application from Ably handlers. If you still require the functionality please set it back to `true` and open an Ably Support ticket that you need the functionality. The main reason to disable this feature is that the library should not assume on which thread updates should be posted and that needs to be handled by the developer.
-4. `IRealtimeClient` implements `IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
-5. Logging has been greatly improved. We've removed a lot of verbose messages that brought little value. There is a helpful debug method called `.GetCurrentState()` on the realtime client that will dump the whole library's state as a json string. This will be helpful to include in the support tickets.
-
-
 ## Supported platforms
 
 * .NET 4.6.2+ &ast;
