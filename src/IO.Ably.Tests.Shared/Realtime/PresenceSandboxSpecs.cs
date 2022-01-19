@@ -1473,7 +1473,7 @@ namespace IO.Ably.Tests.Realtime
                     remainingMembers.First().ClientId.Should().Be("local");
                 }
 
-                [Theory(Skip = "Keeps failing")]
+                [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP5b")]
                 public async Task WhenChannelBecomesAttached_ShouldSendQueuedMessagesAndInitiateSYNC(Protocol protocol)
