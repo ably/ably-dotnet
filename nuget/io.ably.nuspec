@@ -5,7 +5,7 @@
         <version>$version$</version>
         <title>ably.io</title>
         <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
-        <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</license>
+        <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
         <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
         <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
@@ -14,15 +14,12 @@
         <copyright>©2022 Ably</copyright>
         <language />
         <dependencies>
-
           <group>
             <dependency id="System.Threading.Channels" version="4.6.0" />
           </group>
-
           <group targetFramework="netstandard2.0">
             <dependency id="Newtonsoft.Json" version="9.0.1" />
           </group>
-
         </dependencies>
     </metadata>
     <files>
