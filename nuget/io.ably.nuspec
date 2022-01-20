@@ -18,31 +18,11 @@
         <dependencies>
 
           <group>
-
-          </group>
-
-          <group targetFramework="net46">
-            <!-- Some dependencies are merged using ILRepack, see csproj -->
-              <dependency id="System.Threading.Channels" version="4.6.0" />
-          </group>
-
-          <group targetFramework="monoandroid">
-            <!-- Some dependencies are merged using ILRepack, see csproj -->
-              <dependency id="System.Threading.Channels" version="4.6.0" />
-          </group>
-
-          <group targetFramework="monotouch">
-              <dependency id="System.Threading.Channels" version="4.6.0" />
-          </group>
-
-          <group targetFramework="Xamarin.iOS">
-            <!-- Some dependencies are merged using ILRepack, see csproj -->
-              <dependency id="System.Threading.Channels" version="4.6.0" />
+            <dependency id="System.Threading.Channels" version="4.6.0" />
           </group>
 
           <group targetFramework="netstandard2.0">
             <dependency id="Newtonsoft.Json" version="9.0.1" />
-            <dependency id="System.Threading.Channels" version="4.6.0" />
           </group>
 
         </dependencies>
