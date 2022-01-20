@@ -211,7 +211,7 @@ namespace IO.Ably.Tests.Rest
             ((AblyException)ex).ErrorInfo.Code.Should().Be(ErrorCodes.InvalidPublishRequestInvalidClientSpecifiedId);
         }
 
-        [Theory(Skip = "Keeps failing")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
