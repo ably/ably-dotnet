@@ -38,6 +38,11 @@ namespace IO.Ably.Tests.Realtime
             return GetChannel(client, channelNamePrefix.AddRandomSuffix());
         }
 
+        private static void BlockAblyServerSentSyncAction(IRealtimeClient client)
+        {
+            client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Sync);
+        }
+
         private static RealtimeChannel GetChannel(IRealtimeClient client, string channelName)
         {
             var channel = client.Channels.Get(channelName) as RealtimeChannel;
@@ -141,8 +146,7 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
 
-                // Block ably server sent sync action
-                client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Sync);
+                BlockAblyServerSentSyncAction(client);
 
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
@@ -687,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.Map.Members.ContainsKey(actualMemberKey).Should().BeFalse();
             }
 
-            [Theory(Skip = "Keeps failing")]
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP2f")]
             [Trait("spec", "RTP18a")]
@@ -698,6 +702,8 @@ namespace IO.Ably.Tests.Realtime
 
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
+
+                BlockAblyServerSentSyncAction(client);
 
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
