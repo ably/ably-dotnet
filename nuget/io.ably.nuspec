@@ -13,7 +13,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
         <summary>Ably is realtime data delivery platform for internet-enabled devices. See https://www.ably.io for more info</summary>
-        <copyright>©2019 Ably</copyright>
+        <copyright>©2022 Ably</copyright>
         <language />
         <dependencies>
 
@@ -23,11 +23,6 @@
 
           <group targetFramework="net46">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
-              <dependency id="System.Threading.Channels" version="4.6.0" />
-          </group>
-
-          <group targetFramework="uap">
-              <dependency id="Newtonsoft.Json" version="9.0.1" />
               <dependency id="System.Threading.Channels" version="4.6.0" />
           </group>
 
@@ -58,6 +53,5 @@
         <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
         <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\monotouch" />
         <file src="..\src\IO.Ably.NETStandard20\bin\$configuration$\netstandard2.0\IO.Ably.*" target="lib\netstandard2.0" />
-        <file src="..\src\IO.Ably.UWP\bin\$configuration$\IO.Ably.*" target="lib\uap" />
     </files>
 </package>
