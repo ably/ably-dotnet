@@ -1481,18 +1481,33 @@ namespace IO.Ably.Tests.Realtime
                     var client1 = await GetRealtimeClient(protocol);
                     var client2 = await GetRealtimeClient(protocol);
 
+                    var taskCountWaiter = new TaskCountAwaiter(1);
+
                     await client1.WaitForState();
                     await client2.WaitForState();
 
                     var channel1 = client1.Channels.Get("RTP5b_ch1".AddRandomSuffix());
+                    channel1.Attach();
+                    await channel1.WaitForAttachedState();
+
                     var result = await channel1.Presence.EnterClientAsync("client1", null);
                     result.IsFailure.Should().BeFalse();
 
-                    var channel2 = client2.Channels.Get(channel1.Name);
+                    var channel2 = client2.Channels.Get(channel1.Name); // Don't get state to attached
                     var presence2 = channel2.Presence;
+
+                    client2.BeforeProtocolMessageProcessed(message =>
+                    {
+                        if (message.Action == ProtocolMessage.MessageAction.Attached)
+                        {
+                            // PendingPresenceQueue will be cleared once channel2 goes into attached state
+                            taskCountWaiter.Task.Wait();
+                        }
+                    });
 
                     await WaitForMultiple(2, partialDone =>
                     {
+                        // Enter client in channel initialized state
                         presence2.EnterClient("client2", null, (b, info) =>
                         {
                             presence2.PendingPresenceQueue.Should().HaveCount(0);
@@ -1509,6 +1524,7 @@ namespace IO.Ably.Tests.Realtime
                         presence2.PendingPresenceQueue.Should().HaveCount(1);
                         presence2.SyncComplete.Should().BeFalse();
                         presence2.Map.Members.Should().HaveCount(0);
+                        taskCountWaiter.Tick();
                     });
 
                     var transport = client2.GetTestTransport();
