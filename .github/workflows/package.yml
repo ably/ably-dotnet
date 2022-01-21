@@ -26,7 +26,7 @@ jobs:
         with:
           name: save-nuget-package
           path: |
-            *.nuget
+            ${{ github.workspace }}/*.nupkg
 
   package-push:
     runs-on: macos-latest
@@ -53,5 +53,5 @@ jobs:
         with:
           name: save-nuget-package
           path: |
-            *.nuget
+            ${{ github.workspace }}/*.nupkg
       
