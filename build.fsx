@@ -105,8 +105,8 @@ Target.create "Clean" (fun _ ->
 Target.create "Version" (fun _ -> 
   AssemblyInfoFile.createCSharp "./src/CommonAssemblyInfo.cs"
       [   
-          AssemblyInfo.Company "Ably Realtime"
-          AssemblyInfo.Product "Ably .Net Library"
+          AssemblyInfo.Company "Ably"
+          AssemblyInfo.Product "Ably .NET Library"
           AssemblyInfo.Version version
           AssemblyInfo.FileVersion version
       ]
