@@ -7,7 +7,7 @@ using Android.App;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyCompany("Ably Realtime")]
-[assembly: AssemblyProduct("Ably .Net Android Push Example Library")]
+[assembly: AssemblyProduct("Ably .Net Android Push Example")]
 [assembly: AssemblyCopyright("Copyright 2015-2022 Ably Real-time Ltd (ably.com)")]
 [assembly: ComVisible(false)]
 
