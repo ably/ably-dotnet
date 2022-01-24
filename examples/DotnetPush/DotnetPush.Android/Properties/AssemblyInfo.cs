@@ -6,14 +6,9 @@ using Android.App;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DotnetPush.Android")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DotnetPush.Android")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCompany("Ably Realtime")]
+[assembly: AssemblyProduct("Ably .Net Android Push Example Library")]
+[assembly: AssemblyCopyright("Copyright 2015-2022 Ably Real-time Ltd (ably.com)")]
 [assembly: ComVisible(false)]
 
 // Version information for an assembly consists of the following four values:
