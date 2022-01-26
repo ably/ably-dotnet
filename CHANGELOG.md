@@ -1,5 +1,18 @@
 # Change Log
 
+## [1.2.7](https://github.com/ably/ably-dotnet/tree/1.2.7)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.6...1.2.7)
+
+**Implemented enhancements:**
+
+- First release of [Push Notificatons](PushNotifications.md) support for iOS and Android devices, please refer to [PushNotificatons.md](PushNotifications.md) for documentation.
+
+**Merged pull requests:**
+
+- Fix package build [\#1102](https://github.com/ably/ably-dotnet/pull/1102) ([marto83](https://github.com/marto83))
+- Remove UWP as a specific platform [\#1101](https://github.com/ably/ably-dotnet/pull/1101) ([tomkirbygreen](https://github.com/tomkirbygreen))
+
 ## [1.2.6](https://github.com/ably/ably-dotnet/tree/1.2.6) (2022-01-07)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.5...1.2.6)
