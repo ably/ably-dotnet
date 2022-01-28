@@ -6,7 +6,7 @@
 
 **Implemented enhancements:**
 
-- First release of [Push Notificatons](PushNotifications.md) support for iOS and Android devices, please refer to [PushNotificatons.md](PushNotifications.md) for documentation.
+- First release of [Push Notifications](PushNotifications.md) support for iOS and Android devices, please refer to [PushNotifications.md](PushNotifications.md) for documentation.
 
 **Merged pull requests:**
 
