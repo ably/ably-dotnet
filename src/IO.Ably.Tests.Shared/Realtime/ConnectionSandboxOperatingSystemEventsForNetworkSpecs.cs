@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("type", "integration")]
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
-        [Theory(Skip = "TODO")]
+        [Theory]
 #if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Realtime
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, Logger);
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await new ConditionalAwaiter(() => states.Count == 2);
 
             states.Should().Contain(ConnectionState.Disconnected);
             states.Should().Contain(ConnectionState.Connecting);
