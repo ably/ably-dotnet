@@ -59,11 +59,13 @@ namespace IO.Ably.Tests.Realtime
 
             client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null, retryInstantly: false));
             await client.WaitForState(ConnectionState.Disconnected);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
-            states.Should().HaveCountGreaterThan(0);
+
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
+
+            await new ConditionalAwaiter(() => states.Count > 0);
 
             await client.WaitForState(ConnectionState.Connecting);
         }
