@@ -65,9 +65,10 @@ namespace IO.Ably.Tests.Realtime
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
-            await new ConditionalAwaiter(() => states.Count > 0);
+            await new ConditionalAwaiter(() => states.Count >= 2);
 
-            await client.WaitForState(ConnectionState.Connecting);
+            states.Should().Contain(ConnectionState.Connecting);
+            states.Should().Contain(ConnectionState.Connected);
         }
 
         [Theory]
