@@ -21,7 +21,6 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
 #endif
         [InlineData(Protocol.Json, ConnectionState.Connected)]
-        [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [Trait("spec", "RTN20a")]
         public async Task
             WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(
