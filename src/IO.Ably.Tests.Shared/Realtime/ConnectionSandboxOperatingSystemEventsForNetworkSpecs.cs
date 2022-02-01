@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Realtime
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, Logger);
 
-            await new ConditionalAwaiter(() => states.Count == 2);
+            await new ConditionalAwaiter(() => states.Count >= 2);
 
             states.Should().Contain(ConnectionState.Disconnected);
             states.Should().Contain(ConnectionState.Connecting);
