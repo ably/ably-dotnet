@@ -1529,7 +1529,7 @@ namespace IO.Ably.Tests.Realtime
 
                     var transport = client2.GetTestTransport();
                     transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).Should().BeTrue();
-                    presence2.SyncComplete.Should().BeTrue();
+                    await new ConditionalAwaiter(() => presence2.SyncComplete);
                     presence2.Map.Members.Should().HaveCount(2);
                 }
 
