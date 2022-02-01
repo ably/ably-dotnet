@@ -20,6 +20,7 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
 #endif
+        [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [InlineData(Protocol.Json, ConnectionState.Connected)]
         [Trait("spec", "RTN20a")]
         public async Task
@@ -31,7 +32,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client, initialState);
+            await client.WaitForState(initialState);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
