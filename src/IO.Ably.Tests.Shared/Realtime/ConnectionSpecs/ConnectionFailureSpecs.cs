@@ -199,7 +199,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             WaitOne();
         }
 
-        [Fact(Skip = "Requires a SandBox Spec")]
+        [Fact]
         [Trait("spec", "RTN14d")]
         [Trait("spec", "RTN14e")]
         [Trait("sandboxneeded", "true")]
@@ -231,7 +231,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             do
             {
-                LastCreatedTransport.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
+                LastCreatedTransport?.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 var now = nowFunc();
                 nowFunc = () => now.AddSeconds(30);
