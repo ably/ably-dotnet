@@ -45,7 +45,7 @@ namespace IO.Ably.Tests.Realtime
             states.Should().Contain(ConnectionState.Connecting);
         }
 
-        [Theory(Skip = "TODO")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN20b")]
         public async Task
@@ -55,17 +55,20 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client);
+            await client.WaitForState();
 
             client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null, retryInstantly: false));
             await client.WaitForState(ConnectionState.Disconnected);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
-            states.Should().HaveCountGreaterThan(0);
 
-            await WaitForState(client, ConnectionState.Connecting);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
+
+            await new ConditionalAwaiter(() => states.Count >= 2);
+
+            states.Should().Contain(ConnectionState.Connecting);
+            states.Should().Contain(ConnectionState.Connected);
         }
 
         [Theory]
