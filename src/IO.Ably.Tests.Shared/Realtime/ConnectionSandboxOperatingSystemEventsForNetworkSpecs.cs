@@ -15,13 +15,13 @@ namespace IO.Ably.Tests.Realtime
     [Trait("type", "integration")]
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
-        [Theory(Skip = "TODO")]
+        [Theory]
 #if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
 #endif
-        [InlineData(Protocol.Json, ConnectionState.Connected)]
         [InlineData(Protocol.Json, ConnectionState.Connecting)]
+        [InlineData(Protocol.Json, ConnectionState.Connected)]
         [Trait("spec", "RTN20a")]
         public async Task
             WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(
@@ -32,14 +32,14 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client, initialState);
+            await client.WaitForState(initialState);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, Logger);
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await new ConditionalAwaiter(() => states.Count >= 2);
 
             states.Should().Contain(ConnectionState.Disconnected);
             states.Should().Contain(ConnectionState.Connecting);
