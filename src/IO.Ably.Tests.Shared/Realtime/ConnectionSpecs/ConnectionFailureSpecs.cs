@@ -224,10 +224,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
             List<ConnectionStateChange> stateChanges = new List<ConnectionStateChange>();
-            client.Connection.On((args) =>
-            {
-                stateChanges.Add(args);
-            });
+            client.Connection.On(stateChange => stateChanges.Add(stateChange));
 
             do
             {
