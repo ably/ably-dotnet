@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -33,7 +34,8 @@ namespace IO.Ably.Tests
             }
 
             byte[] data = new byte[resourceStream.Length];
-            resourceStream.Read(data, 0, data.Length);
+            int bytesRead = resourceStream.Read(data, 0, data.Length);
+            Debug.Assert(bytesRead == resourceStream.Length, "Didn't read all we meant to.");
             return data;
         }
     }
