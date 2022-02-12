@@ -1,0 +1,77 @@
+name: Test project
+
+on: [push, pull_request]
+
+jobs:
+  testAllModes:
+    name: Test in ${{ matrix.testMode }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - ./
+        unityVersion:
+          - 2020.3.19f1
+        testMode:
+          - playmode
+          - editmode
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      # Test
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v2
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          testMode: ${{ matrix.testMode }}
+          artifactsPath: ${{ matrix.testMode }}-artifacts
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          unityVersion: ${{ matrix.unityVersion }}
+          checkName: ${{ matrix.testMode }} Test Results
+          
+      # Upload artifacts
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Test results for ${{ matrix.testMode }}
+          path: ${{ steps.tests.outputs.artifactsPath }} 
+
+  extract_unity_package:
+    name: extract_unity_package
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+        
+      - name: Extract unity package
+        id: extract_unity_package
+        uses: FrostBanditTeam/extract-unity-package-action@1
+        with:
+          #Specify the unity project path, relative to the repo root.
+          # unityProjectPath: './'
+          # packagePath: 'Assets'
+          outputPackagePath: './artifacts/ably.unitypackage'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Output package
+          path: ${{ steps.extract_unity_package.outputs.artifactsPath }}
