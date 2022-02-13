@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 15.0.26730.10
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F05-BF68-4BA8-A58F-C7C131E3FC62}"
 	ProjectSection(SolutionItems) = preProject
@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.Tests.DotNetCore20"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Tests.Shared", "IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.shproj", "{1609F12C-8216-4E7C-ADE0-240BFE160242}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.DeltaCodec", "..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj", "{412DEB5F-7936-4027-8BF8-977F23D465ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.DeltaCodec", "..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj", "{412DEB5F-7936-4027-8BF8-977F23D465ED}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -52,6 +52,8 @@ Global
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
+		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{4805a9da-3412-4be8-8b95-5a0efda1ac01}*SharedItemsImports = 5
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{48ea337f-ae7b-4001-bd8c-da1668fc6cbd}*SharedItemsImports = 5
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{567feef7-41af-42f2-ad34-546a278355b1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
 		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{eebf3249-3ca3-4078-a188-f8b916c3f4c2}*SharedItemsImports = 13
