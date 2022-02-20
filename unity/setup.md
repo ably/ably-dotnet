@@ -1,4 +1,4 @@
-# **Ably-Unity Project Setup**
+# **Dev Setup**
   Clone the `ably-dotnet` repo. and open `unity` folder. 
 
 ## **Requirements**
