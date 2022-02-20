@@ -1,5 +1,5 @@
-# **ably-unity**
-  Ably `unity` project is under cloned `ably-dotnet` folder. Use unity-hub to open the project with LTS unity version.
+# **Ably-Unity Project Setup**
+  Clone the `ably-dotnet` repo. and open `unity` folder. 
 
 ## **Requirements**
 1. Git - VCS for ably-dotnet
