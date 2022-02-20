@@ -65,7 +65,7 @@
 ![](doc_images/vsi_individual_1.PNG)
 - Click on Game development with Unity for adding unity editor scripting support
 
-![](doc_images/vsi_modify_2.PNG)
+![](doc_images/vsi_modify_2.JPG)
 - Go to `Individual components` tab and select following components
 
 ![](doc_images/vsi_individual_2.PNG)  
