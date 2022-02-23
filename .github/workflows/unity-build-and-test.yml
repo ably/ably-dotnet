@@ -1,6 +1,5 @@
 name: Unity
-
-on: [push, pull_request]
+on: [push]
 
 jobs:
   testAllModes:
