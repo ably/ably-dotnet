@@ -7,5 +7,5 @@ else
 	cp ../src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.pdb Assets/Ably/Plugins 
 	cp ../src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.DeltaCodec.dll Assets/Ably/Plugins
 	cp ../src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.DeltaCodec.pdb Assets/Ably/Plugins
-	echo $1 > unity/Assets/Ably/version.txt
+	echo $1 > Assets/Ably/version.txt
 fi
