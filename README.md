@@ -535,11 +535,14 @@ You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Ru
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 1. Create a release branch named in the form `release/1.2.3`.
-2. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
-3. Update the version number and commit that change.
-4. Create a PR and grain approvals for it, then merge that to `main`.
-5. Run `package.cmd` to create the nuget package. 
-6. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
-7. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
-8. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-9. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
+2. Run `cd unity && unity/plugins-updater.cmd 1.2.3` to migrate latest `NetStandard release DLL's` under unity plugins.
+3. Once `plugins-updater.cmd` script is successfully run, commit the change. 
+4. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
+5. Update the version number and commit that change.
+6. Create a PR and grain approvals for it, then merge that to `main`.
+7. Run `package.cmd` to create the nuget package. 
+8. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
+9. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
+10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
+11. Visit `Unity / Generate Ably Unity Package (push)` under latest workflow in a new tab, click on `summary` on the left nav-bar, download `AblyUnity` artifact from the bottom, unzip it and rename file as `ably-unity-1.2.3.unitypackage` and upload it under release notes.
+12.  Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
