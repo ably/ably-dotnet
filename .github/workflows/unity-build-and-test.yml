@@ -1,4 +1,4 @@
-name: Test project
+name: Unity
 
 on: [push, pull_request]
 
@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         projectPath:
-          - ./
+          - ./unity
         unityVersion:
           - 2020.3.19f1
         testMode:
@@ -30,6 +30,7 @@ jobs:
           key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-
+
       # Test
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
@@ -52,7 +53,7 @@ jobs:
           path: ${{ steps.tests.outputs.artifactsPath }} 
 
   extract_unity_package:
-    name: extract_unity_package
+    name: Generate Ably Unity Package
     runs-on: ubuntu-latest
     steps:
       # Checkout
@@ -65,13 +66,14 @@ jobs:
         id: extract_unity_package
         uses: FrostBanditTeam/extract-unity-package-action@1
         with:
-          #Specify the unity project path, relative to the repo root.
-          # unityProjectPath: './'
-          # packagePath: 'Assets'
+          # Specify the unity project path, relative to the repo root.
+          unityProjectPath: './unity'
+          # Set the directory to package, relative to the project.
+          packagePath: 'Assets/Ably'
           outputPackagePath: './artifacts/ably.unitypackage'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Output package
+          name: AblyUnity
           path: ${{ steps.extract_unity_package.outputs.artifactsPath }}
