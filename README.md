@@ -539,10 +539,10 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 3. Once `plugins-updater.cmd` script is successfully run, commit the change. 
 4. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 5. Update the version number and commit that change.
-6. Create a PR and grain approvals for it, then merge that to `main`.
+6. Create a PR and gain approvals for it, then merge that to `main`.
 7. Run `package.cmd` to create the nuget package. 
 8. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 9. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
 10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-11. Visit `Unity / Generate Ably Unity Package (push)` under latest workflow in a new tab, click on `summary` on the left nav-bar, download `AblyUnity` artifact from the bottom, unzip it and rename file as `ably-unity-1.2.3.unitypackage` and upload it under release notes.
+11. Visit github CI for latest build, open `Unity / Generate Ably Unity Package (push)` step in a new tab, click on `summary` and download `AblyUnity` artifact, unzip it and rename the file as `ably-unity-1.2.3.unitypackage` and upload it under release notes.
 12.  Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
