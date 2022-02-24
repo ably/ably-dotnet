@@ -33,7 +33,6 @@ jobs:
           projectPath: ./unity
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
           unityVersion: 2020.3.19f1
           checkName: ${{ matrix.testMode }} Test Results
           
