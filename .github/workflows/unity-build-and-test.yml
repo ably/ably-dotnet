@@ -8,21 +8,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - ./unity
-        unityVersion:
-          - 2020.3.19f1
         testMode:
           - playmode
           - editmode
     steps:
-      # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          lfs: true
+        with: 
+          submodules: 'recursive'
 
-      # Cache
       - uses: actions/cache@v2
         with:
           path: Library
@@ -30,21 +24,20 @@ jobs:
           restore-keys: |
             Library-
 
-      # Test
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
+          projectPath: ./unity
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          unityVersion: ${{ matrix.unityVersion }}
+          unityVersion: 2020.3.19f1
           checkName: ${{ matrix.testMode }} Test Results
           
-      # Upload artifacts
+      # Upload editmode/testmode XML artifacts
       - uses: actions/upload-artifact@v2
         if: always()
         with:
@@ -58,8 +51,8 @@ jobs:
       # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          lfs: true
+        with: 
+          submodules: 'recursive'
         
       - name: Extract unity package
         id: extract_unity_package
