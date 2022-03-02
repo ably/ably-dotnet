@@ -537,7 +537,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 1. Create a release branch named in the form `release/1.2.3`.
 2. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 3. Update the version number and commit that change.
-4. Create a release PR (ensure you include `@QuintinWillison`, `@AndyNicks` and `@stmoreau` as reviewers) and gain approvals for it, then merge that to `main`.
+4. Create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
 5. Run `package.cmd` to create the nuget package. 
 6. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 7. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
