@@ -1,6 +1,9 @@
 name: MacOS - build and test
-on: [ "push" ]
-
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-test-macos:
@@ -27,4 +30,3 @@ jobs:
         run: ./build.sh Test.NetStandard.Unit.WithRetry
       - name: Integration tests
         run: ./build.sh Test.NetStandard.Integration
-          

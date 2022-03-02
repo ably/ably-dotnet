@@ -1,6 +1,9 @@
 name: Windows - build and test
-on: [ "push" ]
-
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-test-windows:
