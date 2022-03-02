@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-test-linux:
+  check:
     runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: true

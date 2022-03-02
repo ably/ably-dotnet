@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-test-macos:
+  check:
     runs-on: macos-latest
     env:
       DOTNET_NOLOGO: true
