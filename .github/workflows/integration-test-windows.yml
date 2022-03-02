@@ -1,4 +1,4 @@
-name: Windows - build and test
+name: "Integration Test: Windows"
 on:
   pull_request:
   push:

@@ -1,4 +1,4 @@
-name: Linux - build and test
+name: "Integration Test: Linux"
 on:
   pull_request:
   push:
