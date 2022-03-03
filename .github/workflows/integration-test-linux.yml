@@ -1,10 +1,13 @@
-name: MacOS - build and test
-on: [ "push" ]
-
+name: "Integration Test: Linux"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
-  build-and-test-macos:
-    runs-on: macos-latest
+  check:
+    runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: true
 
@@ -18,13 +21,7 @@ jobs:
           dotnet-version: '3.1.x'
       - name: Download fake-cli
         run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
-      - name: Restore packages
-        run: |
-          nuget restore ./src/IO.Ably.Xamarin.sln
-      - name: Build Xamarin projects
-        run: ./build.sh Build.Xamarin
       - name: Unit tests
         run: ./build.sh Test.NetStandard.Unit.WithRetry
       - name: Integration tests
         run: ./build.sh Test.NetStandard.Integration
-          
