@@ -1,5 +1,9 @@
 name: Unity
-on: [push]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   testAllModes:
@@ -27,7 +31,7 @@ jobs:
       - name: Run tests
         uses: game-ci/unity-test-runner@v2
         id: tests
-      # Unity License details as per https://game.ci/docs/github/activation 
+      # Unity License Details as per https://game.ci/docs/github/activation 
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
