@@ -71,7 +71,6 @@ namespace Assets.Tests.AblySandbox
                 settings.Keys.Add(testKey);
             }
 
-            // await SetupSampleStats(settings);
             return settings;
         }
 
