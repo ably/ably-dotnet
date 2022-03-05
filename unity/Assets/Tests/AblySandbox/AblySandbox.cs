@@ -9,11 +9,11 @@ using IO.Ably.Realtime;
 
 namespace Assets.Tests.AblySandbox
 {
-    public class UnitySandboxSpecs: IDisposable
+    public class AblySandbox: IDisposable
     {
         private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
-        public UnitySandboxSpecs(AblySandboxFixture fixture)
+        public AblySandbox(AblySandboxFixture fixture)
         {
             ResetEvent = new ManualResetEvent(false);
             Fixture = fixture;

@@ -26,18 +26,18 @@ namespace Assets.Tests.EditMode
         [UnitySetUp]
         public IEnumerator Init()
         {
-            UnitySandbox = new UnitySandboxSpecs(_sandboxFixture);
+            AblySandbox = new AblySandbox.AblySandbox(_sandboxFixture);
             yield return null;
         }
 
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            UnitySandbox.Dispose();
+            AblySandbox.Dispose();
             yield return null;
         }
 
-        public UnitySandboxSpecs UnitySandbox { get; set; }
+        public AblySandbox.AblySandbox AblySandbox { get; set; }
 
 
         private static readonly DateTimeOffset StartInterval =
@@ -45,7 +45,7 @@ namespace Assets.Tests.EditMode
 
         private async Task<List<Stats>> GetStats(Protocol protocol)
         {
-            var client = await UnitySandbox.GetRestClient(protocol);
+            var client = await AblySandbox.GetRestClient(protocol);
             var result = await client.StatsAsync(new StatsRequestParams
                 {Start = StartInterval.AddMinutes(-2), End = StartInterval.AddMinutes(1)});
 
@@ -85,7 +85,7 @@ namespace Assets.Tests.EditMode
                     stats.TokenRequests.Failed.Should().Be(20);
                 }
 
-                await UnitySandbox.AssertMultipleTimes(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
+                await AblySandbox.AssertMultipleTimes(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
             });
     }
 }
