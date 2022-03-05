@@ -52,11 +52,11 @@ namespace Assets.Tests.EditMode
             return result.Items;
         }
 
-        static Protocol[] protocols = {Protocol.Json};
+        static Protocol[] _protocols = {Protocol.Json};
 
         [Property("spec", "G3")]
         [UnityTest]
-        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(protocols))] Protocol protocol) =>
+        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(_protocols))] Protocol protocol) =>
             UniTask.ToCoroutine(async () =>
             {
                 await _sandboxFixture.SetupStats();
