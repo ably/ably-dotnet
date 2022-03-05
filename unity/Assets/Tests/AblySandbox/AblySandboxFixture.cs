@@ -38,7 +38,6 @@ namespace Assets.Tests.AblySandbox
                 settings.Environment = environment;
             }
 
-            // JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("test-app-setup.json"));
             JObject testAppSpec = JObject.Parse(TestAppSetup._testAppSetup);
 
             var cipher = testAppSpec["cipher"];
@@ -48,13 +47,13 @@ namespace Assets.Tests.AblySandbox
                 CipherMode.CBC,
                 ((string)cipher["iv"]).FromBase64());
 
-            AblyHttpClient client = settings.GetHttpClient(environment);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
             request.Protocol = Protocol.Json;
 
+            AblyHttpClient client = settings.GetHttpClient(environment);
             var response = await RetryExecute(() => client.Execute(request));
 
             var json = JObject.Parse(response.TextResponse);
@@ -115,12 +114,13 @@ namespace Assets.Tests.AblySandbox
             json = json.Replace("[[Interval2]]", interval2.ToString("yyyy-MM-dd:HH:mm"));
             json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
 
-            AblyRest ablyRest = new AblyRest(settings.FirstValidKey);
             AblyHttpClient client = settings.GetHttpClient();
             var request = new AblyRequest("/stats", HttpMethod.Post);
             request.Protocol = Protocol.Json;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
+
+            AblyRest ablyRest = new AblyRest(settings.FirstValidKey);
             await ablyRest.AblyAuth.AddAuthHeader(request);
             request.RequestBody = json.GetBytes();
 
