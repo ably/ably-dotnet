@@ -22,11 +22,11 @@ namespace Assets.Tests.AblySandbox
                 return _settings[environment];
             }
 
-            _settings[environment] = await Initialise();
+            _settings[environment] = await Initialise("sandbox");
             return _settings[environment];
         }
 
-        private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")
+        private static async Task<TestEnvironmentSettings> Initialise(string environment)
         {
             var settings = new TestEnvironmentSettings
             {
@@ -109,7 +109,7 @@ namespace Assets.Tests.AblySandbox
             var interval1 = lastInterval - TimeSpan.FromMinutes(120);
             var interval2 = lastInterval - TimeSpan.FromMinutes(60);
             var interval3 = lastInterval;
-            // var json = ResourceHelper.GetResource("StatsFixture.json");
+
             var json = TestAppSetup._statsFixture;
             json = json.Replace("[[Interval1]]", interval1.ToString("yyyy-MM-dd:HH:mm"));
             json = json.Replace("[[Interval2]]", interval2.ToString("yyyy-MM-dd:HH:mm"));
