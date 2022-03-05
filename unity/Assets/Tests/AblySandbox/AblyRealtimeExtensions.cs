@@ -7,7 +7,7 @@ using IO.Ably.Types;
 
 namespace Assets.Tests.AblySandbox
 {
-    public static class SandboxSpecExtension
+    public static class AblyRealtimeExtensions
     {
         public static string AddRandomSuffix(this string str)
         {
