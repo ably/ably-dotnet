@@ -38,19 +38,20 @@ namespace Assets.Tests.AblySandbox
             Keys = new List<Key>();
         }
 
-        public ClientOptions CreateDefaultOptions(string key = null, string environment = null)
+        internal ClientOptions CreateDefaultOptions(string key = null, string environment = null)
         {
             environment ??= Environment;
 
             var ablyEnv = System.Environment.GetEnvironmentVariable("ABLY_ENV");
             var env = !string.IsNullOrEmpty(ablyEnv) ? ablyEnv.Trim() : environment;
 
-            return new ClientOptions { Key = key ?? FirstValidKey, Tls = Tls, Environment = env, AutomaticNetworkStateMonitoring = false};
+            return new ClientOptions
+                {Key = key ?? FirstValidKey, Tls = Tls, Environment = env, AutomaticNetworkStateMonitoring = false};
         }
 
         internal AblyHttpClient GetHttpClient(string environment = null)
         {
-            var ablyHttpOptions = new AblyHttpOptions { IsSecure = Tls };
+            var ablyHttpOptions = new AblyHttpOptions {IsSecure = Tls};
             ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }
