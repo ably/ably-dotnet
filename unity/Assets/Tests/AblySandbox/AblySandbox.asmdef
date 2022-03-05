@@ -5,14 +5,15 @@
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "precompiledReferences": [
         "nunit.framework.dll",
         "IO.Ably.DeltaCodec.dll",
         "IO.Ably.dll",
         "System.Threading.Tasks.Extensions.dll",
         "System.Runtime.CompilerServices.Unsafe.dll",
-        "System.Threading.Channels.dll"
+        "System.Threading.Channels.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [
