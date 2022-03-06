@@ -535,8 +535,8 @@ You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Ru
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 1. Create a release branch named in the form `release/1.2.3`.
-2. Run `cd unity && plugins-updater.cmd 1.2.3` to migrate latest `NetStandard release DLL's` under unity plugins.
-3. Once `plugins-updater.cmd` script is successfully run, commit the change. 
+2. Run `unity-plugins-updater.cmd 1.2.3` to migrate latest `NetStandard release DLL's` under unity plugins.
+3. Once `unity-plugins-updater.cmd` script is successfully run, commit the change. 
 4. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 5. Update the version number and commit that change.
 6. Create a PR and gain approvals for it, then merge that to `main`.
