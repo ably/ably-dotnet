@@ -23,9 +23,10 @@ namespace Assets.Tests.AblySandbox
             // Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
-            // Logger.LoggerSink = new OutputLoggerSink(output);
-            // Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new OutputLoggerSink();
+            Logger.LogLevel = LogLevel.Debug;
         }
+
         ILogger Logger { get; set; }
 
         public AblySandboxFixture Fixture { get; set; }
@@ -46,7 +47,7 @@ namespace Assets.Tests.AblySandbox
 
         public void Dispose()
         {
-            Logger.Debug("Test end disposing connections: " + _realtimeClients.Count);
+            Logger.Debug($"Test end disposing connections: {_realtimeClients.Count}");
             foreach (var client in _realtimeClients)
             {
                 try
@@ -55,7 +56,7 @@ namespace Assets.Tests.AblySandbox
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Error disposing Client: " + ex.Message);
+                    Logger.Error($"Error disposing Client: {ex.Message}");
                 }
             }
 
@@ -151,13 +152,24 @@ namespace Assets.Tests.AblySandbox
             {
                 try
                 {
-                    Debug.WriteLine($"{level}: {message}");
-                    Console.WriteLine($"{level}: {message}");
+                    message = $"{level}: {message}";
+                    switch (level)
+                    {
+                        case LogLevel.Error:
+                            UnityEngine.Debug.LogError(message);
+                            break;
+                        case LogLevel.Warning:
+                            UnityEngine.Debug.LogWarning(message);
+                            break;
+                        default:
+                            UnityEngine.Debug.Log(message);
+                            break;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // In rare events this happens and crashes the test runner
-                    Console.WriteLine($"{level}: {message}. Exception: {ex.Message}");
+                    message = $"{level}: {message}. Exception: {ex.Message}";
+                    UnityEngine.Debug.LogError(message);
                 }
             }
         }
