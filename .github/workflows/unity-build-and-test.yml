@@ -24,7 +24,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ hashFiles('unity/Assets/**', 'unity/Packages/**', 'unity/ProjectSettings/**') }}
           restore-keys: |
             Library-
 
