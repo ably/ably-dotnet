@@ -11,6 +11,7 @@ namespace Assets.Tests.AblySandbox
     internal class ConnectionAwaiter
     {
         private readonly List<ConnectionState> _awaitedStates = new List<ConnectionState>();
+        private static int WaitForSeconds = 16;
 
         private readonly Connection _connection;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
@@ -47,7 +48,7 @@ namespace Assets.Tests.AblySandbox
 
         public Task<TimeSpan> Wait()
         {
-            return Wait(TimeSpan.FromSeconds(16));
+            return Wait(TimeSpan.FromSeconds(WaitForSeconds));
         }
 
         public async Task<TimeSpan> Wait(TimeSpan timeout)
@@ -68,9 +69,9 @@ namespace Assets.Tests.AblySandbox
             }
 
             _connection.On(Conn_StateChanged);
-            var tResult = _taskCompletionSource.Task;
-            var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(false);
-            if (tCompleted == tResult)
+            var resultTask = _taskCompletionSource.Task;
+            var completedTask = await Task.WhenAny(resultTask, Task.Delay(timeout)).ConfigureAwait(false);
+            if (completedTask == resultTask)
             {
                 stopwatch.Stop();
                 return stopwatch.Elapsed;
