@@ -1,5 +1,5 @@
 {
-    "name": "Assets.Tests.AblySandbox",
+    "name": "Unity.Assets.Tests.AblySandbox",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],

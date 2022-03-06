@@ -1,12 +1,12 @@
 {
-    "name": "Assets.Tests.PlayMode",
+    "name": "Unity.Assets.Tests.PlayMode",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "BoundfoxStudios.FluentAssertions",
         "UniTask",
-        "Assets.Tests.AblySandbox"
+        "Unity.Assets.Tests.AblySandbox"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

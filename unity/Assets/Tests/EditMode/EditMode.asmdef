@@ -1,12 +1,12 @@
 {
-    "name": "Assets.Tests.EditMode",
+    "name": "Unity.Assets.Tests.EditMode",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "BoundfoxStudios.FluentAssertions",
         "UniTask",
-        "Assets.Tests.AblySandbox"
+        "Unity.Assets.Tests.AblySandbox"
     ],
     "includePlatforms": [
         "Editor"
