@@ -14,6 +14,19 @@ namespace Assets.Tests.AblySandbox
         }
     }
 
+    public static class StringExtensions
+    {
+        public static string AddRandomSuffix(this string str)
+        {
+            if (str.IsEmpty())
+            {
+                return str;
+            }
+
+            return str + "_" + Guid.NewGuid().ToString("D").Substring(0, 8);
+        }
+    }
+
     internal static class TestHelpers
     {
         public static DateTimeOffset Now()
