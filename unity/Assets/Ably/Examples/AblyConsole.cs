@@ -13,20 +13,37 @@ namespace Assets.Ably.Examples
         private AblyRealtime _ably;
         private Text _textContent;
         private Button _connectButton;
+        private Button _subscribe;
+        private Button _publish;
+        private InputField _channelName;
+        private InputField _eventName;
+        private InputField _payload;
+
         private static string _apiKey = "";
 
         void Start()
         {
-            AddComponents();
+            RegisterUiComponents();
             InitializeAbly();
         }
 
         // Add components 
-        void AddComponents()
+        void RegisterUiComponents()
         {
             _textContent = GameObject.Find("TxtConsole").GetComponent<Text>();
+
             _connectButton = GameObject.Find("ConnectBtn").GetComponent<Button>();
-            _connectButton.onClick.AddListener(OnConnectClickHandler);
+            _connectButton.onClick.AddListener(ConnectClickHandler);
+
+            _subscribe = GameObject.Find("Subscribe").GetComponent<Button>();
+            _subscribe.onClick.AddListener(SubscribeClickHandler);
+
+            _publish = GameObject.Find("Publish").GetComponent<Button>();
+            _publish.onClick.AddListener(PublishClickHandler);
+
+            _channelName = GameObject.Find("ChannelName").GetComponent<InputField>();
+            _eventName = GameObject.Find("EventName").GetComponent<InputField>();
+            _payload = GameObject.Find("Payload").GetComponent<InputField>();
         }
 
         void InitializeAbly()
@@ -74,9 +91,19 @@ namespace Assets.Ably.Examples
         }
 
 
-        void OnConnectClickHandler()
+        void ConnectClickHandler()
         {
             _ably.Connect();
+        }
+
+        void SubscribeClickHandler()
+        {
+            LogAndDisplay("Subscribe button clicked");
+        }
+
+        void PublishClickHandler()
+        {
+            LogAndDisplay("Publish button clicked");
         }
 
         void LogAndDisplay(string message)

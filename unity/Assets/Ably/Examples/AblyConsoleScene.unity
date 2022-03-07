@@ -529,7 +529,7 @@ GameObject:
   - component: {fileID: 188731002}
   - component: {fileID: 188731001}
   m_Layer: 5
-  m_Name: payload
+  m_Name: Payload
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1345,7 +1345,7 @@ GameObject:
   - component: {fileID: 988327099}
   - component: {fileID: 988327098}
   m_Layer: 5
-  m_Name: subscribe
+  m_Name: Subscribe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1858,7 +1858,7 @@ GameObject:
   - component: {fileID: 1611408187}
   - component: {fileID: 1611408186}
   m_Layer: 5
-  m_Name: eventName
+  m_Name: EventName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2408,7 +2408,7 @@ GameObject:
   - component: {fileID: 2134280588}
   - component: {fileID: 2134280587}
   m_Layer: 5
-  m_Name: channelName
+  m_Name: ChannelName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
