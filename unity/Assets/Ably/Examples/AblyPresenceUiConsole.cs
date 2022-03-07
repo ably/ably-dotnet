@@ -56,36 +56,75 @@ namespace Assets.Ably.Examples
 
         internal void PresenceSubscribeClickHandler()
         {
-            _uiConsole.LogAndDisplay("Presence subscribe clicked");
+            var channelName = _channelName.text;
+            _ably.Channels.Get(channelName).Presence.Subscribe(message =>
+            {
+                _uiConsole.LogAndDisplay($"Received presence message <b>{message.Data}</b> from channel <b>{channelName}</b>");
+            });
+            _uiConsole.LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b> for <b>Presence</b> messages");
         }
 
         internal void PresenceUnsubscribeClickHandler()
         {
-            _uiConsole.LogAndDisplay("Presence unsubscribe clicked");
-
+            var channelName = _channelName.text;
+            _ably.Channels.Get(channelName).Presence.Unsubscribe();
+            _uiConsole.LogAndDisplay($"Successfully unsubscribed to channel <b>{channelName}</b> for <b>Presence</b> messages");
         }
 
-        internal void GetPresenceClickHandler()
+        internal async void GetPresenceClickHandler()
         {
-            _uiConsole.LogAndDisplay("Get presence clicked");
-
+            var channelName = _channelName.text;
+            var presenceMessages = await _ably.Channels.Get(channelName).Presence.GetAsync();
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
+            foreach (var presenceMessage in presenceMessages)
+            {
+                _uiConsole.LogAndDisplay(presenceMessage.Data.ToString());
+            }
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
-        internal void PresenceMessageHistoryClickHandler()
+        internal async void PresenceMessageHistoryClickHandler()
         {
-            _uiConsole.LogAndDisplay("Presence history clicked");
-
+            var channelName = _channelName.text;
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
+            var presenceHistoryPage = await _ably.Channels.Get(channelName).Presence.HistoryAsync();
+            while (true)
+            {
+                foreach (var presenceMessage in presenceHistoryPage.Items)
+                {
+                    _uiConsole.LogAndDisplay(presenceMessage.Data.ToString());
+                }
+                if (presenceHistoryPage.IsLast)
+                {
+                    break;
+                }
+                presenceHistoryPage = await presenceHistoryPage.NextAsync();
+            };
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
-        internal void PresenceEnterClickHandler()
+        internal async void PresenceEnterClickHandler()
         {
-            _uiConsole.LogAndDisplay("Presence enter clicked");
+            var channelName = _channelName.text;
 
+            // async-await makes sure call is executed in the background and then result is posted on UnitySynchronizationContext/Main thread
+            var result = await _ably.Channels.Get(channelName).Presence.EnterAsync(_payload.text);
+
+            _uiConsole.LogAndDisplay(result.IsSuccess
+                ? $"Successfully entered presence to channel <b>{channelName}</b>"
+                : $"Error entering presence to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
-        internal void PresenceLeaveClickHandler()
-        {
-            _uiConsole.LogAndDisplay("Presence leave clicked");
 
+        internal async void PresenceLeaveClickHandler()
+        {
+            var channelName = _channelName.text;
+
+            // async-await makes sure call is executed in the background and then result is posted on UnitySynchronizationContext/Main thread
+            var result = await _ably.Channels.Get(channelName).Presence.LeaveAsync(_payload.text);
+
+            _uiConsole.LogAndDisplay(result.IsSuccess
+                ? $"Successfully left presence to channel <b>{channelName}</b>"
+                : $"Error leaving presence to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
 
         internal void EnableUiComponents(bool isEnabled)
