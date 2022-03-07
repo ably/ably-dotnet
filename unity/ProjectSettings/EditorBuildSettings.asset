@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Ably/Examples/AblyConsoleScene.unity
+    guid: f194914db7c9eb144be5973deaf92f93
   m_configObjects: {}
