@@ -44,17 +44,18 @@ namespace Assets.Ably.Examples
             _channelName = GameObject.Find("ChannelName").GetComponent<InputField>();
             _eventName = GameObject.Find("EventName").GetComponent<InputField>();
             _payload = GameObject.Find("Payload").GetComponent<InputField>();
+            SetUiComponentsActive(false);
         }
 
         void InitializeAbly()
         {
-            LogAndDisplay("Initializing Ably Object");
             var options = new ClientOptions();
             options.Key = _apiKey;
             // this will disable the library trying to subscribe to network state notifications
             options.AutomaticNetworkStateMonitoring = false;
             options.CaptureCurrentSynchronizationContext = true;
             options.AutoConnect = false;
+            // this will make sure to post callbacks on UnitySynchronization Context Main Thread
             options.CustomContext = SynchronizationContext.Current;
 
             _ably = new AblyRealtime(options);
@@ -86,8 +87,8 @@ namespace Assets.Ably.Examples
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+                SetUiComponentsActive(args.Current == ConnectionState.Connected);
             });
-            LogAndDisplay("Initialized Ably Object");
         }
 
 
@@ -98,18 +99,35 @@ namespace Assets.Ably.Examples
 
         void SubscribeClickHandler()
         {
-            LogAndDisplay("Subscribe button clicked");
+            var channelName = _channelName.text;
+            var eventName = _eventName.text;
+            var payload = _payload.text;
+
+            LogAndDisplay($"{channelName} {eventName} {payload}");
         }
 
         void PublishClickHandler()
         {
-            LogAndDisplay("Publish button clicked");
+            var channelName = _channelName.text;
+            var eventName = _eventName.text;
+            var payload = _payload.text;
+
+            LogAndDisplay($"{channelName} {eventName} {payload}");
         }
 
         void LogAndDisplay(string message)
         {
             Debug.Log(message);
             _textContent.text = $"{_textContent.text}\n{message}";
+        }
+
+        void SetUiComponentsActive(bool isActive)
+        {
+            _channelName.interactable = isActive;
+            _eventName.interactable = isActive;
+            _payload.interactable = isActive;
+            _subscribe.interactable = isActive;
+            _publish.interactable = isActive;
         }
 
         void Update()
