@@ -2386,7 +2386,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1.1
-  m_Text: <b>Console</b>
+  m_Text: '                         <b>Console</b>'
 --- !u!222 &1912361966
 CanvasRenderer:
   m_ObjectHideFlags: 0

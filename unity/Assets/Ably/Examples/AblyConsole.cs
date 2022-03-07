@@ -28,7 +28,7 @@ namespace Assets.Ably.Examples
         }
 
         // Add components 
-        void RegisterUiComponents()
+        private void RegisterUiComponents()
         {
             _textContent = GameObject.Find("TxtConsole").GetComponent<Text>();
 
@@ -44,16 +44,15 @@ namespace Assets.Ably.Examples
             _channelName = GameObject.Find("ChannelName").GetComponent<InputField>();
             _eventName = GameObject.Find("EventName").GetComponent<InputField>();
             _payload = GameObject.Find("Payload").GetComponent<InputField>();
-            SetUiComponentsActive(false);
+            EnableUiComponents(false);
         }
 
-        void InitializeAbly()
+        private void InitializeAbly()
         {
             var options = new ClientOptions();
             options.Key = _apiKey;
             // this will disable the library trying to subscribe to network state notifications
             options.AutomaticNetworkStateMonitoring = false;
-            options.CaptureCurrentSynchronizationContext = true;
             options.AutoConnect = false;
             // this will make sure to post callbacks on UnitySynchronization Context Main Thread
             options.CustomContext = SynchronizationContext.Current;
@@ -61,7 +60,7 @@ namespace Assets.Ably.Examples
             _ably = new AblyRealtime(options);
             _ably.Connection.On(args =>
             {
-                LogAndDisplay($"Connection State is {args.Current}");
+                LogAndDisplay($"Connection State is <b>{args.Current}</b>");
                 _connectButton.GetComponentInChildren<Text>().text = args.Current.ToString();
                 var connectBtnImage = _connectButton.GetComponent<Image>();
                 switch (args.Current)
@@ -87,47 +86,52 @@ namespace Assets.Ably.Examples
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                SetUiComponentsActive(args.Current == ConnectionState.Connected);
+                EnableUiComponents(args.Current == ConnectionState.Connected);
             });
         }
 
 
-        void ConnectClickHandler()
+        private void ConnectClickHandler()
         {
             _ably.Connect();
         }
 
-        void SubscribeClickHandler()
+        private void SubscribeClickHandler()
+        {
+            var channelName = _channelName.text;
+            var eventName = _eventName.text;
+            _ably.Channels.Get(channelName).Subscribe(eventName, message =>
+            {
+                LogAndDisplay($"Received message <b>{message.Data}</b> from channel <b>{channelName}</b>");
+            });
+            LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b>");
+        }
+
+        private async void PublishClickHandler()
         {
             var channelName = _channelName.text;
             var eventName = _eventName.text;
             var payload = _payload.text;
-
-            LogAndDisplay($"{channelName} {eventName} {payload}");
+            // async-await makes sure call is executed in the background and then result is posted on UnitySynchronizationContext/Main thread
+            var result = await _ably.Channels.Get(channelName).PublishAsync(eventName, payload);
+            LogAndDisplay(result.IsSuccess
+                ? $"Successfully published message <b>{payload}</b> to channel <b>{channelName}</b>"
+                : $"Error publishing message <b>{payload}</b> to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
 
-        void PublishClickHandler()
-        {
-            var channelName = _channelName.text;
-            var eventName = _eventName.text;
-            var payload = _payload.text;
-
-            LogAndDisplay($"{channelName} {eventName} {payload}");
-        }
-
-        void LogAndDisplay(string message)
+        private void LogAndDisplay(string message)
         {
             Debug.Log(message);
             _textContent.text = $"{_textContent.text}\n{message}";
         }
 
-        void SetUiComponentsActive(bool isActive)
+        private void EnableUiComponents(bool isEnabled)
         {
-            _channelName.interactable = isActive;
-            _eventName.interactable = isActive;
-            _payload.interactable = isActive;
-            _subscribe.interactable = isActive;
-            _publish.interactable = isActive;
+            _channelName.interactable = isEnabled;
+            _eventName.interactable = isEnabled;
+            _payload.interactable = isEnabled;
+            _subscribe.interactable = isEnabled;
+            _publish.interactable = isEnabled;
         }
 
         void Update()
