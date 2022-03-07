@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using IO.Ably;
@@ -14,6 +15,9 @@ namespace Assets.Ably.Examples
         private Text _textContent;
         private Button _connectButton;
         private Button _subscribe;
+        private Button _unsubscribe;
+        private Button _listChannels;
+        private Button _messageHistory;
         private Button _publish;
         private InputField _channelName;
         private InputField _eventName;
@@ -36,7 +40,16 @@ namespace Assets.Ably.Examples
             _connectButton.onClick.AddListener(ConnectClickHandler);
 
             _subscribe = GameObject.Find("Subscribe").GetComponent<Button>();
-            _subscribe.onClick.AddListener(SubscribeClickHandler);
+            _subscribe.onClick.AddListener(SubscribeChannelClickHandler);
+
+            _unsubscribe = GameObject.Find("Unsubscribe").GetComponent<Button>();
+            _unsubscribe.onClick.AddListener(UnsubscribeChannelHandler);
+
+            _listChannels = GameObject.Find("ListChannels").GetComponent<Button>();
+            _listChannels.onClick.AddListener(ListChannelsHandler);
+
+            _messageHistory = GameObject.Find("MessageHistory").GetComponent<Button>();
+            _messageHistory.onClick.AddListener(ChannelMessageHistoryHandler);
 
             _publish = GameObject.Find("Publish").GetComponent<Button>();
             _publish.onClick.AddListener(PublishClickHandler);
@@ -96,7 +109,7 @@ namespace Assets.Ably.Examples
             _ably.Connect();
         }
 
-        private void SubscribeClickHandler()
+        private void SubscribeChannelClickHandler()
         {
             var channelName = _channelName.text;
             var eventName = _eventName.text;
@@ -105,6 +118,39 @@ namespace Assets.Ably.Examples
                 LogAndDisplay($"Received message <b>{message.Data}</b> from channel <b>{channelName}</b>");
             });
             LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b>");
+        }
+
+        private void UnsubscribeChannelHandler()
+        {
+            var channelName = _channelName.text;
+            _ably.Channels.Get(channelName).Unsubscribe();
+            LogAndDisplay($"Successfully unsubscribed to channel <b>{channelName}</b>");
+        }
+
+        private void ListChannelsHandler()
+        {
+            var channelNames = string.Join(", ", _ably.Channels.Select(channel => channel.Name));
+            LogAndDisplay($"Channel Names - <b>{channelNames}</b>");
+        }
+
+        private async void ChannelMessageHistoryHandler()
+        {
+            var channelName = _channelName.text;
+            LogAndDisplay($"#### <b>{channelName}</b> ####");
+            var historyPage = await _ably.Channels.Get(channelName).HistoryAsync();
+            while (true)
+            {
+                foreach (var message in historyPage.Items)
+                {
+                    LogAndDisplay(message.Data.ToString());
+                }
+                if (historyPage.IsLast)
+                {
+                    break;
+                }
+                historyPage = await historyPage.NextAsync();
+            };
+            LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
         private async void PublishClickHandler()
@@ -131,6 +177,9 @@ namespace Assets.Ably.Examples
             _eventName.interactable = isEnabled;
             _payload.interactable = isEnabled;
             _subscribe.interactable = isEnabled;
+            _unsubscribe.interactable = isEnabled;
+            _listChannels.interactable = isEnabled;
+            _messageHistory.interactable = isEnabled;
             _publish.interactable = isEnabled;
         }
 
