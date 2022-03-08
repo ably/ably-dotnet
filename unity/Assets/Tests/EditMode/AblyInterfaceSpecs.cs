@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
 using IO.Ably;
@@ -93,35 +94,107 @@ namespace Assets.Tests.EditMode
         });
 
         [UnityTest]
-        public IEnumerator TestChannelPublishSubscribe([ValueSource(nameof(_protocols))] Protocol protocol)
+        public IEnumerator TestChannelPublishSubscribe(
+            [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
-            void AssertResultOk(Result result)
+            var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            var channel = realtimeClient.Channels.Get("TestChannel");
+            await channel.AttachAsync();
+
+            var eventName = "chat";
+            var messageList = new List<string>();
+            channel.Subscribe(eventName, message => { messageList.Add(message.Data.ToString()); });
+
+            var result = await channel.PublishAsync(eventName, "Hi there");
+            AssertResultOk(result);
+            result = await channel.PublishAsync(eventName, "Whats up?");
+            AssertResultOk(result);
+            await new ConditionalAwaiter(() => messageList.Count >= 2);
+            Assert.AreEqual("Hi there", messageList[0]);
+            Assert.AreEqual("Whats up?", messageList[1]);
+
+            messageList.Clear();
+            var messageHistoryPage = await channel.HistoryAsync();
+            while (true)
             {
-                Assert.True(result.IsSuccess);
-                Assert.False(result.IsFailure);
-                Assert.Null(result.Error);
+                foreach (var message in messageHistoryPage.Items)
+                {
+                    messageList.Add(message.Data.ToString());
+                }
+                if (messageHistoryPage.IsLast)
+                {
+                    break;
+                }
+                messageHistoryPage = await messageHistoryPage.NextAsync();
             }
+            Assert.AreEqual(2, messageList.Count);
+            Assert.AreEqual("Whats up?", messageList[0]);
+            Assert.AreEqual("Hi there", messageList[1]);
+        });
 
-            return UniTask.ToCoroutine(async () =>
+        [UnityTest]
+        public IEnumerator TestChannelPresence(
+            [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
+        {
+            var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, (options, _) => options.ClientId = "sac");
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            var channel = realtimeClient.Channels.Get("TestChannel");
+            await channel.AttachAsync();
+
+            var presenceMessages = new Dictionary<PresenceAction, string>();
+            channel.Presence.Subscribe(message =>
             {
-                var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
-                await realtimeClient.WaitForState(ConnectionState.Connected);
-
-                var channel = realtimeClient.Channels.Get("TestChannel");
-                await channel.AttachAsync();
-
-                var eventName = "chat";
-                var messageList = new List<string>();
-                channel.Subscribe(eventName, message => { messageList.Add(message.Data.ToString()); });
-
-                var result = await channel.PublishAsync(eventName, "Hi there");
-                AssertResultOk(result);
-                result = await channel.PublishAsync(eventName, "Whats up?");
-                AssertResultOk(result);
-                await new ConditionalAwaiter(() => messageList.Count >= 2);
-                Assert.AreEqual("Hi there", messageList[0]);
-                Assert.AreEqual("Whats up?", messageList[1]);
+                presenceMessages[message.Action] = message.Data.ToString();
             });
+
+            var result = await channel.Presence.EnterAsync("Entered the channel");
+            AssertResultOk(result);
+
+            await new ConditionalAwaiter(() => presenceMessages.Count >= 1);
+            Assert.Contains(PresenceAction.Enter, presenceMessages.Keys);
+            Assert.AreEqual("Entered the channel", presenceMessages[PresenceAction.Enter]);
+
+            var presenceMembers = await channel.Presence.GetAsync();
+            Assert.AreEqual(1, presenceMembers.ToList().Count);
+            Assert.AreEqual("sac", presenceMembers.First().ClientId);
+
+            result = await channel.Presence.LeaveAsync("left the channel");
+            AssertResultOk(result);
+
+            await new ConditionalAwaiter(() => presenceMessages.Count >= 2);
+            Assert.Contains(PresenceAction.Leave, presenceMessages.Keys);
+            Assert.AreEqual("left the channel", presenceMessages[PresenceAction.Leave]);
+
+            presenceMembers = await channel.Presence.GetAsync();
+            Assert.Zero(presenceMembers.ToList().Count);
+
+            presenceMessages.Clear();
+            var presenceMessageHistoryPage = await channel.Presence.HistoryAsync();
+            while (true)
+            {
+                foreach (var presenceMessage in presenceMessageHistoryPage.Items)
+                {
+                    presenceMessages[presenceMessage.Action] = presenceMessage.Data.ToString();
+                }
+                if (presenceMessageHistoryPage.IsLast)
+                {
+                    break;
+                }
+                presenceMessageHistoryPage = await presenceMessageHistoryPage.NextAsync();
+            }
+            Assert.AreEqual(2, presenceMessages.Count);
+            Assert.AreEqual("Entered the channel", presenceMessages[PresenceAction.Enter]);
+            Assert.AreEqual("left the channel", presenceMessages[PresenceAction.Leave]);
+        });
+
+        void AssertResultOk(Result result)
+        {
+            Assert.True(result.IsSuccess);
+            Assert.False(result.IsFailure);
+            Assert.Null(result.Error);
         }
     }
 }
