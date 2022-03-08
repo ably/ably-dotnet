@@ -39,7 +39,7 @@ namespace Assets.Tests.EditMode
         static Protocol[] _protocols = { Protocol.Json };
 
         [UnityTest]
-        public IEnumerator TestConnection(
+        public IEnumerator TestConnectionStateChange(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
@@ -65,13 +65,15 @@ namespace Assets.Tests.EditMode
         });
 
         [UnityTest]
-        public IEnumerator TestChannel(
+        public IEnumerator TestChannelStateChange(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
             await realtimeClient.WaitForState(ConnectionState.Connected);
 
             var channel = realtimeClient.Channels.Get("TestChannel");
+            Assert.AreEqual(ChannelState.Initialized, channel.State);
+
             var channelStates = new List<ChannelState>();
             channel.On(change =>
             {
@@ -90,5 +92,36 @@ namespace Assets.Tests.EditMode
             Assert.AreEqual(ChannelState.Detached, channelStates[1]);
         });
 
+        [UnityTest]
+        public IEnumerator TestChannelPublishSubscribe([ValueSource(nameof(_protocols))] Protocol protocol)
+        {
+            void AssertResultOk(Result result)
+            {
+                Assert.True(result.IsSuccess);
+                Assert.False(result.IsFailure);
+                Assert.Null(result.Error);
+            }
+
+            return UniTask.ToCoroutine(async () =>
+            {
+                var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
+                await realtimeClient.WaitForState(ConnectionState.Connected);
+
+                var channel = realtimeClient.Channels.Get("TestChannel");
+                await channel.AttachAsync();
+
+                var eventName = "chat";
+                var messageList = new List<string>();
+                channel.Subscribe(eventName, message => { messageList.Add(message.Data.ToString()); });
+
+                var result = await channel.PublishAsync(eventName, "Hi there");
+                AssertResultOk(result);
+                result = await channel.PublishAsync(eventName, "Whats up?");
+                AssertResultOk(result);
+                await new ConditionalAwaiter(() => messageList.Count >= 2);
+                Assert.AreEqual("Hi there", messageList[0]);
+                Assert.AreEqual("Whats up?", messageList[1]);
+            });
+        }
     }
 }
