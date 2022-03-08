@@ -1,17 +1,19 @@
 using System;
-using System.Linq;
 using System.Threading;
 using IO.Ably;
 using IO.Ably.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Examples
+namespace Assets.Ably.Example
 {
     public class AblyConsole : MonoBehaviour, IUiConsole
     {
         private AblyRealtime _ably;
+        private ClientOptions _clientOptions;
+
         private Text _textContent;
+        private InputField _clientId;
         private Button _connectButton;
 
         private static string _apiKey = "";
@@ -21,8 +23,8 @@ namespace Assets.Ably.Examples
 
         void Start()
         {
-            RegisterUiComponents();
             InitializeAbly();
+            RegisterUiComponents();
             _ablyChannelUiConsole = AblyChannelUiConsole.CreateInstance(_ably, this);
             _ablyChannelUiConsole.RegisterUiComponents();
             _ablyPresenceUiConsole = AblyPresenceUiConsole.CreateInstance(_ably, this);
@@ -33,21 +35,24 @@ namespace Assets.Ably.Examples
         private void RegisterUiComponents()
         {
             _textContent = GameObject.Find("TxtConsole").GetComponent<Text>();
+            _clientId = GameObject.Find("ClientId").GetComponent<InputField>();
             _connectButton = GameObject.Find("ConnectBtn").GetComponent<Button>();
             _connectButton.onClick.AddListener(ConnectClickHandler);
         }
 
         private void InitializeAbly()
         {
-            var options = new ClientOptions();
-            options.Key = _apiKey;
-            // this will disable the library trying to subscribe to network state notifications
-            options.AutomaticNetworkStateMonitoring = false;
-            options.AutoConnect = false;
-            // this will make sure to post callbacks on UnitySynchronization Context Main Thread
-            options.CustomContext = SynchronizationContext.Current;
+            _clientOptions = new ClientOptions
+            {
+                Key = _apiKey,
+                // this will disable the library trying to subscribe to network state notifications
+                AutomaticNetworkStateMonitoring = false,
+                AutoConnect = false,
+                // this will make sure to post callbacks on UnitySynchronization Context Main Thread
+                CustomContext = SynchronizationContext.Current
+            };
 
-            _ably = new AblyRealtime(options);
+            _ably = new AblyRealtime(_clientOptions);
             _ably.Connection.On(args =>
             {
                 LogAndDisplay($"Connection State is <b>{args.Current}</b>");
@@ -84,6 +89,7 @@ namespace Assets.Ably.Examples
 
         private void ConnectClickHandler()
         {
+            _clientOptions.ClientId = _clientId.text;
             _ably.Connect();
         }
 

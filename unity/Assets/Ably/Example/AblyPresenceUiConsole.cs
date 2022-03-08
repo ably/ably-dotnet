@@ -2,11 +2,11 @@ using IO.Ably;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Examples
+namespace Assets.Ably.Example
 {
     public class AblyPresenceUiConsole
     {
-        private AblyRealtime _ably;
+        private readonly AblyRealtime _ably;
         private readonly IUiConsole _uiConsole;
 
         private Button _presenceSubscribe;
@@ -59,7 +59,7 @@ namespace Assets.Ably.Examples
             var channelName = _channelName.text;
             _ably.Channels.Get(channelName).Presence.Subscribe(message =>
             {
-                _uiConsole.LogAndDisplay($"Received presence message <b>{message.Data}</b> from channel <b>{channelName}</b>");
+                _uiConsole.LogAndDisplay($"Received presence message <b>{message.Data}</b> from channel <b>{channelName}</b> with clientId <b>{message.ClientId}</b>");
             });
             _uiConsole.LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b> for <b>Presence</b> messages");
         }
@@ -75,10 +75,10 @@ namespace Assets.Ably.Examples
         {
             var channelName = _channelName.text;
             var presenceMessages = await _ably.Channels.Get(channelName).Presence.GetAsync();
-            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> Presence ####");
             foreach (var presenceMessage in presenceMessages)
             {
-                _uiConsole.LogAndDisplay(presenceMessage.Data.ToString());
+                _uiConsole.LogAndDisplay($"ClientID - <b>{presenceMessage.ClientId}</b>, Message - <b>{presenceMessage.Data}</b>");
             }
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
@@ -86,13 +86,13 @@ namespace Assets.Ably.Examples
         internal async void PresenceMessageHistoryClickHandler()
         {
             var channelName = _channelName.text;
-            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
+            _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> Presence Messages ####");
             var presenceHistoryPage = await _ably.Channels.Get(channelName).Presence.HistoryAsync();
             while (true)
             {
                 foreach (var presenceMessage in presenceHistoryPage.Items)
                 {
-                    _uiConsole.LogAndDisplay(presenceMessage.Data.ToString());
+                    _uiConsole.LogAndDisplay($"ClientID - <b>{presenceMessage.ClientId}</b>, Message - <b>{presenceMessage.Data}</b>");
                 }
                 if (presenceHistoryPage.IsLast)
                 {
@@ -111,7 +111,7 @@ namespace Assets.Ably.Examples
             var result = await _ably.Channels.Get(channelName).Presence.EnterAsync(_payload.text);
 
             _uiConsole.LogAndDisplay(result.IsSuccess
-                ? $"Successfully entered presence to channel <b>{channelName}</b>"
+                ? $"Successfully entered presence to channel <b>{channelName}</b> for clientID <b>{_ably.ClientId}</b>"
                 : $"Error entering presence to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
 
@@ -123,7 +123,7 @@ namespace Assets.Ably.Examples
             var result = await _ably.Channels.Get(channelName).Presence.LeaveAsync(_payload.text);
 
             _uiConsole.LogAndDisplay(result.IsSuccess
-                ? $"Successfully left presence to channel <b>{channelName}</b>"
+                ? $"Successfully left presence to channel <b>{channelName}</b> for clientID <b>{_ably.ClientId}</b>"
                 : $"Error leaving presence to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
 

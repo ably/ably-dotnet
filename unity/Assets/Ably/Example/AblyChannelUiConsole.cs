@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using IO.Ably;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Examples
+namespace Assets.Ably.Example
 {
     internal class AblyChannelUiConsole
     {
