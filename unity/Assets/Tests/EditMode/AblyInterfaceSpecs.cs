@@ -46,22 +46,48 @@ namespace Assets.Tests.EditMode
             Assert.AreEqual(ConnectionState.Initialized, realtimeClient.Connection.State);
 
             // Check for active connection
-            var states = new List<ConnectionState>();
+            var connectionStates = new List<ConnectionState>();
             realtimeClient.Connection.On(change =>
             {
-                states.Add(change.Current);
+                connectionStates.Add(change.Current);
             });
             realtimeClient.Connect();
             await realtimeClient.WaitForState(ConnectionState.Connected);
-            Assert.AreEqual(ConnectionState.Connecting, states[0]);
-            Assert.AreEqual(ConnectionState.Connected, states[1]);
+            Assert.AreEqual(ConnectionState.Connecting, connectionStates[0]);
+            Assert.AreEqual(ConnectionState.Connected, connectionStates[1]);
 
             // Check for connection close
-            states.Clear();
+            connectionStates.Clear();
             realtimeClient.Close();
             await realtimeClient.WaitForState(ConnectionState.Closed);
-            Assert.AreEqual(ConnectionState.Closing, states[0]);
-            Assert.AreEqual(ConnectionState.Closed, states[1]);
+            Assert.AreEqual(ConnectionState.Closing, connectionStates[0]);
+            Assert.AreEqual(ConnectionState.Closed, connectionStates[1]);
+        });
+
+        [UnityTest]
+        public IEnumerator TestChannel(
+            [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
+        {
+            var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+
+            var channel = realtimeClient.Channels.Get("TestChannel");
+            var channelStates = new List<ChannelState>();
+            channel.On(change =>
+            {
+                channelStates.Add(change.Current);
+            });
+
+            channel.Attach();
+            await channel.WaitForState();
+            Assert.AreEqual(ChannelState.Attaching, channelStates[0]);
+            Assert.AreEqual(ChannelState.Attached, channelStates[1]);
+
+            channelStates.Clear();
+            channel.Detach();
+            await channel.WaitForState(ChannelState.Detached);
+            Assert.AreEqual(ChannelState.Detaching, channelStates[0]);
+            Assert.AreEqual(ChannelState.Detached, channelStates[1]);
         });
 
     }
