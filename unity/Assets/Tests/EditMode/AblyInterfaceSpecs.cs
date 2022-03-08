@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
 using IO.Ably;
@@ -43,6 +44,24 @@ namespace Assets.Tests.EditMode
         {
             var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
             Assert.AreEqual(ConnectionState.Initialized, realtimeClient.Connection.State);
+
+            // Check for active connection
+            var states = new List<ConnectionState>();
+            realtimeClient.Connection.On(change =>
+            {
+                states.Add(change.Current);
+            });
+            realtimeClient.Connect();
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+            Assert.AreEqual(ConnectionState.Connecting, states[0]);
+            Assert.AreEqual(ConnectionState.Connected, states[1]);
+
+            // Check for connection close
+            states.Clear();
+            realtimeClient.Close();
+            await realtimeClient.WaitForState(ConnectionState.Closed);
+            Assert.AreEqual(ConnectionState.Closing, states[0]);
+            Assert.AreEqual(ConnectionState.Closed, states[1]);
         });
 
     }

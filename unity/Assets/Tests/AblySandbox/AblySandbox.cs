@@ -24,7 +24,7 @@ namespace Assets.Tests.AblySandbox
 
             // Very useful for debugging failing tests.
             Logger.LoggerSink = new OutputLoggerSink();
-            Logger.LogLevel = LogLevel.Debug;
+            Logger.LogLevel = LogLevel.Warning;
         }
 
         ILogger Logger { get; set; }
