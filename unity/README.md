@@ -8,10 +8,7 @@
 ### Importing Unity Package
 - Import package by going to Assets -> Import Package -> Custom Package.
   For detailed information, visit https://docs.unity3d.com/Manual/AssetPackagesImport.html
-- Make sure to disable assembly validation if it fails due to conflict with internal newtonsoft json library.
-
-![](doc_images/assembly_version_validation.PNG)
+- Make sure to [disable assembly validation](SETUP.md#disable-assembly-validation-error) if it fails due to conflict with internal newtonsoft json library.
 - Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` in the code, since the feature is not supported and throws runtime exception.
-
 - NewtonSoft JSON DLL's can be removed, in case use of inbuilt Newtonsoft is preferred https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@2.0/manual/index.html. 
   

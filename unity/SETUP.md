@@ -91,17 +91,17 @@
   
 ![](doc_images/unity_default_layout.PNG)  
 - In current layout, test runner is missing. Default layout is not so user-friendly, so we need to change it as per requirement.
-- Unity custom layout is provided under `ably-dotnet\unity\unity_layout.wlt`
+- Unity custom layout is provided under `ably-dotnet\unity\unity_editor_layout.wlt`
 - From the top-right corner, click selector named `Default`, it should show the menu to change the layout.
   
 ![](doc_images/unity_change_layout.PNG)  
-- Select `Load Layout From File` and choose file under `ably-dotnet\unity\unity_layout.wlt`. New layout should look like this.
+- Select `Load Layout From File` and choose file under `ably-dotnet\unity\unity_editor_layout.wlt`. New layout should look like this.
 
 ![](doc_images/unity_custom_layout.PNG)  
 - Now we have a test runner windows at bottom-left along with user-friendly editor layout.
 
 ### **Disable assembly validation error**
-- Unity internally has `NewtonSoftJson` package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll`(https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
+- Unity internally has `NewtonSoftJson` package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll` (https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
 - So, it gives assembly validation error in the console while building the project, to resolve issue, disable `Assembly Validation`
 - Go to `Edit -> Project Settings -> Player -> Assembly Version Validation`, uncheck the box and click on apply.
 
