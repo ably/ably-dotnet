@@ -5,7 +5,7 @@
 1. Git - VCS for ably-dotnet
 2. Unity - Unity game engine (Currently using LTS 2020.3.19f1) 
 3. Unity script editor - Visual studio (Official IDE)/ Visual studio code (Editor)/ Rider (Intellij IDE)
-4. Basics of unity ![Official Unity Manual](https://docs.unity3d.com/Manual/index.html) and ![Unity Beginner Manual](https://docs.google.com/document/d/1TJSKoqsElTjnAVKy-nFcARGHthwv18PFdt8pnuorxvw/edit?usp=sharing) (Ignore if already know) 
+4. Basics of unity [Official Unity Manual](https://docs.unity3d.com/Manual/index.html) and [Unity Beginner Manual](https://docs.google.com/document/d/1TJSKoqsElTjnAVKy-nFcARGHthwv18PFdt8pnuorxvw/edit?usp=sharing) (Ignore if already know) 
 
 ## **Installation**
 **1.** **Git -**
@@ -45,7 +45,7 @@
 ![](doc_images/unity_modules.PNG) 
 - Select `Windows Build Support (IL2CPP)`  to add support for IL2CPP build support for windows, click on `DONE` to install the module
 
-- For more information related to unity installation, please go through the ![official doc](https://docs.unity3d.com/Manual/UnityOverview.html) for ![Installing Unity](https://docs.unity3d.com/Manual/GettingStartedInstallingUnity.html), ![Unity Editor tabs/Windows](https://docs.unity3d.com/Manual/UsingTheEditor.html), ![Editor features](https://docs.unity3d.com/Manual/EditorFeatures.html) and ![Visual Studio Unity integration](https://docs.unity3d.com/Manual/VisualStudioIntegration.html)
+- For more information related to unity installation, please go through the [official doc](https://docs.unity3d.com/Manual/UnityOverview.html) for [Installing Unity](https://docs.unity3d.com/Manual/GettingStartedInstallingUnity.html), [Unity Editor tabs/Windows](https://docs.unity3d.com/Manual/UsingTheEditor.html), [Editor features](https://docs.unity3d.com/Manual/EditorFeatures.html) and [Visual Studio Unity integration](https://docs.unity3d.com/Manual/VisualStudioIntegration.html)
 
 **3.** **Visual studio -**
 - Visual studio community is free to use so it can be downloaded and installed using ***visual studio installer***.
@@ -107,50 +107,50 @@
 
 ![](doc_images/assembly_version_validation.PNG)
 
-## **Running tests**
+## **[Running tests](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/index.html)**
 
 1. **Run editmode tests**
 
-Via GUI 
+[Via GUI](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/workflow-create-test.html) 
 - At the bottom-left corner in the test runner window, click on `EditMode` tab
 - All the tests should be available and shown under `EditMode.dll`
 - Double click on `EditMode.dll` to run the tests or `right click` and `Run` the tests
 
 ![](doc_images/editmode_tests.PNG)
 
-Via console
+[Via console](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/reference-command-line.html)
 ```bash
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults editmode-results.xml -testPlatform editmode
 ```
 
 2. **Run playmode tests**
    
-Via GUI
+[Via GUI](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/workflow-create-playmode-test.html)
 - At the bottom-left corner in the test runner window, click on `PlayMode` tab
 - All the tests should be available and shown under `PlayMode.dll`
 - Double click on `PlayMode.dll` to run the tests or `right click` and `Run` the tests
 
 ![](doc_images/playmode_tests.PNG)  
 
-Via console
+[Via console](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/reference-command-line.html)
 ```bash
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults playmode-results.xml -testPlatform playmode
 ```
 
 ## **Export unitypackage**
-![Via GUI](https://docs.unity3d.com/Manual/AssetPackagesCreate.html) 
+[Via GUI](https://docs.unity3d.com/Manual/AssetPackagesCreate.html) 
 - Right click on `Assets` under `project` window tab at top-left corner.
 - Click on `Export Package` -> `Export` to export the standalone unity package.
 
 ![](doc_images/export_package.PNG)
 
-Via Console 
+[Via Console](https://docs.unity3d.com/Manual/EditorCommandLineArguments.html) 
 ```bash
 Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -exportPackage 'Assets' 'ably.unitypackage'
 ```
 - More information related to Asset Package Export and Import -> https://docs.unity3d.com/Manual/AssetPackages.html
 
 ## **CI/CD using gameCI**
-- Currently, unity project testing and packaging is done using ![gameCI](https://game.ci/)
+- Currently, unity project testing and packaging is done using [gameCI](https://game.ci/)
 - `Unity License File (ulf)` is created using gameCI provided github action and added as a `UNITY_LICENSE` github secret.
-- To learn more about unity CI using gameCI github actions, follow ![gameCI github actions](https://game.ci/docs/github/getting-started)
+- To learn more about unity CI using gameCI github actions, follow [gameCI github actions](https://game.ci/docs/github/getting-started)
