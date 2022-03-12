@@ -15,12 +15,14 @@ namespace Assets.Ably.Example
         private Text _textContent;
         private InputField _clientId;
         private Button _connectButton;
+        private Button _connectionStatus;
 
         private static string _apiKey = "";
 
         private AblyChannelUiConsole _ablyChannelUiConsole;
         private AblyPresenceUiConsole _ablyPresenceUiConsole;
 
+        private bool _isConnected;
         void Start()
         {
             InitializeAbly();
@@ -38,6 +40,7 @@ namespace Assets.Ably.Example
             _clientId = GameObject.Find("ClientId").GetComponent<InputField>();
             _connectButton = GameObject.Find("ConnectBtn").GetComponent<Button>();
             _connectButton.onClick.AddListener(ConnectClickHandler);
+            _connectionStatus = GameObject.Find("ConnectionStatus").GetComponent<Button>();
         }
 
         private void InitializeAbly()
@@ -56,41 +59,48 @@ namespace Assets.Ably.Example
             _ably.Connection.On(args =>
             {
                 LogAndDisplay($"Connection State is <b>{args.Current}</b>");
-                _connectButton.GetComponentInChildren<Text>().text = args.Current.ToString();
-                var connectBtnImage = _connectButton.GetComponent<Image>();
+                _connectionStatus.GetComponentInChildren<Text>().text = args.Current.ToString();
+                var connectionStatusBtnImage = _connectionStatus.GetComponent<Image>();
                 switch (args.Current)
                 {
                     case ConnectionState.Initialized:
-                        connectBtnImage.color = Color.white;
+                        connectionStatusBtnImage.color = Color.white;
                         break;
                     case ConnectionState.Connecting:
-                        connectBtnImage.color = Color.gray;
+                        connectionStatusBtnImage.color = Color.gray;
                         break;
                     case ConnectionState.Connected:
-                        connectBtnImage.color = Color.green;
+                        connectionStatusBtnImage.color = Color.green;
                         break;
                     case ConnectionState.Disconnected:
-                        connectBtnImage.color = Color.yellow;
+                        connectionStatusBtnImage.color = Color.yellow;
                         break;
-                    case ConnectionState.Suspended:
                     case ConnectionState.Closing:
+                        connectionStatusBtnImage.color = Color.yellow;
+                        break;
                     case ConnectionState.Closed:
                     case ConnectionState.Failed:
-                        connectBtnImage.color = Color.red;
+                    case ConnectionState.Suspended:
+                        connectionStatusBtnImage.color = Color.red;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                _ablyChannelUiConsole.EnableUiComponents(args.Current == ConnectionState.Connected);
-                _ablyPresenceUiConsole.EnableUiComponents(args.Current == ConnectionState.Connected);
+
+                _isConnected = args.Current == ConnectionState.Connected;
+                _ablyChannelUiConsole.EnableUiComponents(_isConnected);
+                _ablyPresenceUiConsole.EnableUiComponents(_isConnected);
+                _connectButton.GetComponentInChildren<Text>().text = _isConnected ? "Disconnect" : "Connect";
             });
         }
-
 
         private void ConnectClickHandler()
         {
             _clientOptions.ClientId = _clientId.text;
-            _ably.Connect();
+            if (_isConnected)
+                _ably.Close();
+            else
+                _ably.Connect();
         }
 
         public void LogAndDisplay(string message)
