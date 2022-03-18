@@ -47,7 +47,7 @@ namespace Assets.Tests.AblySandbox
                 CipherMode.CBC,
                 ((string)cipher["iv"]).FromBase64());
 
-            AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
+            var request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();

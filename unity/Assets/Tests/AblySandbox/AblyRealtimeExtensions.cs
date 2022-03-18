@@ -9,7 +9,7 @@ namespace Assets.Tests.AblySandbox
 {
     public static class AblyRealtimeExtensions
     {
-        public static Task<TimeSpan> WaitForState(this AblyRealtime realtime, ConnectionState awaitedState, TimeSpan? waitSpan = null)
+        public static Task<TimeSpan> WaitForState(this AblyRealtime realtime, ConnectionState awaitedState)
         {
             if (realtime.Connection.State == awaitedState)
             {
@@ -17,22 +17,12 @@ namespace Assets.Tests.AblySandbox
             }
 
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return connectionAwaiter.Wait(waitSpan.Value);
-            }
-
             return connectionAwaiter.Wait();
         }
 
-        public static Task WaitForState(this IRealtimeClient realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
+        public static Task WaitForState(this IRealtimeClient realtime, ConnectionState awaitedState = ConnectionState.Connected)
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return connectionAwaiter.Wait(waitSpan.Value);
-            }
-
             return connectionAwaiter.Wait();
         }
 
