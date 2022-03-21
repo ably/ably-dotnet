@@ -28,7 +28,7 @@ namespace Assets.Tests.AblySandbox
             Logger.LogLevel = LogLevel.Warning;
         }
 
-        ILogger Logger { get; set; }
+        private ILogger Logger { get; set; }
 
         public AblySandboxFixture Fixture { get; set; }
 

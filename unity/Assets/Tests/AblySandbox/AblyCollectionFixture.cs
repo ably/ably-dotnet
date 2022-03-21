@@ -38,7 +38,7 @@ namespace Assets.Tests.AblySandbox
             Keys = new List<Key>();
         }
 
-        internal ClientOptions CreateDefaultOptions(string key = null, string environment = null)
+        internal ClientOptions CreateDefaultOptions(string environment = null)
         {
             environment ??= Environment;
 
@@ -47,7 +47,7 @@ namespace Assets.Tests.AblySandbox
 
             return new ClientOptions
             {
-                Key = key ?? FirstValidKey,
+                Key = FirstValidKey,
                 Tls = Tls,
                 Environment = env,
                 AutomaticNetworkStateMonitoring = false
@@ -57,7 +57,7 @@ namespace Assets.Tests.AblySandbox
         internal AblyHttpClient GetHttpClient(string environment = null)
         {
             var ablyHttpOptions = new AblyHttpOptions { IsSecure = Tls };
-            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
+            ablyHttpOptions.Host = CreateDefaultOptions(environment).FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }
     }

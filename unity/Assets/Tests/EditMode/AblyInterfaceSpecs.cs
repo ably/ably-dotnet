@@ -107,13 +107,16 @@ namespace Assets.Tests.EditMode
             var messageList = new List<string>();
             channel.Subscribe(eventName, message => { messageList.Add(message.Data.ToString()); });
 
-            var result = await channel.PublishAsync(eventName, "Hi there");
+            const string HI_THERE = "Hi there";
+            const string WHATS_UP = "What's up?";
+
+            var result = await channel.PublishAsync(eventName, HI_THERE);
             AssertResultOk(result);
-            result = await channel.PublishAsync(eventName, "Whats up?");
+            result = await channel.PublishAsync(eventName, WHATS_UP);
             AssertResultOk(result);
             await new ConditionalAwaiter(() => messageList.Count >= 2);
-            Assert.AreEqual("Hi there", messageList[0]);
-            Assert.AreEqual("Whats up?", messageList[1]);
+            Assert.AreEqual(HI_THERE, messageList[0]);
+            Assert.AreEqual(WHATS_UP, messageList[1]);
 
             messageList.Clear();
             var messageHistoryPage = await channel.HistoryAsync();
@@ -130,8 +133,8 @@ namespace Assets.Tests.EditMode
                 messageHistoryPage = await messageHistoryPage.NextAsync();
             }
             Assert.AreEqual(2, messageList.Count);
-            Assert.AreEqual("Whats up?", messageList[0]);
-            Assert.AreEqual("Hi there", messageList[1]);
+            Assert.AreEqual(WHATS_UP, messageList[0]);
+            Assert.AreEqual(HI_THERE, messageList[1]);
         });
 
         [UnityTest]
@@ -150,23 +153,27 @@ namespace Assets.Tests.EditMode
                 presenceMessages[message.Action] = message.Data.ToString();
             });
 
-            var result = await channel.Presence.EnterAsync("Entered the channel");
+            const string ENTERED_THE_CHANNEL = "Entered the channel";
+
+            var result = await channel.Presence.EnterAsync(ENTERED_THE_CHANNEL);
             AssertResultOk(result);
 
             await new ConditionalAwaiter(() => presenceMessages.Count >= 1);
             Assert.Contains(PresenceAction.Enter, presenceMessages.Keys);
-            Assert.AreEqual("Entered the channel", presenceMessages[PresenceAction.Enter]);
+            Assert.AreEqual(ENTERED_THE_CHANNEL, presenceMessages[PresenceAction.Enter]);
 
             var presenceMembers = await channel.Presence.GetAsync();
             Assert.AreEqual(1, presenceMembers.ToList().Count);
             Assert.AreEqual("sac", presenceMembers.First().ClientId);
 
-            result = await channel.Presence.LeaveAsync("left the channel");
+            const string LEFT_THE_CHANNEL = "left the channel";
+
+            result = await channel.Presence.LeaveAsync(LEFT_THE_CHANNEL);
             AssertResultOk(result);
 
             await new ConditionalAwaiter(() => presenceMessages.Count >= 2);
             Assert.Contains(PresenceAction.Leave, presenceMessages.Keys);
-            Assert.AreEqual("left the channel", presenceMessages[PresenceAction.Leave]);
+            Assert.AreEqual(LEFT_THE_CHANNEL, presenceMessages[PresenceAction.Leave]);
 
             presenceMembers = await channel.Presence.GetAsync();
             Assert.Zero(presenceMembers.ToList().Count);
@@ -186,11 +193,11 @@ namespace Assets.Tests.EditMode
                 presenceMessageHistoryPage = await presenceMessageHistoryPage.NextAsync();
             }
             Assert.AreEqual(2, presenceMessages.Count);
-            Assert.AreEqual("Entered the channel", presenceMessages[PresenceAction.Enter]);
-            Assert.AreEqual("left the channel", presenceMessages[PresenceAction.Leave]);
+            Assert.AreEqual(ENTERED_THE_CHANNEL, presenceMessages[PresenceAction.Enter]);
+            Assert.AreEqual(LEFT_THE_CHANNEL, presenceMessages[PresenceAction.Leave]);
         });
 
-        void AssertResultOk(Result result)
+        private static void AssertResultOk(Result result)
         {
             Assert.True(result.IsSuccess);
             Assert.False(result.IsFailure);

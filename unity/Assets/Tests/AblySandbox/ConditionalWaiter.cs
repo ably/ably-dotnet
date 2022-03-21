@@ -10,15 +10,13 @@ namespace Assets.Tests.AblySandbox
     public sealed class ConditionalAwaiter : IDisposable
     {
         private readonly Func<bool> _condition;
-        private readonly Func<string> _getError;
         private readonly Timer _timer;
         private readonly TaskCompletionSource<bool> _completionSource;
         private int _tickCount;
 
-        public ConditionalAwaiter(Func<bool> condition, Func<string> getError = null)
+        public ConditionalAwaiter(Func<bool> condition)
         {
             _condition = condition;
-            _getError = getError;
             _timer = new Timer
             {
                 Enabled = true,
@@ -38,13 +36,7 @@ namespace Assets.Tests.AblySandbox
             Interlocked.Increment(ref _tickCount);
             if (_tickCount > 100)
             {
-                string message = "10 seconds elapsed. Giving up.";
-                if (_getError != null)
-                {
-                    message += " Error: " + _getError();
-                }
-
-                _completionSource.SetException(new Exception(message));
+                _completionSource.SetException(new Exception("Timer elapsed. Giving up."));
             }
 
             if (_condition() && _completionSource.Task.IsCompleted == false)

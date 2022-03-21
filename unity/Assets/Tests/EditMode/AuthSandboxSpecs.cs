@@ -42,7 +42,7 @@ namespace Assets.Tests.EditMode
 
         public AblySandbox.AblySandbox AblySandbox { get; set; }
 
-        static Protocol[] _protocols = {Protocol.Json};
+        private static Protocol[] _protocols = { Protocol.Json };
 
         private static TokenParams CreateTokenParams(Capability capability, TimeSpan? ttl = null)
         {
@@ -59,13 +59,12 @@ namespace Assets.Tests.EditMode
 
         private string _errorUrl = "https://echo.ably.io/respondwith?status=500";
 
-
         [UnityTest]
         public IEnumerator RSA4Helper_RestClient_ShouldTrackRequests(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var authClient = await AblySandbox.GetRestClient(protocol);
-            var token = await authClient.Auth.RequestTokenAsync(new TokenParams {ClientId = "123"});
+            var token = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123" });
             var helper = new RSA4Helper(this);
             var restClient = await helper.GetRestClientWithRequests(protocol, token, invalidateKey: true);
             helper.Requests.Count.Should().Be(0);
@@ -86,7 +85,11 @@ namespace Assets.Tests.EditMode
             // Get a very short lived token and wait for it to expire
             var authClient = await AblySandbox.GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
-                {ClientId = "123", Ttl = TimeSpan.FromMilliseconds(1)});
+            {
+                ClientId = "123", 
+                Ttl = TimeSpan.FromMilliseconds(1)
+            });
+
             await Task.Delay(TimeSpan.FromMilliseconds(2));
 
             // Modify the expiry date to fool the client it has a valid token
@@ -130,7 +133,11 @@ namespace Assets.Tests.EditMode
             var helper = new RSA4Helper(this);
             var authClient = await AblySandbox.GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
-                {ClientId = "123", Ttl = TimeSpan.FromMilliseconds(1)});
+            {
+                ClientId = "123", 
+                Ttl = TimeSpan.FromMilliseconds(1)
+            });
+
             await Task.Delay(TimeSpan.FromMilliseconds(2));
 
             // Modify the expiry date to fool the client it has a valid token
@@ -163,7 +170,10 @@ namespace Assets.Tests.EditMode
             // Create a token that is valid long enough for a successful connection to occur
             var authClient = await AblySandbox.GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
-                {ClientId = "123", Ttl = TimeSpan.FromMilliseconds(8000)});
+            {
+                ClientId = "123",
+                Ttl = TimeSpan.FromMilliseconds(8000),
+            });
 
             // get a realtime client with no Key, AuthUrl, or authCallback
             var realtimeClient =
@@ -305,6 +315,7 @@ namespace Assets.Tests.EditMode
                 options.QueryTime = true;
                 options.TokenDetails = token;
             });
+
             await Task.Delay(2000);
             // This makes sure we get server time
             ((AblyAuth) mainClient.Auth).CreateTokenRequest();
@@ -558,7 +569,6 @@ namespace Assets.Tests.EditMode
             realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
         });
 
-
         [NUnit.Framework.Property("spec", "RSA8a")]
         [UnityTest]
         public IEnumerator ShouldReturnTheRequestedToken(
@@ -602,7 +612,6 @@ namespace Assets.Tests.EditMode
             await httpsTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
         });
 
-
         [NUnit.Framework.Property("spec", "RSA4a2")]
         [UnityTest]
         public IEnumerator WithTokenAuth_WhenUnauthorizedErrorAndNoRenew_ShouldThrow40171AblyException(
@@ -621,7 +630,6 @@ namespace Assets.Tests.EditMode
             var ex = await E7Assert.ThrowsAsync<AblyException>(ably.StatsAsync());
             ex.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
         });
-
 
         [UnityTest]
         [Ignore("Fails test with blocking async await")]
@@ -643,7 +651,6 @@ namespace Assets.Tests.EditMode
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         });
 
-
         [UnityTest]
         public IEnumerator WithInvalidTimeStamp_Throws(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
@@ -653,7 +660,7 @@ namespace Assets.Tests.EditMode
             var tokenParams = CreateTokenParams(null);
             tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
             var error = await E7Assert.ThrowsAsync<AblyException>(ably.Auth.RequestTokenAsync(tokenParams,
-                AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions {QueryTime = false})));
+                AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions { QueryTime = false })));
 
             error.ErrorInfo.Code.Should().Be(40104);
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -666,7 +673,7 @@ namespace Assets.Tests.EditMode
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var ably = await AblySandbox.GetRestClient(protocol);
-            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams {ClientId = "123"});
+            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             ably.AblyAuth.ClientId.Should().Be("123");
 
             // uses Token Auth for all future requests (RSA10a)
@@ -674,10 +681,9 @@ namespace Assets.Tests.EditMode
 
             // create a token immediately (RSA10a)
             // regardless of whether the existing token is valid or not
-            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams {ClientId = "123"});
+            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
             tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
         });
-
 
         [NUnit.Framework.Property("spec", "RSA8f1")]
         [UnityTest]
@@ -702,7 +708,6 @@ namespace Assets.Tests.EditMode
             message.Data.Should().Be("test");
         });
 
-
         [NUnit.Framework.Property("spec", "RSA8f2")]
         [UnityTest]
         public IEnumerator TokenAuthWithoutClientIdAndAMessageWithExplicitId_ShouldThrow(
@@ -717,10 +722,10 @@ namespace Assets.Tests.EditMode
                 Environment = settings.Environment,
                 UseBinaryProtocol = protocol == Defaults.Protocol
             });
-            await E7Assert.ThrowsAsync<AblyException>(tokenClient.Channels["test"]
-                .PublishAsync(new Message("test", "test") {ClientId = "123"}));
-        });
 
+            await E7Assert.ThrowsAsync<AblyException>(tokenClient.Channels["test"]
+                .PublishAsync(new Message("test", "test") { ClientId = "123" }));
+        });
 
         [NUnit.Framework.Property("spec", "RSA8f3")]
         [UnityTest]
@@ -729,7 +734,7 @@ namespace Assets.Tests.EditMode
         {
             var client = await AblySandbox.GetRestClient(protocol);
             var settings = await _sandboxFixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -745,7 +750,6 @@ namespace Assets.Tests.EditMode
             message.Data.Should().Be("test");
         });
 
-
         [NUnit.Framework.Property("spec", "RSA8f4")]
         [UnityTest]
         public IEnumerator TokenAuthWithWildcardClientId_WhenPublishingMessageWithClientId_ShouldExpectClientIdToBeSentWithTheMessage(
@@ -753,7 +757,7 @@ namespace Assets.Tests.EditMode
         {
             var client = await AblySandbox.GetRestClient(protocol);
             var settings = await _sandboxFixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
             {
                 TokenDetails = token,
@@ -762,7 +766,7 @@ namespace Assets.Tests.EditMode
             });
 
             var channel = tokenClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") {ClientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
             tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
@@ -774,7 +778,7 @@ namespace Assets.Tests.EditMode
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var client = await AblySandbox.GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await _sandboxFixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -786,20 +790,19 @@ namespace Assets.Tests.EditMode
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") {ClientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
         });
 
-
         [UnityTest]
         public IEnumerator TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToPublishWithNewToken(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var client = await AblySandbox.GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await _sandboxFixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
 
@@ -812,20 +815,19 @@ namespace Assets.Tests.EditMode
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") {ClientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
         });
 
-
         [UnityTest]
         public IEnumerator TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToConnect(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var ablyRest = await AblySandbox.GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await _sandboxFixture.GetSettings();
             var tokenJson = token.ToJson();
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
@@ -848,7 +850,7 @@ namespace Assets.Tests.EditMode
                 [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
         {
             var ablyRest = await AblySandbox.GetRestClient(protocol);
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"});
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" });
             var settings = await _sandboxFixture.GetSettings();
             var incorrectJson = $"[{token.ToJson()}]";
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
@@ -877,7 +879,6 @@ namespace Assets.Tests.EditMode
             err.InnerException.Should().NotBeNull();
         });
 
-
         [UnityTest]
         public IEnumerator TokenAuthCallbackWithTokenDetailsReturned_ShouldBeAbleToPublishWithNewToken(
             [ValueSource(nameof(_protocols))] Protocol protocol) => UniTask.ToCoroutine(async () =>
@@ -887,13 +888,13 @@ namespace Assets.Tests.EditMode
             var authCallbackClient = await AblySandbox.GetRestClient(protocol, options =>
             {
                 options.AuthCallback = tokenParams =>
-                    tokenClient.Auth.RequestTokenAsync(new TokenParams {ClientId = "*"}).Convert();
+                    tokenClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" }).Convert();
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
 
             var channel = authCallbackClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") {ClientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             await Task.Delay(1000);
 
@@ -901,7 +902,6 @@ namespace Assets.Tests.EditMode
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
         });
-
 
         [UnityTest]
         public IEnumerator TokenAuthCallbackWithTokenRequestReturned_ShouldBeAbleToGetATokenAndPublishWithNewToken(
@@ -912,19 +912,18 @@ namespace Assets.Tests.EditMode
             var authCallbackClient = await AblySandbox.GetRestClient(protocol, options =>
             {
                 options.AuthCallback = async tokenParams =>
-                    await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams {ClientId = "*"});
+                    await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
 
             var channel = authCallbackClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") {ClientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
         });
-
 
         [NUnit.Framework.Property("issue", "374")]
         [UnityTest]
@@ -1008,8 +1007,8 @@ namespace Assets.Tests.EditMode
                 }
 
                 var realtimeClient =
-                    await Specs.AblySandbox.GetRealtimeClient(protocol, optionsAction,
-                        (options, device) => restClient);
+                    await Specs.AblySandbox.GetRealtimeClient(protocol, optionsAction, (options, device) => restClient);
+
                 return realtimeClient;
             }
 

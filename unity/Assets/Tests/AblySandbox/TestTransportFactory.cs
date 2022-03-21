@@ -8,6 +8,7 @@ namespace Assets.Tests.AblySandbox
     public class TestTransportFactory : ITransportFactory
     {
         private readonly Action<TestTransportWrapper> _onWrappedTransportCreated;
+
         internal Action<TestTransportWrapper> OnTransportCreated = delegate { };
 
         internal Action<ProtocolMessage> OnMessageSent = delegate { };

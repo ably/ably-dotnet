@@ -39,7 +39,6 @@ namespace Assets.Tests.EditMode
 
         public AblySandbox.AblySandbox AblySandbox { get; set; }
 
-
         private static readonly DateTimeOffset StartInterval =
             DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
@@ -47,7 +46,10 @@ namespace Assets.Tests.EditMode
         {
             var client = await AblySandbox.GetRestClient(protocol);
             var result = await client.StatsAsync(new StatsRequestParams
-                {Start = StartInterval.AddMinutes(-2), End = StartInterval.AddMinutes(1)});
+            {
+                Start = StartInterval.AddMinutes(-2),
+                End = StartInterval.AddMinutes(1)
+            });
 
             return result.Items;
         }

@@ -39,9 +39,9 @@ namespace Assets.Tests.AblySandbox
                         data = _handler.GetTransportData(msg);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    DefaultLogger.Error("Error handling beforeMessage helper.", ex);
+                    DefaultLogger.Error("Error handling beforeMessage helper.", e);
                 }
 
                 try
@@ -57,9 +57,9 @@ namespace Assets.Tests.AblySandbox
                 {
                     _wrappedTransport.AfterDataReceived?.Invoke(msg);
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    DefaultLogger.Error("Error handling afterMessage helper.", ex);
+                    DefaultLogger.Error("Error handling afterMessage helper.", e);
                 }
             }
 

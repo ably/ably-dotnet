@@ -26,12 +26,6 @@ namespace Assets.Tests.AblySandbox
             return connectionAwaiter.Wait();
         }
 
-        public static async Task ProcessMessage(this IRealtimeClient client, ProtocolMessage message)
-        {
-            ((AblyRealtime)client).Workflow.QueueCommand(ProcessMessageCommand.Create(message));
-            await client.ProcessCommands();
-        }
-
         /// <summary>
         /// This method yields the current thread and waits until the whole command queue is processed.
         /// </summary>
