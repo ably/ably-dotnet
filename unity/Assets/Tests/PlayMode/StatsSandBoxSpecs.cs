@@ -27,7 +27,7 @@ namespace Assets.Tests.PlayMode
         [UnitySetUp]
         public IEnumerator Init()
         {
-            AblySandbox = new Assets.Tests.AblySandbox.AblySandbox(_sandboxFixture);
+            AblySandbox = new AblySandbox.AblySandbox(_sandboxFixture);
             yield return null;
         }
 
@@ -38,8 +38,7 @@ namespace Assets.Tests.PlayMode
             yield return null;
         }
 
-        public Assets.Tests.AblySandbox.AblySandbox AblySandbox { get; set; }
-
+        public AblySandbox.AblySandbox AblySandbox { get; set; }
 
         private static readonly DateTimeOffset StartInterval =
             DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
@@ -48,17 +47,21 @@ namespace Assets.Tests.PlayMode
         {
             var client = await AblySandbox.GetRestClient(protocol);
             var result = await client.StatsAsync(new StatsRequestParams
-                {Start = StartInterval.AddMinutes(-2), End = StartInterval.AddMinutes(1)});
+            {
+                Start = StartInterval.AddMinutes(-2),
+                End = StartInterval.AddMinutes(1)
+            });
 
             return result.Items;
         }
 
-        static Protocol[] _protocols = {Protocol.Json};
+        static Protocol[] _protocols = { Protocol.Json };
 
         [Property("spec", "G3")]
         [UnityTest]
-        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(_protocols))] Protocol protocol) =>
-            UniTask.ToCoroutine(async () =>
+        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(_protocols))] Protocol protocol)
+        {
+            return UniTask.ToCoroutine(async () =>
             {
                 await _sandboxFixture.SetupStats();
 
@@ -88,5 +91,6 @@ namespace Assets.Tests.PlayMode
 
                 await AblySandbox.AssertMultipleTimes(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
             });
+        }
     }
 }

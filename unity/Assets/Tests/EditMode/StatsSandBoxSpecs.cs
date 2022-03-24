@@ -54,12 +54,13 @@ namespace Assets.Tests.EditMode
             return result.Items;
         }
 
-        static Protocol[] _protocols = {Protocol.Json};
+        static Protocol[] _protocols = { Protocol.Json };
 
         [Property("spec", "G3")]
         [UnityTest]
-        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(_protocols))] Protocol protocol) =>
-            UniTask.ToCoroutine(async () =>
+        public IEnumerator ShouldHaveCorrectStatsAsPerStatsSpec([ValueSource(nameof(_protocols))] Protocol protocol)
+        {
+            return UniTask.ToCoroutine(async () =>
             {
                 await _sandboxFixture.SetupStats();
 
@@ -89,5 +90,6 @@ namespace Assets.Tests.EditMode
 
                 await AblySandbox.AssertMultipleTimes(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
             });
+        }
     }
 }

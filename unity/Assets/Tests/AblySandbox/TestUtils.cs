@@ -29,16 +29,6 @@ namespace Assets.Tests.AblySandbox
 
     internal static class TestHelpers
     {
-        // public static DateTimeOffset Now()
-        // {
-        //     return NowFunc()();
-        // }
-
-        // public static Func<DateTimeOffset> NowFunc()
-        // {
-        //     return Defaults.NowFunc();
-        // }
-
         public static async Task WaitFor(int timeoutMs, int taskCount, Action<Action> action, Action onFail = null)
         {
             var tsc = new TaskCompletionAwaiter(timeoutMs, taskCount);
