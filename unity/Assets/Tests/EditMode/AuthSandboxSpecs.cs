@@ -627,9 +627,9 @@ namespace Assets.Tests.EditMode
 
                 var options = await _sandboxFixture.GetSettings();
                 var httpTokenAbly =
-                    new AblyRest(new ClientOptions {Token = token.Token, Environment = options.Environment, Tls = false});
+                    new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = false });
                 var httpsTokenAbly =
-                    new AblyRest(new ClientOptions {Token = token.Token, Environment = options.Environment, Tls = true});
+                    new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = true });
 
                 // If it doesn't throw we are good :)
                 await httpTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
@@ -644,7 +644,7 @@ namespace Assets.Tests.EditMode
             return UniTask.ToCoroutine(async () =>
             {
                 var ablyRest = await AblySandbox.GetRestClient(protocol);
-                var token = ablyRest.Auth.RequestToken(new TokenParams {Ttl = TimeSpan.FromSeconds(1)});
+                var token = ablyRest.Auth.RequestToken(new TokenParams { Ttl = TimeSpan.FromSeconds(1) });
 
                 await Task.Delay(2000);
                 var ably = await AblySandbox.GetRestClient(protocol, opts =>
@@ -671,7 +671,7 @@ namespace Assets.Tests.EditMode
 
                 var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null).Result;
 
-                var tokenAbly = new AblyRest(new ClientOptions {Token = token.Token, Environment = "sandbox"});
+                var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
 
                 var error =
                     await E7Assert.ThrowsAsync<AblyException>(tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
