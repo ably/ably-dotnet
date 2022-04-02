@@ -100,17 +100,7 @@ namespace IO.Ably
         /// Log level; controls the level of verbosity of log messages from the library.
         /// Default: Defaults.DefaultLogLevel. Which means the log level is set to Warning.
         /// </summary>
-        public LogLevel LogLevel
-        {
-            get => Logger?.LogLevel ?? Defaults.DefaultLogLevel;
-            set
-            {
-                if (Logger != null)
-                {
-                    Logger.LogLevel = value;
-                }
-            }
-        }
+        public LogLevel LogLevel { get; set; } = Defaults.DefaultLogLevel;
 
         /// <summary>
         /// Log handler: allows the client to intercept log messages and handle them in a client-specific way.
