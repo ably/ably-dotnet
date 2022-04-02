@@ -130,15 +130,7 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
-            if (Options.Logger != null)
-            {
-                Logger = Options.Logger;
-            }
-
-            if (Options.LogLevel.HasValue)
-            {
-                Logger.LogLevel = Options.LogLevel.Value;
-            }
+            Logger.LogLevel = Options.LogLevel;
 
             if (Options.LogHandler != null)
             {
