@@ -9,6 +9,7 @@ namespace Assets.Tests.AblySandbox
 {
     public static class AblyRealtimeExtensions
     {
+        private const int Timeout = 50;
         public static Task<TimeSpan> WaitForState(this AblyRealtime realtime, ConnectionState awaitedState)
         {
             if (realtime.Connection.State == awaitedState)
@@ -29,10 +30,8 @@ namespace Assets.Tests.AblySandbox
         /// <summary>
         /// This method yields the current thread and waits until the whole command queue is processed.
         /// </summary>
-        /// <returns></returns>
-        public static async Task ProcessCommands(this IRealtimeClient client)
+        public static async Task ProcessCommands(this AblyRealtime client)
         {
-            var realtime = (AblyRealtime)client;
             var taskAwaiter = new TaskCompletionAwaiter();
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -40,9 +39,9 @@ namespace Assets.Tests.AblySandbox
             {
                 while (true)
                 {
-                    await Task.Delay(50);
+                    await Task.Delay(Timeout);
 
-                    if (realtime.Workflow.IsProcessingCommands() == false)
+                    if (client.Workflow.IsProcessingCommands() == false)
                     {
                         taskAwaiter.SetCompleted();
                     }

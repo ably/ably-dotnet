@@ -88,7 +88,7 @@ namespace Assets.Tests.EditMode
                     stats.TokenRequests.Failed.Should().Be(20);
                 }
 
-                await AblySandbox.AssertMultipleTimes(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
+                await AblySandbox.AssertWithRetries(GetAndValidateStats, 5, TimeSpan.FromSeconds(5));
             });
         }
     }

@@ -87,14 +87,14 @@ namespace Assets.Tests.AblySandbox
             return client;
         }
 
-        public async Task AssertMultipleTimes(Func<Task> testAction, int maxNumberOfTimes, TimeSpan durationBetweenAttempts)
+        public async Task AssertWithRetries(Func<Task> testAction, int maxNumberOfTimes, TimeSpan durationBetweenAttempts)
         {
             for (int i = 0; i < maxNumberOfTimes; i++)
             {
                 try
                 {
                     await testAction();
-                    break; // If there were no exceptions then we are all good and can return
+                    return; // If there were no exceptions then we are all good and can return
                 }
                 catch (Exception)
                 {
