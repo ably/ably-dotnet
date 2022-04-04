@@ -51,11 +51,16 @@ namespace IO.Ably
 
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc, IMobileDevice mobileDevice = null)
         {
-            Logger.LogLevel = Options.LogLevel;
-
-            if (Options.LogHandler != null)
+            if (options.Logger != null)
             {
-                Logger.LoggerSink = Options.LogHandler;
+                Logger = options.Logger;
+            }
+
+            Logger.LogLevel = options.LogLevel;
+
+            if (options.LogHandler != null)
+            {
+                Logger.LoggerSink = options.LogHandler;
             }
 
             CaptureSynchronizationContext(options);
