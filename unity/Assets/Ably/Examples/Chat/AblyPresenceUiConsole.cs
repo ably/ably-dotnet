@@ -2,7 +2,7 @@ using IO.Ably;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Example
+namespace Assets.Ably.Examples.Chat
 {
     public class AblyPresenceUiConsole
     {

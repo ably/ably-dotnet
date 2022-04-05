@@ -5,7 +5,7 @@ using IO.Ably.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Example
+namespace Assets.Ably.Examples.Chat
 {
     public class AblyConsole : MonoBehaviour, IUiConsole
     {
@@ -17,12 +17,13 @@ namespace Assets.Ably.Example
         private Button _connectButton;
         private Button _connectionStatus;
 
-        private static string _apiKey = "";
+        private static string _apiKey = "Your_Api_Key_Here";
 
         private AblyChannelUiConsole _ablyChannelUiConsole;
         private AblyPresenceUiConsole _ablyPresenceUiConsole;
 
         private bool _isConnected;
+
         void Start()
         {
             InitializeAbly();
@@ -98,9 +99,13 @@ namespace Assets.Ably.Example
         {
             _clientOptions.ClientId = _clientId.text;
             if (_isConnected)
+            {
                 _ably.Close();
+            }
             else
+            {
                 _ably.Connect();
+            }
         }
 
         public void LogAndDisplay(string message)
@@ -108,6 +113,7 @@ namespace Assets.Ably.Example
             Debug.Log(message);
             _textContent.text = $"{_textContent.text}\n{message}";
         }
+
     }
 
     internal interface IUiConsole

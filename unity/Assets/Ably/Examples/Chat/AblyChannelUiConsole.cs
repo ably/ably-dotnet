@@ -3,7 +3,7 @@ using IO.Ably;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Ably.Example
+namespace Assets.Ably.Examples.Chat
 {
     internal class AblyChannelUiConsole
     {
@@ -52,7 +52,6 @@ namespace Assets.Ably.Example
             _payload = GameObject.Find("Payload").GetComponent<InputField>();
             EnableUiComponents(false);
         }
-
 
         private void SubscribeChannelClickHandler()
         {
