@@ -8,7 +8,7 @@ namespace IO.Ably.Tests
 {
     public class RestInitSpecs : AblySpecs
     {
-        private const string NoMeansProvidedToRenewAuthToken = "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help";
+        private const string NoMeansProvidedToRenewAuthToken = "Library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help";
 
         [Fact]
         [Trait("spec", "RSA2")]
