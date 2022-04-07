@@ -5,16 +5,16 @@
 1. Git - VCS for ably-dotnet
 2. Unity - Unity game engine (Currently using LTS 2020.3.19f1) 
 3. Unity script editor - Visual studio (Official IDE)/ Visual studio code (Editor)/ Rider (Intellij IDE)
-4. Basics of unity [Official Unity Manual](https://docs.unity3d.com/Manual/index.html) and [Unity Beginner Manual](https://docs.google.com/document/d/1TJSKoqsElTjnAVKy-nFcARGHthwv18PFdt8pnuorxvw/edit?usp=sharing) (Ignore if already know) 
+4. Basics of unity [Official Unity Manual](https://docs.unity3d.com/Manual/index.html) and [Unity Beginner Manual](https://docs.google.com/document/d/1TJSKoqsElTjnAVKy-nFcARGHthwv18PFdt8pnuorxvw/edit?usp=sharing)
 
 ## **Installation**
 **1.** **Git -**
-- Download and install git binary from https://git-scm.com/downloads (ignore if already installed)
+- Download and install git binary from https://git-scm.com/downloads
 - Clone the code using `git clone https://github.com/ably/ably-dotnet`
 
 **2.** **Unity -** 
 - Install unity hub (https://unity3d.com/get-unity/download) to manage unity projects and different versions of unity
-- Open unity hub after installation.
+- Open unity hub after installation
 
 1. Unity projects - 
 - Unity projects are visible as a part of Unity Hub (list should be empty for none active projects)
@@ -29,7 +29,7 @@
 - Click on **ADD** button on the top-right corner to install new version of unity.
 
 ![](doc_images/unity_add_version.PNG)
-- Select most recent LTS version and click on next to install the selected unity version.
+- Select most recent LTS version and click on **NEXT** to install the selected unity version.
 - Once installed, it should appear under `Installs` menu-item tab.
 
 3. Install unity modules - 
@@ -101,7 +101,7 @@
 - Now we have a test runner windows at bottom-left along with user-friendly editor layout.
 
 ### **Disable assembly validation error**
-- Unity internally has `NewtonSoftJson` package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll` (https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
+- Unity internally has [`NewtonSoftJson`](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll` (https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
 - So, it gives assembly validation error in the console while building the project, to resolve issue, disable `Assembly Validation`
 - Go to `Edit -> Project Settings -> Player -> Assembly Version Validation`, uncheck the box and click on apply.
 
@@ -113,7 +113,7 @@
 
 [Via GUI](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/workflow-create-test.html) 
 - At the bottom-left corner in the test runner window, click on `EditMode` tab
-- All the tests should be available and shown under `EditMode.dll`
+- All tests should be available and shown under `EditMode.dll`
 - Double click on `EditMode.dll` to run the tests or `right click` and `Run` the tests
 
 ![](doc_images/editmode_tests.PNG)
@@ -123,11 +123,11 @@
 Unity.exe -batchmode -nographics -runTests -projectPath 'C:\Users\${UserName}\UnityProjects\ably-unity' -testResults editmode-results.xml -testPlatform editmode
 ```
 
-2. **Run playmode tests**
+1. **Run playmode tests**
    
 [Via GUI](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/workflow-create-playmode-test.html)
 - At the bottom-left corner in the test runner window, click on `PlayMode` tab
-- All the tests should be available and shown under `PlayMode.dll`
+- All tests should be available and shown under `PlayMode.dll`
 - Double click on `PlayMode.dll` to run the tests or `right click` and `Run` the tests
 
 ![](doc_images/playmode_tests.PNG)  
