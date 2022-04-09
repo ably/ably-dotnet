@@ -33,19 +33,19 @@ namespace Assets.Ably.Examples.Chat
         internal void RegisterUiComponents()
         {
             _subscribe = GameObject.Find("Subscribe").GetComponent<Button>();
-            _subscribe.onClick.AddListener(SubscribeChannelClickHandler);
+            _subscribe.onClick.AddListener(SubscribeToChannel);
 
             _unsubscribe = GameObject.Find("Unsubscribe").GetComponent<Button>();
-            _unsubscribe.onClick.AddListener(UnsubscribeChannelHandler);
+            _unsubscribe.onClick.AddListener(UnsubscribeFromChannel);
 
             _listChannels = GameObject.Find("ListChannels").GetComponent<Button>();
-            _listChannels.onClick.AddListener(ListChannelsHandler);
+            _listChannels.onClick.AddListener(ListChannels);
 
             _messageHistory = GameObject.Find("MessageHistory").GetComponent<Button>();
-            _messageHistory.onClick.AddListener(ChannelMessageHistoryHandler);
+            _messageHistory.onClick.AddListener(LoadChannelMessageHistory);
 
             _publish = GameObject.Find("Publish").GetComponent<Button>();
-            _publish.onClick.AddListener(PublishClickHandler);
+            _publish.onClick.AddListener(PublishMessage);
 
             _channelName = GameObject.Find("ChannelName").GetComponent<InputField>();
             _eventName = GameObject.Find("EventName").GetComponent<InputField>();
@@ -53,7 +53,7 @@ namespace Assets.Ably.Examples.Chat
             EnableUiComponents(false);
         }
 
-        private void SubscribeChannelClickHandler()
+        private void SubscribeToChannel()
         {
             var channelName = _channelName.text;
             var eventName = _eventName.text;
@@ -64,20 +64,20 @@ namespace Assets.Ably.Examples.Chat
             _uiConsole.LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b>");
         }
 
-        private void UnsubscribeChannelHandler()
+        private void UnsubscribeFromChannel()
         {
             var channelName = _channelName.text;
             _ably.Channels.Get(channelName).Unsubscribe();
-            _uiConsole.LogAndDisplay($"Successfully unsubscribed to channel <b>{channelName}</b>");
+            _uiConsole.LogAndDisplay($"Successfully unsubscribed from channel <b>{channelName}</b>");
         }
 
-        private void ListChannelsHandler()
+        private void ListChannels()
         {
             var channelNames = string.Join(", ", _ably.Channels.Select(channel => channel.Name));
             _uiConsole.LogAndDisplay($"Channel Names - <b>{channelNames}</b>");
         }
 
-        private async void ChannelMessageHistoryHandler()
+        private async void LoadChannelMessageHistory()
         {
             var channelName = _channelName.text;
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
@@ -97,7 +97,7 @@ namespace Assets.Ably.Examples.Chat
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
-        private async void PublishClickHandler()
+        private async void PublishMessage()
         {
             var channelName = _channelName.text;
             var eventName = _eventName.text;

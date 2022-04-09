@@ -32,29 +32,29 @@ namespace Assets.Ably.Examples.Chat
         internal void RegisterUiComponents()
         {
             _presenceSubscribe = GameObject.Find("SubscribePresence").GetComponent<Button>();
-            _presenceSubscribe.onClick.AddListener(PresenceSubscribeClickHandler);
+            _presenceSubscribe.onClick.AddListener(SubscribeToPresence);
 
             _presenceUnsubscribe = GameObject.Find("UnsubscribePresence").GetComponent<Button>();
-            _presenceUnsubscribe.onClick.AddListener(PresenceUnsubscribeClickHandler);
+            _presenceUnsubscribe.onClick.AddListener(UnsubscribeFromPresence);
 
             _getPresence = GameObject.Find("GetPresence").GetComponent<Button>();
-            _getPresence.onClick.AddListener(GetPresenceClickHandler);
+            _getPresence.onClick.AddListener(GetPresence);
 
             _presenceMessageHistory = GameObject.Find("PresenceHistory").GetComponent<Button>();
-            _presenceMessageHistory.onClick.AddListener(PresenceMessageHistoryClickHandler);
+            _presenceMessageHistory.onClick.AddListener(GetPresenceMessageHistory);
 
             _enterPresence = GameObject.Find("EnterPresence").GetComponent<Button>();
-            _enterPresence.onClick.AddListener(PresenceEnterClickHandler);
+            _enterPresence.onClick.AddListener(EnterPresence);
 
             _leavePresence = GameObject.Find("LeavePresence").GetComponent<Button>();
-            _leavePresence.onClick.AddListener(PresenceLeaveClickHandler);
+            _leavePresence.onClick.AddListener(LeavePresence);
 
             _channelName = GameObject.Find("PresenceChannel").GetComponent<InputField>();
             _payload = GameObject.Find("PresencePayload").GetComponent<InputField>();
             EnableUiComponents(false);
         }
 
-        internal void PresenceSubscribeClickHandler()
+        internal void SubscribeToPresence()
         {
             var channelName = _channelName.text;
             _ably.Channels.Get(channelName).Presence.Subscribe(message =>
@@ -64,14 +64,14 @@ namespace Assets.Ably.Examples.Chat
             _uiConsole.LogAndDisplay($"Successfully subscribed to channel <b>{channelName}</b> for <b>Presence</b> messages");
         }
 
-        internal void PresenceUnsubscribeClickHandler()
+        internal void UnsubscribeFromPresence()
         {
             var channelName = _channelName.text;
             _ably.Channels.Get(channelName).Presence.Unsubscribe();
-            _uiConsole.LogAndDisplay($"Successfully unsubscribed to channel <b>{channelName}</b> for <b>Presence</b> messages");
+            _uiConsole.LogAndDisplay($"Successfully unsubscribed from channel <b>{channelName}</b> for <b>Presence</b> messages");
         }
 
-        internal async void GetPresenceClickHandler()
+        internal async void GetPresence()
         {
             var channelName = _channelName.text;
             var presenceMessages = await _ably.Channels.Get(channelName).Presence.GetAsync();
@@ -83,7 +83,7 @@ namespace Assets.Ably.Examples.Chat
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
-        internal async void PresenceMessageHistoryClickHandler()
+        internal async void GetPresenceMessageHistory()
         {
             var channelName = _channelName.text;
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> Presence Messages ####");
@@ -103,7 +103,7 @@ namespace Assets.Ably.Examples.Chat
             _uiConsole.LogAndDisplay($"#### <b>{channelName}</b> ####");
         }
 
-        internal async void PresenceEnterClickHandler()
+        internal async void EnterPresence()
         {
             var channelName = _channelName.text;
 
@@ -115,7 +115,7 @@ namespace Assets.Ably.Examples.Chat
                 : $"Error entering presence to channel <b>{channelName}</b>, failed with error <b>{result.Error.Message}</b>");
         }
 
-        internal async void PresenceLeaveClickHandler()
+        internal async void LeavePresence()
         {
             var channelName = _channelName.text;
 
