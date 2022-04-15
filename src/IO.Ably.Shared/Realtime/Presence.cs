@@ -719,10 +719,7 @@ namespace IO.Ably.Realtime
         private void NotifySubscribers(PresenceMessage message)
         {
             var handlers = _handlers.GetHandlers();
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Notifying Presence handlers: " + handlers.Count());
-            }
+            Logger.Debug("Notifying Presence handlers: " + handlers.Count());
 
             foreach (var handler in handlers)
             {
@@ -731,10 +728,8 @@ namespace IO.Ably.Realtime
             }
 
             var specificHandlers = _handlers.GetHandlers(message.Action.ToString());
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Notifying specific handlers for Message: " + message.Action + ". Count: " + specificHandlers.Count());
-            }
+
+            Logger.Debug("Notifying specific handlers for Message: " + message.Action + ". Count: " + specificHandlers.Count());
 
             foreach (var specificHandler in specificHandlers)
             {
@@ -769,11 +764,7 @@ namespace IO.Ably.Realtime
             if (hasPresence)
             {
                 // RTP1 If [HAS_PRESENCE] flag is 1, should set presence sync as active (Doesn't necessarily mean members are available)
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachMessage.Flags}");
-                }
+                Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachMessage.Flags}");
 
                 StartSync();
                 SendQueuedMessages();

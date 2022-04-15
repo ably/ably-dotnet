@@ -270,10 +270,7 @@ namespace IO.Ably.Push
                     }
                 }
 
-                if (_logger.IsDebug)
-                {
-                    _logger.Debug($"Updating registration token to ${token.ToJson()}");
-                }
+                _logger.Debug($"Updating registration token to ${token.ToJson()}");
 
                 LocalDevice.RegistrationToken = token;
                 LocalDevice.PersistRegistrationToken(MobileDevice, token);

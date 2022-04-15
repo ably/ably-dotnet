@@ -157,10 +157,7 @@ namespace IO.Ably
 
         private void OnAuthClientIdChanged((string oldClientId, string newClientId) clientIdArgs)
         {
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"ClientId changed from '{clientIdArgs.oldClientId}' to '{clientIdArgs.newClientId}'");
-            }
+            Logger.Debug($"ClientId changed from '{clientIdArgs.oldClientId}' to '{clientIdArgs.newClientId}'");
 
             // If the global LocalDevice instance hasn't been initialized we don't need to worry about setting the client id
             // as it will pick up the correct one when it is requested for the first time.
@@ -195,10 +192,7 @@ namespace IO.Ably
             }
             catch (AblyException ex)
             {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
-                }
+                Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError)
@@ -208,10 +202,7 @@ namespace IO.Ably
                         throw new AblyException(ErrorInfo.NonRenewableToken, ex); // RSA4a2
                     }
 
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug(WrapWithRequestId("Handling UnAuthorized Error, attempting to Re-authorize and repeat request."));
-                    }
+                    Logger.Debug(WrapWithRequestId("Handling UnAuthorized Error, attempting to Re-authorize and repeat request."));
 
                     try
                     {
@@ -229,10 +220,7 @@ namespace IO.Ably
             }
             catch (Exception ex)
             {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
-                }
+                Logger.Debug(WrapWithRequestId("Error Executing request. Message: " + ex.Message));
 
                 throw new AblyException(ex);
             }

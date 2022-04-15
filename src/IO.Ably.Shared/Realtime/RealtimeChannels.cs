@@ -116,10 +116,7 @@ namespace IO.Ably.Realtime
                 return false;
             }
 
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Releasing channel #{name}");
-            }
+            Logger.Debug($"Releasing channel #{name}");
 
             if (!Channels.TryGetValue(name, out RealtimeChannel channel))
             {
@@ -128,13 +125,10 @@ namespace IO.Ably.Realtime
 
             void DetachedCallback(bool detached, ErrorInfo error)
             {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(
-                        error is null
-                            ? $"Channel #{name} was removed from Channel list. Detached successfully: {detached}."
-                            : $"Failed to cleanly detach channel #{name} before removing it from Channel list. Detach error: {error}.");
-                }
+                Logger.Debug(
+                    error is null
+                        ? $"Channel #{name} was removed from Channel list. Detached successfully: {detached}."
+                        : $"Failed to cleanly detach channel #{name} before removing it from Channel list. Detach error: {error}.");
 
                 RemoveChannel();
             }

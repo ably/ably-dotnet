@@ -55,20 +55,13 @@ namespace IO.Ably.Realtime
                 logger = DefaultLogger.LoggerInstance;
             }
 
-            if (logger.IsDebug)
-            {
-                logger.Debug("OS Network connection state: " + state);
-            }
+            logger.Debug("OS Network connection state: " + state);
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
                 try
                 {
-                    if (logger.IsDebug)
-                    {
-                        logger.Debug("Calling network state handler for connection with id: " + subscriber.Key.ToString("D"));
-                    }
-
+                    logger.Debug("Calling network state handler for connection with id: " + subscriber.Key.ToString("D"));
                     subscriber.Value?.Invoke(state);
                 }
                 catch (Exception e)
@@ -80,10 +73,7 @@ namespace IO.Ably.Realtime
 
         private void RegisterWithOsNetworkStateEvents(Action<NetworkState> stateAction)
         {
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Registering OS network state handler for Connection with id: " + _objectId.ToString("D"));
-            }
+            Logger.Debug("Registering OS network state handler for Connection with id: " + _objectId.ToString("D"));
 
             OsEventSubscribers.AddOrUpdate(_objectId, stateAction, (_, __) => stateAction);
         }
@@ -93,10 +83,8 @@ namespace IO.Ably.Realtime
             try
             {
                 var result = OsEventSubscribers.TryRemove(_objectId, out _);
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug("Os network listener removed result: " + result);
-                }
+
+                Logger.Debug("Os network listener removed result: " + result);
             }
             catch (Exception)
             {

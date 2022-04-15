@@ -64,10 +64,7 @@ namespace IO.Ably.Realtime.Workflow
                     return null;
                 }
 
-                if (logger.IsDebug)
-                {
-                    logger.Debug($"Updating state to `{state.State}`");
-                }
+                logger.Debug($"Updating state to `{state.State}`");
 
                 var oldState = State;
                 var newState = state.State;

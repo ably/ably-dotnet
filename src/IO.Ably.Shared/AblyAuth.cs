@@ -141,10 +141,7 @@ namespace IO.Ably
         internal async Task SetServerTime()
         {
             ServerNow = await ServerTime();
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Server time differs from device time by: " + _serverTimeDiff);
-            }
+            Logger.Debug("Server time differs from device time by: " + _serverTimeDiff);
         }
 
         private AuthMethod CheckAndGetAuthMethod()

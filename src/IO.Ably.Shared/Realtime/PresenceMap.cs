@@ -119,10 +119,7 @@ namespace IO.Ably.Realtime
 
         public void StartSync()
         {
-            if (_logger.IsDebug)
-            {
-                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
-            }
+            _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
 
             if (!IsSyncInProgress)
             {
@@ -136,10 +133,7 @@ namespace IO.Ably.Realtime
 
         public PresenceMessage[] EndSync()
         {
-            if (_logger.IsDebug)
-            {
-                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
-            }
+            _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
 
             List<PresenceMessage> removed = new List<PresenceMessage>();
             try
