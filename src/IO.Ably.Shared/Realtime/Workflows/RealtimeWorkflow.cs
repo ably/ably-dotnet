@@ -200,7 +200,7 @@ namespace IO.Ably.Realtime.Workflow
             bool shouldLogCommand = !((command is EmptyCommand) || (command is ListCommand));
             try
             {
-                if (shouldLogCommand)
+                if (Logger.IsDebug && shouldLogCommand)
                 {
                     Logger.Debug("Begin - " + command.Explain());
                 }
@@ -245,7 +245,7 @@ namespace IO.Ably.Realtime.Workflow
             }
             finally
             {
-                if (shouldLogCommand)
+                if (Logger.IsDebug && shouldLogCommand)
                 {
                     Logger.Debug($"End - {command.Name}|{command.Id}");
                 }
@@ -306,7 +306,7 @@ namespace IO.Ably.Realtime.Workflow
                     if (retryAuth.UpdateState)
                     {
                         return ListCommand.Create(
-                            SetDisconnectedStateCommand.Create (
+                            SetDisconnectedStateCommand.Create(
                                 retryAuth.Error,
                                 skipAttach: State.Connection.State == ConnectionState.Connecting).TriggeredBy(command),
                             SetConnectingStateCommand.Create(retryAuth: true).TriggeredBy(command));
@@ -526,8 +526,10 @@ namespace IO.Ably.Realtime.Workflow
                     foreach (var (name, handler) in ProtocolMessageProcessors)
                     {
                         var handled = await handler(message, State);
-
-                        Logger.Debug($"Message handler '{name}' - {(handled ? "Handled" : "Skipped")}");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"Message handler '{name}' - {(handled ? "Handled" : "Skipped")}");
+                        }
 
                         if (handled)
                         {
@@ -899,13 +901,16 @@ namespace IO.Ably.Realtime.Workflow
 
         public void SetState(ConnectionStateBase newState, bool skipTimer = false)
         {
-            var message = $"Changing state from {State.Connection.State} => {newState.State}.";
-            if (skipTimer)
+            if (Logger.IsDebug)
             {
-                message += " Skip timer";
-            }
+                var message = $"Changing state from {State.Connection.State} => {newState.State}.";
+                if (skipTimer)
+                {
+                    message += " Skip timer";
+                }
 
-            Logger.Debug(message);
+                Logger.Debug(message);
+            }
 
             try
             {
@@ -913,7 +918,11 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     if (State.Connection.State == newState.State)
                     {
-                        Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
+                        }
+
                         return;
                     }
 
@@ -925,7 +934,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     newState.StartTimer();
                 }
-                else
+                else if (Logger.IsDebug)
                 {
                     Logger.Debug($"xx {newState.State}: Skipping attaching.");
                 }
@@ -964,7 +973,7 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
 
-            if (State.PendingMessages.Count > 0)
+            if (Logger.IsDebug && State.PendingMessages.Count > 0)
             {
                 Logger.Debug("Sending pending message: Count: " + State.PendingMessages.Count);
             }
@@ -997,7 +1006,10 @@ namespace IO.Ably.Realtime.Workflow
             if (message.AckRequired)
             {
                 State.WaitingForAck.Add(new MessageAndCallback(message, callback));
-                Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
+                }
             }
         }
 
