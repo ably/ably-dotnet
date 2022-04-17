@@ -200,6 +200,7 @@ namespace IO.Ably.Realtime.Workflow
             bool shouldLogCommand = !((command is EmptyCommand) || (command is ListCommand));
             try
             {
+                // TODO - Some tests starts failing once Logger.IsDebug check is removed.
                 if (Logger.IsDebug && shouldLogCommand)
                 {
                     Logger.Debug("Begin - " + command.Explain());
@@ -217,7 +218,8 @@ namespace IO.Ably.Realtime.Workflow
                             return new RealtimeCommand[]
                             {
                                 SendMessageCommand.Create(
-                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true).TriggeredBy(command),
+                                        new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true)
+                                    .TriggeredBy(command),
                                 CompleteWorkflowCommand.Create().TriggeredBy(command),
                             };
                         }
@@ -243,9 +245,14 @@ namespace IO.Ably.Realtime.Workflow
                         };
                 }
             }
+            catch (Exception e)
+            {
+                Logger.Error("Exception caught", e);
+                return await HandleHeartbeatMonitorCommand(null);
+            }
             finally
             {
-                if (Logger.IsDebug && shouldLogCommand)
+                if (shouldLogCommand)
                 {
                     Logger.Debug($"End - {command.Name}|{command.Id}");
                 }
@@ -526,10 +533,8 @@ namespace IO.Ably.Realtime.Workflow
                     foreach (var (name, handler) in ProtocolMessageProcessors)
                     {
                         var handled = await handler(message, State);
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"Message handler '{name}' - {(handled ? "Handled" : "Skipped")}");
-                        }
+
+                        Logger.Debug($"Message handler '{name}' - {(handled ? "Handled" : "Skipped")}");
 
                         if (handled)
                         {
@@ -918,11 +923,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     if (State.Connection.State == newState.State)
                     {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
-                        }
-
+                        Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
                         return;
                     }
 
@@ -934,7 +935,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     newState.StartTimer();
                 }
-                else if (Logger.IsDebug)
+                else
                 {
                     Logger.Debug($"xx {newState.State}: Skipping attaching.");
                 }
@@ -973,7 +974,7 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
 
-            if (Logger.IsDebug && State.PendingMessages.Count > 0)
+            if (State.PendingMessages.Count > 0)
             {
                 Logger.Debug("Sending pending message: Count: " + State.PendingMessages.Count);
             }
@@ -1006,10 +1007,7 @@ namespace IO.Ably.Realtime.Workflow
             if (message.AckRequired)
             {
                 State.WaitingForAck.Add(new MessageAndCallback(message, callback));
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
-                }
+                Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
             }
         }
 
