@@ -217,8 +217,7 @@ namespace IO.Ably.Realtime.Workflow
                         {
                             return new RealtimeCommand[]
                             {
-                                SendMessageCommand.Create(
-                                        new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true)
+                                SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true)
                                     .TriggeredBy(command),
                                 CompleteWorkflowCommand.Create().TriggeredBy(command),
                             };
@@ -244,11 +243,6 @@ namespace IO.Ably.Realtime.Workflow
                             next,
                         };
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Exception caught", e);
-                return await HandleHeartbeatMonitorCommand(null);
             }
             finally
             {
