@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.2.8](https://github.com/ably/ably-dotnet/tree/1.2.8)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.7...1.2.8)
+
+**Implemented enhancements:**
+
+- [Unity](https://unity.com/) Beta 2 release. Added example chat app (`unity/Assets/Ably/Examples/Chat`) along with `Edit` and `Play` mode unit tests (`unity/Assets/Tests`).
+
+**Merged pull requests:**
+
+- Remove the deprecated 'LogHander' property [\#1144](https://github.com/ably/ably-dotnet/pull/1144) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Remove the Windows Phone 8 platform [\#1142](https://github.com/ably/ably-dotnet/pull/1142) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Increase .NET Framework min ver from 4.6.1 to 4.6.2 [\#1127](https://github.com/ably/ably-dotnet/pull/1127) ([tomkirbygreen](https://github.com/tomkirbygreen))
+
 ## [1.2.7](https://github.com/ably/ably-dotnet/tree/1.2.7)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.6...1.2.7)
