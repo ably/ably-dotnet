@@ -57,7 +57,7 @@ namespace IO.Ably.Push
         {
             /// <summary>
             /// Push Recipient. Currently supporter recipients are Apple (apns), Google (fcm) and Browser (web).
-            /// For more information - https://ably.com/documentation/rest-api#post-device-registration.
+            /// For more information - https://ably.com/docs/rest-api#post-device-registration.
             /// </summary>
             [JsonProperty("recipient")]
             public JObject Recipient { get; set; }

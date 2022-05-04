@@ -10,7 +10,7 @@ namespace IO.Ably.Push
     {
         /// <summary>
         /// Subscribe either a single device or all devices associated with a client ID to receive push notifications from messages sent to a channel.
-        /// RestApi: https://ably.com/documentation/rest-api#post-channel-subscription.
+        /// RestApi: https://ably.com/docs/rest-api#post-channel-subscription.
         /// </summary>
         /// <param name="subscription">Channel subscription object.</param>
         /// <returns>Return an updated Channel subscription object.</returns>
@@ -18,7 +18,7 @@ namespace IO.Ably.Push
 
         /// <summary>
         /// Get a list of push notification subscriptions to channels.
-        /// RestApi: https://ably.com/documentation/rest-api#list-channel-subscriptions.
+        /// RestApi: https://ably.com/docs/rest-api#list-channel-subscriptions.
         /// </summary>
         /// <param name="requestFilter">Provides a way to filter results. <see cref="ListSubscriptionsRequest"/>.</param>
         /// <returns>Returns a paginated list of ChannelSubscriptions.</returns>
@@ -26,7 +26,7 @@ namespace IO.Ably.Push
 
         /// <summary>
         /// List all channels with at least one subscribed device.
-        /// RestApi: https://ably.com/documentation/rest-api#list-channels.
+        /// RestApi: https://ably.com/docs/rest-api#list-channels.
         /// </summary>
         /// <param name="requestParams">Allows adding a limit to the number of results and supports paginated requests handling.</param>
         /// <returns>Paginated list of channel names.</returns>
@@ -35,7 +35,7 @@ namespace IO.Ably.Push
         /// <summary>
         /// Stop receiving push notifications when push messages are published on the specified channels.
         /// Please note that this operation is done asynchronously so immediate requests subsequent to this delete request may briefly still return the subscription.
-        /// RestApi: https://ably.com/documentation/rest-api#delete-channel-subscription.
+        /// RestApi: https://ably.com/docs/rest-api#delete-channel-subscription.
         /// </summary>
         /// <param name="subscription">Channel Subscription object to unsubscribe.</param>
         /// <returns>Task.</returns>
@@ -45,7 +45,7 @@ namespace IO.Ably.Push
         /// Stop receiving push notifications when push messages are published on the specified channels.
         /// Please note that this operation is done asynchronously so immediate requests subsequent to this delete request may briefly still return the subscription.
         /// Allows custom parameters to be passed in the filter.
-        /// RestApi: https://ably.com/documentation/rest-api#delete-channel-subscription.
+        /// RestApi: https://ably.com/docs/rest-api#delete-channel-subscription.
         /// </summary>
         /// <param name="removeParams">Dictionary with query parameters passed to the server. Possible values are `clientId`, `deviceId` and `channel`.</param>
         /// <returns>Task.</returns>

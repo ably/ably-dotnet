@@ -5,9 +5,9 @@
 [![MacOS - build and test](https://github.com/ably/ably-dotnet/actions/workflows/build-and-test-macos.yml/badge.svg)](https://github.com/ably/ably-dotnet/actions/workflows/build-and-test-macos.yml)
 [![Linux - build and test](https://github.com/ably/ably-dotnet/actions/workflows/build-and-test-linux.yml/badge.svg)](https://github.com/ably/ably-dotnet/actions/workflows/build-and-test-linux.yml)
 
-_[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
+_[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/docs)._
 
-This is a .NET client library for Ably. The library currently targets the [Ably 1.1-beta client library specification](https://ably.com/documentation/client-lib-development-guide/features). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://ably.com/download/sdk-feature-support-matrix) to see the list of all the available features.
+This is a .NET client library for Ably. The library currently targets the [Ably 1.1-beta client library specification](https://ably.com/docs/client-lib-development-guide/features). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://ably.com/download/sdk-feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -62,7 +62,7 @@ A Portable Class Library version is not available. Portable Class Libraries are 
 
 ## Push notification
 
-The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/documentation/general/push/admin), [Device Push Notifications](https://ably.com/documentation/realtime/push). 
+The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push). 
 
 The [Push Notifications Readme](PushNotifications.md) describes:
 - How to setup Push notifications on Xamarin mobile apps
@@ -76,7 +76,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 ## Documentation
 
-Visit https://ably.com/documentation for a complete API reference and more examples.
+Visit https://ably.com/docs for a complete API reference and more examples.
 
 ## Installation
 
@@ -191,7 +191,7 @@ channel.On(ChannelState.Attached, args =>
 
 ### Subscribing to a channel in delta mode
 
-Subscribing to a channel in delta mode enables [delta compression](https://ably.com/documentation/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
 
 Request a Vcdiff formatted delta stream using channel options when you get the channel:
 
@@ -525,7 +525,7 @@ If you want to incorporate `ably-dotnet` into your project from source (perhaps 
 
 ## Spec
 
-The dotnet library follows the Ably [`Client Library development guide`](https://ably.com/documentation). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convention is to add `[Trait("spec", "spec tag")]` to unit tests.
+The dotnet library follows the Ably [`Client Library development guide`](https://ably.com/docs). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convention is to add `[Trait("spec", "spec tag")]` to unit tests.
 
 To get a list of all spec items that appear in the tests you can run a script located in the tools directory. 
 You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.

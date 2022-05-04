@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.DotNetCore20
 
         /// <summary>
         /// Makes adding Rewind by a number of messages easier.
-        /// Full documentation can be found here: https://www.ably.io/documentation/realtime/channel-params#rewind.
+        /// Full documentation can be found here: https://ably.com/docs/realtime/channels/channel-parameters/overview#rewind.
         /// </summary>
         /// <param name="options">the <see cref="ChannelOptions"/> that will be modified.</param>
         /// <param name="numberOfMessages">the value passed to Rewind param.</param>
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests.DotNetCore20
 
         /// <summary>
         /// Makes adding Rewind by a time period with an option interval easier.
-        /// Full documentation can be found here: https://www.ably.io/documentation/realtime/channel-params#rewind.
+        /// Full documentation can be found here: https://ably.com/docs/realtime/channels/channel-parameters/overview#rewind.
         /// </summary>
         /// <param name="options">the <see cref="ChannelOptions"/> that will be modified.</param>
         /// <param name="rewindBy">by how much should we rewind.</param>

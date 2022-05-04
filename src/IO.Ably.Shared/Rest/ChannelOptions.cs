@@ -25,7 +25,7 @@ namespace IO.Ably
         /// <summary>
         /// Params allows custom parameters to be passed to the server when attaching the channel.
         /// In that list are 'delta' and 'rewind'. For more information about channel params visit
-        /// https://www.ably.io/documentation/realtime/channel-params.
+        /// https://ably.com/docs/realtime/channels/channel-parameters/overview.
         /// </summary>
         public ChannelParams Params
         {
