@@ -12,3 +12,6 @@
 - Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` in the code, since the feature is not supported and throws runtime exception.
 - Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in case of conflict with other NewtonSoft DLLs in the project or use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
   
+### Unsupported Platforms  
+- WebGL: Due to incompatibility with Websockets.<br/>
+Read [Direct Socket Access](https://docs.unity3d.com/2017.1/Documentation/Manual/webgl-networking.html) under WebGL Networking.
