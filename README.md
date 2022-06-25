@@ -468,7 +468,7 @@ You can also view the [community reported GitHub issues](https://github.com/ably
 
 ## Building and Packaging
 
-The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 or Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
 
 ```shell
 choco install fake
@@ -480,7 +480,7 @@ To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 
-If you want to incorporate `ably-dotnet` into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the principal should transfer to other IDEs
+If you want to incorporate `ably-dotnet` into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2019, but the principal should transfer to other IDEs
 
 1. Clone this repository to your local system (`git clone --recurse-submodules https://github.com/ably/ably-dotnet.git`)
 2. Open the solution you want to reference ably-dotnet from
