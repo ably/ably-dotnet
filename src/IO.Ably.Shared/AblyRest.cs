@@ -86,7 +86,7 @@ namespace IO.Ably
 
         /// <summary>
         /// Expose Push Admin Rest APIs.
-        /// Rest API documentation: https://ably.com/documentation/rest-api#push.
+        /// Rest API documentation: https://ably.com/docs/rest-api#push.
         /// </summary>
         public PushRest Push { get; private set; }
 

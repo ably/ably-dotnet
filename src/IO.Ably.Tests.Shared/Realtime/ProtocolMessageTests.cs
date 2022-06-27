@@ -4,6 +4,7 @@ using System.Linq;
 using IO.Ably.Types;
 
 using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IO.Ably.Tests.Shared.Realtime
@@ -32,6 +33,37 @@ namespace IO.Ably.Tests.Shared.Realtime
         public void ProtocolMessageHasFlagCorrectForNull()
         {
             ProtocolMessage.HasFlag(null, ProtocolMessage.Flag.HasPresence).Should().BeFalse();
+        }
+
+        [Fact]
+        public void AMessageWithExtras_ShouldNotEqualToAnEmptyMessage()
+        {
+            MessageExtras CreateExtrasWithDelta(DeltaExtras delta)
+            {
+                var jObject = new JObject();
+                jObject[MessageExtras.DeltaProperty] = JObject.FromObject(delta);
+                return new MessageExtras(jObject);
+            }
+
+            var message = new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) };
+            message.IsEmpty.Should().BeFalse();
+        }
+
+        [Fact]
+        public void MessageEquals_ShouldBeCorrectWhenOnlyTheExtrasObjectDiffers()
+        {
+            MessageExtras CreateExtrasWithDelta(DeltaExtras delta)
+            {
+                var jObject = new JObject();
+                jObject[MessageExtras.DeltaProperty] = JObject.FromObject(delta);
+                return new MessageExtras(jObject);
+            }
+
+            var message1 = new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) };
+            var message2 = new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("1", string.Empty)) };
+            var message3 = new Message { Extras = CreateExtrasWithDelta(new DeltaExtras("2", string.Empty)) };
+            message1.Equals(message2).Should().BeTrue();
+            message1.Equals(message3).Should().BeFalse();
         }
 
         [Fact]

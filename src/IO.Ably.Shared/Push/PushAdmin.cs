@@ -151,7 +151,7 @@ namespace IO.Ably.Push
         /// <summary>
         /// Publish a push notification message.
         /// </summary>
-        /// <param name="recipient">Recipient. Best description of what is allowed can be found in the RestApi documentation: https://ably.com/documentation/rest-api#post-device-registration.</param>
+        /// <param name="recipient">Recipient. Best description of what is allowed can be found in the RestApi documentation: https://ably.com/docs/rest-api#post-device-registration.</param>
         /// <param name="payload">Message payload.</param>
         /// <returns>Task.</returns>
         public async Task PublishAsync(JObject recipient, JObject payload)

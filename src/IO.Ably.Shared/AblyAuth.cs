@@ -169,7 +169,7 @@ namespace IO.Ably
 
             if (method == AuthMethod.Token && TokenRenewable == false)
             {
-                Logger.Error("Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                Logger.Warning("Library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
             }
 
             return method;

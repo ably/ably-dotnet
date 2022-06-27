@@ -90,7 +90,7 @@ namespace IO.Ably.Types
         /// Channel params is a Dictionary&lt;string, string&gt; which is used to pass parameters to the server when
         /// attaching a channel. Some params include `delta` and `rewind`. The server will also echo the params in the
         /// ATTACHED message.
-        /// For more information https://www.ably.io/documentation/realtime/channel-params.
+        /// For more information https://ably.com/docs/realtime/channels/channel-parameters/overview.
         /// </summary>
         [JsonProperty("params")]
         public ChannelParams Params { get; set; }

@@ -1,0 +1,27 @@
+name: "Integration Test: Linux"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+      - name: Download dotnet framework
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Download fake-cli
+        run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
+      - name: Unit tests
+        run: ./build.sh Test.NetStandard.Unit.WithRetry
+      - name: Integration tests
+        run: ./build.sh Test.NetStandard.Integration

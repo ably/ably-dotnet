@@ -1,5 +1,4 @@
 ﻿using System;
-using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -9,6 +8,7 @@ using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Push
