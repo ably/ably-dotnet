@@ -306,7 +306,7 @@ namespace IO.Ably.Realtime.Workflow
                     if (retryAuth.UpdateState)
                     {
                         return ListCommand.Create(
-                            SetDisconnectedStateCommand.Create (
+                            SetDisconnectedStateCommand.Create(
                                 retryAuth.Error,
                                 skipAttach: State.Connection.State == ConnectionState.Connecting).TriggeredBy(command),
                             SetConnectingStateCommand.Create(retryAuth: true).TriggeredBy(command));

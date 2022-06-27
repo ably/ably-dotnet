@@ -290,6 +290,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 o.EchoMessages = false;
                 o.Logger = testLogger;
+                o.LogLevel = LogLevel.Debug;
             });
             await client.WaitForState();
             client.Options.EchoMessages.Should().Be(false);
