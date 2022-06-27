@@ -83,7 +83,10 @@ namespace IO.Ably.Transport
                 receiveBuffer = Math.Min(receiveBuffer, MaxAllowedBufferSize);
                 sendBuffer = Math.Min(sendBuffer, MaxAllowedBufferSize);
 
-                Logger.Debug($"Setting socket buffers to: Receive: {receiveBuffer}. Send: {sendBuffer}");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Setting socket buffers to: Receive: {receiveBuffer}. Send: {sendBuffer}");
+                }
 
                 ClientWebSocket.Options.SetBuffer(receiveBuffer, sendBuffer);
             }
@@ -116,7 +119,10 @@ namespace IO.Ably.Transport
             }
             catch (Exception ex)
             {
-                Logger?.Debug("Error starting connection", ex);
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug("Error starting connection", ex);
+                }
 
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
@@ -146,13 +152,21 @@ namespace IO.Ably.Transport
             }
             catch (ObjectDisposedException e)
             {
-                Logger?.Debug(_disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed." : "WebSocket Send operation cancelled.", e);
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug(
+                        _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed." : "WebSocket Send operation cancelled.",
+                        e);
+                }
             }
             catch (OperationCanceledException e)
             {
-                Logger?.Debug(
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug(
                         _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed, WebSocket send operation cancelled." : "WebSocket Send operation cancelled.",
                         e);
+                }
             }
             catch (Exception e)
             {
@@ -172,10 +186,13 @@ namespace IO.Ably.Transport
             {
                 if (ClientWebSocket.CloseStatus.HasValue)
                 {
-                    Logger?.Debug(
-                        "Closing websocket. Close status: "
-                        + Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus)
-                        + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                    if (Logger != null && Logger.IsDebug)
+                    {
+                        Logger.Debug(
+                            "Closing websocket. Close status: "
+                            + Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus)
+                            + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                    }
                 }
 
                 if (!_disposed)
@@ -195,7 +212,10 @@ namespace IO.Ably.Transport
             }
             catch (ObjectDisposedException ex)
             {
-                Logger?.Debug($"Error stopping connection. {typeof(MsWebSocketConnection)} was disposed.", ex);
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug($"Error stopping connection. {typeof(MsWebSocketConnection)} was disposed.", ex);
+                }
 
                 _handler?.Invoke(ConnectionState.Closed, ex);
             }

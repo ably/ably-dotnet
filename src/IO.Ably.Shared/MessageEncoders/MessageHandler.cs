@@ -115,7 +115,10 @@ namespace IO.Ably.MessageEncoders
 #else
             byte[] result = JsonHelper.Serialize(request.PostData).GetBytes();
 #endif
-            Logger.Debug("Request body: " + result.GetText());
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Request body: " + result.GetText());
+            }
 
             return result;
         }
@@ -351,21 +354,24 @@ namespace IO.Ably.MessageEncoders
 
         private void LogResponse(AblyResponse response)
         {
-            Logger.Debug($"Protocol: {_protocol}");
-            try
+            if (Logger.IsDebug)
             {
-                var responseBody = response.TextResponse;
-#if MSGPACK
-                if (_protocol == Protocol.MsgPack && response.Body != null)
+                Logger.Debug($"Protocol: {_protocol}");
+                try
                 {
-                    responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
-                }
+                    var responseBody = response.TextResponse;
+#if MSGPACK
+                    if (_protocol == Protocol.MsgPack && response.Body != null)
+                    {
+                        responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
+                    }
 #endif
-                Logger.Debug($"Response: {responseBody}");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error while logging response body.", ex);
+                    Logger.Debug($"Response: {responseBody}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Error while logging response body.", ex);
+                }
             }
         }
 

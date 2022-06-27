@@ -342,7 +342,10 @@ namespace IO.Ably.Realtime
 
         private void OnAttachTimeout()
         {
-            Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state to {ChannelState.Suspended}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state to {ChannelState.Suspended}");
+            }
 
             // RTL4f
             SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", ErrorCodes.ChannelOperationFailedNoServerResponse, HttpStatusCode.RequestTimeout));
@@ -350,7 +353,10 @@ namespace IO.Ably.Realtime
 
         private void OnDetachTimeout()
         {
-            Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            }
 
             SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", ErrorCodes.InternalError));
         }
@@ -604,8 +610,11 @@ namespace IO.Ably.Realtime
 
         internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null, bool emitUpdate = false)
         {
-            var errorMessage = error != null ? "Error: " + error : string.Empty;
-            Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
+            if (Logger.IsDebug)
+            {
+                var errorMessage = error != null ? "Error: " + error : string.Empty;
+                Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
+            }
 
             OnError(error);
 
@@ -641,7 +650,10 @@ namespace IO.Ably.Realtime
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
-            Logger.Debug($"HandleStateChange state change from {State} to {state}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"HandleStateChange state change from {State} to {state}");
+            }
 
             var oldState = State;
             State = state;
@@ -749,8 +761,10 @@ namespace IO.Ably.Realtime
         internal void OnMessage(Message message)
         {
             var channelHandlers = _handlers.GetHandlers().ToList();
-
-            Logger.Debug($"Notifying {channelHandlers.Count} handlers in #{Name} channel");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Notifying {channelHandlers.Count} handlers in #{Name} channel");
+            }
 
             foreach (var handler in channelHandlers)
             {
@@ -761,8 +775,10 @@ namespace IO.Ably.Realtime
             if (message.Name.IsNotEmpty())
             {
                 var namedHandlers = _handlers.GetHandlers(message.Name).ToList();
-
-                Logger.Debug($"Notifying {namedHandlers.Count} handlers for messages {message.Name} in #{Name} channel");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Notifying {namedHandlers.Count} handlers for messages {message.Name} in #{Name} channel");
+                }
 
                 foreach (var specificHandler in namedHandlers)
                 {
@@ -774,7 +790,10 @@ namespace IO.Ably.Realtime
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
-            Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
+            }
 
             ConnectionManager.Send(protocolMessage, callback, Options);
         }

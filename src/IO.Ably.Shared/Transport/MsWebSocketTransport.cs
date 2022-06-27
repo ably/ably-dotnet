@@ -124,11 +124,17 @@ namespace IO.Ably.Transport
         {
             try
             {
-                Logger.Debug("Connecting socket");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Connecting socket");
+                }
 
                 await _socket.StartConnectionAsync();
 
-                Logger.Debug("Socket connected");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Socket connected");
+                }
 
                 if (_socket == null)
                 {
@@ -146,7 +152,10 @@ namespace IO.Ably.Transport
 
             void HandleError(Exception e)
             {
-                Logger.Debug($"Socket couldn't connect. Error: {e.Message}");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Socket couldn't connect. Error: {e.Message}");
+                }
 
                 Listener?.OnTransportEvent(Id, TransportState.Closed, e);
             }
@@ -156,23 +165,29 @@ namespace IO.Ably.Transport
         {
             if (data.IsBinary)
             {
-                try
+                if (Logger.IsDebug)
                 {
+                    try
+                    {
 #if MSGPACK
-                    var message = MsgPackHelper.DeserialiseMsgPackObject(data.Data).ToString();
-                    Logger.Debug("Websocket data message received. Raw: " + message);
+                        var message = MsgPackHelper.DeserialiseMsgPackObject(data.Data).ToString();
+                        Logger.Debug("Websocket data message received. Raw: " + message);
 #endif
-                }
-                catch (Exception)
-                {
-                    Logger.Debug("Error parsing message as MsgPack.");
+                    }
+                    catch (Exception)
+                    {
+                        Logger.Debug("Error parsing message as MsgPack.");
+                    }
                 }
 
                 Listener?.OnTransportDataReceived(data);
             }
             else
             {
-                Logger.Debug("Websocket message received. Raw: " + data.Text);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Websocket message received. Raw: " + data.Text);
+                }
 
                 Listener?.OnTransportDataReceived(data);
             }
@@ -181,7 +196,10 @@ namespace IO.Ably.Transport
         /// <inheritdoc/>
         public void Close(bool suppressClosedEvent = true)
         {
-            Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
+            }
 
             if (_socket != null)
             {
@@ -215,7 +233,10 @@ namespace IO.Ably.Transport
             }
             else
             {
-                Logger.Debug("Sending Text: " + data.Text);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Sending Text: " + data.Text);
+                }
 
                 _socket?.SendText(data.Text);
             }
@@ -225,7 +246,10 @@ namespace IO.Ably.Transport
 
         private MsWebSocketConnection CreateSocket(Uri uri)
         {
-            Logger.Debug("Connecting to web socket on url: " + uri);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Connecting to web socket on url: " + uri);
+            }
 
             return new MsWebSocketConnection(uri, _socketOptions) { Logger = Logger };
         }
@@ -237,7 +261,10 @@ namespace IO.Ably.Transport
 
         private void HandleStateChange(MsWebSocketConnection.ConnectionState state, Exception error)
         {
-            Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            }
 
             switch (state)
             {

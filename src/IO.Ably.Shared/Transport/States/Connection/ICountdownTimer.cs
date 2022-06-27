@@ -47,7 +47,10 @@ namespace IO.Ably.Transport.States.Connection
                 throw new ArgumentNullException(nameof(elapsed));
             }
 
-            _logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds.");
+            if (_logger.IsDebug)
+            {
+                _logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds.");
+            }
 
             _elapsed = elapsed;
 
@@ -77,7 +80,11 @@ namespace IO.Ably.Transport.States.Connection
             {
                 if (_aborted)
                 {
-                    _logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                    if (_logger.IsDebug)
+                    {
+                        _logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                    }
+
                     return;
                 }
             }
@@ -86,7 +93,11 @@ namespace IO.Ably.Transport.States.Connection
 
             try
             {
-                _logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");
+                if (_logger.IsDebug)
+                {
+                    _logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");
+                }
+
                 _elapsed();
             }
             catch (Exception ex)
@@ -107,7 +118,10 @@ namespace IO.Ably.Transport.States.Connection
                 _aborted = true;
             }
 
-            _logger.Debug($"Aborting timer '{_name}'");
+            if (_logger.IsDebug)
+            {
+                _logger.Debug($"Aborting timer '{_name}'");
+            }
 
             if (_timer != null)
             {

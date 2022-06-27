@@ -53,7 +53,10 @@ namespace IO.Ably.Transport
 
         public async Task CreateTransport(string host)
         {
-            Logger.Debug("Creating transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Creating transport");
+            }
 
             if (Transport != null)
             {
@@ -81,7 +84,10 @@ namespace IO.Ably.Transport
 
         public void DestroyTransport()
         {
-            Logger.Debug("Destroying transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Destroying transport");
+            }
 
             if (Transport == null)
             {
@@ -195,7 +201,10 @@ namespace IO.Ably.Transport
             Action<bool, ErrorInfo> callback = null,
             ChannelOptions channelOptions = null)
         {
-            Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
+            }
 
             if (message.ConnectionId.IsNotEmpty())
             {
@@ -243,7 +252,10 @@ namespace IO.Ably.Transport
 
         public Result SendToTransport(ProtocolMessage message)
         {
-            Logger.Debug($"Sending message ({message.Action}) to transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Sending message ({message.Action}) to transport");
+            }
 
             var data = Handler.GetTransportData(message);
             try
@@ -290,7 +302,10 @@ namespace IO.Ably.Transport
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
-                        Logger.Debug("Network state is Online. Attempting reconnect.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
 
                         ExecuteCommand(ConnectCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
@@ -300,7 +315,10 @@ namespace IO.Ably.Transport
                     if (ConnectionState == ConnectionState.Connected ||
                         ConnectionState == ConnectionState.Connecting)
                     {
-                        Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        }
 
                         // RTN20a
                         var errorInfo =

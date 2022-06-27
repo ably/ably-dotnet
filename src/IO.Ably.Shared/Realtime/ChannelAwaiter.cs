@@ -128,7 +128,11 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                    Logger.Debug("Desired state reached, however the state change event didn't indicate it.");
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug("Desired state reached, however the state change event didn't indicate it.");
+                    }
+
                     InvokeCallbacks(true, null);
                     return;
                 }
