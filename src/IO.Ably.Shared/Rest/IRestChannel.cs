@@ -101,6 +101,12 @@ namespace IO.Ably.Rest
         /// <param name="query"><see cref="PaginatedRequestParams"/> query.</param>
         /// <returns><see cref="PaginatedResult{T}"/> of Messages.</returns>
         PaginatedResult<Message> History(PaginatedRequestParams query);
+
+        /// <summary>
+        /// Returns channel lifecycle status.
+        /// </summary>
+        /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
+        ChannelDetails Status();
     }
 
     /// <summary>
