@@ -11,64 +11,45 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 
 ## Supported platforms
 
-* .NET 4.6.2+ &ast;
-* .NET Core &ast;&ast;
+* .NET (Core) 3.1+
+* .NET Framework 4.8
 * .NET Standard 2.0+
 * Mono 5.4+
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
-&ast; To target Windows 7 (with .NET 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/main/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
-This is because [`System.Net.WebSockets`]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implemented on Windows 7.
-See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
-
-To work with the (deprecated) UWP platform please use .NET Standard 2.0+ target.
-
-&ast;&ast; We regression-test the library against .NET Core 3.1 and .NET Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
-
 ## Partially supported platforms
-
-The following platforms are supported, but have some shortcomings or considerations:
 
 ### Unity
 
-Unity support is currently in beta. See below for details on why it's considered beta.
+Unity support is currently in beta.
 
-Shortcomings & considerations:
+Shortcomings & Considerations:
 
-* This library is only tested manually on Unity for Windows. We do not yet have automated tests running on the Unity platform.
+* This library is currently only tested manually on Unity for Windows, we are however actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
 * Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
 
 Unity Requirements:
 
-- Unity 2018.2.0 or newer
-- The following Unity Player settings must be applied:
-  - Scripting Runtime Version should be '.NET 4.x Equivalent'
-  - Api Compatibility Level should be '.NET Standard 2.0'
+* Unity 2018.2.0 or newer
+* The following Unity Player settings must be applied:
+  * Scripting Runtime Version should be '.NET 4.x Equivalent'
+  * Api Compatibility Level should be '.NET Standard 2.0'
 
 Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a Unity package as well.
 
-Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the `SynchronizationContext `and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following `Client` option `CaptureCurrentSynchronizationContext`. Even though the setting is deprecated it will not be removed.
-
-## Unsupported platforms
-
-### .NET 6 and Visual Studio 2022
-
-`.NET 6` and `Visual Studio 2022`, both currently in preview, at not supported at this time but will be supported when they are officially released.
-
-### Portable Class Libraries
-
-A Portable Class Library version is not available. Portable Class Libraries are now considered deprecated and shared code should be packaged in .NET Standard Libraries. More information can be found [here](https://docs.microsoft.com/en-us/xamarin/cross-platform/app-fundamentals/code-sharing).
+The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the UI thread.
 
 ## Push notification
 
-The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push). 
+The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
 
 The [Push Notifications Readme](PushNotifications.md) describes:
-- How to setup Push notifications on Xamarin mobile apps
-- How to use the Push Admin api to send push notifications directly to a devices or a client
-- How to subscribe to channels that support push notification
-- How to send Ably messages that include a notification
+
+* How to setup Push notifications for Xamarin mobile apps
+* How to use the Push Admin api to send push notifications directly to a devices or a client
+* How to subscribe to channels that support push notification
+* How to send Ably messages that include a notification
 
 ## Known Limitations
 
@@ -76,7 +57,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 ## Documentation
 
-Visit https://ably.com/docs for a complete API reference and more examples.
+Visit `https://ably.com/docs` for a complete API reference and more examples.
 
 ## Installation
 
@@ -84,14 +65,14 @@ The client library is available as a [nuget package](https://www.nuget.org/packa
 
 You can install it from the Package Manager Console using this command
 
-```
+```shell
 PM> Install-Package ably.io
 ```
 
 or using the .NET CLI in your project directory using
 
-```
-$ dotnet add package ably.io
+```shell
+dotnet add package ably.io
 ```
 
 ## Using the Realtime API
@@ -114,15 +95,15 @@ If you do not have an API key, [sign up for a free API key now](https://ably.com
 
 ### Connection
 
-Connecting and observing connection state changes. By default the library automatically initializes a connection. 
+Connecting and observing connection state changes. By default the library automatically initializes a connection.
 
 ```csharp
 realtime.Connection.On(ConnectionEvent.Connected, args =>
 {
     // Do stuff  
 });
-
 ```
+
 To disable the default automatic connect behavior of the library, set `AutoConnect = false` when initializing the client.
 
 ```csharp
@@ -193,7 +174,7 @@ channel.On(ChannelState.Attached, args =>
 
 Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
 
-Request a Vcdiff formatted delta stream using channel options when you get the channel:
+Request a `Vcdiff` formatted delta stream using channel options when you get the channel:
 
 ```csharp
 var channelParams = new ChannelParams();
@@ -383,18 +364,6 @@ Token requests are issued by your servers and signed using your private API key.
 string tokenRequest = await client.Auth.CreateTokenRequestAsync();
 ```
 
-### Symmetric end-to-end encrypted payloads on a channel
-
-When a 128-bit or 256-bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
-
-```csharp
-var secret = Crypto.GetRandomKey();
-IRealtimeChannel encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
-await encryptedChannel.PublishAsync("name", "sensitive data"); // Data will be encrypted before publish
-var history = await encryptedChannel.HistoryAsync();
-var data = history.First().data; // "sensitive data" the message will be automatically decrypted once received
-```
-
 ### Fetching your application's stats
 
 ```csharp
@@ -411,8 +380,8 @@ DateTimeOffset time = await client.TimeAsync();
 
 ### Increase Transport send and receive buffers
 
-In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in https://github.com/ably/ably-dotnet/issues/446
-To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it. 
+In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
+To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it.
 
 ```csharp
 var maxBufferSize = 64 * 1024;
@@ -423,10 +392,11 @@ var realtime = new AblyRealtime(options);
 ```
 
 ### Examples
-- More Examples can be found under ```examples``` directory.
-- While working with console app, make sure to put explicit await for async methods.
 
-</br>*Sample .NET Core implementation*
+* More Examples can be found under ```examples``` directory.
+* While working with console app, make sure to put explicit await for async methods.
+
+#### Sample .NET Core implementation
 
 ```csharp
 using System;
@@ -449,7 +419,7 @@ namespace testing_ably_console
 }
 ```
 
-</br>*Sample .NET Framework implementation (when you don't have async main method)*
+#### Sample .NET Framework implementation (when you don't have async main method)*
 
 ```csharp
 using System;
@@ -483,7 +453,7 @@ See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 
 ## Support, feedback and troubleshooting
 
-Please visit https://ably.com/support for access to our knowledge-base and to ask for any assistance.
+Please visit `https://ably.com/support` for access to our knowledge-base and to ask for any assistance.
 
 You can also view the [community reported GitHub issues](https://github.com/ably/ably-dotnet/issues).
 
@@ -493,24 +463,24 @@ You can also view the [community reported GitHub issues](https://github.com/ably
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Ensure you have added suitable tests and the test suite is passing
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new Pull Request
 
 ## Building and Packaging
 
-The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2017 or Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
 
-```
+```shell
 choco install fake
 choco install nuget.commandline
 ```
 
-Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests. 
+Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests.
 To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 
-If you want to incorporate `ably-dotnet` into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the principal should transfer to other IDEs
+If you want to incorporate `ably-dotnet` into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2019, but the principal should transfer to other IDEs
 
 1. Clone this repository to your local system (`git clone --recurse-submodules https://github.com/ably/ably-dotnet.git`)
 2. Open the solution you want to reference ably-dotnet from
@@ -527,7 +497,7 @@ If you want to incorporate `ably-dotnet` into your project from source (perhaps 
 
 The dotnet library follows the Ably [`Client Library development guide`](https://ably.com/docs). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convention is to add `[Trait("spec", "spec tag")]` to unit tests.
 
-To get a list of all spec items that appear in the tests you can run a script located in the tools directory. 
+To get a list of all spec items that appear in the tests you can run a script located in the tools directory.
 You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.
 
 ## Release process
@@ -538,7 +508,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 2. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 3. Update the version number and commit that change.
 4. Create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
-5. Run `package.cmd` to create the nuget package. 
+5. Run `package.cmd` to create the nuget package.
 6. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 7. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
 8. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.

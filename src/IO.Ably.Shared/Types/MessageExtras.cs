@@ -10,6 +10,7 @@ namespace IO.Ably.Types
     [JsonConverter(typeof(MessageExtrasConverter))]
     public class MessageExtras
     {
+        private static readonly JTokenEqualityComparer _comparer = new JTokenEqualityComparer();
         internal const string DeltaProperty = "delta";
 
         /// <summary>
@@ -67,6 +68,48 @@ namespace IO.Ably.Types
         public JToken ToJson()
         {
             return Data?.DeepClone();
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            if (Data != null)
+            {
+                return _comparer.GetHashCode(Data);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Compares two MessageExtras objects by comparing the underlying json data.
+        /// </summary>
+        /// <param name="other">other Message extras object.</param>
+        /// <returns>true or false.</returns>
+        private bool Equals(MessageExtras other)
+        {
+            return JToken.DeepEquals(Data, other.Data);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((MessageExtras)obj);
         }
     }
 

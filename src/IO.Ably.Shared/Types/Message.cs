@@ -108,7 +108,14 @@ namespace IO.Ably
         /// <returns>true / false..</returns>
         protected bool Equals(Message other)
         {
-            return string.Equals(Id, other.Id) && string.Equals(ClientId, other.ClientId) && string.Equals(ConnectionId, other.ConnectionId) && string.Equals(Name, other.Name) && Timestamp.Equals(other.Timestamp) && Equals(Data, other.Data) && string.Equals(Encoding, other.Encoding);
+            return string.Equals(Id, other.Id)
+                   && string.Equals(ClientId, other.ClientId)
+                   && string.Equals(ConnectionId, other.ConnectionId)
+                   && string.Equals(Name, other.Name)
+                   && Timestamp.Equals(other.Timestamp)
+                   && Equals(Data, other.Data)
+                   && string.Equals(Encoding, other.Encoding)
+                   && Equals(Extras, other.Extras);
         }
 
         /// <inheritdoc/>
@@ -144,6 +151,7 @@ namespace IO.Ably
                 hashCode = (hashCode * 397) ^ Timestamp.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Data != null ? Data.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Encoding != null ? Encoding.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Extras != null ? Extras.GetHashCode() : 0);
                 return hashCode;
             }
         }
