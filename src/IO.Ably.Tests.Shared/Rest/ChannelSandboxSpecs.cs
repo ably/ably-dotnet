@@ -665,16 +665,16 @@ namespace IO.Ably.Tests.Rest
             IRestChannel c = client.Channels.Get(Name);
 
             ChannelDetails cd = c.Status();
-            cd.channelId.Should().Be(Name);
-            cd.status.isActive.Should().BeTrue();
+            cd.ChannelId.Should().Be(Name);
+            cd.Status.IsActive.Should().BeTrue();
 
-            ChannelMetrics cm = cd.status.occupancy.metrics;
-            cm.connections.Should().Be(0);
-            cm.presenceConnections.Should().Be(0);
-            cm.presenceMembers.Should().Be(0);
-            cm.presenceSubscribers.Should().Be(0);
-            cm.publishers.Should().Be(0);
-            cm.subscribers.Should().Be(0);
+            ChannelMetrics cm = cd.Status.Occupancy.Metrics;
+            cm.Connections.Should().Be(0);
+            cm.PresenceConnections.Should().Be(0);
+            cm.PresenceMembers.Should().Be(0);
+            cm.PresenceSubscribers.Should().Be(0);
+            cm.Publishers.Should().Be(0);
+            cm.Subscribers.Should().Be(0);
         }
 
         private static object DecodeData(string data, string encoding)
