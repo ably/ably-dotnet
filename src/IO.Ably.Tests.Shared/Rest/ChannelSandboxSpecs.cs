@@ -657,6 +657,7 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL8")]
+        [Trait("spec", "CHD1")]
         public async Task ChannelDetails_AreAvailable(Protocol protocol)
         {
             const string Name = "Test";

@@ -103,7 +103,7 @@ namespace IO.Ably.Rest
         PaginatedResult<Message> History(PaginatedRequestParams query);
 
         /// <summary>
-        /// Returns channel lifecycle status.
+        /// Returns the active status for the channel including the number of publishers, subscribers and presenceMembers etc.
         /// </summary>
         /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
         ChannelDetails Status();
