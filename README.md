@@ -247,6 +247,16 @@ foreach (var presence in presenceHistory.Items)
 var presenceNextPage = await presenceHistory.NextAsync();
 ```
 
+### Getting the channel status
+
+Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc is simple
+
+```csharp
+ChannelDetails details = channel.Status();
+ChannelMetrics metrics = details.Status.Occupancy.Metrics;
+// Do something with 'metrics.Publishers' etc
+```
+
 ### Symmetric end-to-end encrypted payloads on a channel
 
 When a 128-bit or 256-bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.

@@ -7,6 +7,8 @@ using IO.Ably.Push;
 
 namespace IO.Ably.Rest
 {
+#pragma warning disable SA1600
+
     /// <summary>
     /// The Ably Realtime service organises the traffic within any application into named channels.
     /// Channels are the "unit" of message distribution; clients attach to channels to subscribe to messages,
@@ -223,6 +225,18 @@ namespace IO.Ably.Rest
         public PaginatedResult<Message> History(PaginatedRequestParams query)
         {
             return AsyncHelper.RunSync(() => HistoryAsync(query));
+        }
+
+        private async Task<ChannelDetails> StatusAsync()
+        {
+            AblyRequest request = _ablyRest.CreateGetRequest("/channels/" + Name);
+            return await _ablyRest.ExecuteRequest<ChannelDetails>(request);
+        }
+
+        /// <inheritdoc/>
+        public ChannelDetails Status()
+        {
+            return AsyncHelper.RunSync(StatusAsync);
         }
     }
 }

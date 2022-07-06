@@ -101,6 +101,12 @@ namespace IO.Ably.Rest
         /// <param name="query"><see cref="PaginatedRequestParams"/> query.</param>
         /// <returns><see cref="PaginatedResult{T}"/> of Messages.</returns>
         PaginatedResult<Message> History(PaginatedRequestParams query);
+
+        /// <summary>
+        /// Returns the active status for the channel including the number of publishers, subscribers and presenceMembers etc.
+        /// </summary>
+        /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
+        ChannelDetails Status();
     }
 
     /// <summary>

@@ -654,6 +654,30 @@ namespace IO.Ably.Tests.Rest
             message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL8")]
+        [Trait("spec", "CHD1")]
+        public async Task ChannelDetails_AreAvailable(Protocol protocol)
+        {
+            const string Name = "Test";
+
+            AblyRest client = await GetRestClient(protocol);
+            IRestChannel c = client.Channels.Get(Name);
+
+            ChannelDetails cd = c.Status();
+            cd.ChannelId.Should().Be(Name);
+            cd.Status.IsActive.Should().BeTrue();
+
+            ChannelMetrics cm = cd.Status.Occupancy.Metrics;
+            cm.Connections.Should().Be(0);
+            cm.PresenceConnections.Should().Be(0);
+            cm.PresenceMembers.Should().Be(0);
+            cm.PresenceSubscribers.Should().Be(0);
+            cm.Publishers.Should().Be(0);
+            cm.Subscribers.Should().Be(0);
+        }
+
         private static object DecodeData(string data, string encoding)
         {
             switch (encoding)
