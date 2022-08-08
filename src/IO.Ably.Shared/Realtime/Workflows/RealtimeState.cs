@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Ably.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -57,7 +58,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public ConnectionState State => CurrentStateObject.State;
 
-            public ConnectionStateChange UpdateState(ConnectionStateBase state, ILogger logger)
+            public ConnectionStateChange UpdateState(ConnectionStateBase state, ILogger logger, int retryCount = 0)
             {
                 if (!state.IsUpdate && state.State == State)
                 {
@@ -71,10 +72,19 @@ namespace IO.Ably.Realtime.Workflow
 
                 var oldState = State;
                 var newState = state.State;
+                var retryIn = state.RetryIn;
+                if (newState == ConnectionState.Disconnected)
+                {
+                    retryIn = TimeSpan.FromMilliseconds(retryIn?.TotalMilliseconds ??
+                                                        Defaults.DisconnectedRetryTimeout.TotalMilliseconds *
+                                                        ReconnectionStategy.GetBackoffCoefficient(retryCount) *
+                                                        ReconnectionStategy.GetJitterCoefficient());
+                }
+
                 CurrentStateObject = state;
                 ErrorReason = state.Error;
                 var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
-                return new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
+                return new ConnectionStateChange(connectionEvent, oldState, newState, retryIn, ErrorReason);
             }
 
             public bool HasConnectionStateTtlPassed(Func<DateTimeOffset> now)
@@ -137,7 +147,7 @@ namespace IO.Ably.Realtime.Workflow
         public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
         public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
-        => WaitingForAck.Add(new MessageAndCallback(message, callback));
+            => WaitingForAck.Add(new MessageAndCallback(message, callback));
 
         public RealtimeState()
             : this(null)
