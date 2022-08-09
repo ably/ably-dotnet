@@ -43,6 +43,60 @@ The dotnet library follows the Ably [Features spec](https://docs.ably.com/client
 To get a list of all spec items that appear in the tests you can run a script located in the tools directory.
 You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.
 
+## Development, Debugging and Testing
+
+The Ably .NET SDK is written primarily in C# with some F# used for build orchestration. In terms of platform support the Ably .NET SDK is broader than most. We explicitly support Windows, Linux and macOS as well as the Unity runtime, eventually, everywhere that Unity runs.
+
+The Ably .NET SDK is available in two configurations: .NET Framework for legacy Windows clients and .NET (Core) for contemporary Windows clients, Linux and macOS. The bulk of the code for both the ‘Framework and ‘Core configurations is packaged in a shared assembly built against the .NET Standard 2.0 specification, while this allows for sharing it does limit the version of C# we are able to use to within the shared library to C# 8.
+
+### Development & Debugging
+
+It is strongly recommended that you have access to a fully updated Windows 10 or Windows 11 development environment running (at the time of writing) Visual Studio 2022. While 3rd party development tools like JetBrains Rider run on Windows, Linux and macOS, Visual Studio 2022 provides the very best development and debugging environment for both .NET Framework and .NET (Core) configurations. Given the current maturity of Windows on ARM and its associated tooling it is advisable to either run these on actual WinTel hardware or on an Intel based MacBook Pro using Parallels Desktop.
+
+When debugging any kind of Ably Protocol error the following debugging techniques have been shown to be effective...
+
+#### Debugging Tip: Isolate the failure in a console application
+
+The very first thing is to isolate the failure, reproduce with it the minimum line count and extraneous runtime machinery. Some of the cost of this can be passed back to the customer, be they an external client or a Ably Labs member, getting them to write their own isolated reproduction of the failure can sometimes help shake out API usage misunderstandings from API defects. Of course if the misunderstanding is rooted in a documentation deficiency then a new JIRA item can be created to capture this. The other advantage to having  the customer try and isolate the failure is that it actively demonstrates that the failure is being looked at. Once we have a reproducible failure we have the option of rescheduling the actual fix.
+
+#### Debugging Tip: Enable diagnostic logging
+
+_More detail to follow around this._
+
+#### Debugging Tip: Enable break on exception throw
+
+A technique that has proved extremely successful when it comes to tracking down sporadic communication failures is to enable ‘break on throw’ in your debugger. The fact is that the exception handling logic in the Ably .NET SDK exhibits overly generous catch clauses which tend to catch too broad a set of exception types. These then tend to be processed as ‘something went wrong’ (i.e. we lose valuable and actionable recovery context) or are swallowed and ignored, on the basis that retry logic will, eventually, make everything good. If the retries subsequently fail to reestablish the invariants then you will commonly see `NullReferenceExceptions` as the code higher up makes assumptions about what state the object graph is in. In general if you see a `NullReferenceException` it is worth hunting down its source and precipitating conditions since it’s likely being used now as some kind of flow-of-control signal that triggers retry logic.
+
+#### Debugging Tip: Debug and Release execution traces can differ
+
+_More detail to follow around this._
+
+### Testing
+
+Testing takes place primarily via GitHub Actions based infrastructure, here Windows, Linux and macOS assemblies are built, and integration tests are run. In addition to this support is being added so that the GitHub repository can orchestrate a remote Unity build via [Unity’s Cloud Build service](https://unity.com/products/cloud-build). There are various reasons why, in addition to GitHub’s infrastructure (for free, because this is an open, public repository), the paid-for Unity Cloud Build service is used:
+
+1. **Physical license server**: Currently Unity requires a license server to be run on physical hardware. The license server is needed to securely allocate a temporary license to a GitHub Worker. We do not wish to provision our own dedicated physical or virtual license service instances, thus pointing us in the direction of Unity Cloud Build.
+
+2. **Need to build for multiple platforms**: A huge part of the Unity value proposition is that Unity runs on just about every commercially significant gaming platform. It would not be financially or practically possible for Ably to replicate even a modest subset of this.
+
+3. **Existing concerns with the stability of the GitHub infrastructure**: Currently our GitHub workflows test Windows, Linux and macOS. The root cause of this is bound up in the fact that the vast majority of our tests are integration tests that run against the remotely hosted Ably sandbox. Network uncertainty, combined with wildly varying runner performance leads to frequent timeouts and associated protocol failures. Until or if we ever manage to reign these in it would be foolish to try and add additional platforms to the existing GitHub infrastructure.
+
+At the present time it is possible for tests to transition from green to red with no code changes on the part of the SDK team. There are two reasons for this:
+
+1. **Unexpected changes to the sandbox**: These tend to occur when the sandbox either evolves ahead of the Ably API specification or improves its conformance to an existing specification point which then subsequently exposes a weak implementation on the client side, in this case within the Ably .NET SDK.
+
+2. **Uncontrolled dependency evolution**: At the present time the majority of the 3rd party Ably .NET dependencies have open dependency requirements which is to say we specify a minimum but not a maximum or even discrete list of versions against which we certify and support conformance. For example, if the Newtonsoft Json .NET library is updated it will be used by our next build and may contribute to test failures.
+
+When one or more Ably .NET test failures is observed it is worth checking against another Ably client SDK with similar capabilities to see if it is also suffering from similar failures. This is aided somewhat by the fact that tests are decorated (the specifics vary depending on the SDK) with metadata that points to the Ably Specification point the test was originally intended to verify conformance for. So, for example if it is observed that the Channel Presence tests appear to be failing for .NET then check to see if the Ably Go SDK is showing failures in the same area. It is not always enough to just check to see if the Ably Go SDK happens to be gree as this just means it was green at the time the last pull request was created, updated or merged.
+
+As touched upon above, the recommended hardware for replicating cross platform test failures is at least an Intel based MacBook Pro. Ideally the developer should have access to both Intel and Apple Silicon (ARM64) hardware. ARM based CLR implementations are not a 1:1 substitute for older, more mature Intel based implementations at least at the current time. You need both and will observe behavioral differences in test execution when comparing one platform against the other.
+
+As of Windows 11, mainstream Windows on ARM is increasingly A Thing and can not be ignored, it’s not just Apple and Linux who are embracing non x86 native instruction sets.
+
+Experience has shown you are better off running local VMs for guest OS images as their cloud-based alternatives suffer from lack of configuration and performance variability.
+
+Note: it was recently decided to remove explicit mention of Windows 7 as a supported platform for the Ably .NET SDK. It is probably worth considering when we can also look to exclude Windows 8 and Windows 8.1 setting the minimum supported version to Windows 10.
+
 ## Release process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
