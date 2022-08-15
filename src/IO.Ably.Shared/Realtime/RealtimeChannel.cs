@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Push;
 using IO.Ably.Rest;
+using IO.Ably.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using IO.Ably.Utils;
@@ -22,6 +23,7 @@ namespace IO.Ably.Realtime
         private ChannelOptions _options;
         private ChannelState _state;
         private readonly PushChannel _pushChannel;
+        private int _retryCount = 0;
 
         /// <summary>
         /// True when the channel moves to the @ATTACHED@ state, and False
@@ -655,7 +657,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"HandleStateChange state change from {State} to {state}");
             }
 
-            var oldState = State;
+            var previousState = State;
             State = state;
 
             switch (state)
@@ -668,12 +670,13 @@ namespace IO.Ably.Realtime
                     AttachResume = false;
                     break;
                 case ChannelState.Attached:
+                    _retryCount = 0;
                     AttachResume = true;
                     Presence.ChannelAttached(protocolMessage);
                     break;
                 case ChannelState.Detached:
                     /* RTL13a check for unexpected detach */
-                    switch (oldState)
+                    switch (previousState)
                     {
                         /* (RTL13a) If the channel is in the @ATTACHED@ or @SUSPENDED@ states,
                          an attempt to reattach the channel should be made immediately */
@@ -706,6 +709,7 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Failed:
+                    _retryCount = 0;
                     AttachResume = false;
                     AttachedAwaiter.Fail(error);
                     DetachedAwaiter.Fail(error);
@@ -744,11 +748,16 @@ namespace IO.Ably.Realtime
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
+            _retryCount++;
+            var retryTimeout = TimeSpan.FromMilliseconds(RealtimeClient.Options.ChannelRetryTimeout.TotalMilliseconds +
+                               ReconnectionStategy.GetJitterCoefficient() +
+                               ReconnectionStategy.GetBackoffCoefficient(_retryCount));
+
             // We capture the task but ignore it to make sure an error doesn't take down
             // the thread
             _ = Task.Run(async () =>
             {
-                await Task.Delay(RealtimeClient.Options.ChannelRetryTimeout);
+                await Task.Delay(retryTimeout);
 
                 // only retry if the connection is connected (RTL13c)
                 if (Connection.State == ConnectionState.Connected)
