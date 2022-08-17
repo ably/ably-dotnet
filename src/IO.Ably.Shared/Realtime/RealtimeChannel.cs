@@ -750,8 +750,8 @@ namespace IO.Ably.Realtime
         {
             _retryCount++;
             var retryTimeout = TimeSpan.FromMilliseconds(RealtimeClient.Options.ChannelRetryTimeout.TotalMilliseconds +
-                               ReconnectionStategy.GetJitterCoefficient() +
-                               ReconnectionStategy.GetBackoffCoefficient(_retryCount));
+                               ReconnectionStrategy.GetJitterCoefficient() +
+                               ReconnectionStrategy.GetBackoffCoefficient(_retryCount));
 
             // We capture the task but ignore it to make sure an error doesn't take down
             // the thread

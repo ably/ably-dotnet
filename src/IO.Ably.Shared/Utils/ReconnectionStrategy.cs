@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IO.Ably.Shared.Utils
 {
-    internal class ReconnectionStategy
+    internal class ReconnectionStrategy
     {
         public static double GetBackoffCoefficient(int retryCount)
         {
