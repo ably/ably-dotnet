@@ -1,6 +1,40 @@
 # Change Log
 
-## [1.2.8](https://github.com/ably/ably-dotnet/tree/1.2.8)
+## [1.2.9](https://github.com/ably/ably-dotnet/tree/1.2.9) (2022-08-31)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.8...1.2.9)
+
+**Implemented enhancements:**
+
+- Add support to get channel lifecycle status [\#1150](https://github.com/ably/ably-dotnet/issues/1150)
+
+**Fixed bugs:**
+
+- ClientOptions LogLevel not working [\#1140](https://github.com/ably/ably-dotnet/issues/1140)
+
+**Closed issues:**
+
+- Unity: Investigate inability to select GitHub as SCM [\#1173](https://github.com/ably/ably-dotnet/issues/1173)
+- MacOS build fails when restoring packages [\#1160](https://github.com/ably/ably-dotnet/issues/1160)
+- Remove support for Windows 7 [\#1158](https://github.com/ably/ably-dotnet/issues/1158)
+- dotnet Update urls in readme [\#1146](https://github.com/ably/ably-dotnet/issues/1146)
+- Skipped Test: ConnectionSandboxTransportSideEffectsSpecs.WithChannelInDetachingState\_WhenTransportIsDisconnected\_ShouldResendDetachMessageOnConnectionResumed [\#834](https://github.com/ably/ably-dotnet/issues/834)
+- Dropping the `.NET Framework` solution [\#618](https://github.com/ably/ably-dotnet/issues/618)
+- Take control of our Assembly Version [\#617](https://github.com/ably/ably-dotnet/issues/617)
+- Update documentation about using alternative websocket libraries [\#425](https://github.com/ably/ably-dotnet/issues/425)
+
+**Merged pull requests:**
+
+- Contributing Guide [\#1179](https://github.com/ably/ably-dotnet/pull/1179) ([QuintinWillison](https://github.com/QuintinWillison))
+- Add channel lifecycle support [\#1172](https://github.com/ably/ably-dotnet/pull/1172) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Remove mention of Visual Studio 2017 [\#1169](https://github.com/ably/ably-dotnet/pull/1169) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Remove support for 'Windows 7'. [\#1159](https://github.com/ably/ably-dotnet/pull/1159) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Add message extras to the Message equality comparison [\#1157](https://github.com/ably/ably-dotnet/pull/1157) ([marto83](https://github.com/marto83))
+- Update documentation URLs [\#1149](https://github.com/ably/ably-dotnet/pull/1149) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Fix realtime logging [\#1139](https://github.com/ably/ably-dotnet/pull/1139) ([sacOO7](https://github.com/sacOO7))
+- Resend detach on reconnect [\#1109](https://github.com/ably/ably-dotnet/pull/1109) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.8](https://github.com/ably/ably-dotnet/tree/1.2.8) (2022-04-21)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.7...1.2.8)
 
