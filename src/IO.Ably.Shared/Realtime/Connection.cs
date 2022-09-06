@@ -162,7 +162,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public long? Serial => InnerState.Serial;
 
-        internal long MessageSerial => InnerState.MessageSerial;
+        // internal long MessageSerial => InnerState.MessageSerial;
 
         /// <summary>
         /// Gets the current connection Key.
@@ -174,17 +174,17 @@ namespace IO.Ably.Realtime
         /// </summary>
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
-        /// <summary>
-        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
-        /// </summary>
-        public string RecoveryKey
-        {
-            get
-            {
-                Debug.Assert(Serial.HasValue, "Expected a Value, found none");
-                return ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
-            }
-        }
+        // /// <summary>
+        // /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
+        // /// </summary>
+        // public string RecoveryKey
+        // {
+        //     get
+        //     {
+        //         Debug.Assert(Serial.HasValue, "Expected a Value, found none");
+        //         return ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
+        //     }
+        // }
 
         /// <summary>
         /// Gets the current connections time to live.

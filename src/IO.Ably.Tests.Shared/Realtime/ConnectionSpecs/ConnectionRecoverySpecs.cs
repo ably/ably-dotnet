@@ -25,13 +25,13 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.Key.Should().BeNullOrEmpty();
         }
 
-        [Fact]
-        [Trait("spec", "RTN16b")]
-        public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
-        {
-            var client = await GetConnectedClient();
-            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
-        }
+        // [Fact]
+        // [Trait("spec", "RTN16b")]
+        // public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
+        // {
+        //     var client = await GetConnectedClient();
+        //     client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
+        // }
 
         [Fact]
         [Trait("spec", "RTN16f")]
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             paramsDict["recover"].Should().Be(parts[0]);
             paramsDict["connection_serial"].Should().Be(parts[1]);
 
-            client.Connection.MessageSerial.Should().Be(99);
+            // client.Connection.MessageSerial.Should().Be(99);
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)

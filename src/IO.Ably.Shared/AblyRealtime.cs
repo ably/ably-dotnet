@@ -67,7 +67,7 @@ namespace IO.Ably
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options, mobileDevice) : new AblyRest(options, mobileDevice);
             Push = new PushRealtime(RestClient, Logger);
 
-            Connection = new Connection(this, options.NowFunc, options.Logger);
+            Connection = new Connection(this, options.NowFunc, Logger);
             Connection.Initialise();
 
             if (options.AutomaticNetworkStateMonitoring)
