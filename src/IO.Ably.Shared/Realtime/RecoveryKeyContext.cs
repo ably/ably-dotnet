@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace IO.Ably.Shared.Realtime
@@ -12,6 +13,23 @@ namespace IO.Ably.Shared.Realtime
         public long MsgSerial { get; set; }
 
         [JsonProperty("channelSerials")]
-        public Dictionary<string, Dictionary<string, string>> ChannelSerials { get; set; }
+        public Dictionary<string, string> ChannelSerials { get; set; }
+
+        protected string Encode()
+        {
+            return JsonHelper.Serialize(this);
+        }
+
+        protected static RecoveryKeyContext Decode(string recover)
+        {
+            try
+            {
+                return JsonHelper.Deserialize<RecoveryKeyContext>(recover);
+            }
+            catch (Exception)
+            {
+                return null;
+            } 
+        }
     }
 }
