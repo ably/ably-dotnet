@@ -15,12 +15,12 @@ namespace IO.Ably.Shared.Realtime
         [JsonProperty("channelSerials")]
         public Dictionary<string, string> ChannelSerials { get; set; }
 
-        protected string Encode()
+        public string Encode()
         {
             return JsonHelper.Serialize(this);
         }
 
-        protected static RecoveryKeyContext Decode(string recover)
+        public static RecoveryKeyContext Decode(string recover)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace IO.Ably.Shared.Realtime
             catch (Exception)
             {
                 return null;
-            } 
+            }
         }
     }
 }

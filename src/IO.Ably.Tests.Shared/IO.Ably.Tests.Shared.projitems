@@ -122,6 +122,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeWorkflowSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RecoveryKeyContextSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\AblyHttpClientSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptionsDefaultsTests.cs" />
