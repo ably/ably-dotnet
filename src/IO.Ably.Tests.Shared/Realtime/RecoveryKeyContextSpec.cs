@@ -49,5 +49,18 @@ namespace IO.Ably.Tests.Shared.Realtime
             };
             Assert.Equal(expectedChannelSerials, recoveryKeyContext.ChannelSerials);
         }
+
+        [Fact]
+        [Trait("spec", "RTN16i")]
+        [Trait("spec", "RTN16f")]
+        [Trait("spec", "RTN16j")]
+        public void ShouldReturnNullForRecoveryContext()
+        {
+            var recoveryKey =
+                "{\"connectionKey\":\"key2\",\"msgSerial\":\"incorrectStringSerial\",\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
+            var recoveryKeyContext = RecoveryKeyContext.Decode(recoveryKey);
+            Assert.Null(recoveryKeyContext);
+        }
+
     }
 }
