@@ -200,8 +200,6 @@ namespace IO.Ably.Tests.Realtime
 
             var firstTransport = LastCreatedTransport;
             var connectionKey = client.Connection.Key;
-            Debug.Assert(client.Connection.Serial.HasValue, "Expected a serial number, got null");
-            var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
 
             await client.WaitForState(ConnectionState.Connecting);
@@ -213,8 +211,6 @@ namespace IO.Ably.Tests.Realtime
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
                 .WhoseValue.Should().Be(connectionKey);
-            urlParams.Should().ContainKey("connection_serial")
-                .WhoseValue.Should().Be(serial.ToString());
             LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }
 

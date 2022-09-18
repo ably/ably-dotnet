@@ -156,23 +156,12 @@ namespace IO.Ably.Realtime
         /// </summary>
         public string Id => InnerState.Id;
 
-        /// <summary>
-        ///     The serial number of the last message received on this connection.
-        ///     The serial number may be used when recovering connection state.
-        /// </summary>
-        public long? Serial => InnerState.Serial;
-
-        // internal long MessageSerial => InnerState.MessageSerial;
+        internal long MessageSerial => InnerState.MessageSerial;
 
         /// <summary>
         /// Gets the current connection Key.
         /// </summary>
         public string Key => InnerState.Key;
-
-        /// <summary>
-        /// Indicates whether the current connection can be resumed.
-        /// </summary>
-        public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
         // /// <summary>
         // /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.

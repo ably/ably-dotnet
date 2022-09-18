@@ -486,7 +486,6 @@ namespace IO.Ably.Realtime.Workflow
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
                                 return SetDisconnectedStateCommand.Create(
                                     errorInfo,
-                                    retryInstantly: Connection.ConnectionResumable,
                                     exception: cmd.Exception).TriggeredBy(cmd);
 
                             case ConnectionState.Initialized:
@@ -520,7 +519,6 @@ namespace IO.Ably.Realtime.Workflow
             {
                 try
                 {
-                    State.Connection.UpdateSerial(message);
                     State.Connection.SetConfirmedAlive(Now());
 
                     foreach (var (name, handler) in ProtocolMessageProcessors)

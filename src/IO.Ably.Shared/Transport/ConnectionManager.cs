@@ -290,8 +290,7 @@ namespace IO.Ably.Transport
                 host,
                 RestClient.AblyAuth,
                 Options,
-                Connection.Key,
-                Connection.Serial);
+                Connection.Key);
         }
 
         public void HandleNetworkStateChange(NetworkState state)

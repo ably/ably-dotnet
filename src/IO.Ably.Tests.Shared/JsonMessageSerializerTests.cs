@@ -297,27 +297,6 @@ namespace IO.Ably.Tests
         [InlineData("0")]
         [InlineData(-1)]
         [InlineData("-1")]
-        public void DeserializesMessageCorrectly_ConnectionSerial(object connectionSerial)
-        {
-            // Arrange
-            string message = $"{{\"connectionSerial\":{connectionSerial}}}";
-
-            // Act
-            ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
-
-            // Assert
-            target.Should().NotBeNull();
-            Debug.Assert(target.ConnectionSerial.HasValue, $"'{nameof(target.ConnectionSerial)}' should have a value");
-            target.ConnectionSerial.Value.Should().Be(ToLong(connectionSerial));
-        }
-
-        [Theory]
-        [InlineData(123)]
-        [InlineData("123")]
-        [InlineData(0)]
-        [InlineData("0")]
-        [InlineData(-1)]
-        [InlineData("-1")]
         public void DeserializesMessageCorrectly_Count(object count)
         {
             // Arrange

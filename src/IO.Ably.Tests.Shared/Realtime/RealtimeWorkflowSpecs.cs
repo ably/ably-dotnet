@@ -26,7 +26,6 @@ namespace IO.Ably.Tests.NETFramework.Realtime
              var connectedProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
              {
                  ConnectionId = "1",
-                 ConnectionSerial = 100,
                  ConnectionDetails = new ConnectionDetails
                  {
                      ClientId = "client1",
@@ -39,7 +38,6 @@ namespace IO.Ably.Tests.NETFramework.Realtime
              // Assert
              var connection = client.Connection;
              connection.Id.Should().Be("1");
-             connection.Serial.Should().Be(100);
              connection.Key.Should().Be("validKey");
              client.Auth.ClientId.Should().Be("client1");
             }

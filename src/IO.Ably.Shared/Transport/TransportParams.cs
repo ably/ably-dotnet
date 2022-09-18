@@ -42,11 +42,6 @@ namespace IO.Ably.Transport
         public string ConnectionKey { get; private set; }
 
         /// <summary>
-        /// Connection serial.
-        /// </summary>
-        public long? ConnectionSerial { get; set; }
-
-        /// <summary>
         /// Whether to use the binary protocol.
         /// </summary>
         public bool UseBinaryProtocol { get; private set; }
@@ -82,7 +77,7 @@ namespace IO.Ably.Transport
         {
         }
 
-        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
+        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, ILogger logger = null)
         {
             var result = new TransportParams
             {
@@ -91,7 +86,6 @@ namespace IO.Ably.Transport
                 Port = options.Tls ? options.TlsPort : options.Port,
                 ClientId = options.GetClientId(),
                 ConnectionKey = connectionKey,
-                ConnectionSerial = connectionSerial,
                 EchoMessages = options.EchoMessages,
                 FallbackHosts = options.GetFallbackHosts(),
                 UseBinaryProtocol = options.UseBinaryProtocol,
@@ -192,10 +186,6 @@ namespace IO.Ably.Transport
             if (ConnectionKey.IsNotEmpty())
             {
                 result["resume"] = ConnectionKey;
-                if (ConnectionSerial.HasValue)
-                {
-                    result["connection_serial"] = ConnectionSerial.Value.ToString();
-                }
             }
             else if (RecoverValue.IsNotEmpty())
             {

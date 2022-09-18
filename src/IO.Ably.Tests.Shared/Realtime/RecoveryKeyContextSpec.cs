@@ -61,6 +61,5 @@ namespace IO.Ably.Tests.Shared.Realtime
             var recoveryKeyContext = RecoveryKeyContext.Decode(recoveryKey);
             Assert.Null(recoveryKeyContext);
         }
-
     }
 }
