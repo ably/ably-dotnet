@@ -118,7 +118,7 @@ namespace IO.Ably.Tests.Realtime
                 .WhoseValue.Should().Be(Defaults.ProtocolVersion);
         }
 
-        [Fact]
+        [Fact(Skip = "Need to check if lib version expects API/Protocol version or individual lib version")]
         [Trait("spec", "RTN2g")]
         public async Task ShouldSetTransportLibVersionParameter()
         {
