@@ -283,9 +283,12 @@ namespace IO.Ably.Realtime
             ProtocolMessage CreateAttachMessage()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
+
+                message.ChannelSerial = ChannelSerial;
+
                 if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
                 {
-                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
+                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial; // Excludes PresenceMessage ChannelSerial (not included in backlogs anyways)
                 }
 
                 if (Options.Params.Any())
