@@ -39,6 +39,8 @@ namespace IO.Ably.Realtime
                 return Task.FromResult(false);
             }
 
+            channel.ChannelSerial = protocolMessage.ChannelSerial;
+
             switch (protocolMessage.Action)
             {
                 case ProtocolMessage.MessageAction.Error:

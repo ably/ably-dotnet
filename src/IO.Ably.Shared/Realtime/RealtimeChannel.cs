@@ -85,6 +85,8 @@ namespace IO.Ably.Realtime
 
         public string Name { get; }
 
+        public string ChannelSerial { get; set; } = null;
+
         public ChannelState State
         {
             get => _state;

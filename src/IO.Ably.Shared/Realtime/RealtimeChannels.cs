@@ -246,5 +246,16 @@ namespace IO.Ably.Realtime
                     break;
             }
         }
+
+        internal Dictionary<string, string> GetChannelSerials()
+        {
+            var channelSerials = new Dictionary<string, string>();
+            foreach (var realtimeChannel in this)
+            {
+                channelSerials[realtimeChannel.Name] = realtimeChannel.ChannelSerial;
+            }
+
+            return channelSerials;
+        }
     }
 }
