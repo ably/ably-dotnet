@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Shared.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 
@@ -163,17 +164,27 @@ namespace IO.Ably.Realtime
         /// </summary>
         public string Key => InnerState.Key;
 
-        // /// <summary>
-        // /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
-        // /// </summary>
-        // public string RecoveryKey
-        // {
-        //     get
-        //     {
-        //         Debug.Assert(Serial.HasValue, "Expected a Value, found none");
-        //         return ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
-        //     }
-        // }
+        /// <summary>
+        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
+        /// </summary>
+        public string RecoveryKey
+        {
+            get
+            {
+                if (Key.IsEmpty())
+                {
+                    return null;
+                }
+
+                var recoveryContext = new RecoveryKeyContext()
+                {
+                    MsgSerial = MessageSerial,
+                    ConnectionKey = Key,
+                    ChannelSerials = RealtimeClient.Channels.GetChannelSerials(),
+                };
+                return recoveryContext.Encode();
+            }
+        }
 
         /// <summary>
         /// Gets the current connections time to live.

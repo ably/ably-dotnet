@@ -39,7 +39,13 @@ namespace IO.Ably.Realtime
                 return Task.FromResult(false);
             }
 
-            channel.ChannelSerial = protocolMessage.ChannelSerial;
+            if (protocolMessage.Action == ProtocolMessage.MessageAction.Message ||
+                protocolMessage.Action == ProtocolMessage.MessageAction.Presence)
+            {
+                Logger.Debug($"Setting channel serial for channelName - {channel.Name}," +
+                             $"previous - {channel.ChannelSerial}, current - {protocolMessage.ChannelSerial}");
+                channel.ChannelSerial = protocolMessage.ChannelSerial;
+            }
 
             switch (protocolMessage.Action)
             {

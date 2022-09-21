@@ -13,7 +13,7 @@ namespace IO.Ably.Shared.Realtime
         public long MsgSerial { get; set; }
 
         [JsonProperty("channelSerials")]
-        public Dictionary<string, string> ChannelSerials { get; set; }
+        public IDictionary<string, string> ChannelSerials { get; set; }
 
         public string Encode()
         {

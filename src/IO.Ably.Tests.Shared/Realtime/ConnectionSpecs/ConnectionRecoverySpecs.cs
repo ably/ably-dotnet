@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Shared.Realtime;
+using IO.Ably.Tests.Shared.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
@@ -25,13 +27,19 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.Key.Should().BeNullOrEmpty();
         }
 
-        // [Fact]
-        // [Trait("spec", "RTN16b")]
-        // public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
-        // {
-        //     var client = await GetConnectedClient();
-        //     client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
-        // }
+        [Fact]
+        [Trait("spec", "RTN16b")]
+        public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
+        {
+            var client = await GetConnectedClient();
+            var expectedRecoveryKey = new RecoveryKeyContext()
+            {
+                ConnectionKey = client.Connection.Key,
+                MsgSerial = client.Connection.MessageSerial,
+                ChannelSerials = client.Channels.GetChannelSerials(),
+            }.Encode();
+            client.Connection.RecoveryKey.Should().Be(expectedRecoveryKey);
+        }
 
         [Fact]
         [Trait("spec", "RTN16f")]
