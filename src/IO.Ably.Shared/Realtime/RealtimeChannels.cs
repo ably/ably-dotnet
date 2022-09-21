@@ -247,7 +247,21 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal Dictionary<string, string> GetChannelSerials()
+        internal void SetChannelSerialsFromRecoverOption(IDictionary<string, string> serials)
+        {
+            foreach (var keyValuePair in serials)
+            {
+                var channelName = keyValuePair.Key;
+                var channelSerial = keyValuePair.Value;
+                var channel = (RealtimeChannel)this[channelName];
+                if (channel != null)
+                {
+                    channel.ChannelSerial = channelSerial;
+                }
+            }
+        }
+
+        internal IDictionary<string, string> GetChannelSerials()
         {
             var channelSerials = new Dictionary<string, string>();
             foreach (var realtimeChannel in this)
