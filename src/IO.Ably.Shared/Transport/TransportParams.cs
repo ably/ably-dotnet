@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using IO.Ably.Shared.Realtime;
 
 namespace IO.Ably.Transport
 {
@@ -12,8 +13,6 @@ namespace IO.Ably.Transport
     /// </summary>
     public class TransportParams
     {
-        internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
-
         internal ILogger Logger { get; private set; }
 
         /// <summary>
@@ -189,11 +188,10 @@ namespace IO.Ably.Transport
             }
             else if (RecoverValue.IsNotEmpty())
             {
-                var match = RecoveryKeyRegex.Match(RecoverValue);
-                if (match.Success)
+                var recoveryKeyContext = RecoveryKeyContext.Decode(RecoverValue);
+                if (recoveryKeyContext != null)
                 {
-                    result["recover"] = match.Groups[1].Value;
-                    result["connection_serial"] = match.Groups[2].Value;
+                    result["recover"] = recoveryKeyContext.ConnectionKey;
                 }
             }
 

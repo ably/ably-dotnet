@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Shared.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using IO.Ably.Utils;
@@ -65,7 +66,17 @@ namespace IO.Ably.Transport
 
             try
             {
-                var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters(host));
+                var transportParams = await CreateTransportParameters(host);
+                if (transportParams.RecoverValue.IsNotEmpty())
+                {
+                    var recoveryKeyContext = RecoveryKeyContext.Decode(transportParams.RecoverValue);
+                    if (recoveryKeyContext != null)
+                    {
+                        Connection.RealtimeClient.Channels.SetChannelSerialsFromRecoverOption(recoveryKeyContext.ChannelSerials);
+                    }
+                }
+
+                var transport = GetTransportFactory().CreateTransport(transportParams);
                 transport.Listener = this;
                 Transport = transport;
                 Transport.Connect();
