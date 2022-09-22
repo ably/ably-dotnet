@@ -73,6 +73,7 @@ namespace IO.Ably.Transport
                     if (recoveryKeyContext != null)
                     {
                         Connection.RealtimeClient.Channels.SetChannelSerialsFromRecoverOption(recoveryKeyContext.ChannelSerials);
+                        Connection.InnerState.MessageSerial = recoveryKeyContext.MsgSerial;
                     }
                 }
 
