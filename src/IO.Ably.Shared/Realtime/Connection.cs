@@ -165,13 +165,16 @@ namespace IO.Ably.Realtime
         public string Key => InnerState.Key;
 
         /// <summary>
-        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
+        /// Connection#recoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
         /// </summary>
         public string RecoveryKey
         {
             get
             {
-                if (Key.IsEmpty())
+                if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
+                                  || InnerState.State == Realtime.ConnectionState.Closed
+                                  || InnerState.State == Realtime.ConnectionState.Failed
+                                  || InnerState.State == Realtime.ConnectionState.Suspended)
                 {
                     return null;
                 }
