@@ -93,7 +93,6 @@ namespace IO.Ably.Realtime.Workflow
         {
             var initialState = new ConnectionInitializedState(ConnectionManager, Logger);
             State.Connection.CurrentStateObject = initialState;
-            SetRecoverKeyIfPresent(Client.Options.Recover);
         }
 
         public void Start()
@@ -592,22 +591,6 @@ namespace IO.Ably.Realtime.Workflow
             }
 
             return ConnectionManager.SendToTransport(message);
-        }
-
-        private void SetRecoverKeyIfPresent(string recover)
-        {
-            if (recover.IsNotEmpty())
-            {
-                var match = TransportParams.RecoveryKeyRegex.Match(recover);
-                if (match.Success && long.TryParse(match.Groups[3].Value, out long messageSerial))
-                {
-                    State.Connection.MessageSerial = messageSerial;
-                }
-                else
-                {
-                    Logger.Error($"Recovery Key '{recover}' could not be parsed.");
-                }
-            }
         }
 
         private void HandleConnectedCommand(SetConnectedStateCommand cmd)
