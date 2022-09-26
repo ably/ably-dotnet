@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -49,22 +48,12 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var recoveryKey =
                 "{\"connectionKey\":\"uniqueKey\",\"msgSerial\":45,\"channelSerials\":{\"channel1\":\"1\",\"channel2\":\"2\",\"channel3\":\"3\"}}";
             var client = GetRealtimeClient(options => { options.Recover = recoveryKey; });
+
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
             paramsDict["recover"].Should().Be("uniqueKey");
-
-            client.Connection.MessageSerial.Should().Be(45);
-
-            var channelCounter = 0;
-            Assert.Equal(3, client.Channels.Count());
-            foreach (var realtimeChannel in client.Channels)
-            {
-                channelCounter++;
-                Assert.Equal($"channel{channelCounter}", realtimeChannel.Name);
-                Assert.Equal($"{channelCounter}", realtimeChannel.ChannelSerial);
-            }
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)
