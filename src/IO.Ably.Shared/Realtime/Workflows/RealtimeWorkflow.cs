@@ -598,7 +598,6 @@ namespace IO.Ably.Realtime.Workflow
             var info = new ConnectionInfo(cmd.Message);
 
             bool resumed = State.Connection.IsResumed(info);
-            bool hadPreviousConnection = State.Connection.Key.IsNotEmpty();
 
             State.Connection.Update(info);
 
@@ -615,20 +614,18 @@ namespace IO.Ably.Realtime.Workflow
 
             SetState(connectedState);
 
-            if (hadPreviousConnection && resumed == false)
+            foreach (var channel in Channels)
             {
-                ClearAckQueueAndFailMessages(null);
-
-                Logger.Warning(
-                    "Force detaching all attached channels because the connection did not resume successfully!");
-
-                foreach (var channel in Channels)
+                if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching || channel.State == ChannelState.Suspended)
                 {
-                    if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
-                    {
-                        ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
-                    }
+                    ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
+                    channel.Attach();
                 }
+            }
+
+            if (resumed == false || cmd.Message.Error != null)
+            {
+                State.Connection.MessageSerial = 0; // RTN15c7
             }
 
             SendPendingMessages(resumed);
