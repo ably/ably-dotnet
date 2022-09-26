@@ -53,7 +53,7 @@ namespace IO.Ably.Realtime
                     channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Attached:
-                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial;
+                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial; // RTL15a
 
                     if (protocolMessage.Flags.HasValue)
                     {

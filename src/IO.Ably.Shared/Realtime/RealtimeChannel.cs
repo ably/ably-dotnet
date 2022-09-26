@@ -660,6 +660,12 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"HandleStateChange state change from {State} to {state}");
             }
 
+            // RTP5a1
+            if (state == ChannelState.Detached || state == ChannelState.Suspended || state == ChannelState.Failed)
+            {
+                ChannelSerial = null;
+            }
+
             var oldState = State;
             State = state;
 
