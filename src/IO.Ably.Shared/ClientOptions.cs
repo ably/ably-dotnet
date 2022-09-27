@@ -91,7 +91,7 @@ namespace IO.Ably
         /// <summary>
         /// A connection recovery string, specified by a client when initializing the library
         /// with the intention of inheriting the state of an earlier connection. See the Ably
-        /// Realtime API documentation for further information on connection state recovery.
+        /// Realtime API documentation for further information on connection state recovery. (RTN16i)
         /// Default: null.
         /// </summary>
         public string Recover { get; set; }

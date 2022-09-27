@@ -284,6 +284,7 @@ namespace IO.Ably.Realtime
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
 
+                // RTL4c1
                 message.ChannelSerial = ChannelSerial;
 
                 if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)

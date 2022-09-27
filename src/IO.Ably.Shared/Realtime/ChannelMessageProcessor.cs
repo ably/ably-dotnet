@@ -39,6 +39,7 @@ namespace IO.Ably.Realtime
                 return Task.FromResult(false);
             }
 
+            // RTL15b
             if (protocolMessage.Action == ProtocolMessage.MessageAction.Message ||
                 protocolMessage.Action == ProtocolMessage.MessageAction.Presence)
             {

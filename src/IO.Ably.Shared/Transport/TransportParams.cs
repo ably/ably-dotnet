@@ -182,10 +182,13 @@ namespace IO.Ably.Transport
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
             result["echo"] = EchoMessages.ToString().ToLower();
 
+            // RTN15b - resume connection using connectionKey
             if (ConnectionKey.IsNotEmpty())
             {
                 result["resume"] = ConnectionKey;
             }
+
+            // RTN16k - recover connection using clientOptions#recover connectionKey
             else if (RecoverValue.IsNotEmpty())
             {
                 var recoveryKeyContext = RecoveryKeyContext.Decode(RecoverValue);

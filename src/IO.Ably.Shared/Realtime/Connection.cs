@@ -165,28 +165,26 @@ namespace IO.Ably.Realtime
         public string Key => InnerState.Key;
 
         /// <summary>
-        /// Connection#recoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
+        /// Connection#GetRecoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
         /// </summary>
-        public string RecoveryKey
+        /// <returns>recoveryKey.</returns>
+        public string GetRecoveryKey()
         {
-            get
+            if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
+                              || InnerState.State == Realtime.ConnectionState.Closed
+                              || InnerState.State == Realtime.ConnectionState.Failed
+                              || InnerState.State == Realtime.ConnectionState.Suspended)
             {
-                if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
-                                  || InnerState.State == Realtime.ConnectionState.Closed
-                                  || InnerState.State == Realtime.ConnectionState.Failed
-                                  || InnerState.State == Realtime.ConnectionState.Suspended)
-                {
-                    return null;
-                }
-
-                var recoveryContext = new RecoveryKeyContext()
-                {
-                    MsgSerial = MessageSerial,
-                    ConnectionKey = Key,
-                    ChannelSerials = RealtimeClient.Channels.GetChannelSerials(),
-                };
-                return recoveryContext.Encode();
+                return null;
             }
+
+            var recoveryContext = new RecoveryKeyContext()
+            {
+                MsgSerial = MessageSerial,
+                ConnectionKey = Key,
+                ChannelSerials = RealtimeClient.Channels.GetChannelSerials(),
+            };
+            return recoveryContext.Encode();
         }
 
         /// <summary>

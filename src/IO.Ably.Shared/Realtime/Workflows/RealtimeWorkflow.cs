@@ -597,7 +597,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            bool resumed = State.Connection.IsResumed(info);
+            bool resumed = State.Connection.IsResumed(info) && cmd.Message.Error != null;
 
             State.Connection.Update(info);
 
@@ -614,6 +614,7 @@ namespace IO.Ably.Realtime.Workflow
 
             SetState(connectedState);
 
+            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume valid or invalid, re-attach channel
             foreach (var channel in Channels)
             {
                 if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching || channel.State == ChannelState.Suspended)
@@ -623,7 +624,7 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
 
-            if (resumed == false || cmd.Message.Error != null)
+            if (resumed == false)
             {
                 State.Connection.MessageSerial = 0; // RTN15c7
             }

@@ -247,6 +247,7 @@ namespace IO.Ably.Realtime
             }
         }
 
+        // RTN16j, RTL15b
         internal void SetChannelSerialsFromRecoverOption(IDictionary<string, string> serials)
         {
             foreach (var keyValuePair in serials)
