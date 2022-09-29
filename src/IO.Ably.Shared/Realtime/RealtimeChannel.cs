@@ -225,7 +225,7 @@ namespace IO.Ably.Realtime
             Attach(null, null, callback);
         }
 
-        private void Attach(
+        internal void Attach(
             ErrorInfo error,
             ProtocolMessage msg = null,
             Action<bool, ErrorInfo> callback = null,

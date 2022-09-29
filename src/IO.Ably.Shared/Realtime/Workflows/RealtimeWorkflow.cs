@@ -597,7 +597,8 @@ namespace IO.Ably.Realtime.Workflow
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            bool resumed = State.Connection.IsResumed(info) && cmd.Message.Error != null;
+            var resumeOrRecoverSuccess = State.Connection.IsResumed(info) && cmd.Message.Error == null;
+            var isResumedOrRecoveredConnection = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty(); // recover will only be used during init, resume will be used for all subsequent requests
 
             State.Connection.Update(info);
 
@@ -614,22 +615,27 @@ namespace IO.Ably.Realtime.Workflow
 
             SetState(connectedState);
 
-            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume valid or invalid, re-attach channel
-            foreach (var channel in Channels)
+            Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
+
+            // RTN15c7
+            if (isResumedOrRecoveredConnection && !resumeOrRecoverSuccess)
             {
-                if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching || channel.State == ChannelState.Suspended)
+                State.Connection.MessageSerial = 0;
+            }
+
+            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
+            if (isResumedOrRecoveredConnection || State.Connection.HasConnectionStateTtlPassed(Now))
+            {
+                foreach (var channel in Channels)
                 {
-                    ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
-                    channel.Attach();
+                    if (channel.State == ChannelState.Attaching || channel.State == ChannelState.Attached || channel.State == ChannelState.Suspended)
+                    {
+                        ((RealtimeChannel)channel).Attach(null, null, null, true);
+                    }
                 }
             }
 
-            if (resumed == false)
-            {
-                State.Connection.MessageSerial = 0; // RTN15c7
-            }
-
-            SendPendingMessages(resumed);
+            SendPendingMessages(); // RTN19a
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)
@@ -941,15 +947,13 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private void SendPendingMessages(bool resumed)
+        // RTN19a
+        private void SendPendingMessages()
         {
-            if (resumed)
+            // Resend any messages waiting an Ack Queue
+            foreach (var message in State.WaitingForAck.Select(x => x.Message))
             {
-                // Resend any messages waiting an Ack Queue
-                foreach (var message in State.WaitingForAck.Select(x => x.Message))
-                {
-                    ConnectionManager.SendToTransport(message);
-                }
+                ConnectionManager.SendToTransport(message);
             }
 
             if (Logger.IsDebug && State.PendingMessages.Count > 0)
