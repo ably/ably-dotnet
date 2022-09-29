@@ -44,8 +44,8 @@ namespace IO.Ably.Realtime
                 protocolMessage.Action == ProtocolMessage.MessageAction.Presence)
             {
                 Logger.Debug($"Setting channel serial for channelName - {channel.Name}," +
-                             $"previous - {channel.ChannelSerial}, current - {protocolMessage.ChannelSerial}");
-                channel.ChannelSerial = protocolMessage.ChannelSerial;
+                             $"previous - {channel.Properties.ChannelSerial}, current - {protocolMessage.ChannelSerial}");
+                channel.Properties.ChannelSerial = protocolMessage.ChannelSerial;
             }
 
             switch (protocolMessage.Action)

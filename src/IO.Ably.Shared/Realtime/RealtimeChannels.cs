@@ -257,7 +257,7 @@ namespace IO.Ably.Realtime
                 var channel = (RealtimeChannel)this[channelName];
                 if (channel != null)
                 {
-                    channel.ChannelSerial = channelSerial;
+                    channel.Properties.ChannelSerial = channelSerial;
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace IO.Ably.Realtime
             var channelSerials = new Dictionary<string, string>();
             foreach (var realtimeChannel in this)
             {
-                channelSerials[realtimeChannel.Name] = realtimeChannel.ChannelSerial;
+                channelSerials[realtimeChannel.Name] = realtimeChannel.Properties.ChannelSerial;
             }
 
             return channelSerials;

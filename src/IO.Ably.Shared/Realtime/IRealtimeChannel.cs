@@ -35,11 +35,6 @@ namespace IO.Ably.Realtime
         string Name { get; }
 
         /// <summary>
-        /// Channel serial.
-        /// </summary>
-        string ChannelSerial { get; }
-
-        /// <summary>
         /// Presence object for the current channel.
         /// </summary>
         Presence Presence { get; }

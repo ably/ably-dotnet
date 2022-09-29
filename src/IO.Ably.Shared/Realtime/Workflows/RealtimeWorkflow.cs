@@ -624,7 +624,7 @@ namespace IO.Ably.Realtime.Workflow
             }
 
             // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
-            if (isResumedOrRecoveredConnection || State.Connection.HasConnectionStateTtlPassed(Now))
+            if (State.Connection.HasConnectionStateTtlPassed(Now) || isResumedOrRecoveredConnection)
             {
                 foreach (var channel in Channels)
                 {
@@ -947,10 +947,9 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        // RTN19a
         private void SendPendingMessages()
         {
-            // Resend any messages waiting an Ack Queue
+            // RTN19a - Resend any messages waiting an Ack Queue
             foreach (var message in State.WaitingForAck.Select(x => x.Message))
             {
                 ConnectionManager.SendToTransport(message);

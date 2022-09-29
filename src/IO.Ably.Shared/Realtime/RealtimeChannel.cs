@@ -85,8 +85,6 @@ namespace IO.Ably.Realtime
 
         public string Name { get; }
 
-        public string ChannelSerial { get; set; } = null;
-
         public ChannelState State
         {
             get => _state;
@@ -285,7 +283,7 @@ namespace IO.Ably.Realtime
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
 
                 // RTL4c1
-                message.ChannelSerial = ChannelSerial;
+                message.ChannelSerial = Properties.ChannelSerial;
 
                 if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
                 {
@@ -664,7 +662,7 @@ namespace IO.Ably.Realtime
             // RTP5a1
             if (state == ChannelState.Detached || state == ChannelState.Suspended || state == ChannelState.Failed)
             {
-                ChannelSerial = null;
+                Properties.ChannelSerial = null;
             }
 
             var oldState = State;
