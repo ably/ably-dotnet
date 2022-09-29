@@ -215,13 +215,12 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
-        public async Task AckMessagesAreFailedWhenConnectionIsDroppedAndNotResumed()
+        [Trait("spec", "RTN15a")]
+        public async Task AckMessagesAreSentWhenConnectionIsDroppedAndNotResumed()
         {
             var client = await SetupConnectedClient();
 
             List<bool> callbackResults = new List<bool>();
-
             void Callback(bool b, ErrorInfo info) => callbackResults.Add(b);
 
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), Callback);
@@ -232,16 +231,12 @@ namespace IO.Ably.Tests.Realtime
             client.State.WaitingForAck.Should().HaveCount(2);
 
             await CloseAndWaitToReconnect(client);
-
-            LastCreatedTransport.SentMessages.Should().BeEmpty();
-            client.State.WaitingForAck.Should().BeEmpty();
-
-            callbackResults.Should().HaveCount(2);
-            callbackResults.All(x => x == false).Should().BeTrue();
+            client.State.WaitingForAck.Should().HaveCount(2);
+            LastCreatedTransport.SentMessages.Should().HaveCount(2);
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
+        [Trait("spec", "RTN15a")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
             var client = await SetupConnectedClient();
