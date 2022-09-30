@@ -20,7 +20,7 @@ namespace IO.Ably.Shared.Realtime
             return JsonHelper.Serialize(this);
         }
 
-        public static RecoveryKeyContext Decode(string recover)
+        public static RecoveryKeyContext Decode(string recover, ILogger logger = null)
         {
             try
             {
@@ -28,6 +28,7 @@ namespace IO.Ably.Shared.Realtime
             }
             catch (Exception)
             {
+                logger?.Warning($"Error deserializing recover - {recover}, setting it as null");
                 return null;
             }
         }

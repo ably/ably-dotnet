@@ -191,7 +191,7 @@ namespace IO.Ably.Transport
             // RTN16k - recover connection using clientOptions#recover connectionKey
             else if (RecoverValue.IsNotEmpty())
             {
-                var recoveryKeyContext = RecoveryKeyContext.Decode(RecoverValue);
+                var recoveryKeyContext = RecoveryKeyContext.Decode(RecoverValue, Logger);
                 if (recoveryKeyContext != null)
                 {
                     result["recover"] = recoveryKeyContext.ConnectionKey;

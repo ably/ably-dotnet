@@ -69,7 +69,7 @@ namespace IO.Ably.Transport
                 var transportParams = await CreateTransportParameters(host);
                 if (transportParams.RecoverValue.IsNotEmpty())
                 {
-                    var recoveryKeyContext = RecoveryKeyContext.Decode(transportParams.RecoverValue);
+                    var recoveryKeyContext = RecoveryKeyContext.Decode(transportParams.RecoverValue, Logger);
                     if (recoveryKeyContext != null)
                     {
                         Connection.RealtimeClient.Channels.SetChannelSerialsFromRecoverOption(recoveryKeyContext.ChannelSerials);
