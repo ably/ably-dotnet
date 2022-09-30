@@ -33,6 +33,20 @@ namespace IO.Ably.Realtime
             _connection = connection;
             _channel = channel;
             _clientId = clientId;
+
+            SetUpAutoPresenceEnterOnChannelAttach();
+        }
+
+        // RTP17f
+        internal void SetUpAutoPresenceEnterOnChannelAttach()
+        {
+            _channel.StateChanged += (_, change) =>
+            {
+                if (change.Current == ChannelState.Attached && change.Previous != ChannelState.Attached)
+                {
+                    EnterPresenceForRecordedMembersWithCurrentConnectionId();
+                }
+            };
         }
 
         private event EventHandler InitialSyncCompleted;
@@ -187,12 +201,6 @@ namespace IO.Ably.Realtime
                 if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
                 {
                     tsc.TrySetResult(false);
-                }
-
-                // RTP17f
-                if (args.Current == ChannelState.Attached && args.Previous != ChannelState.Attached)
-                {
-                    EnterPresenceOnChannelAttach();
                 }
             }
 
@@ -661,7 +669,7 @@ namespace IO.Ably.Realtime
         }
 
         // RTP17g
-        private void EnterPresenceOnChannelAttach()
+        private void EnterPresenceForRecordedMembersWithCurrentConnectionId()
         {
             foreach (var item in InternalMap.Values)
             {
