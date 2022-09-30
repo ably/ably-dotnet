@@ -1094,17 +1094,20 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN16e")]
+        [Trait("spec", "RTN16l")]
+        [Trait("spec", "RTN15c7")]
         public async Task WithDummyRecoverData_ShouldConnectAndSetAReasonOnTheConnection(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1:-1";
+                opts.Recover = "{\"connectionKey\":\"c17a8!WeXvJum2pbuVYZtF-1b63c17a8\",\"msgSerial\":5,\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
                 opts.AutoConnect = false;
             });
 
+            ErrorInfo err = null;
             client.Connection.On((args) =>
             {
+                err = args.Reason;
                 if (args.Current == ConnectionState.Connected)
                 {
                     ResetEvent.Set();
@@ -1114,7 +1117,41 @@ namespace IO.Ably.Tests.Realtime
 
             var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
+            err.Should().NotBeNull();
+            err.Code.Should().Be(80008);
+            client.Connection.MessageSerial.Should().Be(0);
             client.Connection.ErrorReason.Code.Should().Be(80008);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN16l")]
+        [Trait("spec", "RTN15c4")]
+        public async Task WithIncorrectRecoverData_ShouldFailAndSetAReasonOnTheConnection(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.Recover = "{\"connectionKey\":\"random_key\",\"msgSerial\":5,\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
+                opts.AutoConnect = false;
+            });
+
+            ErrorInfo err = null;
+            client.Connection.On((args) =>
+            {
+                err = args.Reason;
+                if (args.Current == ConnectionState.Failed)
+                {
+                    ResetEvent.Set();
+                }
+            });
+            client.Connect();
+
+            var result = ResetEvent.WaitOne(10000);
+            result.Should().BeTrue("Timeout");
+            err.Should().NotBeNull();
+            err.Code.Should().Be(80018);
+            client.Connection.ErrorReason.Code.Should().Be(80018);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
         [Theory]
