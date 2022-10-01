@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN16g")]
-        public async Task RecoveryKey_ShouldContainSerializedConnectionKeyAndConnectionSerialAndMsgSerial()
+        public async Task RecoveryKey_ShouldContainSerializedConnectionKeyAndMsgSerialAndChannelSerials()
         {
             var client = await GetConnectedClient();
             var expectedRecoveryKey = new RecoveryKeyContext()
