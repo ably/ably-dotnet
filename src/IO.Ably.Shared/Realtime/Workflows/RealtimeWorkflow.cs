@@ -485,6 +485,7 @@ namespace IO.Ably.Realtime.Workflow
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
                                 return SetDisconnectedStateCommand.Create(
                                     errorInfo,
+                                    retryInstantly: Connection.ConnectionResumable,
                                     exception: cmd.Exception).TriggeredBy(cmd);
 
                             case ConnectionState.Initialized:

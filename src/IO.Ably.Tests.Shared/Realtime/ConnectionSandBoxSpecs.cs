@@ -564,7 +564,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15c3")]
+        [Trait("spec", "RTN15c7")]
         public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
@@ -602,86 +602,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connection.Id.Should().NotBe(oldConnectionId);
             client.Connection.Key.Should().NotBe(oldKey);
-            // client.Connection.MessageSerial.Should().Be(0);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN15c3")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError_DetachesAllChannels(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol);
-            var channelName = "RTN15c3".AddRandomSuffix();
-            const int channelCount = 5;
-            await client.WaitForState(ConnectionState.Connected);
-
-            List<RealtimeChannel> channels = new List<RealtimeChannel>();
-            for (var i = 0; i < channelCount; i++)
-            {
-                channels.Add(client.Channels.Get($"{channelName}_{i}") as RealtimeChannel);
-            }
-
-            List<RealtimeChannel> detachedChannels = new List<RealtimeChannel>();
-            List<ChannelStateChange> detachedStateChanges = new List<ChannelStateChange>();
-
-            var detachAwaiter = new TaskCompletionAwaiter(10000, channelCount);
-            await WaitForMultiple(channelCount, partialDone =>
-            {
-                foreach (var channel in channels)
-                {
-                    channel.Attach();
-                    channel.Once(ChannelEvent.Attached, _ =>
-                    {
-                        channel.Once(ChannelEvent.Detached, change =>
-                        {
-                            detachedChannels.Add(channel);
-                            detachedStateChanges.Add(change);
-                            detachAwaiter.Tick();
-                        });
-                        partialDone();
-                    });
-                }
-            });
-
-            client.SimulateLostConnectionAndState();
-
-            var didDetach = await detachAwaiter.Task;
-            didDetach.Should().BeTrue();
-            detachedChannels.Should().HaveCount(channelCount);
-            detachedStateChanges.Should().HaveCount(channelCount);
-            foreach (var change in detachedStateChanges)
-            {
-                change.Error.Message.Should().StartWith("Unable to recover connection");
-            }
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN15c3")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError_EmitsErrorOnChannel(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol);
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c3".AddRandomSuffix());
-            await client.WaitForState(ConnectionState.Connected);
-            channel.Attach();
-            channel.Once(ChannelEvent.Attached, _ =>
-            {
-                client.SimulateLostConnectionAndState();
-            });
-
-            ChannelErrorEventArgs err = null;
-            await WaitFor(done =>
-            {
-                channel.Error += (sender, args) =>
-                {
-                    err = args;
-                    done();
-                };
-            });
-
-            err.Reason.Message.Should().StartWith("Unable to recover connection");
-            err.Reason.Code.Should().Be(80008);
-            err.Reason.Should().Be(channel.ErrorReason);
+            client.Connection.MessageSerial.Should().Be(0);
         }
 
         [Theory(Skip = "Keeps failing")]
@@ -1058,7 +979,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN16d")]
-        public async Task WhenConnectionFailsToRecover_ShouldEmmitDetachedMessageToChannels(Protocol protocol)
+        public async Task WhenConnectionFailsToRecover_ShouldEmitDetachedMessageToChannels(Protocol protocol)
         {
             var stateChanges = new List<ChannelStateChange>();
 

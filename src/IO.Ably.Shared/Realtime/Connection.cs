@@ -165,6 +165,11 @@ namespace IO.Ably.Realtime
         public string Key => InnerState.Key;
 
         /// <summary>
+        /// Indicates whether the current connection can be resumed.
+        /// </summary>
+        public bool ConnectionResumable => Key.IsNotEmpty();
+
+        /// <summary>
         /// Connection#GetRecoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
         /// </summary>
         /// <returns>recoveryKey.</returns>
