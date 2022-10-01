@@ -33,20 +33,6 @@ namespace IO.Ably.Realtime
             _connection = connection;
             _channel = channel;
             _clientId = clientId;
-
-            SetUpAutoPresenceEnterOnChannelAttach();
-        }
-
-        // RTP17f
-        internal void SetUpAutoPresenceEnterOnChannelAttach()
-        {
-            _channel.StateChanged += (_, change) =>
-            {
-                if (change.Current == ChannelState.Attached && change.Previous != ChannelState.Attached)
-                {
-                    EnterPresenceForRecordedMembersWithCurrentConnectionId();
-                }
-            };
         }
 
         private event EventHandler InitialSyncCompleted;
@@ -757,12 +743,23 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ProtocolMessage attachMessage)
+        internal void HandleAlreadyAttachedChannel(ProtocolMessage attachedMessage)
         {
+            ChannelAttached(attachedMessage, true);
+        }
+
+        internal void ChannelAttached(ProtocolMessage attachedMessage, bool duplicateAttachedMessage = false)
+        {
+            // RTP17f
+            if (!duplicateAttachedMessage)
+            {
+                EnterPresenceForRecordedMembersWithCurrentConnectionId();
+            }
+
             /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
             StartSync();
-            var hasPresence = attachMessage != null &&
-                              attachMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+            var hasPresence = attachedMessage != null &&
+                              attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
 
             if (hasPresence)
             {
@@ -770,7 +767,7 @@ namespace IO.Ably.Realtime
                 if (Logger.IsDebug)
                 {
                     Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachMessage.Flags}");
+                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachedMessage.Flags}");
                 }
 
                 StartSync();

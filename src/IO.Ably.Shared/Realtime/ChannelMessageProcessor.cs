@@ -72,7 +72,7 @@ namespace IO.Ably.Realtime
                         // RTL12
                         if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                         {
-                            channel.Presence.ChannelAttached(protocolMessage);
+                            channel.Presence.HandleAlreadyAttachedChannel(protocolMessage);
                             channel.EmitUpdate(protocolMessage.Error, false, protocolMessage);
                         }
                     }
