@@ -631,7 +631,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     if (channel.State == ChannelState.Attaching || channel.State == ChannelState.Attached || channel.State == ChannelState.Suspended)
                     {
-                        ((RealtimeChannel)channel).Attach(null, null, null, true);
+                        ((RealtimeChannel)channel).Attach(null, null, null, true); // state changes as per RTL2g
                     }
                 }
             }
