@@ -137,6 +137,7 @@ namespace IO.Ably.Tests.Realtime
 
             // validate the 'lib' param
             Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
+            Assert.Equal("2.0", transportParams["v"]);
         }
 
         [Fact]

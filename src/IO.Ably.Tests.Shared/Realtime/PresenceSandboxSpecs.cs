@@ -1810,7 +1810,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Close();
                 }
 
-                [Theory(Skip = "Need to check why different connection id is returned on resume and presence is still presence on new connection")]
+                [Theory]
                 [ProtocolData]
                 [Trait("issue", "332")]
                 public async Task PresenceShouldReenterAfterDisconnected(Protocol protocol)

@@ -410,7 +410,7 @@ namespace IO.Ably.Tests.Realtime
             await new ConditionalAwaiter(() => disconnectedStateError != null);
         }
 
-        [Theory(Skip = "RTN15c6 Fix same connection id issue for connection resume")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
@@ -591,7 +591,7 @@ namespace IO.Ably.Tests.Realtime
 
             stateChange.Should().NotBeNull();
             stateChange.HasError.Should().BeTrue();
-            stateChange.Reason.Code.Should().Be(80008);
+            stateChange.Reason.Code.Should().Be(80018);
             stateChange.Reason.Should().Be(client.Connection.ErrorReason);
 
             var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived.FirstOrDefault(x => x.Action == ProtocolMessage.MessageAction.Connected);
@@ -659,7 +659,7 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
-        [Theory(Skip = "RTN15c6 Fix same connection id issue for connection resume")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c5")]
         public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
@@ -747,7 +747,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.ErrorReason.Should().NotBeNull();
         }
 
-        [Theory(Skip = "RTN15c6 Fix same connection id issue for connection resume")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15h2")]
         public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
@@ -995,9 +995,9 @@ namespace IO.Ably.Tests.Realtime
             var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
             err.Should().NotBeNull();
-            err.Code.Should().Be(80008);
+            err.Code.Should().Be(80018);
             client.Connection.MessageSerial.Should().Be(0);
-            client.Connection.ErrorReason.Code.Should().Be(80008);
+            client.Connection.ErrorReason.Code.Should().Be(80018);
         }
 
         [Theory]
