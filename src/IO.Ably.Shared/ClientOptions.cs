@@ -358,7 +358,7 @@ namespace IO.Ably
         /// Default before 1.2: false.
         /// Default from 1.2: true.
         /// </summary>
-        public bool IdempotentRestPublishing { get; set; } = Convert.ToDouble(Defaults.ProtocolVersion) >= 1.2;
+        public bool IdempotentRestPublishing { get; set; } = true;
 
         /// <summary>
         /// Additional parameters to be sent in the querystring when initiating a realtime connection.
