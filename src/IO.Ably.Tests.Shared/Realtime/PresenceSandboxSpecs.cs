@@ -1383,6 +1383,57 @@ namespace IO.Ably.Tests.Realtime
                     client.Close();
                 }
 
+                [Theory(Skip = "Check for duplicate presence messages being entered")]
+                [ProtocolData]
+                [Trait("spec", "RTP17f")]
+                public async Task WhenChannelBecomesFreshAttachedShouldReEnterMembersFromInternalMap(Protocol protocol)
+                {
+                    var channelName = "RTP17f".AddRandomSuffix();
+                    var client1 = await GetRealtimeClient(protocol);
+                    var channel1 = client1.Channels.Get(channelName);
+
+                    // enter 3 client to the channel
+                    for (var i = 0; i < 3; i++)
+                    {
+                        await channel1.Presence.EnterClientAsync($"member_{i}", null);
+                    }
+
+                    await channel1.Presence.GetAsync(true);
+                    await Task.Delay(250);
+                    channel1.Presence.Map.Members.Should().HaveCount(3);
+                    channel1.Presence.InternalMap.Members.Should().HaveCount(3);
+                    client1.SimulateLostConnectionAndState();
+
+                    await channel1.WaitForAttachedState();
+                    var messages = client1.GetTestTransport().ProtocolMessagesSent
+                        .FindAll(message => message.Action == ProtocolMessage.MessageAction.Presence);
+                    messages.Should().HaveCount(3);
+
+                    var client2 = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "local"; });
+                    var client2ConnectionId = client2.Connection.Id;
+                    var channel2 = client2.Channels.Get(channelName);
+
+                    // enter 2 client to the channel
+                    await channel2.Presence.EnterAsync();
+                    await Task.Delay(250);
+
+                    var p = await channel2.Presence.GetAsync();
+                    p.Should().HaveCount(4);
+
+                    channel2.Presence.Map.Members.Should().HaveCount(4);
+                    channel2.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                    client2.SimulateLostConnectionAndState();
+                    var newConnectionId = client2.Connection.Id;
+
+                    await channel2.WaitForAttachedState();
+                    newConnectionId.Should().NotBe(client2ConnectionId);
+                    var sentPresenceMessage = client2.GetTestTransport().ProtocolMessagesSent
+                        .FindAll(message => message.Action == ProtocolMessage.MessageAction.Presence);
+
+                    sentPresenceMessage.Should().HaveCount(1);
+                }
+
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP5b")]
