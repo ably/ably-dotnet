@@ -41,7 +41,8 @@ namespace IO.Ably.Realtime
 
             // RTL15b
             if (protocolMessage.Action == ProtocolMessage.MessageAction.Message ||
-                protocolMessage.Action == ProtocolMessage.MessageAction.Presence)
+                protocolMessage.Action == ProtocolMessage.MessageAction.Presence ||
+                protocolMessage.Action == ProtocolMessage.MessageAction.Attached)
             {
                 Logger.Debug($"Setting channel serial for channelName - {channel.Name}," +
                              $"previous - {channel.Properties.ChannelSerial}, current - {protocolMessage.ChannelSerial}");
