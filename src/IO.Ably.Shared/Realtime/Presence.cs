@@ -28,7 +28,7 @@ namespace IO.Ably.Realtime
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
-            InternalMap = new PresenceMap(channel.Name, logger);
+            InternalMap = new InternalPresenceMap(channel.Name, logger);
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
