@@ -254,11 +254,8 @@ namespace IO.Ably.Realtime
             {
                 var channelName = keyValuePair.Key;
                 var channelSerial = keyValuePair.Value;
-                var channel = (RealtimeChannel)this[channelName];
-                if (channel != null)
-                {
-                    channel.Properties.ChannelSerial = channelSerial;
-                }
+                var channel = (RealtimeChannel)Get(channelName);
+                channel.Properties.ChannelSerial = channelSerial;
             }
         }
 
