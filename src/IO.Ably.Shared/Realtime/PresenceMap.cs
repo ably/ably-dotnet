@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal sealed class PresenceMap
+    internal class PresenceMap
     {
         private readonly object _lock = new object();
         private readonly ILogger _logger;
@@ -21,6 +21,11 @@ namespace IO.Ably.Realtime
             _logger = logger;
             _channelName = channelName;
             _members = new ConcurrentDictionary<string, PresenceMessage>();
+        }
+
+        internal virtual string GetKey(PresenceMessage presence)
+        {
+            return presence.MemberKey;
         }
 
         internal event EventHandler SyncNoLongerInProgress;
@@ -70,12 +75,12 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 // we've seen this member, so do not remove it at the end of sync
-                _residualMembers?.Remove(item.MemberKey);
+                _residualMembers?.Remove(GetKey(item));
             }
 
             try
             {
-                if (_members.TryGetValue(item.MemberKey, out var existingItem) && existingItem.IsNewerThan(item))
+                if (_members.TryGetValue(GetKey(item), out var existingItem) && existingItem.IsNewerThan(item))
                 {
                     return false;
                 }
@@ -95,7 +100,7 @@ namespace IO.Ably.Realtime
                     break;
             }
 
-            _members[item.MemberKey] = item;
+            _members[GetKey(item)] = item;
 
             return true;
         }
@@ -103,12 +108,12 @@ namespace IO.Ably.Realtime
         public bool Remove(PresenceMessage item)
         {
             PresenceMessage existingItem;
-            if (_members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+            if (_members.TryGetValue(GetKey(item), out existingItem) && existingItem.IsNewerThan(item))
             {
                 return false;
             }
 
-            _members.TryRemove(item.MemberKey, out PresenceMessage _);
+            _members.TryRemove(GetKey(item), out PresenceMessage _);
             if (existingItem?.Action == PresenceAction.Absent)
             {
                 return false;
@@ -221,6 +226,20 @@ namespace IO.Ably.Realtime
         private void OnSyncNoLongerInProgress()
         {
             SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    // RTP17h
+    internal class InternalPresenceMap : PresenceMap
+    {
+        public InternalPresenceMap(string channelName, ILogger logger)
+            : base(channelName, logger)
+        {
+        }
+
+        internal override string GetKey(PresenceMessage presence)
+        {
+            return presence.ClientId;
         }
     }
 }

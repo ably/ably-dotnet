@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Shared.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 
@@ -156,12 +157,6 @@ namespace IO.Ably.Realtime
         /// </summary>
         public string Id => InnerState.Id;
 
-        /// <summary>
-        ///     The serial number of the last message received on this connection.
-        ///     The serial number may be used when recovering connection state.
-        /// </summary>
-        public long? Serial => InnerState.Serial;
-
         internal long MessageSerial => InnerState.MessageSerial;
 
         /// <summary>
@@ -172,18 +167,29 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Indicates whether the current connection can be resumed.
         /// </summary>
-        public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
+        public bool ConnectionResumable => Key.IsNotEmpty();
 
         /// <summary>
-        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
+        /// Connection#GetRecoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
         /// </summary>
-        public string RecoveryKey
+        /// <returns>recoveryKey.</returns>
+        public string GetRecoveryKey()
         {
-            get
+            if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
+                              || InnerState.State == Realtime.ConnectionState.Closed
+                              || InnerState.State == Realtime.ConnectionState.Failed
+                              || InnerState.State == Realtime.ConnectionState.Suspended)
             {
-                Debug.Assert(Serial.HasValue, "Expected a Value, found none");
-                return ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
+                return string.Empty;
             }
+
+            var recoveryContext = new RecoveryKeyContext()
+            {
+                MsgSerial = MessageSerial,
+                ConnectionKey = Key,
+                ChannelSerials = RealtimeClient.Channels.GetChannelSerials(),
+            };
+            return recoveryContext.Encode();
         }
 
         /// <summary>

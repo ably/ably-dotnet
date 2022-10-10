@@ -39,13 +39,24 @@ namespace IO.Ably.Realtime
                 return Task.FromResult(false);
             }
 
+            // RTL15b
+            if (protocolMessage.ChannelSerial.IsNotEmpty() &&
+                (protocolMessage.Action == ProtocolMessage.MessageAction.Message ||
+                protocolMessage.Action == ProtocolMessage.MessageAction.Presence ||
+                protocolMessage.Action == ProtocolMessage.MessageAction.Attached))
+            {
+                Logger.Debug($"Setting channel serial for channelName - {channel.Name}," +
+                             $"previous - {channel.Properties.ChannelSerial}, current - {protocolMessage.ChannelSerial}");
+                channel.Properties.ChannelSerial = protocolMessage.ChannelSerial;
+            }
+
             switch (protocolMessage.Action)
             {
                 case ProtocolMessage.MessageAction.Error:
                     channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Attached:
-                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial;
+                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial; // RTL15a
 
                     if (protocolMessage.Flags.HasValue)
                     {
@@ -63,7 +74,7 @@ namespace IO.Ably.Realtime
                         // RTL12
                         if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                         {
-                            channel.Presence.ChannelAttached(protocolMessage);
+                            channel.Presence.HandleAlreadyAttachedChannel(protocolMessage);
                             channel.EmitUpdate(protocolMessage.Error, false, protocolMessage);
                         }
                     }

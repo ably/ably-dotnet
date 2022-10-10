@@ -41,7 +41,7 @@ namespace IO.Ably.Types
             Presence = 14,
             Message = 15,
             Sync = 16,
-            Auth = 17
+            Auth = 17,
 #pragma warning restore SA1602 // Enumeration items should be documented
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
@@ -169,12 +169,6 @@ namespace IO.Ably.Types
         /// </summary>
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
-
-        /// <summary>
-        /// Current connection serial.
-        /// </summary>
-        [JsonProperty("connectionSerial")]
-        public long? ConnectionSerial { get; set; }
 
         /// <summary>
         /// Current message serial.

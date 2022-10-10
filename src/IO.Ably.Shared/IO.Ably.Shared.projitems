@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RecoveryKeyContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\ChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IQueueCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />

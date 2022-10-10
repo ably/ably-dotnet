@@ -31,7 +31,6 @@ namespace IO.Ably.Transport
             }
 
             ConnectionId = message.ConnectionId;
-            ConnectionSerial = message.ConnectionSerial ?? -1;
             ClientId = message.ConnectionDetails?.ClientId;
             ConnectionStateTtl = message.ConnectionDetails?.ConnectionStateTtl;
             ConnectionKey = message.ConnectionDetails?.ConnectionKey;
@@ -51,11 +50,6 @@ namespace IO.Ably.Transport
         /// Unique id of the current connection.
         /// </summary>
         public string ConnectionId { get; private set; }
-
-        /// <summary>
-        /// the connection serial.
-        /// </summary>
-        public long ConnectionSerial { get; private set; }
 
         /// <summary>
         /// the connection secret key string that is used to resume a connection and its state.

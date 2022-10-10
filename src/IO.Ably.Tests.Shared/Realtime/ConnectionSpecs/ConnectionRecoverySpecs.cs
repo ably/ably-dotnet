@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
+using IO.Ably.Shared.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,52 +26,34 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         }
 
         [Fact]
-        [Trait("spec", "RTN16b")]
-        public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
+        [Trait("spec", "RTN16g")]
+        public async Task RecoveryKey_ShouldContainSerializedConnectionKeyAndMsgSerialAndChannelSerials()
         {
             var client = await GetConnectedClient();
-            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
+            var expectedRecoveryKey = new RecoveryKeyContext()
+            {
+                ConnectionKey = client.Connection.Key,
+                MsgSerial = client.Connection.MessageSerial,
+                ChannelSerials = client.Channels.GetChannelSerials(),
+            }.Encode();
+            client.Connection.GetRecoveryKey().Should().Be(expectedRecoveryKey);
         }
 
         [Fact]
+        [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
+        [Trait("spec", "RTN16j")]
         public async Task RecoveryKey_MsgSerialShouldNotBeSentToAblyButShouldBeSetOnConnection()
         {
-            // RecoveryKey should be in the format
-            // LettersOrNumbers:Number:Number
-            TransportParams.RecoveryKeyRegex.Match("a:b:c").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:b:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:2:c").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("$1:2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("$a:2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:@2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:2:3!").Success.Should().BeFalse();
-
-            // these should be valid
-            TransportParams.RecoveryKeyRegex.Match("1:2:3").Success.Should().BeTrue();
-            TransportParams.RecoveryKeyRegex.Match("a:2:3").Success.Should().BeTrue();
-
-            const string recoveryKey = "abcxyz:100:99";
-            var match = TransportParams.RecoveryKeyRegex.Match(recoveryKey);
-            match.Success.Should().BeTrue();
-            match.Groups[1].Value.Should().Be("abcxyz");
-            match.Groups[2].Value.Should().Be("100");
-            match.Groups[3].Value.Should().Be("99");
-
-            var parts = recoveryKey.Split(':');
-
+            var recoveryKey =
+                "{\"connectionKey\":\"uniqueKey\",\"msgSerial\":45,\"channelSerials\":{\"channel1\":\"1\",\"channel2\":\"2\",\"channel3\":\"3\"}}";
             var client = GetRealtimeClient(options => { options.Recover = recoveryKey; });
 
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
-            paramsDict.ContainsKey("connection_serial").Should().BeTrue();
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
-
-            paramsDict["recover"].Should().Be(parts[0]);
-            paramsDict["connection_serial"].Should().Be(parts[1]);
-
-            client.Connection.MessageSerial.Should().Be(99);
+            paramsDict["recover"].Should().Be("uniqueKey");
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)

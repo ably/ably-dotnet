@@ -32,8 +32,7 @@ namespace IO.Ably.Tests
             new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
-                ConnectionId = "1",
-                ConnectionSerial = 100
+                ConnectionId = "1"
             };
 
         public void Dispose()

@@ -26,12 +26,6 @@ namespace IO.Ably.Realtime.Workflow
             /// </summary>
             public string Id { get; set; }
 
-            /// <summary>
-            ///     The serial number of the last message received on this connection.
-            ///     The serial number may be used when recovering connection state.
-            /// </summary>
-            public long? Serial { get; set; }
-
             public string Host { get; set; }
 
             public bool IsFallbackHost => FallbackHosts.Contains(Host);
@@ -86,13 +80,13 @@ namespace IO.Ably.Realtime.Workflow
             {
                 Id = info.ConnectionId;
                 Key = info.ConnectionKey;
-                Serial = info.ConnectionSerial;
                 if (info.ConnectionStateTtl.HasValue)
                 {
                     ConnectionStateTtl = info.ConnectionStateTtl.Value;
                 }
             }
 
+            // RTN16d
             public bool IsResumed(ConnectionInfo info) =>
                 Key.IsNotEmpty() && Id == info.ConnectionId;
 
@@ -105,14 +99,6 @@ namespace IO.Ably.Realtime.Workflow
             public void SetConfirmedAlive(DateTimeOffset now)
             {
                 ConfirmedAliveAt = now;
-            }
-
-            public void UpdateSerial(ProtocolMessage message)
-            {
-                if (message.ConnectionSerial.HasValue)
-                {
-                    Serial = message.ConnectionSerial.Value;
-                }
             }
 
             public void ClearKey()

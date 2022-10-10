@@ -93,7 +93,6 @@ namespace IO.Ably.Realtime.Workflow
         {
             var initialState = new ConnectionInitializedState(ConnectionManager, Logger);
             State.Connection.CurrentStateObject = initialState;
-            SetRecoverKeyIfPresent(Client.Options.Recover);
         }
 
         public void Start()
@@ -520,7 +519,6 @@ namespace IO.Ably.Realtime.Workflow
             {
                 try
                 {
-                    State.Connection.UpdateSerial(message);
                     State.Connection.SetConfirmedAlive(Now());
 
                     foreach (var (name, handler) in ProtocolMessageProcessors)
@@ -596,28 +594,12 @@ namespace IO.Ably.Realtime.Workflow
             return ConnectionManager.SendToTransport(message);
         }
 
-        private void SetRecoverKeyIfPresent(string recover)
-        {
-            if (recover.IsNotEmpty())
-            {
-                var match = TransportParams.RecoveryKeyRegex.Match(recover);
-                if (match.Success && long.TryParse(match.Groups[3].Value, out long messageSerial))
-                {
-                    State.Connection.MessageSerial = messageSerial;
-                }
-                else
-                {
-                    Logger.Error($"Recovery Key '{recover}' could not be parsed.");
-                }
-            }
-        }
-
         private void HandleConnectedCommand(SetConnectedStateCommand cmd)
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            bool resumed = State.Connection.IsResumed(info);
-            bool hadPreviousConnection = State.Connection.Key.IsNotEmpty();
+            var resumeOrRecoverSuccess = State.Connection.IsResumed(info) && cmd.Message.Error == null;
+            var isResumedOrRecoveredConnection = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty(); // recover will only be used during init, resume will be used for all subsequent requests
 
             State.Connection.Update(info);
 
@@ -634,23 +616,27 @@ namespace IO.Ably.Realtime.Workflow
 
             SetState(connectedState);
 
-            if (hadPreviousConnection && resumed == false)
+            Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
+
+            // RTN15c7
+            if (isResumedOrRecoveredConnection && !resumeOrRecoverSuccess)
             {
-                ClearAckQueueAndFailMessages(null);
+                State.Connection.MessageSerial = 0;
+            }
 
-                Logger.Warning(
-                    "Force detaching all attached channels because the connection did not resume successfully!");
-
+            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
+            if (State.Connection.HasConnectionStateTtlPassed(Now) || isResumedOrRecoveredConnection)
+            {
                 foreach (var channel in Channels)
                 {
-                    if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
+                    if (channel.State == ChannelState.Attaching || channel.State == ChannelState.Attached || channel.State == ChannelState.Suspended)
                     {
-                        ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
+                        ((RealtimeChannel)channel).Attach(null, null, null, true); // state changes as per RTL2g
                     }
                 }
             }
 
-            SendPendingMessages(resumed);
+            SendPendingMessages(); // RTN19a
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)
@@ -962,15 +948,12 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private void SendPendingMessages(bool resumed)
+        private void SendPendingMessages()
         {
-            if (resumed)
+            // RTN19a - Resend any messages waiting an Ack Queue
+            foreach (var message in State.WaitingForAck.Select(x => x.Message))
             {
-                // Resend any messages waiting an Ack Queue
-                foreach (var message in State.WaitingForAck.Select(x => x.Message))
-                {
-                    ConnectionManager.SendToTransport(message);
-                }
+                ConnectionManager.SendToTransport(message);
             }
 
             if (Logger.IsDebug && State.PendingMessages.Count > 0)

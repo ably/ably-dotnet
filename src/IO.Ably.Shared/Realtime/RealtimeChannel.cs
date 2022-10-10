@@ -223,7 +223,7 @@ namespace IO.Ably.Realtime
             Attach(null, null, callback);
         }
 
-        private void Attach(
+        internal void Attach(
             ErrorInfo error,
             ProtocolMessage msg = null,
             Action<bool, ErrorInfo> callback = null,
@@ -281,9 +281,13 @@ namespace IO.Ably.Realtime
             ProtocolMessage CreateAttachMessage()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
+
+                // RTL4c1
+                message.ChannelSerial = Properties.ChannelSerial;
+
                 if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
                 {
-                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
+                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial; // Excludes PresenceMessage ChannelSerial (not included in backlogs anyways)
                 }
 
                 if (Options.Params.Any())
@@ -653,6 +657,12 @@ namespace IO.Ably.Realtime
             if (Logger.IsDebug)
             {
                 Logger.Debug($"HandleStateChange state change from {State} to {state}");
+            }
+
+            // RTP5a1
+            if (state == ChannelState.Detached || state == ChannelState.Suspended || state == ChannelState.Failed)
+            {
+                Properties.ChannelSerial = null;
             }
 
             var oldState = State;
