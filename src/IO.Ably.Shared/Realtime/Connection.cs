@@ -180,7 +180,7 @@ namespace IO.Ably.Realtime
                               || InnerState.State == Realtime.ConnectionState.Failed
                               || InnerState.State == Realtime.ConnectionState.Suspended)
             {
-                return null;
+                return string.Empty;
             }
 
             var recoveryContext = new RecoveryKeyContext()
