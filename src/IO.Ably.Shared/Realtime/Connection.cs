@@ -170,10 +170,10 @@ namespace IO.Ably.Realtime
         public bool ConnectionResumable => Key.IsNotEmpty();
 
         /// <summary>
-        /// Connection#GetRecoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
+        /// Connection#CreateRecoveryKey is an attribute composed of the connectionKey, messageSerial and channelSerials (RTN16g, RTN16g1, RTN16h).
         /// </summary>
         /// <returns>recoveryKey.</returns>
-        public string GetRecoveryKey()
+        public string CreateRecoveryKey()
         {
             if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
                               || InnerState.State == Realtime.ConnectionState.Closed

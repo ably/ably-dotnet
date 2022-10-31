@@ -36,7 +36,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 MsgSerial = client.Connection.MessageSerial,
                 ChannelSerials = client.Channels.GetChannelSerials(),
             }.Encode();
-            client.Connection.GetRecoveryKey().Should().Be(expectedRecoveryKey);
+            client.Connection.CreateRecoveryKey().Should().Be(expectedRecoveryKey);
         }
 
         [Fact]
