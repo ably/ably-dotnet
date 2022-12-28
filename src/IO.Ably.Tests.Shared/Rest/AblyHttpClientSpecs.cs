@@ -153,7 +153,6 @@ namespace IO.Ably.Tests
             [InlineData(HttpStatusCode.NoContent, false)]
             [InlineData(HttpStatusCode.NotFound, false)]
             [Trait("spec", "RSC15d")]
-
             public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(
                 HttpStatusCode statusCode,
                 bool expected)
