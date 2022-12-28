@@ -87,8 +87,10 @@ namespace IO.Ably.Tests
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-            var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
-            ablyRequest.PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } };
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Post)
+            {
+                PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } },
+            };
 
             await client.Execute(ablyRequest);
             var content = handler.LastRequest.Content;
@@ -106,7 +108,7 @@ namespace IO.Ably.Tests
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
-            values.Length.Should().Be(1);
+            values.Should().HaveCount(1);
             string[] agentValues = values[0].Split(' ');
 
             string[] keys =
@@ -116,10 +118,10 @@ namespace IO.Ably.Tests
                 "runtime/",
             };
 
-            agentValues.Length.Should().Be(keys.Length);
+            agentValues.Should().HaveCount(keys.Length);
             for (int i = 0; i < keys.Length; ++i)
             {
-                agentValues[i].StartsWith(keys[i]).Should().BeTrue();
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }
         }
 
