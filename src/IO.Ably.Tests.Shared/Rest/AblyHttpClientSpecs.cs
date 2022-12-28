@@ -81,33 +81,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        [Trait("spec", "RSC7d")]
-        public async Task WhenCallingUrl_AddsDefaultAblyAgentHeader()
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
-            var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
-
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
-            string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
-            values.Length.Should().Be(1);
-            string[] agentValues = values[0].Split(' ');
-
-            string[] keys =
-            {
-                "ably-dotnet/",
-                "os-platform/",
-                "runtime/",
-            };
-
-            agentValues.Length.Should().Be(keys.Length);
-            for (int i = 0; i < keys.Length; ++i)
-            {
-                agentValues[i].StartsWith(keys[i]).Should().BeTrue();
-            }
-        }
-
-        [Fact]
         public async Task WhenCallingUrlWithPostParamsAndEmptyBody_PassedTheParamsAsUrlEncodedValues()
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
@@ -123,15 +96,9 @@ namespace IO.Ably.Tests
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
-        public class IsRetriableResponseSpecs
+
+        public class IsRetryableResponseSpecs
         {
-            private AblyHttpClient _client;
-
-            public IsRetriableResponseSpecs()
-            {
-                _client = new AblyHttpClient(new AblyHttpOptions());
-            }
-
             [Fact]
             public void IsRetryableError_WithTaskCancellationException_ShouldBeTrue()
             {
@@ -143,7 +110,7 @@ namespace IO.Ably.Tests
             [InlineData(WebExceptionStatus.ConnectFailure)]
             [InlineData(WebExceptionStatus.NameResolutionFailure)]
             [Trait("spec", "RSC15d")]
-            public void IsRetyableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
+            public void IsRetryableError_WithHttpMessageException_ShouldBeTrue(WebExceptionStatus status)
             {
                 var exception = new HttpRequestException("Error", new WebException("boo", status));
                 AblyHttpClient.IsRetryableError(exception).Should().BeTrue();
