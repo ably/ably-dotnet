@@ -96,6 +96,32 @@ namespace IO.Ably.Tests
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
+        [Fact]
+        [Trait("spec", "RSC7d")]
+        public async Task WhenCallingUrl_AddsDefaultAblyAgentHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
+            values.Length.Should().Be(1);
+            string[] agentValues = values[0].Split(' ');
+
+            string[] keys =
+            {
+                "ably-dotnet/",
+                "os-platform/",
+                "runtime/",
+            };
+
+            agentValues.Length.Should().Be(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue();
+            }
+        }
 
         public class IsRetryableResponseSpecs
         {
