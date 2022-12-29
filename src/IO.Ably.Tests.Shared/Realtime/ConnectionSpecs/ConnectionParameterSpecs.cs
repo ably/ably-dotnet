@@ -119,27 +119,6 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN2g")]
-        public async Task ShouldSetTransportLibVersionParameter()
-        {
-            string pattern = $@"^dotnet(.?\w*)-{Defaults.ProtocolVersion}.(\d+)$";
-
-            // validate the regex pattern
-            Regex.Match($"dotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
-            Regex.Match($"dotnet.framework-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
-            Regex.Match($"dotnet.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeTrue();
-            Regex.Match($"xdotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeFalse();
-            Regex.Match($"csharp.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeFalse();
-
-            _ = await GetConnectedClient();
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
-            var transportParams = LastCreatedTransport.Parameters.GetParams();
-
-            // validate the 'lib' param
-            Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
-        }
-
-        [Fact]
         [Trait("spec", "RTC1f")]
         public async Task WithNullTransportParamsInOptions_ShouldNotThrow()
         {
