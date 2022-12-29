@@ -98,7 +98,7 @@ namespace IO.Ably.Tests
             string[] keys =
             {
                 "ably-dotnet/",
-                IoC.PlatformId
+                Defaults.DotnetRuntimeIdentifier()
             };
 
             agentValues.Should().HaveCount(keys.Length);

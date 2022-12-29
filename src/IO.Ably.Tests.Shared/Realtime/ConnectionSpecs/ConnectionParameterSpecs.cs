@@ -130,7 +130,7 @@ namespace IO.Ably.Tests.Realtime
             string[] keys =
             {
                 "ably-dotnet/",
-                IoC.PlatformId
+                Defaults.DotnetRuntimeIdentifier()
             };
 
             agentValues.Should().HaveCount(keys.Length);

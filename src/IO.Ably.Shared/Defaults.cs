@@ -102,11 +102,35 @@ namespace IO.Ably
         internal const string AblyAgentHeader = "Ably-Agent";
         private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
 
+        /// <summary>
+        /// This returns dotnet platform as per ably-lib mappings defined in agents.json.
+        /// https://github.com/ably/ably-common/blob/main/protocol/agents.json.
+        /// This is required since we are migrating from 'X-Ably-Lib' header (RSC7b) to agent headers (RSC7d).
+        /// Please note that uwp platform is Deprecated and removed as a part of https://github.com/ably/ably-dotnet/pull/1101.
+        /// </summary>
+        /// <returns> Clean Platform Identifier. </returns>
+        internal static string DotnetRuntimeIdentifier()
+        {
+            switch (IoC.PlatformId)
+            {
+                case "framework":
+                    return "dotnet-framework";
+                case "netstandard20":
+                    return "dotnet-standard";
+                case "xamarin-android":
+                    return "xamarin android";
+                case "xamarin-ios":
+                    return "xamarin iOS";
+            }
+
+            return string.Empty;
+        }
+
         internal static string AgentHeaders(Dictionary<string, string> additionalHeaders)
         {
             var agentHeaders = $"{AblySdkIdentifier}";
 
-            var ablyDotnetRuntimeIdentifier = IoC.PlatformId;
+            var ablyDotnetRuntimeIdentifier = DotnetRuntimeIdentifier();
             if (!string.IsNullOrEmpty(ablyDotnetRuntimeIdentifier))
             {
                 agentHeaders += $" {ablyDotnetRuntimeIdentifier}";
