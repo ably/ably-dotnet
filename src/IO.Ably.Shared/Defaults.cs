@@ -98,8 +98,8 @@ namespace IO.Ably
             };
         }
 
+        internal const string AblyAgentHeader = "Ably-Agent";
         private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
-
         internal static readonly string AgentHeaders = GenerateAgentHeaders();
 
         private static string GenerateAgentHeaders()
