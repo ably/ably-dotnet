@@ -116,20 +116,6 @@ namespace IO.Ably
             }
 
             return agentHeaders;
-
-            // string osPlatform = Environment.OSVersion.VersionString;
-            // osPlatform = osPlatform.ToLower();
-            // osPlatform = osPlatform.Replace(' ', '-');
-            // //
-            // // var sb = new StringBuilder();
-            // // sb.Append("ably-dotnet/")
-            // //     .Append(LibraryVersion)
-            // //     .Append(" os-platform/")
-            // //     .Append(osPlatform)
-            // //     .Append(" runtime/")
-            // //     .Append(Environment.Version);
-            //
-            // return sb.ToString();
         }
     }
 }
