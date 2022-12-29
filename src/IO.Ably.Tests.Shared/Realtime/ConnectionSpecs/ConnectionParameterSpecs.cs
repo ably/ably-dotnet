@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -116,6 +117,26 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
                 .WhoseValue.Should().Be(Defaults.ProtocolVersion);
+        }
+
+        [Fact]
+        [Trait("spec", "RSC7d")]
+        public async Task ShouldSetTransportAblyAgentHeader()
+        {
+            _ = await GetConnectedClient();
+
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            string[] keys =
+            {
+                "ably-dotnet/"
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
         }
 
         [Fact]
