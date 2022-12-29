@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -100,11 +101,21 @@ namespace IO.Ably
 
         internal const string AblyAgentHeader = "Ably-Agent";
         private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
-        internal static readonly string AgentHeaders = GenerateAgentHeaders();
 
-        private static string GenerateAgentHeaders()
+        internal static string AgentHeaders(Dictionary<string, string> additionalHeaders)
         {
-            return $"{AblySdkIdentifier}";
+            var agentHeaders = $"{AblySdkIdentifier}";
+
+            foreach (var keyValuePair in additionalHeaders)
+            {
+                agentHeaders += $" {keyValuePair.Key}";
+                if (!string.IsNullOrEmpty(keyValuePair.Value))
+                {
+                    agentHeaders += $"/{keyValuePair.Value}";
+                }
+            }
+
+            return agentHeaders;
 
             // string osPlatform = Environment.OSVersion.VersionString;
             // osPlatform = osPlatform.ToLower();
