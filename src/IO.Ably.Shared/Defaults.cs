@@ -111,8 +111,7 @@ namespace IO.Ably
             };
         }
 
-        private static readonly string AblySdkIdentifier = string.IsNullOrEmpty(IoC.PlatformId) ?
-            $"ably-dotnet/{AssemblyVersion}" : $"ably-dotnet-ioc/{IoC.PlatformId}-{AssemblyVersion}"; // RSC7d1
+        private static readonly string AblySdkIdentifier = $"ably-dotnet/{AssemblyVersion}"; // RSC7d1
 
         internal static readonly string AgentHeaders = GenerateAgentHeaders();
 
