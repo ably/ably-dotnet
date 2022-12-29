@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -108,6 +109,25 @@ namespace IO.Ably
                 $"{environment}-d-fallback.ably-realtime.com",
                 $"{environment}-e-fallback.ably-realtime.com",
             };
+        }
+
+        internal static readonly string AgentHeaders = GenerateAgentHeaders();
+
+        private static string GenerateAgentHeaders()
+        {
+            string osPlatform = Environment.OSVersion.VersionString;
+            osPlatform = osPlatform.ToLower();
+            osPlatform = osPlatform.Replace(' ', '-');
+
+            var sb = new StringBuilder();
+            sb.Append("ably-dotnet/")
+                .Append(LibraryVersion)
+                .Append(" os-platform/")
+                .Append(osPlatform)
+                .Append(" runtime/")
+                .Append(Environment.Version);
+
+            return sb.ToString();
         }
     }
 }

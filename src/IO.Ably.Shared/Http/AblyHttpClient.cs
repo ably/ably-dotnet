@@ -75,25 +75,8 @@ namespace IO.Ably
             Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion);
             Client.DefaultRequestHeaders.Add("X-Ably-Lib", Defaults.LibraryVersion);
-            Client.DefaultRequestHeaders.Add("Ably-Agent", GetAblyHeaderValues());
+            Client.DefaultRequestHeaders.Add("Ably-Agent", Defaults.AgentHeaders);
             Client.Timeout = timeout;
-
-            string GetAblyHeaderValues()
-            {
-                string osPlatform = Environment.OSVersion.VersionString;
-                osPlatform = osPlatform.ToLower();
-                osPlatform = osPlatform.Replace(' ', '-');
-
-                var sb = new StringBuilder();
-                sb.Append("ably-dotnet/")
-                    .Append(Defaults.LibraryVersion)
-                    .Append(" os-platform/")
-                    .Append(osPlatform)
-                    .Append(" runtime/")
-                    .Append(Environment.Version);
-
-                return sb.ToString();
-            }
         }
 
         internal async Task<HttpResponseMessage> InternalSendAsync(HttpRequestMessage message)
