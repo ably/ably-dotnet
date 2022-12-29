@@ -11,25 +11,12 @@ namespace IO.Ably
     {
         internal static readonly float ProtocolVersionNumber = 1.2F;
 
-        internal static readonly string AssemblyVersion = GetVersion();
+        internal static readonly string LibraryVersion = GetVersion();
 
         internal static string GetVersion()
         {
             var version = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
-        }
-
-        public static string LibraryVersion
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(IoC.PlatformId))
-                {
-                    return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
-                }
-
-                return $"dotnet-{AssemblyVersion}";
-            }
         }
 
         public static string ProtocolVersion { get; } = ProtocolVersionNumber.ToString(CultureInfo.InvariantCulture);
@@ -111,7 +98,7 @@ namespace IO.Ably
             };
         }
 
-        private static readonly string AblySdkIdentifier = $"ably-dotnet/{AssemblyVersion}"; // RSC7d1
+        private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
 
         internal static readonly string AgentHeaders = GenerateAgentHeaders();
 
