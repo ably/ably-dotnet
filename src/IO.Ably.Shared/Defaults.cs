@@ -118,9 +118,9 @@ namespace IO.Ably
                 case "netstandard20":
                     return "dotnet-standard";
                 case "xamarin-android":
-                    return "xamarin android";
+                    return "xamarin-android";
                 case "xamarin-ios":
-                    return "xamarin iOS";
+                    return "xamarin-iOS";
             }
 
             return string.Empty;
