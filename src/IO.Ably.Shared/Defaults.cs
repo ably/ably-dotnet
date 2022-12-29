@@ -111,23 +111,28 @@ namespace IO.Ably
             };
         }
 
+        private static readonly string AblySdkIdentifier = string.IsNullOrEmpty(IoC.PlatformId) ?
+            $"ably-dotnet/{AssemblyVersion}" : $"ably-dotnet-ioc/{IoC.PlatformId}-{AssemblyVersion}"; // RSC7d1
+
         internal static readonly string AgentHeaders = GenerateAgentHeaders();
 
         private static string GenerateAgentHeaders()
         {
-            string osPlatform = Environment.OSVersion.VersionString;
-            osPlatform = osPlatform.ToLower();
-            osPlatform = osPlatform.Replace(' ', '-');
+            return $"{AblySdkIdentifier}";
 
-            var sb = new StringBuilder();
-            sb.Append("ably-dotnet/")
-                .Append(LibraryVersion)
-                .Append(" os-platform/")
-                .Append(osPlatform)
-                .Append(" runtime/")
-                .Append(Environment.Version);
-
-            return sb.ToString();
+            // string osPlatform = Environment.OSVersion.VersionString;
+            // osPlatform = osPlatform.ToLower();
+            // osPlatform = osPlatform.Replace(' ', '-');
+            // //
+            // // var sb = new StringBuilder();
+            // // sb.Append("ably-dotnet/")
+            // //     .Append(LibraryVersion)
+            // //     .Append(" os-platform/")
+            // //     .Append(osPlatform)
+            // //     .Append(" runtime/")
+            // //     .Append(Environment.Version);
+            //
+            // return sb.ToString();
         }
     }
 }
