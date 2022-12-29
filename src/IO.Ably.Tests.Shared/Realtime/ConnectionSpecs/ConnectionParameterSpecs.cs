@@ -129,7 +129,8 @@ namespace IO.Ably.Tests.Realtime
             var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
             string[] keys =
             {
-                "ably-dotnet/"
+                "ably-dotnet/",
+                IoC.PlatformId
             };
 
             agentValues.Should().HaveCount(keys.Length);

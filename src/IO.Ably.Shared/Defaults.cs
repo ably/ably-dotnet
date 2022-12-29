@@ -106,7 +106,13 @@ namespace IO.Ably
         {
             var agentHeaders = $"{AblySdkIdentifier}";
 
-            foreach (var keyValuePair in additionalHeaders)
+            var ablyDotnetRuntimeIdentifier = IoC.PlatformId;
+            if (!string.IsNullOrEmpty(ablyDotnetRuntimeIdentifier))
+            {
+                agentHeaders += $" {ablyDotnetRuntimeIdentifier}";
+            }
+
+            foreach (var keyValuePair in additionalHeaders.Where(keyValuePair => !string.IsNullOrEmpty(keyValuePair.Key)))
             {
                 agentHeaders += $" {keyValuePair.Key}";
                 if (!string.IsNullOrEmpty(keyValuePair.Value))
