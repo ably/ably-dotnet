@@ -108,6 +108,43 @@ namespace IO.Ably.Tests
             }
         }
 
+        [Fact]
+        [Trait("spec", "RSC7d6")]
+        public async Task WhenCallingUrl_AddsCustomizedAblyAgentHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+
+            var ablyHttpOptions = new AblyHttpOptions
+            {
+                Agents = new Dictionary<string, string>()
+            };
+
+            ablyHttpOptions.Agents.Add("agent1", "value1");
+            ablyHttpOptions.Agents.Add("agent2", "value2");
+
+            var client = new AblyHttpClient(ablyHttpOptions, handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
+            values.Should().HaveCount(1);
+            string[] agentValues = values[0].Split(' ');
+
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier(),
+                "agent1",
+                "agent2"
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
+        }
+
         public class IsRetryableResponseSpecs
         {
             [Fact]
