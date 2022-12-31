@@ -141,6 +141,33 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
+        [Trait("spec", "RSC7d6")]
+        public async Task ShouldSetTransportCustomAblyAgentHeader()
+        {
+            _ = await GetConnectedClient(options =>
+            {
+                options.Agents.Add("agent1", "value1");
+                options.Agents.Add("agent2", "value2");
+            });
+
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier(),
+                "agent1",
+                "agent2"
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
+        }
+
+        [Fact]
         [Trait("spec", "RTC1f")]
         public async Task WithNullTransportParamsInOptions_ShouldNotThrow()
         {
