@@ -136,7 +136,13 @@ namespace IO.Ably
                 agentHeaders += $" {ablyDotnetRuntimeIdentifier}";
             }
 
-            foreach (var keyValuePair in additionalHeaders.Where(keyValuePair => !string.IsNullOrEmpty(keyValuePair.Key)))
+            if (additionalHeaders == null)
+            {
+                return agentHeaders;
+            }
+
+            foreach (var keyValuePair in additionalHeaders.Where(keyValuePair =>
+                         !string.IsNullOrEmpty(keyValuePair.Key)))
             {
                 agentHeaders += $" {keyValuePair.Key}";
                 if (!string.IsNullOrEmpty(keyValuePair.Value))

@@ -419,7 +419,7 @@ namespace IO.Ably
         /// The keys represent agent names and its corresponding values represent agent versions.
         /// RSC7d6.
         /// </summary>
-        public Dictionary<string, string> Agents { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Agents { get; set; }
 
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
