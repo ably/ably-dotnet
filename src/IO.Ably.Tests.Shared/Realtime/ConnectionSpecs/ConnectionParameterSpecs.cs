@@ -146,8 +146,11 @@ namespace IO.Ably.Tests.Realtime
         {
             _ = await GetConnectedClient(options =>
             {
-                options.Agents.Add("agent1", "value1");
-                options.Agents.Add("agent2", "value2");
+                options.Agents = new Dictionary<string, string>
+                {
+                    { "agent1", "value1" },
+                    { "agent2", "value2" },
+                };
             });
 
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
