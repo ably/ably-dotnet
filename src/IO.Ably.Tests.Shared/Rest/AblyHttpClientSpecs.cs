@@ -117,11 +117,12 @@ namespace IO.Ably.Tests
 
             var ablyHttpOptions = new AblyHttpOptions
             {
-                Agents = new Dictionary<string, string>()
+                Agents = new Dictionary<string, string>
+                {
+                    { "agent1", "value1" },
+                    { "agent2", "value2" },
+                },
             };
-
-            ablyHttpOptions.Agents.Add("agent1", "value1");
-            ablyHttpOptions.Agents.Add("agent2", "value2");
 
             var client = new AblyHttpClient(ablyHttpOptions, handler);
 
@@ -135,11 +136,11 @@ namespace IO.Ably.Tests
                 "ably-dotnet/",
                 Defaults.DotnetRuntimeIdentifier(),
                 "agent1",
-                "agent2"
+                "agent2",
             };
 
             agentValues.Should().HaveCount(keys.Length);
-            for (int i = 0; i < keys.Length; ++i)
+            for (var i = 0; i < keys.Length; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }

@@ -160,11 +160,11 @@ namespace IO.Ably.Tests.Realtime
                 "ably-dotnet/",
                 Defaults.DotnetRuntimeIdentifier(),
                 "agent1",
-                "agent2"
+                "agent2",
             };
 
             agentValues.Should().HaveCount(keys.Length);
-            for (int i = 0; i < keys.Length; ++i)
+            for (var i = 0; i < keys.Length; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }
