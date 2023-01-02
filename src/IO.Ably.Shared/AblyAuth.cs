@@ -312,6 +312,11 @@ namespace IO.Ably
                         case null:
                             throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
                         case string token:
+                            if (string.IsNullOrEmpty(token))
+                            {
+                                throw new AblyException("AuthCallback returned empty string", ErrorCodes.ClientAuthProviderRequestFailed);
+                            }
+
                             return new TokenDetails(token);
                         case TokenDetails details:
                             return details;
