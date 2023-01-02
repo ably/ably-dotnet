@@ -321,6 +321,7 @@ namespace IO.Ably
                         case TokenDetails details:
                             return details;
                         case TokenRequest tokenRequest:
+                            postData = tokenRequest;
                             request.Url = $"/keys/{tokenRequest.KeyName}/requestToken";
                             break;
                         default:
