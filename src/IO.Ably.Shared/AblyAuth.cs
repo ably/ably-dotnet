@@ -302,30 +302,26 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (authOptions.AuthCallback != null)
             {
-                bool shouldCatch = true;
+                var shouldCatch = true;
                 try
                 {
                     var callbackResult = await authOptions.AuthCallback(tokenParams);
 
-                    if (callbackResult == null)
+                    switch (callbackResult)
                     {
-                        throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
-                    }
-
-                    if (callbackResult is TokenDetails)
-                    {
-                        return callbackResult as TokenDetails;
-                    }
-
-                    if (callbackResult is TokenRequest || callbackResult is string)
-                    {
-                        postData = GetTokenRequest(callbackResult);
-                        request.Url = $"/keys/{postData.KeyName}/requestToken";
-                    }
-                    else
-                    {
-                        shouldCatch = false;
-                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", ErrorCodes.ClientAuthProviderRequestFailed, HttpStatusCode.BadRequest);
+                        case null:
+                            throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
+                        case string token:
+                            return new TokenDetails(token);
+                        case TokenDetails details:
+                            return details;
+                        case TokenRequest tokenRequest:
+                            postData = GetTokenRequest(tokenRequest);
+                            request.Url = $"/keys/{postData.KeyName}/requestToken";
+                            break;
+                        default:
+                            shouldCatch = false;
+                            throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", ErrorCodes.ClientAuthProviderRequestFailed, HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
