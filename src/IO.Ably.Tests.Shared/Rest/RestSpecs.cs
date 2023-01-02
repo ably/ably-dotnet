@@ -826,7 +826,7 @@ namespace IO.Ably.Tests
                     });
                 }
 
-                var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult("jwtToken" as object)).StatsAsync());
+                var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult<object>("jwtToken")).StatsAsync());
                 Assert.Null(exception);
             }
 

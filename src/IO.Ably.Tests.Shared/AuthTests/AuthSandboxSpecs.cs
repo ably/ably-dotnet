@@ -373,7 +373,7 @@ namespace IO.Ably.Tests
             static void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
-                options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
+                options.AuthCallback = (tokenParams) => Task.FromResult<object>(string.Empty);
             }
 
             await TestConnectingBecomesDisconnected("With invalid AuthUrl connection becomes Disconnected", AuthUrlOptions);
