@@ -321,8 +321,7 @@ namespace IO.Ably
                         case TokenDetails details:
                             return details;
                         case TokenRequest tokenRequest:
-                            postData = GetTokenRequest(tokenRequest);
-                            request.Url = $"/keys/{postData.KeyName}/requestToken";
+                            request.Url = $"/keys/{tokenRequest.KeyName}/requestToken";
                             break;
                         default:
                             shouldCatch = false;
@@ -453,31 +452,6 @@ namespace IO.Ably
             }
         }
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-        private static TokenRequest GetTokenRequest(object callbackResult)
-#pragma warning restore SA1204 // Static elements should appear before instance elements
-        {
-            if (callbackResult is TokenRequest)
-            {
-                return callbackResult as TokenRequest;
-            }
-
-            try
-            {
-                var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
-                if (result == null)
-                {
-                    throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."));
-                }
-
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."), e);
-            }
-        }
-
         private async Task<AblyResponse> CallAuthUrl(AuthOptions mergedOptions, TokenParams @params)
         {
             var url = mergedOptions.AuthUrl;
@@ -584,7 +558,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
+        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
             authOptions = authOptions ?? CurrentAuthOptions ?? Options;
             tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
@@ -597,8 +571,7 @@ namespace IO.Ably
             await SetTokenParamsTimestamp(authOptions, tokenParams);
 
             var apiKey = authOptions.ParseKey();
-            var request = new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);
-            return JsonHelper.Serialize(request);
+            return new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);
         }
 
         private TokenAuthMethod GetTokenAuthMethod()
@@ -695,7 +668,7 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
-        public string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
+        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
         }

@@ -29,7 +29,7 @@ namespace IO.Ably.Tests
             TokenParams @params = null,
             AuthOptions options = null)
         {
-            return JsonHelper.Deserialize<TokenRequest>(await client.Auth.CreateTokenRequestAsync(@params, options));
+            return await client.Auth.CreateTokenRequestAsync(@params, options);
         }
 
         public class General : AuthorizationTests
@@ -54,7 +54,7 @@ namespace IO.Ably.Tests
 
             private static TokenRequest CreateDefaultTokenRequest(AblyRest client)
             {
-                return JsonHelper.Deserialize<TokenRequest>(client.Auth.CreateTokenRequestAsync().Result);
+                return client.Auth.CreateTokenRequestAsync().Result;
             }
 
             [Fact]
