@@ -128,29 +128,32 @@ namespace IO.Ably
 
         internal static string AblyAgentIdentifier(Dictionary<string, string> additionalAgents)
         {
-            var agentIdentifier = $"{AblySdkIdentifier}";
-
-            var ablyDotnetRuntimeIdentifier = DotnetRuntimeIdentifier();
-            if (!string.IsNullOrEmpty(ablyDotnetRuntimeIdentifier))
+            string GetAgentComponentString(string product, string version)
             {
-                agentIdentifier += $" {ablyDotnetRuntimeIdentifier}";
+                return string.IsNullOrEmpty(version) ? product : $"{product}/{version}";
             }
+
+            void AddAgentIdentifier(ICollection<string> currentAgentComponents, string product, string version = null)
+            {
+                if (string.IsNullOrEmpty(product)) return;
+                currentAgentComponents.Add(GetAgentComponentString(AblySdkIdentifier, version));
+            }
+
+            var agentComponents = new List<string>();
+            AddAgentIdentifier(agentComponents, AblySdkIdentifier);
+            AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
 
             if (additionalAgents == null)
             {
-                return agentIdentifier;
+                return string.Join(" ", agentComponents);
             }
 
-            foreach (var agent in additionalAgents.Where(agent => !string.IsNullOrEmpty(agent.Key)))
+            foreach (var agent in additionalAgents)
             {
-                agentIdentifier += $" {agent.Key}";
-                if (!string.IsNullOrEmpty(agent.Value))
-                {
-                    agentIdentifier += $"/{agent.Value}";
-                }
+                AddAgentIdentifier(agentComponents, agent.Key, agent.Value);
             }
 
-            return agentIdentifier;
+            return string.Join(" ", agentComponents);
         }
     }
 }
