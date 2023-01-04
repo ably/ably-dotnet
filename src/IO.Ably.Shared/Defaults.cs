@@ -135,12 +135,10 @@ namespace IO.Ably
 
             void AddAgentIdentifier(ICollection<string> currentAgentComponents, string product, string version = null)
             {
-                if (string.IsNullOrEmpty(product))
+                if (!string.IsNullOrEmpty(product))
                 {
-                    return;
+                    currentAgentComponents.Add(GetAgentComponentString(AblySdkIdentifier, version));
                 }
-
-                currentAgentComponents.Add(GetAgentComponentString(AblySdkIdentifier, version));
             }
 
             var agentComponents = new List<string>();
