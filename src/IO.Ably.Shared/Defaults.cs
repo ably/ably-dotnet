@@ -141,12 +141,12 @@ namespace IO.Ably
                 return agentIdentifier;
             }
 
-            foreach (var (agentId, agentVersion) in additionalAgents.Where(agent => !string.IsNullOrEmpty(agent.Key)))
+            foreach (var agent in additionalAgents.Where(agent => !string.IsNullOrEmpty(agent.Key)))
             {
-                agentIdentifier += $" {agentId}";
-                if (!string.IsNullOrEmpty(agentVersion))
+                agentIdentifier += $" {agent.Key}";
+                if (!string.IsNullOrEmpty(agent.Value))
                 {
-                    agentIdentifier += $"/{agentVersion}";
+                    agentIdentifier += $"/{agent.Value}";
                 }
             }
 
