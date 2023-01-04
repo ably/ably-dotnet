@@ -189,7 +189,7 @@ namespace IO.Ably.Transport
             }
 
             result["v"] = Defaults.ProtocolVersion;
-            result[Defaults.AblyAgentHeader] = Defaults.Agents(Agents);
+            result[Defaults.AblyAgentHeader] = Defaults.AblyAgentIdentifier(Agents);
 
             // Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";

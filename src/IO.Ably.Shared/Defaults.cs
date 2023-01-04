@@ -126,31 +126,31 @@ namespace IO.Ably
             return string.Empty;
         }
 
-        internal static string Agents(Dictionary<string, string> additionalAgents)
+        internal static string AblyAgentIdentifier(Dictionary<string, string> additionalAgents)
         {
-            var agentsIdentifier = $"{AblySdkIdentifier}";
+            var agentIdentifier = $"{AblySdkIdentifier}";
 
             var ablyDotnetRuntimeIdentifier = DotnetRuntimeIdentifier();
             if (!string.IsNullOrEmpty(ablyDotnetRuntimeIdentifier))
             {
-                agentsIdentifier += $" {ablyDotnetRuntimeIdentifier}";
+                agentIdentifier += $" {ablyDotnetRuntimeIdentifier}";
             }
 
             if (additionalAgents == null)
             {
-                return agentsIdentifier;
+                return agentIdentifier;
             }
 
             foreach (var (agentId, agentVersion) in additionalAgents.Where(agent => !string.IsNullOrEmpty(agent.Key)))
             {
-                agentsIdentifier += $" {agentId}";
+                agentIdentifier += $" {agentId}";
                 if (!string.IsNullOrEmpty(agentVersion))
                 {
-                    agentsIdentifier += $"/{agentVersion}";
+                    agentIdentifier += $"/{agentVersion}";
                 }
             }
 
-            return agentsIdentifier;
+            return agentIdentifier;
         }
     }
 }

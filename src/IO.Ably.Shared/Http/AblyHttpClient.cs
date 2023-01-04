@@ -74,7 +74,7 @@ namespace IO.Ably
         {
             Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion);
-            Client.DefaultRequestHeaders.Add(Defaults.AblyAgentHeader, Defaults.Agents(Options.Agents)); // RSC7d
+            Client.DefaultRequestHeaders.Add(Defaults.AblyAgentHeader, Defaults.AblyAgentIdentifier(Options.Agents)); // RSC7d
             Client.Timeout = timeout;
         }
 
