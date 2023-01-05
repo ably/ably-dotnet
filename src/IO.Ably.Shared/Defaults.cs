@@ -137,7 +137,7 @@ namespace IO.Ably
             {
                 if (!string.IsNullOrEmpty(product))
                 {
-                    currentAgentComponents.Add(GetAgentComponentString(AblySdkIdentifier, version));
+                    currentAgentComponents.Add(GetAgentComponentString(product, version));
                 }
             }
 
