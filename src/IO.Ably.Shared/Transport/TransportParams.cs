@@ -78,6 +78,11 @@ namespace IO.Ably.Transport
         /// </summary>
         public Dictionary<string, string> AdditionalParameters { get; set; }
 
+        /// <summary>
+        /// Additional agents coming from ClientOptions.
+        /// </summary>
+        public Dictionary<string, string> Agents { get; set; }
+
         private TransportParams()
         {
         }
@@ -99,6 +104,7 @@ namespace IO.Ably.Transport
                 Logger = logger ?? options.Logger,
                 AdditionalParameters = StringifyParameters(options.TransportParams),
                 AuthMethod = auth.AuthMethod,
+                Agents = options.Agents
             };
 
             if (result.AuthMethod == AuthMethod.Basic)
@@ -183,7 +189,7 @@ namespace IO.Ably.Transport
             }
 
             result["v"] = Defaults.ProtocolVersion;
-            result["lib"] = Defaults.LibraryVersion;
+            result[Defaults.AblyAgentHeader] = Defaults.AblyAgentIdentifier(Agents);
 
             // Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";

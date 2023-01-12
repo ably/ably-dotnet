@@ -50,22 +50,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        [Trait("spec", "RSC7b")]
-        public async Task WhenCallingUrl_AddsDefaultAblyHeader()
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
-            var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
-
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
-            var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib").ToArray();
-            values.Should().NotBeEmpty();
-            values.First().Should().StartWith("dotnet");
-            values.First().Should().Be(Defaults.LibraryVersion);
-            Defaults.LibraryVersion.Should().BeEquivalentTo($"dotnet.{IoC.PlatformId}-{Defaults.AssemblyVersion}");
-        }
-
-        [Fact]
         [Trait("spec", "RSC7c")]
         public async Task WhenCallingUrl_AddsRequestIdIfSetTrue()
         {
@@ -96,6 +80,70 @@ namespace IO.Ably.Tests
             var content = handler.LastRequest.Content;
             var formContent = content as FormUrlEncodedContent;
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
+        }
+
+        [Fact]
+        [Trait("spec", "RSC7d")]
+        public async Task WhenCallingUrl_AddsDefaultAblyAgentHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
+            values.Should().HaveCount(1);
+            string[] agentValues = values[0].Split(' ');
+
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier()
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
+        }
+
+        [Fact]
+        [Trait("spec", "RSC7d6")]
+        public async Task WhenCallingUrl_AddsCustomizedAblyAgentHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+
+            var ablyHttpOptions = new AblyHttpOptions
+            {
+                Agents = new Dictionary<string, string>
+                {
+                    { "agent1", "value1" },
+                    { "agent2", "value2" },
+                },
+            };
+
+            var client = new AblyHttpClient(ablyHttpOptions, handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
+            values.Should().HaveCount(1);
+            string[] agentValues = values[0].Split(' ');
+
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier(),
+                "agent1",
+                "agent2",
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (var i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
         }
 
         public class IsRetryableResponseSpecs
