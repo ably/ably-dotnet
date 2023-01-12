@@ -197,7 +197,7 @@ namespace IO.Ably.Tests.GithubSamples
             var tokenString = token.Token; // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
             var tokenClient = new AblyRest(new ClientOptions { TokenDetails = token });
 
-            var tokenRequest = await client.Auth.CreateTokenRequestAsync();
+            var tokenRequest = await client.Auth.CreateTokenRequestObjectAsync();
 
             // Stats
             var stats = await client.StatsAsync();

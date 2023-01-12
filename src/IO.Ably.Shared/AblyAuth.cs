@@ -559,7 +559,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
+        public async Task<TokenRequest> CreateTokenRequestObjectAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
             authOptions = authOptions ?? CurrentAuthOptions ?? Options;
             tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
@@ -669,7 +669,21 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
-        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
+        public TokenRequest CreateTokenRequestObject(TokenParams tokenParams = null, AuthOptions authOptions = null)
+        {
+            return AsyncHelper.RunSync(() => CreateTokenRequestObjectAsync(tokenParams, authOptions));
+        }
+
+        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObjectAsync")]
+        public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
+        {
+            Logger.Warning("CreateTokenRequest is deprecated and will be removed in the future, please use CreateTokenRequestObject instead");
+            var tokenRequest = await CreateTokenRequestObjectAsync(tokenParams, authOptions);
+            return JsonHelper.Serialize(tokenRequest);
+        }
+
+        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObject")]
+        public string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
         }

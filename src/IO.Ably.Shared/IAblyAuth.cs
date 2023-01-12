@@ -50,6 +50,17 @@ namespace IO.Ably
         Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null);
 
         /// <summary>
+        /// Create a signed token request based on known credentials.
+        /// and the given token params. This would typically be used if creating
+        /// signed requests for submission by another client.
+        /// </summary>
+        /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
+        /// <returns>serialized signed token request.</returns>
+        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObjectAsync")]
+        Task<string> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
+
+        /// <summary>
         /// Create a signed token request based on known credentials
         /// and the given token params. This would typically be used if creating
         /// signed requests for submission by another client.
@@ -57,7 +68,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
+        Task<TokenRequest> CreateTokenRequestObjectAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
 
         /// <summary>
         /// Sync version for <see cref="RequestTokenAsync(TokenParams, AuthOptions)"/>.
@@ -90,12 +101,22 @@ namespace IO.Ably
         TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null);
 
         /// <summary>
-        /// Sync version for <see cref="CreateTokenRequestAsync(TokenParams, AuthOptions)"/>
+        /// Sync version for <see cref="CreateTokenRequestAsync"/>
+        /// Prefer the async version where possible.
+        /// </summary>
+        /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
+        /// <returns>serialized signed token request.</returns>
+        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObject")]
+        string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null);
+
+        /// <summary>
+        /// Sync version for <see cref="CreateTokenRequestObjectAsync"/>
         /// Prefer the async version where possible.
         /// </summary>
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        TokenRequest CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null);
+        TokenRequest CreateTokenRequestObject(TokenParams tokenParams = null, AuthOptions authOptions = null);
     }
 }
