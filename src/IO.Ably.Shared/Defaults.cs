@@ -28,7 +28,7 @@ namespace IO.Ably
             }
         }
 
-        public const string ProtocolVersion = "2.0"; // G4
+        public const string ProtocolVersion = "2"; // CSV2
 
         public const int QueryLimit = 100;
 
