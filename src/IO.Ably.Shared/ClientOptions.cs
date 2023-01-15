@@ -411,6 +411,16 @@ namespace IO.Ably
         /// </summary>
         public bool PushAdminFullWait { get; set; }
 
+        /// <summary>
+        /// Map of agents that will be appended to the internal ably agent headers.
+        /// This should only be used by Ably-authored SDKs.
+        /// If you need to use this then you have to add the agent to the agents.json file:
+        /// https://github.com/ably/ably-common/blob/main/protocol/agents.json
+        /// The keys represent agent names and its corresponding values represent agent versions.
+        /// RSC7d6.
+        /// </summary>
+        public Dictionary<string, string> Agents { get; set; }
+
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
         {

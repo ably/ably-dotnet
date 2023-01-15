@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -119,25 +120,54 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN2g")]
-        public async Task ShouldSetTransportLibVersionParameter()
+        [Trait("spec", "RSC7d")]
+        public async Task ShouldSetTransportAblyAgentHeader()
         {
-            string pattern = $@"^dotnet(.?\w*)-{Defaults.ProtocolVersion}.(\d+)$";
-
-            // validate the regex pattern
-            Regex.Match($"dotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
-            Regex.Match($"dotnet.framework-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeTrue();
-            Regex.Match($"dotnet.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeTrue();
-            Regex.Match($"xdotnet-{Defaults.ProtocolVersion}.321", pattern).Success.Should().BeFalse();
-            Regex.Match($"csharp.netstandard20-{Defaults.ProtocolVersion}.0", pattern).Success.Should().BeFalse();
-
             _ = await GetConnectedClient();
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
-            var transportParams = LastCreatedTransport.Parameters.GetParams();
 
-            // validate the 'lib' param
-            Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
-            Assert.Equal("2.0", transportParams["v"]);
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier()
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (int i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
+        }
+
+        [Fact]
+        [Trait("spec", "RSC7d6")]
+        public async Task ShouldSetTransportCustomAblyAgentHeader()
+        {
+            _ = await GetConnectedClient(options =>
+            {
+                options.Agents = new Dictionary<string, string>
+                {
+                    { "agent1", "value1" },
+                    { "agent2", "value2" },
+                };
+            });
+
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            string[] keys =
+            {
+                "ably-dotnet/",
+                Defaults.DotnetRuntimeIdentifier(),
+                "agent1",
+                "agent2",
+            };
+
+            agentValues.Should().HaveCount(keys.Length);
+            for (var i = 0; i < keys.Length; ++i)
+            {
+                agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+            }
         }
 
         [Fact]
