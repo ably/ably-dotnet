@@ -172,7 +172,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, channelSerials, and the current msgSerial.
         /// </summary>
-        [Obsolete("This attribute is deprecated, use CreateRecoveryKey method instead")]
+        [Obsolete("This property is deprecated, use CreateRecoveryKey method instead")]
         public string RecoveryKey => CreateRecoveryKey();
 
         /// <summary>
