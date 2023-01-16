@@ -674,7 +674,7 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => CreateTokenRequestObjectAsync(tokenParams, authOptions));
         }
 
-        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObjectAsync")]
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestObjectAsync instead")]
         public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
             Logger.Warning("CreateTokenRequest is deprecated and will be removed in the future, please use CreateTokenRequestObject instead");
@@ -682,7 +682,7 @@ namespace IO.Ably
             return JsonHelper.Serialize(tokenRequest);
         }
 
-        [Obsolete("This method will be removed in the future, please replace with a call to CreateTokenRequestObject")]
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestObject instead")]
         public string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
