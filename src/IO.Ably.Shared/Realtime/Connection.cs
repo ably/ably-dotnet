@@ -170,7 +170,7 @@ namespace IO.Ably.Realtime
         public bool ConnectionResumable => Key.IsNotEmpty();
 
         /// <summary>
-        /// (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, channelSerials, and the current msgSerial.
+        /// Connection#recoveryKey is an attribute composed of the connectionKey, channelSerials, and the current msgSerial (RTN16m).
         /// </summary>
         [Obsolete("This property is deprecated, use CreateRecoveryKey method instead")]
         public string RecoveryKey => CreateRecoveryKey();
