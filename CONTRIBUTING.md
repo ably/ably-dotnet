@@ -102,16 +102,17 @@ Note: it was recently decided to remove explicit mention of Windows 7 as a suppo
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 1. Create a branch for the release, named like release/1.2.3 (where 1.2.3 is the new version number).
-2. Replace all references of the current version number with the new version number and commit the changes (In current case, the file name is `src/CommonAssemblyInfo.cs`).
-3. Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
+2. Replace all references of the current version number with the new version number and commit the changes (In current case, the file name is `src/CommonAssemblyInfo.cs` and `unity/Assets/Ably/version.txt`).
+3. Run `unity-plugins-updater.sh 1.2.3` (linux/mac) / `unity-plugins-updater.cmd 1.2.3` (windows) at root and commit generated `.dll` and `.pdb` files.
+4. Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
   - The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-dotnet --since-tag v1.2.3 --output delta.md`
   - Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file.
   - The contents of that new file (`delta.md`) then need to be manually inserted at the top of the `CHANGELOG.md`, changing the "Unreleased" heading and linking with the current version numbers.
   - Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`.
-4. Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`.
-5. Push the branch and create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
-6. Run `package.cmd` to create the nuget package.
-7. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
-8. Add a tag to the new `main` head commit and push to origin such as `git tag v1.2.3 && git push origin v1.2.3`
-9. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-10. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
+5. Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`.
+6. Push the branch and create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
+7. Run `package.cmd` to create the nuget package.
+8. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
+9. Add a tag to the new `main` head commit and push to origin such as `git tag v1.2.3 && git push origin v1.2.3`
+10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
+11. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
