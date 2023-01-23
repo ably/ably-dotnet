@@ -102,7 +102,7 @@ Note: it was recently decided to remove explicit mention of Windows 7 as a suppo
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 1. Create a branch for the release, named like release/1.2.3 (where 1.2.3 is the new version number).
-2. Replace all references of the current version number with the new version number and commit the changes (In current case, the file name is `src/CommonAssemblyInfo.cs` and `unity/Assets/Ably/version.txt`).
+2. Replace all references of the current version number with the new version number and commit the changes (In current case, files are `src/CommonAssemblyInfo.cs` and `unity/Assets/Ably/version.txt`).
 3. Run `unity-plugins-updater.sh 1.2.3` (linux/mac) / `unity-plugins-updater.cmd 1.2.3` (windows) at root and commit generated `.dll` and `.pdb` files.
 4. Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
   - The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-dotnet --since-tag v1.2.3 --output delta.md`
