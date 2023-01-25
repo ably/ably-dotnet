@@ -4,21 +4,15 @@
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.9...1.2.10)
 
-**Implemented enhancements:**
-
-- Implement RSC7d \(Ably-Agent header\) [\#498](https://github.com/ably/ably-dotnet/issues/498)
-
 **Closed issues:**
-
+- Implement RSC7d \(Ably-Agent header\) [\#498](https://github.com/ably/ably-dotnet/issues/498)
 - AuthCallback returned a string which can't be converted to TokenRequest [\#1196](https://github.com/ably/ably-dotnet/issues/1196)
 - Protocol-v2: readd recoveryKey to make this a non-breaking change [\#1187](https://github.com/ably/ably-dotnet/issues/1187)
 - Unable to output Debug Logging to console [\#1182](https://github.com/ably/ably-dotnet/issues/1182)
 - Implement no-connection-serial [\#1181](https://github.com/ably/ably-dotnet/issues/1181)
-- Create Feature Compliance Manifest for `ably-dotnet` [\#1175](https://github.com/ably/ably-dotnet/issues/1175)
 - DotNet - HTTP2 spike needed before implementation \(mono vs. Core / Framework\) [\#1174](https://github.com/ably/ably-dotnet/issues/1174)
 - Unity iOS: Errors while creating transport!. [\#764](https://github.com/ably/ably-dotnet/issues/764)
 - Unity: When building for iOS, an IL2CPP error prevents the app working [\#751](https://github.com/ably/ably-dotnet/issues/751)
-- Validate against 1.0 specification [\#415](https://github.com/ably/ably-dotnet/issues/415)
 - Unity 2019.3.5 - System.EntryPointNotFoundException: CreateNLSocket [\#408](https://github.com/ably/ably-dotnet/issues/408)
 - Send unhandled exceptions to Ably exception service - RSC20 [\#389](https://github.com/ably/ably-dotnet/issues/389)
 
