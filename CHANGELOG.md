@@ -8,7 +8,7 @@
 - Implement RSC7d \(Ably-Agent header\) [\#498](https://github.com/ably/ably-dotnet/issues/498)
 - AuthCallback returned a string which can't be converted to TokenRequest [\#1196](https://github.com/ably/ably-dotnet/issues/1196)
 - Unable to output Debug Logging to console [\#1182](https://github.com/ably/ably-dotnet/issues/1182)
-- Unity iOS: Errors while creating transport!. [\#764](https://github.com/ably/ably-dotnet/issues/764)
+- Unity iOS: Errors while creating transport [\#764](https://github.com/ably/ably-dotnet/issues/764)
 - Unity: When building for iOS, an IL2CPP error prevents the app working [\#751](https://github.com/ably/ably-dotnet/issues/751)
 - Unity 2019.3.5 - System.EntryPointNotFoundException: CreateNLSocket [\#408](https://github.com/ably/ably-dotnet/issues/408)
 
