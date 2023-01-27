@@ -103,7 +103,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 
 1. Create a branch for the release, named like release/1.2.3 (where 1.2.3 is the new version number).
 2. Replace all references of the current version number with the new version number and commit the changes (In current case, files are `src/CommonAssemblyInfo.cs` and `unity/Assets/Ably/version.txt`).
-3. Run `unity-plugins-updater.sh 1.2.3` (linux/mac) / `unity-plugins-updater.cmd 1.2.3` (windows) at root and commit generated `.dll` and `.pdb` files.
+3. Run `./unity-plugins-updater.sh 1.2.3` (linux/mac) / `.\unity-plugins-updater.cmd 1.2.3` (windows) at root and commit generated `.dll` and `.pdb` files.
 4. Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
   - The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-dotnet --since-tag 1.2.3 --output delta.md --token $GITHUB_TOKEN_WITH_REPO_ACCESS`. Generate token [here](https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token).
   - Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file.
@@ -111,9 +111,9 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
   - Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`.
 5. Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`.
 6. Push the branch and create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
-7. Run `package.cmd` to create the nuget package.
+7. Run `.\package.cmd 1.2.3` (windows) / `./package.sh 1.2.3` (linux/mac) to create the nuget package.
 8. Run `dotnet nuget push ably.io.*.nupkg --api-key GENERATED_API_KEY_FROM_NUGET_ACCOUNT --source https://api.nuget.org/v3/index.json` (More information on publishing nuget packages can be found [here](https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio?tabs=netcore-cli#publish-with-the-net-cli-or-nuget-cli))
 9. Add a tag to the new `main` head commit and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`
 10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
 11. Export unity package (exclude tests) as per https://docs.unity3d.com/Manual/AssetPackagesCreate.html with `io.ably.1.2.3.unitypackage` as a file name, upload it to the latest release note.
-12. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
+12. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/)).
