@@ -408,7 +408,7 @@ Target.create "Push Package - Build All" (fun _ ->
                 [
                     "Optimize", "True"
                     "DebugSymbols", "True"
-                    "Configuration", "Package"
+                    "Configuration", buildMode
                     "StyleCopEnabled", "True"
                     "Package", "True"
                     "DefineConstants", "PACKAGE"
