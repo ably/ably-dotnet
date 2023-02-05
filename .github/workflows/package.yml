@@ -102,7 +102,7 @@ jobs:
         - name: Package Project
           run: |
             echo "Creating package ${{env.package_path}}"
-            dotnet ../tools/UnityPackageExporter.dll --project ./unity --asset-root Assets/Ably --output io.ably.${{ github.event.inputs.version }}.unitypackage --exclude ".*" --exclude "Tests" --exclude "Documentation"
+            dotnet ../tools/UnityPackageExporter.dll ./unity io.ably.${{ github.event.inputs.version }}.unitypackage --asset-root Assets/Ably --exclude ".*" --exclude "Tests" --exclude "Documentation"
         
         # Upload artifact
         - name: Upload Artifact
