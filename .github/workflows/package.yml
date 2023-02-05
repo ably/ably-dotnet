@@ -55,3 +55,55 @@ jobs:
           path: |
             ${{ github.workspace }}/*.nupkg
       
+#  package-unity:
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Checkout
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#        with: 
+#          submodules: 'recursive'
+#        
+#      - name: Extract unity package
+#        id: extract_unity_package
+#        uses: FrostBanditTeam/extract-unity-package-action@1
+#        with:
+#          # Specify the unity project path, relative to the repo root.
+#          unityProjectPath: './unity'
+#          # Set the directory to package, relative to the project.
+#          packagePath: 'Assets/Ably'
+#          outputPackagePath: './artifacts/io.ably.${{ github.event.inputs.version }}.unitypackage'
+#
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: save-nuget-package
+#          path: ${{ steps.package-unity.outputs.artifactsPath }}
+
+  package-unity:
+    env:
+      package_path: "~/lachee-utilities.unitypackage"
+    runs-on: ubuntu-latest
+    steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v3
+        - uses: actions/setup-dotnet@v2
+
+        # Install the packager. We are putting it outside the working directory so we dont include it by mistake
+        - name: Install Unity Packager
+          run: |
+            git clone https://github.com/Lachee/Unity-Package-Exporter.git "../tools/unity-package-exporter"
+            dotnet publish -c Release -o ../tools "../tools/unity-package-exporter/UnityPackageExporter"
+        
+        # Pack the assets
+        - name: Package Project
+          run: |
+            echo "Creating package ${{env.package_path}}"
+            dotnet ../tools/UnityPackageExporter.dll --project ./unity --asset-root Assets/Ably --output io.ably.${{ github.event.inputs.version }}.unitypackage --exclude ".*" --exclude "Tests" --exclude "Documentation"
+        
+        # Upload artifact
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v3.0.0
+          with:
+            name: save-nuget-package
+            path: ${{env.package_path}}
