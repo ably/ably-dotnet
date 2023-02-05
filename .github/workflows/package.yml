@@ -82,7 +82,7 @@ jobs:
 
   package-unity:
     env:
-      package_path: "~/lachee-utilities.unitypackage"
+      package_path: "./artifacts/io.ably.${{ github.event.inputs.version }}.unitypackage"
     runs-on: ubuntu-latest
     steps:
         # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -102,11 +102,11 @@ jobs:
         - name: Package Project
           run: |
             echo "Creating package ${{env.package_path}}"
-            dotnet ../tools/UnityPackageExporter.dll ./unity io.ably.${{ github.event.inputs.version }}.unitypackage --asset-root Assets/Ably --exclude ".*" --exclude "Tests" --exclude "Documentation"
+            dotnet ../tools/UnityPackageExporter.dll ./unity ${{env.package_path}} --asset-root Assets/Ably --exclude ".*" --exclude "Tests" --exclude "Documentation"
         
         # Upload artifact
         - name: Upload Artifact
-          uses: actions/upload-artifact@v3.0.0
+          uses: actions/upload-artifact@v2
           with:
             name: save-nuget-package
-            path: ${{env.package_path}}
+            path: ${{steps.package-unity.outputs.artifactsPath}}
