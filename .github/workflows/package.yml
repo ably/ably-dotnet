@@ -87,7 +87,10 @@ jobs:
     steps:
         # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
         - uses: actions/checkout@v3
-        - uses: actions/setup-dotnet@v2
+        - name: Download dotnet framework
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '3.1.x'
 
         # Install the packager. We are putting it outside the working directory so we dont include it by mistake
         - name: Install Unity Packager
