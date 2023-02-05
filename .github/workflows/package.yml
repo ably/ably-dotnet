@@ -97,6 +97,7 @@ jobs:
           run: |
             git clone https://github.com/Lachee/Unity-Package-Exporter.git "../tools/unity-package-exporter"
             dotnet publish -c Release -o ../tools "../tools/unity-package-exporter/UnityPackageExporter"
+            mkdir artifacts
         
         # Pack the assets
         - name: Package Project
