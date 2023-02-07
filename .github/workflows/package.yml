@@ -54,33 +54,6 @@ jobs:
           name: save-nuget-package
           path: |
             ${{ github.workspace }}/*.nupkg
-      
-  # package-unity:
-  #   env:
-  #     package_path: "./artifacts/io.ably.${{ github.event.inputs.version }}.unitypackage"
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #    # Checkout
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
-  #       with: 
-  #         submodules: 'recursive'
-        
-  #     - name: Extract unity package
-  #       id: extract_unity_package
-  #       uses: FrostBanditTeam/extract-unity-package-action@1
-  #       with:
-  #         # Specify the unity project path, relative to the repo root.
-  #         unityProjectPath: './unity'
-  #         # Set the directory to package, relative to the project.
-  #         packagePath: 'Assets/Ably'
-  #         outputPackagePath: ${{env.package_path}}
-
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: save-nuget-package
-  #         path: ${{env.package_path}}
 
   package-unity:
     env:
