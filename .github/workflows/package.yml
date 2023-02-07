@@ -97,15 +97,15 @@ jobs:
         # Install the packager. We are putting it outside the working directory so we dont include it by mistake
         - name: Install Unity Packager
           run: |
-            git clone https://github.com/sac-fork/Unity-Package-Exporter "../tools/unity-packager"
+            git clone https://github.com/sac-fork/Unity-Package-Exporter unity-packager
             mkdir artifacts
-            ( cd ../tools/unity-packager && git checkout 9af9dbfef148a03072e6df10b3f0927d7689ce74 )
+            ( cd unity-packager && git checkout 9af9dbfef148a03072e6df10b3f0927d7689ce74 )
         
         # Pack the assets
         - name: Package Project
           run: |
             echo "Creating package ${{env.package_path}}"
-            dotnet run --project ../tools/unity-packager/UnityPackageExporter.csproj -project unity -output ${{env.package_path}} -dir Assets/Ably
+            dotnet run --project unity-packager/UnityPackageExporter/UnityPackageExporter.csproj -project unity -output ${{env.package_path}} -dir Assets/Ably
         
         # Upload artifact
         - name: Upload Artifact
