@@ -92,7 +92,7 @@ jobs:
         - name: Download dotnet framework
           uses: actions/setup-dotnet@v1
           with:
-            dotnet-version: '3.1.x'
+            dotnet-version: '2.x.x'
 
         # Install the packager. We are putting it outside the working directory so we dont include it by mistake
         - name: Install Unity Packager
