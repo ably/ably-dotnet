@@ -98,8 +98,8 @@ jobs:
         - name: Install Unity Packager
           run: |
             git clone https://github.com/sac-fork/Unity-Package-Exporter "../tools/unity-packager"
-            git checkout 9af9dbfef148a03072e6df10b3f0927d7689ce74
             mkdir artifacts
+            ( cd ../tools/unity-packager && git checkout 9af9dbfef148a03072e6df10b3f0927d7689ce74 )
         
         # Pack the assets
         - name: Package Project
