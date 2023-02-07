@@ -70,9 +70,8 @@ jobs:
         # Install the packager. We are putting it outside the working directory so we dont include it by mistake
         - name: Install Unity Packager
           run: |
-            git clone https://github.com/sac-fork/Unity-Package-Exporter unity-packager
+            git clone -b v1 https://github.com/sac-fork/unity-packager
             mkdir artifacts
-            ( cd unity-packager && git checkout 9af9dbfef148a03072e6df10b3f0927d7689ce74 )
         
         # Pack the assets
         - name: Package Project
