@@ -99,6 +99,11 @@ Note: it was recently decided to remove explicit mention of Windows 7 as a suppo
 
 ## Release process
 
+>Important Note 
+>- If local dotnet environment + project setup is not available, please use [github codespaces](https://github.com/codespaces) instead.
+>- We have created `.devcontainer` folder at root specifying necessary dependencies for environment setup needed for release process.
+>- Visit [ably-dotnet](https://github.com/ably/ably-dotnet) repo, click on `Code` button at the right corner and create codespace for current branch from `Codespaces` tab. It will take some time to create the environment. Once codespace is created for the project, you can proceed with release steps mentioned below.
+
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 1. Create a branch for the release, named like release/1.2.3 (where 1.2.3 is the new version number).
@@ -114,6 +119,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 7. Go to [Github Actions tab](https://github.com/ably/ably-dotnet/actions), click on [Package Ably](https://github.com/ably/ably-dotnet/actions/workflows/package.yml) workflow at the left nav-bar. On the right corner, click on `Run workflow` with the current release tag as a input to `Ably version`.
   - You can check all latest workflows under [Github Actions Tab](https://github.com/ably/ably-dotnet/actions). Download the generated artifact named `output-package` at the end of the latest successful workflow run.
   - `output-package` artifact is a zip with 4 files => `ably.io.1.2.3.nupkg`, `ably.io.push.android.1.2.3.nupkg`,`ably.io.push.ios.1.2.3.nupkg` and `ably.io.1.2.3.unitypackage`.
+  - If using github codespaces, you can upload downloaded `output-package` artifact by dragging into it.
 8. Extract `output-package`, open bash/powershell in the same folder and run `dotnet nuget push ably.io.*.nupkg --api-key GENERATED_API_KEY_FROM_NUGET_ACCOUNT --source https://api.nuget.org/v3/index.json` (More information on publishing nuget package can be found [here](https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio?tabs=netcore-cli#publish-with-the-net-cli-or-nuget-cli))
 9. Add a tag to the new `main` head commit and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`
 10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry, upload `ably.io.1.2.3.unitypackage` as a file to the latest release note.
