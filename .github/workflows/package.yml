@@ -24,7 +24,7 @@ jobs:
       - name: Archive package
         uses: actions/upload-artifact@v2
         with:
-          name: save-nuget-package
+          name: output-package
           path: |
             ${{ github.workspace }}/*.nupkg
 
@@ -51,7 +51,7 @@ jobs:
       - name: Archive package
         uses: actions/upload-artifact@v2
         with:
-          name: save-nuget-package
+          name: output-package
           path: |
             ${{ github.workspace }}/*.nupkg
 
@@ -83,5 +83,5 @@ jobs:
         - name: Upload Artifact
           uses: actions/upload-artifact@v2
           with:
-            name: save-nuget-package
+            name: output-package
             path: ${{env.package_path}}
