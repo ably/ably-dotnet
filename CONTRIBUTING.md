@@ -111,9 +111,14 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
   - Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`.
 5. Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`.
 6. Push the branch and create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
-7. Run `.\package.cmd 1.2.3` (windows) / `./package.sh 1.2.3` (linux/mac) to create the nuget package.
-8. Run `dotnet nuget push ably.io.*.nupkg --api-key GENERATED_API_KEY_FROM_NUGET_ACCOUNT --source https://api.nuget.org/v3/index.json` (More information on publishing nuget packages can be found [here](https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio?tabs=netcore-cli#publish-with-the-net-cli-or-nuget-cli))
+7. Go to [Github Actions tab](https://github.com/ably/ably-dotnet/actions), click on [Package Ably](https://github.com/ably/ably-dotnet/actions/workflows/package.yml) workflow at the left nav-bar. On the right corner, click on `Run workflow` `with 1.2.3` (current release version) as a input to `Ably version`.
+  - You can check all latest workflows under [Github Actions Tab](https://github.com/ably/ably-dotnet/actions). Donwload the generated artifact named `save-nuget-package` at the end of the latest successful workflow run.
+  - Downloaded `save-nuget-package` is a zip with 4 files.
+  1. ably.io.1.2.3.nupkg
+  2. ably.io.push.android.1.2.3.nupkg
+  3. ably.io.push.ios.1.2.3.nupkg
+  4. ably.io.1.2.3.unitypackage
+8. Extract `save-nuget-package`, open bash/powershell in the same folder and run `dotnet nuget push ably.io.*.nupkg --api-key GENERATED_API_KEY_FROM_NUGET_ACCOUNT --source https://api.nuget.org/v3/index.json` (More information on publishing nuget packages can be found [here](https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio?tabs=netcore-cli#publish-with-the-net-cli-or-nuget-cli))
 9. Add a tag to the new `main` head commit and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`
-10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-11. Export unity package (exclude tests) as per https://docs.unity3d.com/Manual/AssetPackagesCreate.html with `io.ably.1.2.3.unitypackage` as a file name, upload it to the latest release note.
-12. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/)).
+10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry, upload `ably.io.1.2.3.unitypackage` as a file to the latest release note.
+11. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/)).

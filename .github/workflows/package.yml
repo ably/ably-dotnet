@@ -57,7 +57,7 @@ jobs:
 
   package-unity:
     env:
-      package_path: "./artifacts/io.ably.${{ github.event.inputs.version }}.unitypackage"
+      package_path: "./artifacts/ably.io.${{ github.event.inputs.version }}.unitypackage"
     runs-on: ubuntu-latest
     steps:
         # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
