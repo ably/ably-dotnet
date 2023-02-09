@@ -4,7 +4,7 @@
         <id>ably.io</id>
         <version>$version$</version>
         <title>ably.io</title>
-        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
+        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green, Sachin Shinde</authors>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
         <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>

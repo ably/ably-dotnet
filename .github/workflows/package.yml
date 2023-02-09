@@ -24,7 +24,7 @@ jobs:
       - name: Archive package
         uses: actions/upload-artifact@v2
         with:
-          name: save-nuget-package
+          name: output-package
           path: |
             ${{ github.workspace }}/*.nupkg
 
@@ -51,7 +51,40 @@ jobs:
       - name: Archive package
         uses: actions/upload-artifact@v2
         with:
-          name: save-nuget-package
+          name: output-package
           path: |
             ${{ github.workspace }}/*.nupkg
-      
+
+  package-unity:
+    env:
+      package_path: "./artifacts/ably.io.${{ github.event.inputs.version }}.unitypackage"
+    runs-on: ubuntu-latest
+    steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v3
+        - name: Download dotnet framework
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '2.x.x'
+
+        # Checkout unity packager
+        - name: Checkout unity-packager repo
+          uses: actions/checkout@v3
+          with:
+            repository: ably-forks/unity-packager
+            ref: v1.0.0
+            path: unity-packager
+        
+        # Pack the assets
+        - name: Package Project
+          run: |
+            mkdir artifacts
+            echo "Creating package ${{env.package_path}}"
+            dotnet run --project unity-packager/UnityPackageExporter/UnityPackageExporter.csproj -project unity -output ${{env.package_path}} -dir Assets/Ably
+        
+        # Upload artifact
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: output-package
+            path: ${{env.package_path}}
