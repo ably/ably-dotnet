@@ -31,35 +31,28 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 ## Unity
 
-Unity support is currently in beta.
+- Unity support is currently in beta.
+- Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
 
-Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
+**Downloading Unity Package**
+- Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
+- Please take a look at [importing unity package](./unity/README.md#importing-unity-package) doc for initial config. and usage.
 
 **Supported Platforms:**
-
-The supported platforms should be the ones that can be targeted by Unity. Thus far we tested this, and can confirm the library works, on:
-
-- Windows
-- MacOS
-- Android
-- iOS
-
-**Unsupported Platforms:**
-
-WebGL: due to incompatibility with Websockets (read more [here](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) under the "No direct socket access" section)
+- Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
+- It doesn't support **WebGL** due to incompatibility with Websockets. Read [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
 
 **System Requirements:**
-
 * Unity 2019.x.x or newer
 * The following Unity Player settings must be applied:
   * Scripting Runtime Version should be '.NET 4.x Equivalent'
   * Api Compatibility Level should be '.NET Standard 2.0'
 
-The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the UI thread.
-
 Considerations:
 * We are actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
 * Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
+
+**Note** - Please take a look at [Unity README](./unity/README.md) for more information.
 
 ## Known Limitations
 * Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
@@ -131,6 +124,25 @@ realtime.Connection.On(args =>
     var previousState = args.Previous; // Previous state
     var error = args.Reason; // If the connection error-ed the Reason object will be populated.
 });
+```
+
+### Executing callbacks on Main/UI thread 
+- The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the Main/UI thread.
+
+```
+            var options = new ClientOptions();
+            options.Key = "ROOT_API_KEY_COPIED_FROM_ABLY_WEB_DASHBOARD";
+            
+           // All registered listeners/callbacks will be executed 
+           // on current main thread/ UI thread instead of the background thread
+            options.CaptureCurrentSynchronizationContext = true;
+            options.CustomContext = SynchronizationContext.Current;
+
+            _ably = new AblyRealtime(options);
+            _ably.Connection.On(args =>
+            {
+                Console.WriteLine($"Connection State logged on Main/UI thread");
+            });
 ```
 
 ### Subscribing to a channel
