@@ -126,25 +126,6 @@ realtime.Connection.On(args =>
 });
 ```
 
-### Executing callbacks on Main/UI thread 
-- The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the Main/UI thread.
-
-```
-            var options = new ClientOptions();
-            options.Key = "ROOT_API_KEY_COPIED_FROM_ABLY_WEB_DASHBOARD";
-            
-           // All registered listeners/callbacks will be executed 
-           // on current main thread/ UI thread instead of the background thread
-            options.CaptureCurrentSynchronizationContext = true;
-            options.CustomContext = SynchronizationContext.Current;
-
-            _ably = new AblyRealtime(options);
-            _ably.Connection.On(args =>
-            {
-                Console.WriteLine($"Connection State logged on Main/UI thread");
-            });
-```
-
 ### Subscribing to a channel
 
 Create a channel
@@ -291,6 +272,16 @@ encryptedChannel.Subscribe(message =>
     var data = message.data; // Sensitive data (encrypted before published)
 });
 encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
+```
+
+### Executing callbacks on Main/UI thread 
+- The library creates a number of threads and all callbacks are executed on non UI threads.
+- This makes it difficult to update UI elements inside any callback executed by Ably. 
+- To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the Main/UI thread.
+
+```
+options.CaptureCurrentSynchronizationContext = true;
+options.CustomContext = SynchronizationContext.Current;
 ```
 
 ## Using the REST API
