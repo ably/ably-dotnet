@@ -25,11 +25,53 @@ Considerations:
 - Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` in the code, since the feature is not supported and throws runtime exception.
 - Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in case of conflict with other NewtonSoft DLLs in the project or use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
 - [Configure SynchronizationContext](../README.md#executing-callbacks-on-mainui-thread) to execute callbacks on Main/UI thread.
-- Sample code
+- Sample code :
 
 ```dotnet
+using System;
+using System.Threading;
+using IO.Ably;
+using IO.Ably.Realtime;
+using UnityEngine;
+using UnityEngine.UI;
 
+namespace Example.ChatApp
+{
+    public class AblyConsole : MonoBehaviour
+    {
+        private AblyRealtime _ably;
+        private ClientOptions _clientOptions;
+
+        // It's recommended to use other forms of authentication. E.g. JWT, Token Auth 
+        // This is to avoid exposing root api key to a client
+        private static string _apiKey = "ROOT_API_KEY_COPIED_FROM_ABLY_WEB_DASHBOARD";
+
+        void Start()
+        {
+            InitializeAbly();
+        }
+
+        private void InitializeAbly()
+        {
+            _clientOptions = new ClientOptions
+            {
+                Key = _apiKey,
+                // this will disable the library trying to subscribe to network state notifications
+                AutomaticNetworkStateMonitoring = false,
+                AutoConnect = false,
+                // this will make sure to post callbacks on UnitySynchronization Context Main Thread
+                CustomContext = SynchronizationContext.Current
+            };
+
+            _ably = new AblyRealtime(_clientOptions);
+            _ably.Connection.On(args =>
+            {
+                Debug.Log($"Connection State is <b>{args.Current}</b>");
+            });
+        }
+    }
 ```
+- Please take a look at [Unity Demo Chat App](./Assets/Ably/Examples/Chat/) for understanding ably SDK setup.
 
 ### Unsupported Platforms
 - WebGL: Due to incompatibility with Websockets.<br/>
