@@ -358,7 +358,7 @@ var options = new ClientOptions
 {
     AuthCallback = async tokenParams =>
     {
-        // Return a 'TokenDetails' instance or a preferably a 'TokenRequest' string.
+        // Return a 'TokenDetails'/'TokenRequest' object or a token string .
         // Typically this method would wrap a request to your web server.
         return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
     }
@@ -371,7 +371,7 @@ var client = new AblyRealtime(options);
 Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
 
 ```csharp
-string tokenRequest = await client.Auth.CreateTokenRequestAsync();
+TokenRequest tokenRequest = await client.Auth.CreateTokenRequestObjectAsync();
 ```
 
 ### Fetching your application's stats
