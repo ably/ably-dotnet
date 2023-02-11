@@ -155,3 +155,11 @@ Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityP
 - To use gameCI, follow [gameCI github actions doc](https://game.ci/docs/github/getting-started).
 - To use codemagic, follow [CI for unity games using codemagic](https://blog.codemagic.io/why-to-use-cicd-for-unity-games/) and [getting started with unity codemagic docs](https://docs.codemagic.io/yaml-quick-start/building-a-unity-app/).
 - Learn more about unity cloud build [here](https://unity.com/products/unity-devops/pricing#cloud-build).
+
+## Set up ably unitypackage
+- Currently, latest ably source code is imported as DLLs in unity using [unity plug-ins](https://docs.unity3d.com/Manual/Plugins.html).
+- It's done as a part of [release process](../CONTRIBUTING.md/#release-process) by running `./unity-plugins-updater.sh 1.2.3` (linux/mac) / `.\unity-plugins-updater.cmd 1.2.3` (windows) at root.
+- This script is responsible for copying latest `ably` and `deltacodec` release DLLs into `unity/Assets/Ably/Plugins/`.
+- Other DLLs available under `unity/Assets/Ably/Plugins/` are dependencies of `ably` and `deltacodec`. 
+- Those needs to be updated manually if copied `ably` or `deltacodec` DLLs become incompatible with them.
+ i.e. If versions of those dependencies are changed/updated using nuget package manager.
