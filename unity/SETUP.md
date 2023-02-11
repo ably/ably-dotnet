@@ -150,7 +150,8 @@ Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityP
 ```
 - More information related to Asset Package Export and Import -> https://docs.unity3d.com/Manual/AssetPackages.html
 
-## **CI/CD using gameCI**
-- Currently, unity project testing and packaging is done using [gameCI](https://game.ci/)
-- `Unity License File (ulf)` is created using gameCI provided github action and added as a `UNITY_LICENSE` github secret.
-- To learn more about unity CI using gameCI github actions, follow [gameCI github actions](https://game.ci/docs/github/getting-started)
+## **CI/CD for unity**
+- Currently, CI/CD for unity project is available using [gameCI](https://game.ci/) (open source tool), [codemagic](https://unitycicd.com/) and [unity cloud build](https://unity.com/products/cloud-build).
+- To use gameCI, follow [gameCI github actions doc](https://game.ci/docs/github/getting-started).
+- To use codemagic, follow [CI for unity games using codemagic](https://blog.codemagic.io/why-to-use-cicd-for-unity-games/) and [getting started with unity codemagic docs](https://docs.codemagic.io/yaml-quick-start/building-a-unity-app/).
+- Learn more about unity cloud build [here](https://unity.com/products/unity-devops/pricing#cloud-build).
