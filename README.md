@@ -18,28 +18,6 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
-## Partially supported platforms
-
-### Unity
-
-Unity support is currently in beta.
-
-Shortcomings & Considerations:
-
-* This library is currently only tested manually on Unity for Windows, we are however actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
-* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
-
-Unity Requirements:
-
-* Unity 2018.2.0 or newer
-* The following Unity Player settings must be applied:
-  * Scripting Runtime Version should be '.NET 4.x Equivalent'
-  * Api Compatibility Level should be '.NET Standard 2.0'
-
-Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a Unity package as well.
-
-The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the UI thread.
-
 ## Push notification
 
 The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
@@ -51,9 +29,41 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 * How to subscribe to channels that support push notification
 * How to send Ably messages that include a notification
 
-## Known Limitations
+## Unity
 
-* Browser push notifications in Blazor are not supported.
+Unity support is currently in beta.
+
+Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
+
+**Supported Platforms:**
+
+The supported platforms should be the ones that can be targeted by Unity. Thus far we tested this, and can confirm the library works, on:
+
+- Windows
+- MacOS
+- Android
+- iOS
+
+**Unsupported Platforms:**
+
+WebGL: due to incompatibility with Websockets (read more [here](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) under the "No direct socket access" section)
+
+**System Requirements:**
+
+* Unity 2019.x.x or newer
+* The following Unity Player settings must be applied:
+  * Scripting Runtime Version should be '.NET 4.x Equivalent'
+  * Api Compatibility Level should be '.NET Standard 2.0'
+
+The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the UI thread.
+
+Considerations:
+* We are actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
+* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
+
+## Known Limitations
+* Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
+* [MAUI framework](https://dotnet.microsoft.com/en-us/apps/maui) is under testing and not yet supported.
 
 ## Documentation
 
