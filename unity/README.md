@@ -2,6 +2,10 @@
 - Unity support is currently in beta.
 - Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
 
+Considerations:
+* We are actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
+* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
+
 ### Supported Platforms
 - Windows, MacOS, Linux, Android and iOS.
 

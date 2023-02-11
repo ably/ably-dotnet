@@ -42,16 +42,6 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 - Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
 - It doesn't support **WebGL** due to incompatibility with Websockets. Read [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
 
-**System Requirements:**
-* Unity 2019.x.x or newer
-* The following Unity Player settings must be applied:
-  * Scripting Runtime Version should be '.NET 4.x Equivalent'
-  * Api Compatibility Level should be '.NET Standard 2.0'
-
-Considerations:
-* We are actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
-* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
-
 **Note** - Please take a look at [Unity README](./unity/README.md) for more information.
 
 ## Known Limitations
