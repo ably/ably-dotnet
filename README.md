@@ -265,12 +265,10 @@ encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted befo
 ```
 
 ### Executing callbacks on Main/UI thread 
-- The library creates a number of threads and all callbacks are executed on non UI threads.
-- This makes it difficult to update UI elements inside any callback executed by Ably. 
-- To make it easier we support capturing the `SynchronizationContext` and synchronizing callbacks to the Main/UI thread.
+- The library creates a number of threads and all listeners/callbacks are executed on non UI threads.
+- To execute listeners/callbacks on the Main/UI thread, we support capturing the `SynchronizationContext`.
 
 ```
-options.CaptureCurrentSynchronizationContext = true;
 options.CustomContext = SynchronizationContext.Current;
 ```
 
