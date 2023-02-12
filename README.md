@@ -38,7 +38,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 - Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
 - Please take a look at [importing unity package](./unity/README.md#importing-unity-package) doc for initial config. and usage.
 
-**Supported Platforms:**
+**Supported Platforms**
 - Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
 - It doesn't support **WebGL** due to incompatibility with Websockets. Read [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
 
