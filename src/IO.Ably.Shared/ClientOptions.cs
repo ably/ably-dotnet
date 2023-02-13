@@ -366,20 +366,10 @@ namespace IO.Ably
         public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
-        /// The default has changed from `true` to `false`
-        /// It will be removed in the next version of the library.
-        /// Default: false.
-        /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
-        public bool CaptureCurrentSynchronizationContext { get; set; } = false;
-
-        /// <summary>
-        /// [Obsolete] Allows developers to provide their Captured Context to be used when triggering handlers and emitters
+        /// Allows developers to provide their Captured Context to be used when triggering handlers and emitters
         /// It will be removed in the next version of the library.
         /// Default: null.
         /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
         public SynchronizationContext CustomContext { get; set; }
 
         /// <summary>
