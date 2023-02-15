@@ -366,8 +366,8 @@ namespace IO.Ably
         public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Allows developers to provide their Captured Context to be used when triggering handlers and emitters
-        /// It will be removed in the next version of the library.
+        /// Useful where you want to execute callback on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to provide their Thread Synchronization Context to be used when triggering handlers and emitters.
         /// Default: null.
         /// </summary>
         public SynchronizationContext CustomContext { get; set; }
