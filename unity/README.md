@@ -13,17 +13,17 @@ Considerations:
 * Unity 2019.x.x or newer
 * The following Unity Player settings must be applied:
   * Scripting Runtime Version should be '.NET 4.x Equivalent'
-  * Api Compatibility Level should be '.NET Standard 2.0'
+  * API Compatibility Level should be '.NET Standard 2.0'
 
 ### Downloading Unity Package
-- Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
+- Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 have `.unitypackage` included.
 
 ### Importing Unity Package
 - Import package by going to Assets -> Import Package -> Custom Package.
   For detailed information, visit https://docs.unity3d.com/Manual/AssetPackagesImport.html
-- Make sure to [disable assembly validation](CONTRIBUTING.md#disable-assembly-validation-error) if it fails due to conflict with internal newtonsoft json library.
-- Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` in the code, since the feature is not supported and throws runtime exception.
-- Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in case of conflict with other NewtonSoft DLLs in the project or use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
+- Make sure to [disable assembly validation](CONTRIBUTING.md#disable-assembly-validation-error) if your project fails to build due to conflicts with Unity's internal newtonsoft json library.
+- Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` when instantiating the Ably Client Library, since this feature is not supported and will throw a runtime exception.
+- Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in the case of conflict with other NewtonSoft DLLs in the project, or if the use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
 - [Configure SynchronizationContext](../README.md#executing-callbacks-on-mainui-thread) to execute callbacks on Main/UI thread.
 - Sample code :
 
@@ -71,12 +71,12 @@ namespace Example.ChatApp
         }
     }
 ```
-- Please take a look at [Unity Demo Chat App](./Assets/Ably/Examples/Chat/) for understanding ably SDK setup.
+- Please take a look at [Unity Demo Chat App](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
 
 ### Unsupported Platforms
-- WebGL: Due to incompatibility with Websockets.<br/>
-Read [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
+- WebGL: Due to incompatibility with WebSockets.<br/>
+For more information on this, read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking in the Unity documentation.
 
 ### Contributing
-- Please take a look at [contributing doc](CONTRIBUTING.md) for information related to local dev-setup, writing and running tests.
-- Detailed information related to updating ably DLLs using [unity plug-ins](https://docs.unity3d.com/Manual/Plugins.html) is given at [updating-ably-unitypackage](CONTRIBUTING.md#updating-ably-unitypackage).
+- Please take a look at the [contributing documentation](CONTRIBUTING.md) for information relating to local development setup, and writing and running tests.
+- Detailed information related to updating Ably DLLs using [Unity Plug-ins](https://docs.unity3d.com/Manual/Plugins.html) is available in [updating-ably-unitypackage](CONTRIBUTING.md#updating-ably-unitypackage).

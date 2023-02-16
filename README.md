@@ -40,7 +40,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 **Supported Platforms**
 - Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
-- It doesn't support **WebGL** due to incompatibility with Websockets. Read [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
+- It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
 
 **Note** - Please take a look at [Unity README](./unity/README.md) for more information.
 
