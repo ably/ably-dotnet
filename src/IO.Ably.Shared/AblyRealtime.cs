@@ -95,6 +95,10 @@ namespace IO.Ably
             {
                 _synchronizationContext = options.CustomContext;
             }
+            else if (options.CaptureCurrentSynchronizationContext)
+            {
+                _synchronizationContext = SynchronizationContext.Current;
+            }
         }
 
         /// <summary>

@@ -366,8 +366,17 @@ namespace IO.Ably
         public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Useful where you want to execute callback on the main/UI thread instead of background thread in UI based apps.
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to capture their Current SynchronizationContext and trigger handlers and emitters on the same.
+        /// Default: false.
+        /// </summary>
+        [Obsolete("Use CustomContext property instead, CaptureCurrentSynchronizationContext property will be removed in future versions")]
+        public bool CaptureCurrentSynchronizationContext { get; set; } = false;
+
+        /// <summary>
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
         /// Allows developers to provide their Thread Synchronization Context to be used when triggering handlers and emitters.
+        /// This is majorly useful in unity, xamarin and MAUI apps.
         /// Default: null.
         /// </summary>
         public SynchronizationContext CustomContext { get; set; }
