@@ -46,7 +46,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 ## Known Limitations
 * Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
-* [MAUI framework](https://dotnet.microsoft.com/en-us/apps/maui) is under testing and not yet supported.
+* [MAUI framework](https://dotnet.microsoft.com/en-us/apps/maui) is under testing and not yet fully supported, see [MAUI issue](https://github.com/ably/ably-dotnet/issues/1205).
 
 ## Documentation
 
@@ -262,14 +262,6 @@ encryptedChannel.Subscribe(message =>
     var data = message.data; // Sensitive data (encrypted before published)
 });
 encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
-```
-
-### Executing callbacks on Main/UI thread 
-- The library creates a number of threads and all listeners/callbacks are executed on non UI threads.
-- To execute listeners/callbacks on the Main/UI thread, we support capturing the `SynchronizationContext`.
-
-```
-options.CustomContext = SynchronizationContext.Current;
 ```
 
 ## Using the REST API
