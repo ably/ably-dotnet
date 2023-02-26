@@ -100,8 +100,7 @@
 - We now have a test runner window in the bottom-left along with a user-friendly editor layout.
 
 ### **Disable assembly validation error**
-- Unity internally has [`NewtonSoftJson`](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) package with assembly naming conflicting with provided `NewtonSoftJson.JSON.dll` (https://github.com/jilleJr/Newtonsoft.Json-for-Unity) as a plugin.
-- So, it gives assembly validation error in the console while building the project, to resolve issue, disable `Assembly Validation`
+- Unity has a [`NewtonSoftJson`](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) package used by default, which conflicts with the [`NewtonSoftJson.JSON.dll`](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) included with the Ably plugin, resulting in assembly validation errors. To resolve this, we need to disable `Assembly Validation`.
 - Go to `Edit -> Project Settings -> Player -> Assembly Version Validation`, uncheck the box, then click `Apply`.
 
 ![](doc_images/assembly_version_validation.PNG)

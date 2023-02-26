@@ -19,8 +19,7 @@ Considerations:
 - Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 have `.unitypackage` included.
 
 ### Importing Unity Package
-- Import package by going to Assets -> Import Package -> Custom Package.
-  For detailed information, visit https://docs.unity3d.com/Manual/AssetPackagesImport.html
+- You can import the package by going to Assets -> Import Package -> Custom Package in the Unity UI. For more detailed information on importing packages, visit https://docs.unity3d.com/Manual/AssetPackagesImport.html.
 - Make sure to [disable assembly validation](CONTRIBUTING.md#disable-assembly-validation-error) if your project fails to build due to conflicts with Unity's internal newtonsoft json library.
 - Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` when instantiating the Ably Client Library, since this feature is not supported and will throw a runtime exception.
 - Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in the case of conflict with other NewtonSoft DLLs in the project, or if the use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
