@@ -272,6 +272,14 @@ encryptedChannel.Subscribe(message =>
 encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
 ```
 
+### Executing callbacks on Main/UI thread
+- The library creates a number of threads and all listeners/callbacks are executed on non-UI/background threads.
+- To execute listeners/callbacks on the Main/UI thread, we support capturing the `SynchronizationContext`.
+
+```
+options.CustomContext = SynchronizationContext.Current;
+```
+
 ## Using the REST API
 
 ### Introduction
