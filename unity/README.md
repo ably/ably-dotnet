@@ -77,5 +77,5 @@ namespace Example.ChatApp
 For more information on this, read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking in the Unity documentation.
 
 ### Contributing
-- Please take a look at the [contributing documentation](CONTRIBUTING.md) for information relating to local development setup, and writing and running tests.
-- Detailed information related to updating Ably DLLs using [Unity Plug-ins](https://docs.unity3d.com/Manual/Plugins.html) is available in [updating-ably-unitypackage](CONTRIBUTING.md#updating-ably-unitypackage).
+- Please take a look at the [contributing doc](CONTRIBUTING.md) for information relating to local development setup, writing and running tests.
+- Detailed information related to updating Ably DLLs using [Unity Plug-ins](https://docs.unity3d.com/Manual/Plugins.html) is available in [updating-ably-unitypackage](CONTRIBUTING.md#updating-the-ably-unity-package).
