@@ -41,8 +41,10 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 **Supported Platforms**
 - Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
 - It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
+- To support **WebGL**, you should refer to [interation with browser javascript from WebGL](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). You can import [ably-js](https://github.com/ably/ably-js) as a browser javascript and call it from WebGL. For more information refer to the project [Ably Tower Defence](https://github.com/ably-labs/ably-tower-defense/tree/js-branch/).
 
-**Note** - Please take a look at [Unity README](./unity/README.md) for more information.
+
+**Note** - Please take a look at [Unity README](./unity/README.md) and [Ably Unity Blog](https://ably.com/blog/multiplayer-game-in-unity-with-ably) for more information.
 
 ## Known Limitations
 * Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
