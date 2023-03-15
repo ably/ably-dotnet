@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using kvp = System.Collections.Generic.KeyValuePair<string, string>;
+using Kvp = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace IO.Ably
 {
@@ -34,7 +34,7 @@ namespace IO.Ably
     /// </summary>
     public class HttpValueCollection
     {
-        private readonly List<kvp> _data = new List<kvp>();
+        private readonly List<Kvp> _data = new List<Kvp>();
 
         /// <summary>
         /// All the keys.
@@ -66,7 +66,7 @@ namespace IO.Ably
             {
                 // If the specified key already exists in the collection, setting this property overwrites the existing list of values with the specified value.
                 _data.RemoveAll(i => i.Key == name);
-                _data.Add(new kvp(name, value));
+                _data.Add(new Kvp(name, value));
             }
         }
 
@@ -93,7 +93,7 @@ namespace IO.Ably
         /// <param name="value">value.</param>
         public void Add(string name, string value)
         {
-            _data.Add(new kvp(name, value));
+            _data.Add(new Kvp(name, value));
         }
 
         /// <summary>
