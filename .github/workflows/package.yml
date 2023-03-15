@@ -14,9 +14,12 @@ jobs:
         with: 
           submodules: 'recursive'
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: |
+            3.1.x
+            6.0.x
+            7.0.x
       - name: Download fake-cli
         run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
       - name: Package
@@ -38,9 +41,12 @@ jobs:
         with: 
           submodules: 'recursive'
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: |
+            3.1.x
+            6.0.x
+            7.0.x
       - name: Download fake-cli
         run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
       - name: Restore packages
