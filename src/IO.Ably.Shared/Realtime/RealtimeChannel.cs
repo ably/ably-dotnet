@@ -18,7 +18,10 @@ namespace IO.Ably.Realtime
     [DebuggerDisplay("{Name}. State = {_state}. Error = {ErrorReason} ")]
     internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel
     {
+#pragma warning disable CA2213
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
+#pragma warning restore CA2213
+
         private ChannelOptions _options;
         private ChannelState _state;
         private readonly PushChannel _pushChannel;
