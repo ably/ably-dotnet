@@ -21,7 +21,7 @@ jobs:
             6.0.x
             7.0.x
       - name: Download fake-cli
-        run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
+        run:  dotnet tool restore
       - name: Package
         run: ./package.cmd ${{ github.event.inputs.version }}
       - name: Archive package
