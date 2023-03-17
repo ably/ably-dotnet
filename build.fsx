@@ -31,7 +31,7 @@ open Fake.DotNet.NuGet
 open System.Text.RegularExpressions
 
 let currentDir = __SOURCE_DIRECTORY__
-let netstandardTestDir = "src/IO.Ably.Tests.DotNetCore20"
+let netstandardTestDir = "src/IO.Ably.Tests.NET6_NET7"
 let xUnit2 = XUnit2.run
 
 let NetStandardSolution = "src/IO.Ably.NetStandard.sln"
@@ -218,7 +218,7 @@ let findFailedDotnetTestTests (resultsPath:string) =
 let runStandardTestsWithOptions testToRun (failOnError:bool) = 
   Directory.ensure testResultsDir
   Trace.log " --- Testing net core version --- "
-  let project = Path.combine currentDir "src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj"
+  let project = Path.combine currentDir "src/IO.Ably.Tests.NET6_NET7/IO.Ably.Tests.NET6_NET7.csproj"
 
   match testToRun with
   | Method testMethodName -> 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
-using IO.Ably.Tests.DotNetCore20;
+using IO.Ably.Tests.Extensions;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;

@@ -29,7 +29,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Shared", "IO.Ably.S
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Shared.MsgPack", "IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.shproj", "{EEBF3249-3CA3-4078-A188-F8B916C3F4C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.Tests.DotNetCore20", "IO.Ably.Tests.DotNetCore20\IO.Ably.Tests.DotNetCore20.csproj", "{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.Tests.NET6_NET7", "IO.Ably.Tests.NET6_NET7\IO.Ably.Tests.NET6_NET7.csproj", "{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Tests.Shared", "IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.shproj", "{1609F12C-8216-4E7C-ADE0-240BFE160242}"
 EndProject

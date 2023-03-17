@@ -19,7 +19,7 @@ choco install nuget.commandline
 ```
 
 Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests.
-To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
+To run the Net6.0 and Net7.0 build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 

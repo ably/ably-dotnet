@@ -20,7 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\ServerTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\TestAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ChannelOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageDataConverterTests.cs" />
@@ -31,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DefaultTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EncryptionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorInfoTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChannelOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\JAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImplicitTokenAuthWithClientId.cs" />
