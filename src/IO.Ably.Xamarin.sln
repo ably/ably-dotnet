@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Push.Android", "IO.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Push.iOS", "IO.Ably.Push.iOS\IO.Ably.Push.iOS.csproj", "{E1A8FDE2-FEFC-403E-99A0-F13847B1495E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests.NET6_NET7", "IO.Ably.Tests.NET6_NET7\IO.Ably.Tests.NET6_NET7.csproj", "{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests.DotNET", "IO.Ably.Tests.DotNET\IO.Ably.Tests.DotNET.csproj", "{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetPush", "..\examples\DotnetPush\DotnetPush\DotnetPush.csproj", "{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}"
 EndProject
