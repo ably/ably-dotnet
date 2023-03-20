@@ -1,0 +1,10 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+framework: netstandard2.0, net462, net6.0, net7.0
+nuget Fake.Core.Target
+nuget Fake.DotNet.AssemblyInfoFile
+nuget Fake.DotNet.Cli
+nuget Fake.DotNet.Testing.XUnit2
+nuget System.Core
+nuget System.Xml.Linq

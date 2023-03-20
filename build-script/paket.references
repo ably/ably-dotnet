@@ -1,0 +1,6 @@
+Fake.Core.Target
+Fake.DotNet.AssemblyInfoFile
+Fake.DotNet.Cli
+Fake.DotNet.Testing.XUnit2
+System.Core
+System.Xml.Linq

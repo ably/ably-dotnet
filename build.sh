@@ -3,7 +3,7 @@ dotnet tool restore
 
 if [ $# -eq 0 ]
 then
-    dotnet fake run build.fsx
+    dotnet run --project ./build-script/build-script.fsproj
 else
-    dotnet fake run build.fsx -t $@
+    dotnet run --project ./build-script/build-script.fsproj -- -t $@
 fi
