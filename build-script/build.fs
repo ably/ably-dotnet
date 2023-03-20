@@ -13,9 +13,11 @@ open System.Xml.XPath
 open FSharp.Core
 open Fake.Testing.Common
 open Fake.DotNet.NuGet
+open System.IO
 open System.Text.RegularExpressions
 
-let currentDir = __SOURCE_DIRECTORY__
+let currentDir =  DirectoryInfo(__SOURCE_DIRECTORY__).Parent.FullName;
+
 let netstandardTestDir = "src/IO.Ably.Tests.DotNET"
 let xUnit2 = XUnit2.run
 
