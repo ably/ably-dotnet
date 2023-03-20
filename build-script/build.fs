@@ -134,6 +134,7 @@ let initTargets1 (argv) =
                       [
                           "Configuration", buildMode
                           "RestorePackages", "True"
+                          "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                       ]
                }
         MSBuild.build setParams NetFrameworkSolution
@@ -151,6 +152,7 @@ let initTargets1 (argv) =
                         "Optimize", "True"
                         "DebugSymbols", "True"
                         "Configuration", buildMode
+                        "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                     ]
              }
       MSBuild.build setParams NetFrameworkSolution
@@ -166,6 +168,7 @@ let initTargets1 (argv) =
                         "Optimize", "True"
                         "DebugSymbols", "True"
                         "Configuration", buildMode
+                        "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                     ]
              }
       MSBuild.build setParams XamarinSolution
@@ -303,6 +306,7 @@ let initTargets1 (argv) =
                           "Optimize", "True"
                           "DebugSymbols", "True"
                           "Configuration", buildMode
+                          "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                       ]
                }
         MSBuild.build setParams NetFrameworkSolution
@@ -385,6 +389,7 @@ let initTargets1 (argv) =
                         "StyleCopEnabled", "True"
                         "Package", "True"
                         "DefineConstants", "PACKAGE"
+                        "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                     ]
              }
       MSBuild.build setParams packageSolution
@@ -403,6 +408,7 @@ let initTargets1 (argv) =
                         "StyleCopEnabled", "True"
                         "Package", "True"
                         "DefineConstants", "PACKAGE"
+                        "dummy", "property" // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
                     ]
              }
       MSBuild.build setParams pushPackageSolution

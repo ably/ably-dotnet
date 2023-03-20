@@ -1,12 +1,6 @@
 Microsoft.Build
-Microsoft.Build.Framework
 Microsoft.Build.Tasks.Core
-Microsoft.Build.Utilities.Core
 Fake.Core.Target
-Fake.Core.CommandLineParsing
 Fake.DotNet.AssemblyInfoFile
-Fake.IO.FileSystem
 Fake.DotNet.Cli
-Fake.DotNet.MSBuild
 Fake.DotNet.Testing.XUnit2
-Fake.DotNet.NuGet
