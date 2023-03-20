@@ -1,5 +1,4 @@
 ﻿open Fake.Core.TargetOperators
-open Fake.Core.Operators
 open Fake.Core
 open Fake.IO.Globbing.Operators 
 open Fake.DotNet
@@ -12,7 +11,6 @@ open System.Xml.Linq
 open System.Xml.XPath
 open FSharp.Core
 open Fake.Testing.Common
-open Fake.DotNet.NuGet
 open System.IO
 open System.Text.RegularExpressions
 
@@ -45,7 +43,7 @@ Options:
   -v <str>       Version
 """
 
-let initTargets1 (argv) = 
+let initTargets (argv) = 
 
 
     // retrieve the fake 5 context information
@@ -531,13 +529,6 @@ let initTargets1 (argv) =
     "Build.NetStandard"
       ==> "NetStandard - Unit Tests with retry"
       ==> "Test.NetStandard.Unit.WithRetry"
-  
-//-----------------------------------------------------------------------------
-// Target Create
-//-----------------------------------------------------------------------------
-
-let initTargets () = 
-    printfn "Hi there"
 
 //-----------------------------------------------------------------------------
 // Target Start
@@ -550,7 +541,7 @@ let main argv =
     |> Context.FakeExecutionContext.Create false "build-script.fsx"
     |> Context.RuntimeContext.Fake
     |> Context.setExecutionContext 
-    initTargets1 (argv)
+    initTargets (argv)
     Target.runOrDefaultWithArguments "Build.NetFramework"
 
     0 // return an integer exit code
