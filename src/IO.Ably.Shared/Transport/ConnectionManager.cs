@@ -226,17 +226,20 @@ namespace IO.Ably.Transport
                 Logger.Error($"Failed to encode protocol message: {encodingResult.Error.Message}");
             }
 
-            if (State.CanSend == false && State.CanQueue == false)
+            if (State.CanSend == false)
             {
-                throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
-            }
+                if (Options.QueueMessages == false)
+                {
+                    throw new AblyException(
+                        $"Not queuing messages for [{State.State}] since Options.QueueMessages is set to False.",
+                        Connection.ConnectionState.DefaultErrorInfo.Code,
+                        HttpStatusCode.ServiceUnavailable);
+                }
 
-            if (State.CanSend == false && State.CanQueue && Options.QueueMessages == false)
-            {
-                throw new AblyException(
-                    $"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
-                    Connection.ConnectionState.DefaultErrorInfo.Code,
-                    HttpStatusCode.ServiceUnavailable);
+                if (State.CanQueue == false)
+                {
+                    throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
+                }
             }
 
             ExecuteCommand(SendMessageCommand.Create(message, callback).TriggeredBy("ConnectionManager.Send()"));
