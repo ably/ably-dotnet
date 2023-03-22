@@ -334,7 +334,7 @@ namespace IO.Ably.Realtime.Workflow
                     if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
                         var sendResult = SendMessage(cmd.ProtocolMessage, cmd.Callback);
-                        if (sendResult.IsFailure && State.Connection.CurrentStateObject.CanQueue)
+                        if (sendResult.IsFailure && State.Connection.CurrentStateObject.CanQueue && Client.Options.QueueMessages)
                         {
                             Logger.Debug("Failed to send message. Queuing it.");
                             State.PendingMessages.Add(new MessageAndCallback(
@@ -343,7 +343,7 @@ namespace IO.Ably.Realtime.Workflow
                                 Logger));
                         }
                     }
-                    else if (State.Connection.CurrentStateObject.CanQueue)
+                    else if (State.Connection.CurrentStateObject.CanQueue && Client.Options.QueueMessages)
                     {
                         Logger.Debug("Queuing message");
                         State.PendingMessages.Add(new MessageAndCallback(
@@ -811,6 +811,11 @@ namespace IO.Ably.Realtime.Workflow
                         };
 
                         SetState(disconnectedState, skipTimer: cmd.SkipAttach);
+
+                        if (Client.Options.QueueMessages == false)
+                        {
+                            ClearAckQueueAndFailMessages(ErrorInfo.ReasonMsgQueueNotAllowed);
+                        }
 
                         if (cmd.SkipAttach == false)
                         {

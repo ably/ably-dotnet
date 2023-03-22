@@ -13,7 +13,7 @@ namespace IO.Ably
     public class ErrorInfo
     {
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
-        internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
+        internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", ErrorCodes.Disconnected);
         internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", ErrorCodes.ConnectionSuspended);
         internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", ErrorCodes.ConnectionFailed);
         internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", ErrorCodes.Unauthorized);
@@ -22,6 +22,8 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
         internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
         internal static readonly ErrorInfo NonRenewableToken = new ErrorInfo("The library was initialized with a token without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help", ErrorCodes.NoMeansProvidedToRenewAuthToken, HttpStatusCode.Unauthorized);
+
+        internal static readonly ErrorInfo ReasonMsgQueueNotAllowed = new ErrorInfo("Clearing message AckQueue(created at connected state) because Options.QueueMessages is false", ErrorCodes.Disconnected);
 
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";
