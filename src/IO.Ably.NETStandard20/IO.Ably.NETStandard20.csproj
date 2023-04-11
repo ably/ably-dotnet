@@ -8,6 +8,10 @@
     <AssemblyName>IO.Ably</AssemblyName>
     <RootNamespace>IO.Ably</RootNamespace>
   </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)'=='Mono'">
+	<TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Package)'=='True'">
     <SignAssembly>true</SignAssembly>
