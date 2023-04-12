@@ -122,7 +122,7 @@ let initTargets (argv) =
     Target.create "Restore Xamarin" (fun _ ->
 
         if not Environment.isWindows then
-          CreateProcess.fromRawCommand "ls" ["../packages"] |> Proc.run |> ignore
+          CreateProcess.fromRawCommand "ls" ["../src/packages"] |> Proc.run |> ignore
 
         let setParams (defaults:MSBuildParams) =
               { defaults with
