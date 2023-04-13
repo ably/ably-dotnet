@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 15.0.26730.10
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F05-BF68-4BA8-A58F-C7C131E3FC62}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,9 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
 		IO.Ably.ruleset = IO.Ably.ruleset
+		..\PushNotifications.md = ..\PushNotifications.md
 		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
-		..\PushNotifications.md = ..\PushNotifications.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably", "Ably", "{8A0F718E-2168-4CC7-8F7B-A65508B52B0F}"
@@ -35,33 +35,25 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Shared.MsgPack", "I
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Tests.Shared", "IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.shproj", "{1609F12C-8216-4E7C-ADE0-240BFE160242}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.DeltaCodec", "..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj", "{53CA3FD4-E11A-4368-A7A5-BCAB40D08BED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.DeltaCodec", "..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj", "{53CA3FD4-E11A-4368-A7A5-BCAB40D08BED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.NETStandard20", "IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj", "{97ED15E5-6546-4437-BF4F-B929700CE922}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.NETStandard20", "IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj", "{97ED15E5-6546-4437-BF4F-B929700CE922}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Push.Android", "IO.Ably.Push.Android\IO.Ably.Push.Android.csproj", "{F0010AA8-63C3-47D7-95E9-A5D1D04DA325}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Push.iOS", "IO.Ably.Push.iOS\IO.Ably.Push.iOS.csproj", "{E1A8FDE2-FEFC-403E-99A0-F13847B1495E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests.DotNET", "IO.Ably.Tests.DotNET\IO.Ably.Tests.DotNET.csproj", "{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetPush", "..\examples\DotnetPush\DotnetPush\DotnetPush.csproj", "{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotnetPush", "..\examples\DotnetPush\DotnetPush\DotnetPush.csproj", "{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetPush.Android", "..\examples\DotnetPush\DotnetPush.Android\DotnetPush.Android.csproj", "{7050F177-1D55-4562-937C-56D117198BFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationsPublisher", "..\examples\NotificationsPublisher\NotificationsPublisher.csproj", "{D150CE86-80D9-4709-B0BC-5E1A3AA457A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationsPublisher", "..\examples\NotificationsPublisher\NotificationsPublisher.csproj", "{D150CE86-80D9-4709-B0BC-5E1A3AA457A9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetPush.iOS", "..\examples\DotnetPush\DotnetPush.iOS\DotnetPush.iOS.csproj", "{75256FFE-5F9A-4F4F-BD78-37F6489488FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests.NETFramework", "IO.Ably.Tests.NETFramework\IO.Ably.Tests.NETFramework.csproj", "{567FEEF7-41AF-42F2-AD34-546A278355B1}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{1609f12c-8216-4e7c-ade0-240bfe160242}*SharedItemsImports = 13
-		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
-		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
-		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{567feef7-41af-42f2-ad34-546a278355b1}*SharedItemsImports = 4
-		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
-		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{eebf3249-3ca3-4078-a188-f8b916c3f4c2}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AppStore|Any CPU = AppStore|Any CPU
 		AppStore|ARM = AppStore|ARM
@@ -481,70 +473,6 @@ Global
 		{E1A8FDE2-FEFC-403E-99A0-F13847B1495E}.Release|x64.Build.0 = Release|Any CPU
 		{E1A8FDE2-FEFC-403E-99A0-F13847B1495E}.Release|x86.ActiveCfg = Release|Any CPU
 		{E1A8FDE2-FEFC-403E-99A0-F13847B1495E}.Release|x86.Build.0 = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.AppStore|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.CI_Release|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug 4.0|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Debug|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package_netstandard|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.package|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|Any CPU.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|Any CPU.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|ARM.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|ARM.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|x64.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|x64.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|x86.ActiveCfg = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release 4.0|x86.Build.0 = Debug|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|ARM.ActiveCfg = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|ARM.Build.0 = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|x64.ActiveCfg = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|x64.Build.0 = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|x86.ActiveCfg = Release|Any CPU
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C}.Release|x86.Build.0 = Release|Any CPU
 		{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
 		{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}.AppStore|Any CPU.Build.0 = Debug|Any CPU
 		{E04ACB26-B65F-43CB-AC30-B6523A7B93C4}.AppStore|ARM.ActiveCfg = Debug|Any CPU
@@ -761,6 +689,8 @@ Global
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug 4.0|x64.Build.0 = Debug|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug 4.0|x86.ActiveCfg = Debug|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug 4.0|x86.Build.0 = Debug|iPhoneSimulator
+		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|Any CPU.ActiveCfg = Debug|iPhone
+		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|Any CPU.Build.0 = Debug|iPhone
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|ARM.ActiveCfg = Debug|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|ARM.Build.0 = Debug|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|x64.ActiveCfg = Debug|iPhoneSimulator
@@ -799,8 +729,70 @@ Global
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Release|x64.Build.0 = Release|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Release|x86.ActiveCfg = Release|iPhoneSimulator
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Release|x86.Build.0 = Release|iPhoneSimulator
-		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|Any CPU.ActiveCfg = Debug|iPhone
-		{75256FFE-5F9A-4F4F-BD78-37F6489488FD}.Debug|Any CPU.Build.0 = Debug|iPhone
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|ARM.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|ARM.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|x64.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|x64.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|x86.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.AppStore|x86.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|Any CPU.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|ARM.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|ARM.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|x64.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|x64.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|x86.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.CI_Release|x86.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|ARM.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|ARM.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|x64.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|x64.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|x86.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug 4.0|x86.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|ARM.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|x64.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Debug|x86.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|Any CPU.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|Any CPU.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|ARM.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|ARM.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|x64.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|x64.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|x86.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package_netstandard|x86.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|Any CPU.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|Any CPU.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|ARM.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|ARM.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|x64.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|x64.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|x86.ActiveCfg = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.package|x86.Build.0 = Debug|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|ARM.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|ARM.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|x64.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|x64.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|x86.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release 4.0|x86.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|ARM.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|ARM.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x64.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x64.Build.0 = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x86.ActiveCfg = Release|Any CPU
+		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -815,13 +807,22 @@ Global
 		{97ED15E5-6546-4437-BF4F-B929700CE922} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{F0010AA8-63C3-47D7-95E9-A5D1D04DA325} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{E1A8FDE2-FEFC-403E-99A0-F13847B1495E} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
-		{9922FA1F-F9E8-44FD-8B51-39E7C7D7737C} = {C2F43DB7-AAA0-4687-9897-5D686EC91245}
 		{E04ACB26-B65F-43CB-AC30-B6523A7B93C4} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
 		{7050F177-1D55-4562-937C-56D117198BFB} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
 		{D150CE86-80D9-4709-B0BC-5E1A3AA457A9} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
+		{567FEEF7-41AF-42F2-AD34-546A278355B1} = {C2F43DB7-AAA0-4687-9897-5D686EC91245}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F69D4156-FC22-4B8E-AD72-2A7323D42CC4}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{1609f12c-8216-4e7c-ade0-240bfe160242}*SharedItemsImports = 13
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
+		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{567feef7-41af-42f2-ad34-546a278355b1}*SharedItemsImports = 4
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{97ed15e5-6546-4437-bf4f-b929700ce922}*SharedItemsImports = 5
+		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{eebf3249-3ca3-4078-a188-f8b916c3f4c2}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
