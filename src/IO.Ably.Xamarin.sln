@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetPush.iOS", "..\exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests.NETFramework", "IO.Ably.Tests.NETFramework\IO.Ably.Tests.NETFramework.csproj", "{567FEEF7-41AF-42F2-AD34-546A278355B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.NETFramework", "IO.Ably.NETFramework\IO.Ably.NETFramework.csproj", "{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AppStore|Any CPU = AppStore|Any CPU
@@ -793,6 +795,70 @@ Global
 		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x64.Build.0 = Release|Any CPU
 		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x86.ActiveCfg = Release|Any CPU
 		{567FEEF7-41AF-42F2-AD34-546A278355B1}.Release|x86.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|ARM.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|ARM.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|x64.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|x64.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|x86.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.AppStore|x86.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|Any CPU.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|ARM.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|ARM.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|x64.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|x64.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|x86.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.CI_Release|x86.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|ARM.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|ARM.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|x64.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|x64.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|x86.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug 4.0|x86.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|ARM.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|x64.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Debug|x86.Build.0 = Debug|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|Any CPU.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|Any CPU.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|ARM.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|ARM.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|x64.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|x64.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|x86.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package_netstandard|x86.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|Any CPU.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|Any CPU.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|ARM.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|ARM.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|x64.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|x64.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|x86.ActiveCfg = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.package|x86.Build.0 = package|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|ARM.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|ARM.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|x64.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|x64.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|x86.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release 4.0|x86.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|ARM.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|ARM.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|x64.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|x64.Build.0 = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|x86.ActiveCfg = Release|Any CPU
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -812,6 +878,7 @@ Global
 		{D150CE86-80D9-4709-B0BC-5E1A3AA457A9} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
 		{75256FFE-5F9A-4F4F-BD78-37F6489488FD} = {390019FF-0139-4EB0-90FF-9BF6E68BEB42}
 		{567FEEF7-41AF-42F2-AD34-546A278355B1} = {C2F43DB7-AAA0-4687-9897-5D686EC91245}
+		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F69D4156-FC22-4B8E-AD72-2A7323D42CC4}
@@ -819,6 +886,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{1609f12c-8216-4e7c-ade0-240bfe160242}*SharedItemsImports = 13
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
+		IO.Ably.Shared\IO.Ably.Shared.projitems*{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{567feef7-41af-42f2-ad34-546a278355b1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
