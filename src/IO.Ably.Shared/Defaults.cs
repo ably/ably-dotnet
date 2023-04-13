@@ -117,6 +117,10 @@ namespace IO.Ably
                     return "dotnet-framework";
                 case "netstandard20":
                     return "dotnet-standard";
+                case "net6.0":
+                    return "dotnet6";
+                case "net7.0":
+                    return "dotnet7";
                 case "xamarin-android":
                     return "xamarin-android";
                 case "xamarin-ios":
