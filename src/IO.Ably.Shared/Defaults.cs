@@ -131,26 +131,51 @@ namespace IO.Ably
             return string.Empty;
         }
 
+        // Get operating system as per https://stackoverflow.com/a/66618677
+        // Preprocessors defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
+        // Related link - https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/information?view=net-maui-7.0&tabs=windows
         internal static string OsIdentifier()
         {
-#if NETCOREAPP
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+#if NET5_0_OR_GREATER
+            if (OperatingSystem.IsWindows())
             {
-                return "netcoreapp-macOS";
+                return "dotnet-windows";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
-                return "netcoreapp-linux";
+                return "dotnet-linux";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsMacOS())
             {
-                return "netcoreapp-windows";
+                return "dotnet-macOS";
             }
-#elif NET5_0_OR_GREATER
 
+            if (OperatingSystem.IsAndroid())
+            {
+                return "dotnet-android";
+            }
 
+            if (OperatingSystem.IsIOS())
+            {
+                return "dotnet-iOS";
+            }
+
+            if (OperatingSystem.IsTvOS())
+            {
+                return "dotnet-tvOS";
+            }
+
+            if (OperatingSystem.IsWatchOS())
+            {
+                return "dotnet-watchOS";
+            }
+
+            if (OperatingSystem.IsBrowser())
+            {
+                return "dotnet-browser";
+            }
 #endif
             return string.Empty;
         }
@@ -173,6 +198,7 @@ namespace IO.Ably
             var agentComponents = new List<string>();
             AddAgentIdentifier(agentComponents, AblySdkIdentifier);
             AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
+            AddAgentIdentifier(agentComponents, OsIdentifier());
 
             if (additionalAgents == null)
             {
