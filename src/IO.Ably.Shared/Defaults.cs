@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using IO.Ably.Transport;
 
@@ -127,6 +128,30 @@ namespace IO.Ably
                     return "xamarin-iOS";
             }
 
+            return string.Empty;
+        }
+
+        internal static string OsIdentifier()
+        {
+#if NETCOREAPP
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "netcoreapp-macOS";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "netcoreapp-linux";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "netcoreapp-windows";
+            }
+#elif NET5_0_OR_GREATER
+
+
+#endif
             return string.Empty;
         }
 
