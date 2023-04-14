@@ -9,6 +9,5 @@ if [ $# -eq 0 ]
 then
 	echo "Provide latest version number like package-push.sh 1.2.8"
 else
-	dotnet tool restore
-	dotnet fake run build.fsx -t PushPackage -v $1
+	./build.sh PushPackage -v $1
 fi
