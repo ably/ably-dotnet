@@ -98,7 +98,8 @@ namespace IO.Ably.Tests
             string[] keys =
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier()
+                Defaults.DotnetRuntimeIdentifier(),
+                Defaults.OsIdentifier()
             };
 
             agentValues.Should().HaveCount(keys.Length);
@@ -135,6 +136,7 @@ namespace IO.Ably.Tests
             {
                 "ably-dotnet/",
                 Defaults.DotnetRuntimeIdentifier(),
+                Defaults.OsIdentifier(),
                 "agent1",
                 "agent2",
             };
