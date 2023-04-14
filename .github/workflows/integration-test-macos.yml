@@ -26,6 +26,7 @@ jobs:
         run:  dotnet tool restore
       - name: Restore packages
         run: |
+          chmod +x ./tools/mono-install.sh
           ./tools/mono-install.sh
           nuget restore ./src/IO.Ably.Xamarin.sln
       - name: Build Xamarin projects
