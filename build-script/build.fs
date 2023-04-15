@@ -114,13 +114,16 @@ let initTargets (argv) =
               AssemblyInfo.FileVersion version ])
 
 
-    let nugetRestore solutionFile =
+    let nugetRestoreUsingLocalTool solutionFile =
         CreateProcess.fromRawCommand "./tools/nuget.exe" [ "restore"; solutionFile ]
-        |> Proc.run // start with the above configuration
+        |> Proc.run
+
+    let nugetRestoreUsingCLI solutionFile =
+        CreateProcess.fromRawCommand "nuget" [ "restore"; solutionFile ] |> Proc.run
 
     Target.create "Restore" (fun _ ->
         if Environment.isWindows then
-            nugetRestore "src/IO.Ably.sln" |> ignore
+            nugetRestoreUsingLocalTool "src/IO.Ably.sln" |> ignore
 
         CreateProcess.fromRawCommand "dotnet" [ "restore"; "src/IO.Ably.sln" ]
         |> Proc.run
@@ -140,16 +143,7 @@ let initTargets (argv) =
         MSBuild.build setParams NetFrameworkSolution)
 
 
-    Target.create "Restore Xamarin" (fun _ ->
-
-        let setParams (defaults: MSBuildParams) =
-            { defaults with
-                Verbosity = Some(Quiet)
-                Targets = [ "Restore" ]
-                Properties = [ "Configuration", buildMode; "RestorePackages", "True"; "dummy", "property" ] } // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
-
-        MSBuild.build setParams XamarinSolution)
-
+    Target.create "Restore Xamarin" (fun _ -> nugetRestoreUsingCLI XamarinSolution |> ignore)
 
     Target.create "Xamarin - Build" (fun _ ->
         let setParams (defaults: MSBuildParams) =
