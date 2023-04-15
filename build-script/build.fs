@@ -339,7 +339,20 @@ let initTargets (argv) =
 
         runFrameworkTests UnitTests TestRunnerErrorLevel.Error |> ignore)
 
+    Target.create "NetFramework - Unit Tests with retry" (fun _ ->
+
+        let logs = runFrameworkTests UnitTests TestRunnerErrorLevel.DontFailBuild
+
+        let failedTestNames = findFailedXUnitTests logs
+
+        for test in failedTestNames do
+            runFrameworkTests (Method test) TestRunnerErrorLevel.Error |> ignore)
+
     Target.create "NetFramework - Integration Tests" (fun _ ->
+
+        runFrameworkTests IntegrationTests TestRunnerErrorLevel.Error |> ignore)
+
+    Target.create "NetFramework - Integration Tests with retry" (fun _ ->
 
         let logs = runFrameworkTests IntegrationTests TestRunnerErrorLevel.DontFailBuild
 
@@ -457,12 +470,14 @@ let initTargets (argv) =
     Target.create "Build.Xamarin" ignore
 
     Target.create "Test.NetFramework.Unit" ignore
+    Target.create "Test.NetFramework.Unit.WithRetry" ignore
     Target.create "Test.NetFramework.Integration" ignore
+    Target.create "Test.NetFramework.Integration.WithRetry" ignore
 
     Target.create "Test.NetStandard.Unit" ignore
     Target.create "Test.NetStandard.Unit.WithRetry" ignore
-    Target.create "Test.NetStandard.Integration.WithRetry" ignore
     Target.create "Test.NetStandard.Integration" ignore
+    Target.create "Test.NetStandard.Integration.WithRetry" ignore
 
     Target.create "Package" ignore
     Target.create "PushPackage" ignore
@@ -495,8 +510,17 @@ let initTargets (argv) =
     ==> "Test.NetFramework.Unit"
 
     "Build.NetFramework"
+    ==> "NetFramework - Unit Tests with retry"
+    ==> "Test.NetFramework.Unit.WithRetry"
+
+    "Build.NetFramework"
     ==> "NetFramework - Integration Tests"
     ==> "Test.NetFramework.Integration"
+
+    "Build.NetFramework"
+    ==> "NetFramework - Integration Tests with retry"
+    ==> "Test.NetFramework.Integration.WithRetry"
+
 
     "Build.NetStandard" ==> "NetStandard - Unit Tests" ==> "Test.NetStandard.Unit"
 
