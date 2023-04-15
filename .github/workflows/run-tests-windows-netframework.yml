@@ -20,7 +20,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build.cmd Test.NetFramework.Unit
+        run: ./build.cmd Test.NetFramework.Unit.WithRetry
 
       - name: Integration tests
-        run: ./build.cmd Test.NetFramework.Integration
+        run: ./build.cmd Test.NetFramework.Integration.WithRetry
