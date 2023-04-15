@@ -11,6 +11,10 @@ jobs:
     env:
       DOTNET_NOLOGO: true
 
+    strategy:
+      matrix:
+        targetframework: [ "net6.0", "net7.0" ]
+
     steps:
       - uses: actions/checkout@v2
         with: 
@@ -32,6 +36,6 @@ jobs:
       - name: Build Xamarin projects
         run: ./build.sh Build.Xamarin
       - name: Unit tests
-        run: ./build.sh Test.NetStandard.Unit.WithRetry
+        run: ./build.sh Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
       - name: Integration tests
-        run: ./build.sh Test.NetStandard.Integration
+        run: ./build.sh Test.NetStandard.Integration -f ${{ matrix.targetframework }}
