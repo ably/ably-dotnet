@@ -31,7 +31,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build.cmd Test.NetStandard.Unit -f ${{ matrix.targetframework }}
+        run: ./build.cmd Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build.cmd Test.NetStandard.Integration -f ${{ matrix.targetframework }}
+        run: ./build.cmd Test.NetStandard.Integration.WithRetry -f ${{ matrix.targetframework }}

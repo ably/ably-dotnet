@@ -34,4 +34,4 @@ jobs:
         run: ./build.sh Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build.sh Test.NetStandard.Integration -f ${{ matrix.targetframework }}
+        run: ./build.sh Test.NetStandard.Integration.WithRetry -f ${{ matrix.targetframework }}

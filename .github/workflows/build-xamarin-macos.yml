@@ -24,7 +24,8 @@ jobs:
 
       - name: Download dotnet build-script tools
         run:  dotnet tool restore
-            
+      
+      #TODO - Need to refactor this step to restore packages using nuget restore, instead restore while building xamarin project
       - name: Install mono and restore packages
         run: |
           chmod +x ./tools/mono-install.sh
