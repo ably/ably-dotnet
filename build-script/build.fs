@@ -361,17 +361,8 @@ let initTargets (argv) =
         for test in failedTestNames do
             runStandardTests (Method test) |> ignore)
 
-    Target.create "NetStandard - Integration Tests" (fun _ ->
+    Target.create "NetStandard - Integration Tests" (fun _ -> runStandardTests IntegrationTests |> ignore)
 
-        let logs = runStandardTestsAllowRetry IntegrationTests
-
-        let failedTestNames = findFailedDotnetTestTests logs
-
-        for test in failedTestNames do
-            runStandardTests (Method test) |> ignore)
-
-    // This is duplicated before of Fake's build dependency doesn't allow
-    // This this target to be run independent of the unit tests
     Target.create "NetStandard - Integration Tests with retry" (fun _ ->
 
         let logs = runStandardTestsAllowRetry IntegrationTests
@@ -510,12 +501,16 @@ let initTargets (argv) =
     "Build.NetStandard" ==> "NetStandard - Unit Tests" ==> "Test.NetStandard.Unit"
 
     "Build.NetStandard"
+    ==> "NetStandard - Unit Tests with retry"
+    ==> "Test.NetStandard.Unit.WithRetry"
+
+    "Build.NetStandard"
     ==> "NetStandard - Integration Tests"
     ==> "Test.NetStandard.Integration"
 
     "Build.NetStandard"
-    ==> "NetStandard - Unit Tests with retry"
-    ==> "Test.NetStandard.Unit.WithRetry"
+    ==> "NetStandard - Integration Tests with retry"
+    ==> "Test.NetStandard.Integration.WithRetry"
 
 //-----------------------------------------------------------------------------
 // Target Start
