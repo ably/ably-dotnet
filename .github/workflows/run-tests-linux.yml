@@ -1,4 +1,4 @@
-name: "Integration Test: Linux"
+name: "Unit and Integration Test: Linux"
 on:
   pull_request:
   push:
@@ -19,15 +19,19 @@ jobs:
       - uses: actions/checkout@v2
         with: 
           submodules: 'recursive'
+
       - name: Download dotnet framework
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
             6.0.x
             7.0.x
-      - name: Download fake-cli
+
+      - name: Download dotnet build-script tools
         run:  dotnet tool restore
+
       - name: Unit tests
         run: ./build.sh Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
+
       - name: Integration tests
         run: ./build.sh Test.NetStandard.Integration -f ${{ matrix.targetframework }}

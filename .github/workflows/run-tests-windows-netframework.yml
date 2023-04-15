@@ -1,0 +1,26 @@
+name: "Unit and Integration Test: Windows (NetFramework)"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+
+      - name: Download dotnet build-script tools
+        run: dotnet tool restore
+
+      - name: Unit tests
+        run: ./build.cmd Test.NetFramework.Unit
+
+      - name: Integration tests
+        run: ./build.cmd Test.NetFramework.Integration

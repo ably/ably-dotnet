@@ -1,4 +1,4 @@
-name: "Integration Test: Windows"
+name: "Unit and Integration Test: Windows"
 on:
   pull_request:
   push:
@@ -13,21 +13,25 @@ jobs:
 
     strategy:
       matrix:
-        target: [ "Test.NetStandard", "Test.NetFramework" ]
+        targetframework: [ "net6.0", "net7.0" ]
 
     steps:
       - uses: actions/checkout@v2
         with: 
           submodules: 'recursive'
+
       - name: Download framework
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
             6.0.x
             7.0.x
-      - name: Download fake-cli
+
+      - name: Download dotnet build-script tools
         run: dotnet tool restore
+
       - name: Unit tests
-        run: ./build.cmd ${{ matrix.target }}.Unit
+        run: ./build.cmd Test.NetStandard.Unit -f ${{ matrix.targetframework }}
+
       - name: Integration tests
-        run: ./build.cmd ${{ matrix.target }}.Integration
+        run: ./build.cmd Test.NetStandard.Integration -f ${{ matrix.targetframework }}
