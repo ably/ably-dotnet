@@ -6,25 +6,29 @@
       "version": "7.2.0",
       "commands": [
         "paket"
-      ]
+      ],
+      "_link": "https://github.com/fsprojects/Paket"
     },
     "fake-cli": {
       "version": "5.23.1",
       "commands": [
         "fake"
-      ]
+      ],
+      "_link": "https://github.com/fsprojects/FAKE"
     },
     "fsdocs-tool": {
       "version": "17.2.0",
       "commands": [
         "fsdocs"
-      ]
+      ],
+      "_link": "https://github.com/fsprojects/FSharp.Formatting"
     },
     "fantomas": {
       "version": "5.1.5",
       "commands": [
         "fantomas"
-      ]
+      ],
+      "_link": "https://github.com/fsprojects/fantomas"
     }
   }
 }
