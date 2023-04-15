@@ -131,9 +131,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 "ably-dotnet/",
                 Defaults.DotnetRuntimeIdentifier(),
-                Defaults.OsIdentifier(),
-                "agent1",
-                "agent2",
+                Defaults.OsIdentifier()
             };
 
             keys.RemoveAll(s => s == string.Empty);
