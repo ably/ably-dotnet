@@ -126,18 +126,6 @@ let initTargets (argv) =
         |> Proc.run
         |> ignore)
 
-    Target.create "Restore Xamarin" (fun _ ->
-        if not Environment.isWindows then
-            CreateProcess.fromRawCommand "ls" [ "../packages" ] |> Proc.run |> ignore
-
-        let setParams (defaults: MSBuildParams) =
-            { defaults with
-                Verbosity = Some(Quiet)
-                Targets = [ "Restore" ]
-                Properties = [ "Configuration", buildMode; "RestorePackages", "True"; "dummy", "property" ] } // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
-
-        MSBuild.build setParams XamarinSolution)
-
     Target.create "NetFramework - Build" (fun _ ->
         let setParams (defaults: MSBuildParams) =
             { defaults with
@@ -150,6 +138,18 @@ let initTargets (argv) =
                       "dummy", "property" ] } // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
 
         MSBuild.build setParams NetFrameworkSolution)
+
+
+    Target.create "Restore Xamarin" (fun _ ->
+
+        let setParams (defaults: MSBuildParams) =
+            { defaults with
+                Verbosity = Some(Quiet)
+                Targets = [ "Restore" ]
+                Properties = [ "Configuration", buildMode; "RestorePackages", "True"; "dummy", "property" ] } // workaround added as per https://github.com/fsprojects/FAKE/issues/2738
+
+        MSBuild.build setParams XamarinSolution)
+
 
     Target.create "Xamarin - Build" (fun _ ->
         let setParams (defaults: MSBuildParams) =
