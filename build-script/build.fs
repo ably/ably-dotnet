@@ -44,6 +44,7 @@ Usage:
 Options:
   -t <str>       Target
   -v <str>       Version
+  -f <str>       Target Framework Moniker (TFM)
 """
 
 let initTargets (argv) =
@@ -62,6 +63,11 @@ let initTargets (argv) =
         match DocoptResult.tryGetArgument "-v" parsedArguments with
         | None -> ""
         | Some version -> version
+
+    let framework: string option =
+        match DocoptResult.tryGetArgument "-f" parsedArguments with
+        | None -> None
+        | Some framework -> Some framework
 
     let mergeJsonNet path outputPath =
         let target = Path.combine path "IO.Ably.dll"
@@ -210,6 +216,7 @@ let initTargets (argv) =
                     { opts with
                         Configuration = configuration
                         Filter = Some testMethodName
+                        Framework = framework
                         Logger = Some("trx;logfilename=" + logsPath) })
                 project
 
@@ -227,6 +234,7 @@ let initTargets (argv) =
                         { opts with
                             Configuration = configuration
                             Filter = Some(filters |> String.concat "&")
+                            Framework = framework
                             Logger = Some("trx;logfilename=" + logsPath) })
                     project
             with :? Fake.DotNet.MSBuildException ->
