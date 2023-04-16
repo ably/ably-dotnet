@@ -11,15 +11,8 @@
 
 ## Building and Packaging
 
-The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
-
-```shell
-choco install fake
-choco install nuget.commandline
-```
-
-Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests.
-To run the Net6.0 and Net7.0 build and tests you can run `.\build.cmd Test.NetStandard`
+- The build scripts are written using [fake](https://fake.build/index.html) and need to be run on Windows with Visual Studio 2019+ installed. 
+- For more information on building, testing and packaging, take a look at [FAKE build scripts](./build-script/README.md).
 
 ## Working from source
 
