@@ -538,11 +538,11 @@ let initTargets (argv) =
 let main argv =
     argv
     |> Array.toList
-    |> Context.FakeExecutionContext.Create false "build-script.fsx"
+    |> Context.FakeExecutionContext.Create false "build.fsx"
     |> Context.RuntimeContext.Fake
     |> Context.setExecutionContext
 
     initTargets (argv)
-    Target.runOrDefaultWithArguments "Build.NetFramework"
+    Target.runOrDefaultWithArguments "Build.NetStandard"
 
     0 // return an integer exit code
