@@ -98,8 +98,8 @@ namespace IO.Ably.Tests
             var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
-                Defaults.OsIdentifier()
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier()
             };
 
             keys.RemoveAll(s => s == string.Empty);
@@ -137,8 +137,8 @@ namespace IO.Ably.Tests
             var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
-                Defaults.OsIdentifier(),
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier(),
                 "agent1",
                 "agent2",
             };

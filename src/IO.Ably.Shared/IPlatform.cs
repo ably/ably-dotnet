@@ -3,19 +3,18 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "StyleCop.CSharp.DocumentationRules",
-        "SA1600:Elements should be documented",
-        Justification = "Internal interface")]
-
     /// <summary>
     /// This interface is implemented for each platform .NETFramework, NetStandard,
     /// iOS and Android. The library dynamically creates an instance of Platform in
     /// IoC.cs. It lets us deal with the differences in the various platforms.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "StyleCop.CSharp.DocumentationRules",
+        "SA1600:Elements should be documented",
+        Justification = "Internal interface")]
     internal interface IPlatform
     {
-        string PlatformId { get; }
+        Agent.PlatformRuntime PlatformId { get; }
 
         ITransportFactory TransportFactory { get; }
 

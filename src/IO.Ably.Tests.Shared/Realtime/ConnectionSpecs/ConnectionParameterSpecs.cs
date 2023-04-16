@@ -125,13 +125,13 @@ namespace IO.Ably.Tests.Realtime
         {
             _ = await GetConnectedClient();
 
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
-            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Agent.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Agent.AblyAgentHeader].Split(' ');
             var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
-                Defaults.OsIdentifier()
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier()
             };
 
             keys.RemoveAll(s => s == string.Empty);
@@ -156,13 +156,13 @@ namespace IO.Ably.Tests.Realtime
                 };
             });
 
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
-            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Agent.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Agent.AblyAgentHeader].Split(' ');
             var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
-                Defaults.OsIdentifier(),
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier(),
                 "agent1",
                 "agent2",
             };

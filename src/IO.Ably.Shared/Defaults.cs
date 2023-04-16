@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using IO.Ably.Transport;
 
@@ -98,119 +99,6 @@ namespace IO.Ably
                 $"{environment}-d-fallback.ably-realtime.com",
                 $"{environment}-e-fallback.ably-realtime.com",
             };
-        }
-
-        internal const string AblyAgentHeader = "Ably-Agent";
-        private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
-
-        /// <summary>
-        /// This returns dotnet platform as per ably-lib mappings defined in agents.json.
-        /// https://github.com/ably/ably-common/blob/main/protocol/agents.json.
-        /// This is required since we are migrating from 'X-Ably-Lib' header (RSC7b) to agent headers (RSC7d).
-        /// Please note that uwp platform is Deprecated and removed as a part of https://github.com/ably/ably-dotnet/pull/1101.
-        /// </summary>
-        /// <returns> Clean Platform Identifier. </returns>
-        internal static string DotnetRuntimeIdentifier()
-        {
-            switch (IoC.PlatformId)
-            {
-                case "framework":
-                    return "dotnet-framework";
-                case "netstandard20":
-                    return "dotnet-standard";
-                case "net6.0":
-                    return "dotnet6";
-                case "net7.0":
-                    return "dotnet7";
-                case "xamarin-android":
-                    return "xamarin-android";
-                case "xamarin-ios":
-                    return "xamarin-iOS";
-            }
-
-            return string.Empty;
-        }
-
-        // Get operating system as per https://stackoverflow.com/a/66618677
-        // Preprocessors defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
-        // Related link - https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/information?view=net-maui-7.0&tabs=windows
-        internal static string OsIdentifier()
-        {
-#if NET5_0_OR_GREATER
-            if (OperatingSystem.IsWindows())
-            {
-                return "dotnet-windows";
-            }
-
-            if (OperatingSystem.IsLinux())
-            {
-                return "dotnet-linux";
-            }
-
-            if (OperatingSystem.IsMacOS())
-            {
-                return "dotnet-macOS";
-            }
-
-            if (OperatingSystem.IsAndroid())
-            {
-                return "dotnet-android";
-            }
-
-            if (OperatingSystem.IsIOS())
-            {
-                return "dotnet-iOS";
-            }
-
-            if (OperatingSystem.IsTvOS())
-            {
-                return "dotnet-tvOS";
-            }
-
-            if (OperatingSystem.IsWatchOS())
-            {
-                return "dotnet-watchOS";
-            }
-
-            if (OperatingSystem.IsBrowser())
-            {
-                return "dotnet-browser";
-            }
-#endif
-            return string.Empty;
-        }
-
-        internal static string AblyAgentIdentifier(Dictionary<string, string> additionalAgents)
-        {
-            string GetAgentComponentString(string product, string version)
-            {
-                return string.IsNullOrEmpty(version) ? product : $"{product}/{version}";
-            }
-
-            void AddAgentIdentifier(ICollection<string> currentAgentComponents, string product, string version = null)
-            {
-                if (!string.IsNullOrEmpty(product))
-                {
-                    currentAgentComponents.Add(GetAgentComponentString(product, version));
-                }
-            }
-
-            var agentComponents = new List<string>();
-            AddAgentIdentifier(agentComponents, AblySdkIdentifier);
-            AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
-            AddAgentIdentifier(agentComponents, OsIdentifier());
-
-            if (additionalAgents == null)
-            {
-                return string.Join(" ", agentComponents);
-            }
-
-            foreach (var agent in additionalAgents)
-            {
-                AddAgentIdentifier(agentComponents, agent.Key, agent.Value);
-            }
-
-            return string.Join(" ", agentComponents);
         }
     }
 }

@@ -18,11 +18,11 @@ namespace IO.Ably
 
         // Defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
 #if NET6_0
-        public string PlatformId => "net6.0";
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net6;
 #elif NET7_0
-        public string PlatformId => "net7.0";
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net7;
 #else
-        public string PlatformId => "netstandard20";
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Netstandard20;
 #endif
 
         public ITransportFactory TransportFactory => null;
