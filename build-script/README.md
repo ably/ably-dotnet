@@ -1,4 +1,4 @@
-### F# project for building and testing ably-dotnet SDK
+### F# project for building, testing and packaging ably-dotnet SDK
 
 - This is a F# project created as per [Run-FAKE-using-a-dedicated-build-project](https://fake.build/guide/getting-started.html#Run-FAKE-using-a-dedicated-build-project).
 - This contains scripts to build, test and package projects targetting multiple platforms. 
@@ -58,6 +58,24 @@ Run integration tests
 ./build.sh Test.NetStandard.Unit -f net7.0 // run tests for .Net7.0 runtime
 ```
 
+### Create Nuget packages
+- Currently, we have two scripts to generate nuget packages
+1. package.sh => 
+- Responsible for creating core `ably.io` nuget package.
+```
+./package.sh 1.2.3 
+```
+- Above command creates `ably.io.1.2.3.nupkg` package at root.
+- During release process, this package is hosted on [nuget-ably.io](https://www.nuget.org/packages/ably.io).
+
+2. package-push.sh =>
+- Responsible for creating push packages for android and iOS.
+- Please take a look at [Push Notif Doc](../PushNotifications.md) for usage.
+```
+./package-push.sh 1.2.3 
+```
+- Above command creates `ably.io.push.android.1.2.3.nupkg` and `ably.io.push.ios.1.2.3` package at root.
+- During release process, this package is hosted on [nuget-ably.io.push.android](https://www.nuget.org/packages/ably.io.push.android) and [nuget-ably.io.push.ios](https://www.nuget.org/packages/ably.io.push.ios).
 
 ### Development
 - Please refer to [Getting Started](https://fake.build/guide/what-is-fake.html) for detailed documentation.
