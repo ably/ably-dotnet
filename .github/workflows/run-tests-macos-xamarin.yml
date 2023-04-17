@@ -1,4 +1,4 @@
-name: "Xamarin Build and Test: macOS"
+name: "Unit and Integration Test: macOS (Xamarin)"
 on:
   pull_request:
   push:
@@ -33,8 +33,8 @@ jobs:
       - name: Build Xamarin projects
         run: ./build.sh Build.Xamarin
 
-      - name: Unit tests
+      - name: Run Unit tests using mono
         run: ./build.sh Test.NetFramework.Unit.WithRetry
 
-      - name: Integration tests
+      - name: Run Integration tests using mono
         run: ./build.sh Test.NetFramework.Integration.WithRetry
