@@ -1626,6 +1626,32 @@ namespace IO.Ably.Tests.Realtime
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitializedOrAttaching_MessageAreNotPublished(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = GetRandomChannel(client, "RTP16a");
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
+
+                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
                 public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitialisedOrAttaching_MessageAreNotPublished(Protocol protocol)
                 {
                     var client = await GetRealtimeClient(protocol, (options, settings) =>
@@ -1762,32 +1788,6 @@ namespace IO.Ably.Tests.Realtime
                     queueCounts[1].Should().Be(0);
                     presenceMessages[0].Message.Data.Should().Be("Initialized");
                     presenceMessages[1].Message.Data.Should().Be("Connecting");
-
-                    // clean up
-                    client.Close();
-                }
-
-                [Theory]
-                [ProtocolData]
-                [Trait("spec", "RTP16b")]
-                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitializedOrAttaching_MessageAreNotPublished(Protocol protocol)
-                {
-                    var client = await GetRealtimeClient(protocol, (options, settings) =>
-                    {
-                        options.ClientId = "RTP16b";
-                        options.QueueMessages = false;
-                    });
-                    var channel = GetRandomChannel(client, "RTP16a");
-
-                    await client.WaitForState(ConnectionState.Connected);
-                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
-                    await client.WaitForState(ConnectionState.Disconnected);
-
-                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
-
-                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
-
-                    presenceMessages.Should().HaveCount(0);
 
                     // clean up
                     client.Close();
