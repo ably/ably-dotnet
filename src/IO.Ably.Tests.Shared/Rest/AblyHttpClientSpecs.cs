@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
                 Agent.OsIdentifier()
             };
 
-            keys.RemoveAll(s => s == string.Empty);
+            keys.RemoveAll(s => s.IsEmpty());
 
             agentValues.Should().HaveCount(keys.Count);
             for (var i = 0; i < keys.Count; ++i)
@@ -143,7 +143,7 @@ namespace IO.Ably.Tests
                 "agent2",
             };
 
-            keys.RemoveAll(s => s == string.Empty);
+            keys.RemoveAll(s => s.IsEmpty());
 
             agentValues.Should().HaveCount(keys.Count);
             for (var i = 0; i < keys.Count; ++i)
