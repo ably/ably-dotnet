@@ -11,7 +11,7 @@
 
 ## Building and Packaging
 
-- The build scripts are written using [fake](https://fake.build/index.html) and need to be run on Windows with Visual Studio 2019+ installed. 
+- The build scripts are written using [fake build project](https://fake.build/guide/getting-started.html#Run-FAKE-using-a-dedicated-build-project).
 - For more information on building, testing and packaging, take a look at [FAKE build scripts](./build-script/README.md).
 
 ## Working from source
