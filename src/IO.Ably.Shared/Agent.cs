@@ -19,14 +19,14 @@ namespace IO.Ably
 
         public static class OS
         {
-            public static readonly string Windows = "dotnet-windows";
-            public static readonly string MacOS = "dotnet-macOS";
-            public static readonly string Linux = "dotnet-linux";
-            public static readonly string Android = "dotnet-android";
-            public static readonly string IOS = "dotnet-iOS";
-            public static readonly string TvOS = "dotnet-tvOS";
-            public static readonly string WatchOS = "dotnet-watchOS";
-            public static readonly string Browser = "dotnet-browser";
+            public const string Windows = "dotnet-windows";
+            public const string MacOS = "dotnet-macOS";
+            public const string Linux = "dotnet-linux";
+            public const string Android = "dotnet-android";
+            public const string IOS = "dotnet-iOS";
+            public const string TvOS = "dotnet-tvOS";
+            public const string WatchOS = "dotnet-watchOS";
+            public const string Browser = "dotnet-browser";
         }
 
         internal const string AblyAgentHeader = "Ably-Agent";
