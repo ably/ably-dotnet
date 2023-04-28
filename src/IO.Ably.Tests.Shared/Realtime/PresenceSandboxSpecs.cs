@@ -1665,6 +1665,45 @@ namespace IO.Ably.Tests.Realtime
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldntQueueMessages_WhenSendFails(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = GetRandomChannel(client, "RTP16a");
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    var tsc = new TaskCompletionAwaiter();
+                    ErrorInfo err = null;
+                    bool? success = null;
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                    {
+                        success = b;
+                        err = info;
+                        tsc.SetCompleted();
+                    });
+                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    await tsc.Task;
+                    success.Should().HaveValue();
+                    success.Value.Should().BeFalse();
+                    err.Should().NotBeNull();
+                    err.Message.Should().Be("Unable enqueue message because Options.QueueMessages is set to False.");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
                 public async Task ConnectionStateCondition_WhenConnectionIsDisconnected_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
                 {
                     /* tests disconnecting and connecting states */
