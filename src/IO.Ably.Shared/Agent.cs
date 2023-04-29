@@ -41,23 +41,44 @@ namespace IO.Ably
         /// <returns> Clean Platform Identifier. </returns>
         internal static string DotnetRuntimeIdentifier()
         {
-            switch (IoC.PlatformId)
+            string DotnetRuntimeName()
             {
-                case PlatformRuntime.Framework:
-                    return "dotnet-framework";
-                case PlatformRuntime.Netstandard20:
-                    return "dotnet-standard";
-                case PlatformRuntime.Net6:
-                    return "dotnet6";
-                case PlatformRuntime.Net7:
-                    return "dotnet7";
-                case PlatformRuntime.XamarinAndroid:
-                    return "xamarin";
-                case PlatformRuntime.XamarinIos:
-                    return "xamarin";
+                switch (IoC.PlatformId)
+                {
+                    case PlatformRuntime.Framework:
+                        return "dotnet-framework";
+                    case PlatformRuntime.Netstandard20:
+                        return "dotnet-standard";
+                    case PlatformRuntime.Net6:
+                        return "dotnet6";
+                    case PlatformRuntime.Net7:
+                        return "dotnet7";
+                    case PlatformRuntime.XamarinAndroid:
+                        return "xamarin";
+                    case PlatformRuntime.XamarinIos:
+                        return "xamarin";
+                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            var dotnetRuntimeName = DotnetRuntimeName();
+
+            string DotnetRuntimeVersion()
+            {
+                try
+                {
+                    return Environment.Version.ToString();
+                }
+                catch
+                {
+                    return string.Empty;
+                }
+            }
+
+            var dotnetRuntimeVersion = DotnetRuntimeVersion();
+
+            return dotnetRuntimeVersion.IsEmpty() ?
+                dotnetRuntimeName : $"{dotnetRuntimeName}/{dotnetRuntimeVersion}";
         }
 
         // Note - MAUI OS detection requires maui specific dependencies, https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/information?view=net-maui-7.0&tabs=windows
