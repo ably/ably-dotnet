@@ -58,6 +58,7 @@ namespace IO.Ably
                     case PlatformRuntime.XamarinIos:
                         return "xamarin";
                 }
+
                 return string.Empty;
             }
 

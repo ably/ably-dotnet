@@ -102,6 +102,8 @@ namespace IO.Ably.Tests
                 Agent.OsIdentifier()
             };
 
+            Agent.DotnetRuntimeIdentifier().Split('/').Length.Should().Be(2);
+
             keys.RemoveAll(s => s.IsEmpty());
 
             agentValues.Should().HaveCount(keys.Count);
