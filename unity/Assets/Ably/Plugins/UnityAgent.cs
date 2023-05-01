@@ -41,15 +41,18 @@ namespace IO.Ably
                 case RuntimePlatform.OSXDashboardPlayer:
                     break;
                 case RuntimePlatform.WindowsWebPlayer:
+                    return OS.WebGL;
                     break;
                 case RuntimePlatform.WindowsEditor:
                     return OS.Windows;
                     break;
                 case RuntimePlatform.IPhonePlayer:
+                    return OS.IOS;
                     break;
                 case RuntimePlatform.XBOX360:
                     break;
                 case RuntimePlatform.PS3:
+                    return OS.PS3;
                     break;
                 case RuntimePlatform.Android:
                     return OS.Android;
