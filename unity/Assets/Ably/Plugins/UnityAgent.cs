@@ -24,15 +24,17 @@ namespace IO.Ably
             public const string xbox = "unity-xbox";
         }
 
-        void start()
+        string start()
         {
             switch (Application.platform)
             {
                 case RuntimePlatform.OSXEditor:
                     break;
                 case RuntimePlatform.OSXPlayer:
+                    return OS.MacOS;
                     break;
                 case RuntimePlatform.WindowsPlayer:
+                    return OS.Windows;
                     break;
                 case RuntimePlatform.OSXWebPlayer:
                     break;
@@ -41,6 +43,7 @@ namespace IO.Ably
                 case RuntimePlatform.WindowsWebPlayer:
                     break;
                 case RuntimePlatform.WindowsEditor:
+                    return OS.Windows;
                     break;
                 case RuntimePlatform.IPhonePlayer:
                     break;
@@ -49,16 +52,19 @@ namespace IO.Ably
                 case RuntimePlatform.PS3:
                     break;
                 case RuntimePlatform.Android:
+                    return OS.Android;
                     break;
                 case RuntimePlatform.NaCl:
                     break;
                 case RuntimePlatform.FlashPlayer:
                     break;
                 case RuntimePlatform.LinuxPlayer:
+                    return OS.Linux;
                     break;
                 case RuntimePlatform.LinuxEditor:
                     break;
                 case RuntimePlatform.WebGLPlayer:
+                    return OS.WebGL;
                     break;
                 case RuntimePlatform.MetroPlayerX86:
                     break;
@@ -73,18 +79,22 @@ namespace IO.Ably
                 case RuntimePlatform.TizenPlayer:
                     break;
                 case RuntimePlatform.PSP2:
+                    return OS.PS2;
                     break;
                 case RuntimePlatform.PS4:
+                    return OS.PS4;
                     break;
                 case RuntimePlatform.PSM:
                     break;
                 case RuntimePlatform.XboxOne:
+                    return OS.xbox;
                     break;
                 case RuntimePlatform.SamsungTVPlayer:
                     break;
                 case RuntimePlatform.WiiU:
                     break;
                 case RuntimePlatform.tvOS:
+                    return OS.TvOS;
                     break;
                 case RuntimePlatform.Switch:
                     break;
@@ -99,6 +109,7 @@ namespace IO.Ably
                 case RuntimePlatform.GameCoreXboxOne:
                     break;
                 case RuntimePlatform.PS5:
+                    return OS.PS5;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
