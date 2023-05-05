@@ -27,7 +27,6 @@ jobs:
       
       - name: Install mono
         run: |
-          chmod +x ./tools/mono-install.sh
           ./tools/mono-install.sh
 
       - name: Build Xamarin projects
