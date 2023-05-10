@@ -281,7 +281,7 @@ namespace NotificationsPublisher
                 var options = new ClientOptions(key)
                 {
                     LogHandler = Logger,
-                    LogLevel = LogLevel.Debug,
+                    LogLevel = LogLevel.Warning,
                     AutoConnect = false
                 };
                 Ably = new AblyRealtime(options);

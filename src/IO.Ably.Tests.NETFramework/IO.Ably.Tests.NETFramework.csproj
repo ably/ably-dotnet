@@ -143,13 +143,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj">
       <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
       <Name>IO.Ably.NETFramework</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

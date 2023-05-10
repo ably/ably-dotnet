@@ -16,7 +16,14 @@ namespace IO.Ably
 
         internal static bool HookedUpToNetworkEvents { get; private set; }
 
-        public string PlatformId => "netstandard20";
+        // Defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
+#if NET6_0
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net6;
+#elif NET7_0
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net7;
+#else
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Netstandard20;
+#endif
 
         public ITransportFactory TransportFactory => null;
 

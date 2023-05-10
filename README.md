@@ -12,12 +12,14 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 
 ## Supported platforms
 
-* .NET (Core) 3.1+
-* .NET Framework 4.8
-* .NET Standard 2.0+
+* [.NET Standard 2.0+](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
+* .NET 6.x, 7.x (MAUI supported)
+* .NET Framework 4.6+
+* .NET (Core) 2.0+
 * Mono 5.4+
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
-* [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
+* [Xamarin.iOS 10.14+](https://developer.xamarin.com/releases/ios/xamarin.ios_10/xamarin.ios_10.14/)
+* Xamarin.Mac 3.8+
 
 ## Push notification
 
@@ -49,7 +51,6 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 
 ## Known Limitations
 * Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
-* [MAUI framework](https://dotnet.microsoft.com/en-us/apps/maui) is under testing and not yet fully supported, see [MAUI issue](https://github.com/ably/ably-dotnet/issues/1205).
 
 ## Documentation
 
