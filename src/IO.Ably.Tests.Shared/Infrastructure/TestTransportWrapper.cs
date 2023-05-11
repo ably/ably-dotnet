@@ -10,6 +10,8 @@ namespace IO.Ably.Tests.Infrastructure
 {
     internal class TestTransportWrapper : ITransport
     {
+        public bool RaiseExceptionForSend { get; set; } = false;
+
         private class TransportListenerWrapper : ITransportListener
         {
             private readonly ITransportListener _wrappedListener;
@@ -135,6 +137,11 @@ namespace IO.Ably.Tests.Infrastructure
 
         public Result Send(RealtimeTransportData data)
         {
+            if (RaiseExceptionForSend)
+            {
+                throw new Exception("Error while sending the message");
+            }
+
             if (BlockSendActions.Contains(data.Original.Action))
             {
                 return Result.Ok();
