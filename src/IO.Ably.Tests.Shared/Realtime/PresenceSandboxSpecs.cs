@@ -1828,7 +1828,7 @@ namespace IO.Ably.Tests.Realtime
 
                         // capture all outbound protocol messages for later inspection
                         List<ProtocolMessage> messageList = new List<ProtocolMessage>();
-                        client.GetTestTransport().MessageSent = messageList.Add;
+                        client.GetTestTransport().AfterMessageSent = messageList.Add;
 
                         // force state
                         client.Workflow.QueueCommand(changeStateCommand);
@@ -1883,7 +1883,7 @@ namespace IO.Ably.Tests.Realtime
 
                         // capture all outbound protocol messages for later inspection
                         List<ProtocolMessage> messageList = new List<ProtocolMessage>();
-                        client.GetTestTransport().MessageSent = messageList.Add;
+                        client.GetTestTransport().AfterMessageSent = messageList.Add;
 
                         // force state
                         channel.SetChannelState(state);

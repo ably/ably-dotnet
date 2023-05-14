@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.Infrastructure
 
             transport.BeforeDataProcessed = BeforeDataProcessed;
             OnTransportCreated(transport);
-            transport.MessageSent = OnMessageSent;
+            transport.AfterMessageSent = OnMessageSent;
             _onWrappedTransportCreated?.Invoke(transport);
             return transport;
         }
