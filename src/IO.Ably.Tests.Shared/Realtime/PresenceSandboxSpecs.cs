@@ -1667,16 +1667,27 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTP16b")]
                 public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldntQueueMessages_WhenSendFails(Protocol protocol)
                 {
+                    var transportFactory = new TestTransportFactory
+                    {
+                        BeforeMessageSent = message =>
+                        {
+                            if (message.Action == ProtocolMessage.MessageAction.Presence)
+                            {
+                                throw new Exception("Error sending message");
+                            }
+                        }
+                    };
+
                     var client = await GetRealtimeClient(protocol, (options, settings) =>
                     {
                         options.ClientId = "RTP16b";
                         options.QueueMessages = false;
+                        options.TransportFactory = transportFactory;
                     });
+
                     var channel = GetRandomChannel(client, "RTP16a");
 
                     await client.WaitForState(ConnectionState.Connected);
-                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
-                    await client.WaitForState(ConnectionState.Disconnected);
 
                     var tsc = new TaskCompletionAwaiter();
                     ErrorInfo err = null;
@@ -1687,6 +1698,9 @@ namespace IO.Ably.Tests.Realtime
                         err = info;
                         tsc.SetCompleted();
                     });
+
+                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
+
                     Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);
@@ -1695,7 +1709,6 @@ namespace IO.Ably.Tests.Realtime
                     success.Should().HaveValue();
                     success.Value.Should().BeFalse();
                     err.Should().NotBeNull();
-                    err.Message.Should().Be("Unable enqueue message because Options.QueueMessages is set to False.");
 
                     // clean up
                     client.Close();

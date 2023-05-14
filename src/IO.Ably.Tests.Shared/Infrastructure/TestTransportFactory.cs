@@ -9,6 +9,7 @@ namespace IO.Ably.Tests.Infrastructure
         private readonly Action<TestTransportWrapper> _onWrappedTransportCreated;
         internal Action<TestTransportWrapper> OnTransportCreated = delegate { };
 
+        internal Action<ProtocolMessage> BeforeMessageSent = delegate { };
         internal Action<ProtocolMessage> OnMessageSent = delegate { };
 
         internal Action<ProtocolMessage> BeforeDataProcessed;
@@ -30,6 +31,7 @@ namespace IO.Ably.Tests.Infrastructure
 
             transport.BeforeDataProcessed = BeforeDataProcessed;
             OnTransportCreated(transport);
+            transport.BeforeMessageSend = BeforeMessageSent;
             transport.AfterMessageSent = OnMessageSent;
             _onWrappedTransportCreated?.Invoke(transport);
             return transport;
