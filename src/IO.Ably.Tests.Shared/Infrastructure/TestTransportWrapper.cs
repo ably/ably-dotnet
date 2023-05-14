@@ -10,8 +10,6 @@ namespace IO.Ably.Tests.Infrastructure
 {
     internal class TestTransportWrapper : ITransport
     {
-        public bool RaiseExceptionForSend { get; set; } = false;
-
         private class TransportListenerWrapper : ITransportListener
         {
             private readonly ITransportListener _wrappedListener;
