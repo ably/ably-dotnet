@@ -167,6 +167,27 @@ channel.On(ChannelState.Attached, args =>
 });
 ```
 
+### Enable logging
+
+Define a new class that implements `ILoggerSink` interface.
+
+```csharp
+class CustomLogHandler : ILoggerSink
+{
+    public void LogEvent(LogLevel level, string message)
+    {
+        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
+    }
+}
+```
+
+Update clientOptions for `LogLevel` and `LogHandler`.
+
+```csharp
+clientOpts.LogLevel = LogLevel.Debug;
+clientOpts.LogHandler = new CustomLogHandler();
+```
+
 ### Subscribing to a channel in delta mode
 
 Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
