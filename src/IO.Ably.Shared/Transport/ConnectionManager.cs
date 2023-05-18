@@ -232,13 +232,16 @@ namespace IO.Ably.Transport
                 {
                     throw new AblyException(
                         $"Not queuing messages for [{State.State}] since Options.QueueMessages is set to False.",
-                        Connection.ConnectionState.DefaultErrorInfo.Code,
-                        HttpStatusCode.ServiceUnavailable);
+                        ErrorInfo.ReasonUnknown.Code,
+                        HttpStatusCode.BadRequest);
                 }
 
                 if (State.CanQueue == false)
                 {
-                    throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
+                    throw new AblyException(
+                        $"The current connection state [{State.State}] does not allow messages to be sent.",
+                        ErrorInfo.ReasonUnknown.Code,
+                        HttpStatusCode.BadRequest);
                 }
             }
 
