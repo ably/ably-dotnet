@@ -304,6 +304,7 @@ namespace IO.Ably.Transport
         {
             switch (state)
             {
+                // RTN20b
                 case NetworkState.Online:
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
@@ -317,6 +318,8 @@ namespace IO.Ably.Transport
                     }
 
                     break;
+
+                // RTN20a
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
                         ConnectionState == ConnectionState.Connecting)
