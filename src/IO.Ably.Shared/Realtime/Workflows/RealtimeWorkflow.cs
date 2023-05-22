@@ -554,6 +554,7 @@ namespace IO.Ably.Realtime.Workflow
                     return ErrorInfo.ReasonRefused;
                 }
 
+                @default.InnerException = ex;
                 return @default;
             }
 

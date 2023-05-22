@@ -1714,12 +1714,12 @@ namespace IO.Ably.Tests.Realtime
 
                     await tsc.Task;
 
-                    // No pending message queue, since QueueMessages is false
+                    // No pending message queue, since QueueMessages=false
                     channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
 
                     await WaitFor(500, done =>
                     {
-                        // Ack cleared after flushing the queue for transport disconnection.
+                        // Ack cleared after flushing the queue for transport disconnection, because QueueMessages=false
                         if (channel.RealtimeClient.State.WaitingForAck.Count == 0)
                         {
                             done();
@@ -1729,6 +1729,8 @@ namespace IO.Ably.Tests.Realtime
                     success.Should().HaveValue();
                     success.Value.Should().BeFalse();
                     err.Should().NotBeNull();
+                    err.Message.Should().Be("Clearing message AckQueue(created at connected state) because Options.QueueMessages is false");
+                    err.Cause.InnerException.Message.Should().Be("RTP16b : error while sending message");
 
                     // clean up
                     client.Close();
