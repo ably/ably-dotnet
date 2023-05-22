@@ -89,9 +89,11 @@ namespace IO.Ably.Tests.Infrastructure
 
         public List<ProtocolMessage.MessageAction> BlockReceiveActions { get; set; } = new List<ProtocolMessage.MessageAction>();
 
+        public Action<ProtocolMessage> BeforeMessageSend = delegate { };
+        public Action<ProtocolMessage> AfterMessageSent = delegate { };
+
         public Action<ProtocolMessage> BeforeDataProcessed;
         public Action<ProtocolMessage> AfterDataReceived;
-        public Action<ProtocolMessage> MessageSent = delegate { };
 
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
         {
@@ -135,15 +137,16 @@ namespace IO.Ably.Tests.Infrastructure
 
         public Result Send(RealtimeTransportData data)
         {
+            BeforeMessageSend(data.Original);
+
             if (BlockSendActions.Contains(data.Original.Action))
             {
                 return Result.Ok();
             }
 
             ProtocolMessagesSent.Add(data.Original);
-            MessageSent(data.Original);
             WrappedTransport.Send(data);
-
+            AfterMessageSent(data.Original);
             return Result.Ok();
         }
 
