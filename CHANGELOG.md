@@ -1,5 +1,34 @@
 # Change Log
 
+## [1.2.11](https://github.com/ably/ably-dotnet/tree/1.2.11) (2023-05-22)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.10...1.2.11)
+
+**Implemented enhancements:**
+
+- Support net6.0, net7.0 and MAUI [\#1215](https://github.com/ably/ably-dotnet/pull/1215) ([sacOO7](https://github.com/sacOO7))
+
+**Fixed bugs:**
+- Fix QueueMessages ClientOption [\#1219](https://github.com/ably/ably-dotnet/issues/1219)
+
+**Closed issues:**
+
+- Fix synchronization context deprecation [\#1209](https://github.com/ably/ably-dotnet/issues/1209)
+- .Net MAUI app throws System.Net.NetworkInformation.NetworkInformationException when creating AblyRealtime object [\#1205](https://github.com/ably/ably-dotnet/issues/1205)
+- Update README + Unity Documentation [\#1204](https://github.com/ably/ably-dotnet/issues/1204)
+- Automate build and package for IO.Ably.PackagePush.sln [\#1202](https://github.com/ably/ably-dotnet/issues/1202)
+- Support for .NET Multi-platform App UI \(.NET MAUI\) [\#1178](https://github.com/ably/ably-dotnet/issues/1178))
+- Update release notes with .NET 6 status [\#1116](https://github.com/ably/ably-dotnet/issues/1116)
+
+**Merged pull requests:**
+
+- Add logging doc [\#1225](https://github.com/ably/ably-dotnet/pull/1225) ([sacOO7](https://github.com/sacOO7))
+- Fix QueueMessages when set to false [\#1216](https://github.com/ably/ably-dotnet/pull/1216) ([sacOO7](https://github.com/sacOO7))
+- Support customContext  [\#1210](https://github.com/ably/ably-dotnet/pull/1210) ([sacOO7](https://github.com/sacOO7))
+- Update README and unity doc [\#1207](https://github.com/ably/ably-dotnet/pull/1207) ([sacOO7](https://github.com/sacOO7))
+- Fix release process and package publish [\#1203](https://github.com/ably/ably-dotnet/pull/1203) ([sacOO7](https://github.com/sacOO7))
+- Unity documentation [\#1124](https://github.com/ably/ably-dotnet/pull/1124) ([sacOO7](https://github.com/sacOO7))
+
 ## [1.2.10](https://github.com/ably/ably-dotnet/tree/1.2.10) (2023-01-24)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.9...1.2.10)
