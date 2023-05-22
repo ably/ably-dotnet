@@ -23,8 +23,6 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", ErrorCodes.InternalError, HttpStatusCode.InternalServerError);
         internal static readonly ErrorInfo NonRenewableToken = new ErrorInfo("The library was initialized with a token without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help", ErrorCodes.NoMeansProvidedToRenewAuthToken, HttpStatusCode.Unauthorized);
 
-        internal static readonly ErrorInfo ReasonMsgQueueNotAllowed = new ErrorInfo("Clearing message AckQueue(created at connected state) because Options.QueueMessages is false", ErrorCodes.Disconnected);
-
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";
         internal const string ReasonPropertyName = "message";

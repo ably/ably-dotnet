@@ -814,7 +814,13 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (Client.Options.QueueMessages == false)
                         {
-                            ClearAckQueueAndFailMessages(ErrorInfo.ReasonMsgQueueNotAllowed);
+                            var failAckMessages = new ErrorInfo(
+                                "Clearing message AckQueue(created at connected state) because Options.QueueMessages is false",
+                                ErrorCodes.Disconnected,
+                                HttpStatusCode.BadRequest,
+                                null,
+                                cmd.Error);
+                            ClearAckQueueAndFailMessages(failAckMessages);
                         }
 
                         if (cmd.SkipAttach == false)
