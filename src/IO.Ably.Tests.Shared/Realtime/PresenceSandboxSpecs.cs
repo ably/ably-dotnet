@@ -1665,7 +1665,8 @@ namespace IO.Ably.Tests.Realtime
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP16b")]
-                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldntQueueMessages_WhenSendFails(Protocol protocol)
+                [Trait("spec", "RTP19a")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldFailAckQueueMessages_WhenSendFails(Protocol protocol)
                 {
                     var transportFactory = new TestTransportFactory
                     {
@@ -1673,7 +1674,7 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (message.Action == ProtocolMessage.MessageAction.Presence)
                             {
-                                throw new Exception("Error sending message");
+                                throw new Exception("RTP16b : error while sending message");
                             }
                         }
                     };
@@ -1685,9 +1686,11 @@ namespace IO.Ably.Tests.Realtime
                         options.TransportFactory = transportFactory;
                     });
 
-                    var channel = GetRandomChannel(client, "RTP16a");
-
                     await client.WaitForState(ConnectionState.Connected);
+
+                    var channel = GetRandomChannel(client, "RTP16a");
+                    channel.Attach();
+                    await channel.WaitForAttachedState();
 
                     var tsc = new TaskCompletionAwaiter();
                     ErrorInfo err = null;
@@ -1699,6 +1702,10 @@ namespace IO.Ably.Tests.Realtime
                         tsc.SetCompleted();
                     });
 
+                    // Ack Queue has one presence message
+                    channel.RealtimeClient.State.WaitingForAck.Should().HaveCount(1);
+
+                    // No pending message queue, since QueueMessages is false
                     channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
 
                     Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
@@ -1706,6 +1713,19 @@ namespace IO.Ably.Tests.Realtime
                     presenceMessages.Should().HaveCount(0);
 
                     await tsc.Task;
+
+                    // No pending message queue, since QueueMessages is false
+                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
+
+                    await WaitFor(500, done =>
+                    {
+                        // Ack cleared after flushing the queue for transport disconnection.
+                        if (channel.RealtimeClient.State.WaitingForAck.Count == 0)
+                        {
+                            done();
+                        }
+                    });
+
                     success.Should().HaveValue();
                     success.Value.Should().BeFalse();
                     err.Should().NotBeNull();
