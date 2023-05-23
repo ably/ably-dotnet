@@ -1702,8 +1702,14 @@ namespace IO.Ably.Tests.Realtime
                         tsc.SetCompleted();
                     });
 
-                    // Ack Queue has one presence message
-                    channel.RealtimeClient.State.WaitingForAck.Should().HaveCount(1);
+                    await WaitFor(500, done =>
+                    {
+                        // Ack Queue has one presence message
+                        if (channel.RealtimeClient.State.WaitingForAck.Count == 1)
+                        {
+                            done();
+                        }
+                    });
 
                     // No pending message queue, since QueueMessages is false
                     channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
