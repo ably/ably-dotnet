@@ -9,6 +9,7 @@
 - Support net6.0, net7.0 and MAUI [\#1215](https://github.com/ably/ably-dotnet/pull/1215) ([sacOO7](https://github.com/sacOO7))
 
 **Fixed bugs:**
+
 - Fix QueueMessages ClientOption [\#1219](https://github.com/ably/ably-dotnet/issues/1219)
 
 **Closed issues:**
