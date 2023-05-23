@@ -2,7 +2,7 @@ if [ $# -eq 0 ]
 then
   echo "Provide latest version number like unity-plugins-updater.sh 1.2.8"
 else
-	dotnet fake run build.fsx -t Build.NetStandard
+	./build.sh Build.NetStandard
 	cp src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.dll unity/Assets/Ably/Plugins
 	cp src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.pdb unity/Assets/Ably/Plugins 
 	cp src/IO.Ably.NETStandard20/bin/Release/netstandard2.0/IO.Ably.DeltaCodec.dll unity/Assets/Ably/Plugins
