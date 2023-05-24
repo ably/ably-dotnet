@@ -146,6 +146,34 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSC19")]
+        [Theory]
+        [ProtocolData]
+        public async Task BatchMessagePostOnMultipleChannelsUsingJSON(Protocol protocol)
+        {
+            var client = TrackLastRequest(await GetRestClient(protocol));
+            var payload = JObject.Parse(
+                @"{
+                    ""channels"" : [ ""channel1"", ""channel2"" ],
+                    ""messages"" : {
+                        ""id"" : ""1"",
+                        ""data"" : ""foo"",
+                    }
+                  }");
+
+            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, payload, null);
+
+            _lastRequest.Headers.Should().ContainKey("Authorization");
+            paginatedResponse.Should().NotBeNull();
+            paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
+            paginatedResponse.Success.Should().BeTrue();
+            paginatedResponse.ErrorCode.Should().Be(0);
+            paginatedResponse.ErrorMessage.Should().BeNull();
+            paginatedResponse.Items.Should().HaveCount(2);
+            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
+            paginatedResponse.Items.First().Should().BeOfType<JObject>();
+        }
+
+        [Trait("spec", "RSC19")]
         [Trait("spec", "RSC19a")]
         [Trait("spec", "RSC19b")]
         [Trait("spec", "RSC19c")]
