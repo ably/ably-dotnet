@@ -124,7 +124,7 @@ namespace IO.Ably.Tests
         {
             var client = TrackLastRequest(await GetRestClient(protocol));
 
-            async Task ValidateResponse(JToken postData)
+            async Task ValidateResponse(JToken postData, int channelCounter = 1)
             {
                 var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, postData, null);
 
@@ -137,11 +137,20 @@ namespace IO.Ably.Tests
                 paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
 
                 paginatedResponse.Items.Should().HaveCount(4);
-                var counter = 1;
                 foreach (var item in paginatedResponse.Items)
                 {
-                    item["channel"].ToString().Should().Be($"channel{counter}");
-                    counter++;
+                    item["channel"].ToString().Should().Be($"channel{channelCounter++}");
+                }
+            }
+
+            async Task ValidateMessages(string channelName, Action<Message, int> validate)
+            {
+                var paginatedResult = await client.Channels.Get(channelName).HistoryAsync();
+                var counter = 0;
+                // No need to iterate pages since result wont exceed 100.
+                foreach (var message in paginatedResult.Items)
+                {
+                    validate(message, paginatedResult.Items.Count - counter++);
                 }
             }
 
@@ -157,12 +166,20 @@ namespace IO.Ably.Tests
             };
 
             await ValidateResponse(JObject.FromObject(objectPayload));
-            // TODO - check for available messages using history API
+
+            foreach (var channel in new[] { "channel1", "channel2", "channel3", "channel4" })
+            {
+                await ValidateMessages(channel, (message, messageIndex) =>
+                {
+                    message.Id.Should().Be("1");
+                    message.Data.Should().Be("foo");
+                });
+            }
 
             // Publish multiple messages
             var jsonPayload =
                 @"{
-                    ""channels"" : [ ""channel1"", ""channel2"",""channel3"", ""channel4"" ],
+                    ""channels"" : [ ""channel5"", ""channel6"",""channel7"", ""channel8"" ],
                     ""messages"" : [
                         {
                             ""data"" : ""message1"",
@@ -170,12 +187,23 @@ namespace IO.Ably.Tests
                         {
                             ""name"": ""eventName"",
                             ""data"" : ""message2"",
-                        },
+                        }
                     ]
                   }";
 
-            await ValidateResponse(JObject.Parse(jsonPayload));
-            // TODO - check for available messages using history API
+            await ValidateResponse(JObject.Parse(jsonPayload), 5);
+
+            foreach (var channel in new[] { "channel5", "channel6", "channel7", "channel8" })
+            {
+                await ValidateMessages(channel, (message, messageIndex) =>
+                {
+                    message.Data.Should().Be($"message{messageIndex}");
+                    if (messageIndex == 2)
+                    {
+                        message.Name.Should().Be("eventName");
+                    }
+                });
+            }
         }
 
         [Trait("spec", "RSC19")]
