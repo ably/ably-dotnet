@@ -414,6 +414,25 @@ var nextStatsPage = await stats.NextAsync();
 DateTimeOffset time = await client.TimeAsync();
 ```
 
+### Making explicit HTTP requests to Ably Rest Endpoints / Batch publish
+- The `AblyRest->Request` method should be used to make explicit HTTP requests.
+- It automatically adds necessary auth headers based on the initial auth config and supports pagination.
+- The following is an example of using the batch publish API based on the [Ably batch publish rest endpoint documentation](https://ably.com/docs/api/rest-api#batch-publish).
+```csharp
+  var jsonPayload =
+    @"{
+        ""channels"" : [ ""channel1"", ""channel2"" ],
+        ""messages"" : [
+            {
+                ""name"": ""eventName"",
+                ""data"" : ""message"",
+            }
+        ]
+      }";
+  var paginatedResponse = await ablyRest.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
+```
+- Follow official [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
+
 ### Increase Transport send and receive buffers
 
 In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
