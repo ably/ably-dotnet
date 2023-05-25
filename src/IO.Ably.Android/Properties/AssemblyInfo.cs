@@ -8,6 +8,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyDescription("Client for ably.io realtime service")]
+[assembly: AssemblyDescription("Client for ably.com realtime service")]
 [assembly: InternalsVisibleTo("IO.Ably.Push.Android")]
 [assembly: InternalsVisibleTo("IO.Ably.Push.iOS")]

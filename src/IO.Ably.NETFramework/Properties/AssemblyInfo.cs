@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyDescription("Client for ably.io realtime service")]
+[assembly: AssemblyDescription("Client for ably.com realtime service")]
 #if !PACKAGE
 [assembly: InternalsVisibleTo("IO.Ably.Tests")]
 [assembly: InternalsVisibleTo("IO.Ably.Tests.NETFramework")]
