@@ -119,58 +119,47 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC19")]
         [Theory]
         [ProtocolData]
-        public async Task BatchMessagePostOnMultipleChannelsUsingObject(Protocol protocol)
+        public async Task BatchMessagePublishOnMultipleChannelsUsingHttpPostRequest(Protocol protocol)
         {
             var client = TrackLastRequest(await GetRestClient(protocol));
-            var payload = JObject.FromObject(new
+
+            async Task ValidateResponse(JToken postData)
+            {
+                var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, postData, null);
+
+                _lastRequest.Headers.Should().ContainKey("Authorization");
+                paginatedResponse.Should().NotBeNull();
+                paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
+                paginatedResponse.Success.Should().BeTrue();
+                paginatedResponse.ErrorCode.Should().Be(0);
+                paginatedResponse.ErrorMessage.Should().BeNull();
+                paginatedResponse.Items.Should().HaveCount(2);
+                paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
+                paginatedResponse.Items.First().Should().BeOfType<JObject>();
+            }
+
+            var objectPayload = new
+            {
+                channels = new[] { "channel1", "channel2" },
+                messages = new
                 {
-                    channels = new[] { "channel1", "channel2" },
-                    messages = new
-                    {
-                        id = "1",
-                        data = "foo",
-                    }
-                });
+                    id = "1",
+                    data = "foo",
+                }
+            };
 
-            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, payload, null);
+            await ValidateResponse(JObject.FromObject(objectPayload));
 
-            _lastRequest.Headers.Should().ContainKey("Authorization");
-            paginatedResponse.Should().NotBeNull();
-            paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
-            paginatedResponse.Success.Should().BeTrue();
-            paginatedResponse.ErrorCode.Should().Be(0);
-            paginatedResponse.ErrorMessage.Should().BeNull();
-            paginatedResponse.Items.Should().HaveCount(2);
-            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
-            paginatedResponse.Items.First().Should().BeOfType<JObject>();
-        }
-
-        [Trait("spec", "RSC19")]
-        [Theory]
-        [ProtocolData]
-        public async Task BatchMessagePostOnMultipleChannelsUsingJSON(Protocol protocol)
-        {
-            var client = TrackLastRequest(await GetRestClient(protocol));
-            var payload = JObject.Parse(
+            var jsonPayload =
                 @"{
                     ""channels"" : [ ""channel1"", ""channel2"" ],
                     ""messages"" : {
                         ""id"" : ""1"",
                         ""data"" : ""foo"",
                     }
-                  }");
+                  }";
 
-            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, payload, null);
-
-            _lastRequest.Headers.Should().ContainKey("Authorization");
-            paginatedResponse.Should().NotBeNull();
-            paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
-            paginatedResponse.Success.Should().BeTrue();
-            paginatedResponse.ErrorCode.Should().Be(0);
-            paginatedResponse.ErrorMessage.Should().BeNull();
-            paginatedResponse.Items.Should().HaveCount(2);
-            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
-            paginatedResponse.Items.First().Should().BeOfType<JObject>();
+            await ValidateResponse(JObject.Parse(jsonPayload));
         }
 
         [Trait("spec", "RSC19")]
