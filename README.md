@@ -415,9 +415,9 @@ DateTimeOffset time = await client.TimeAsync();
 ```
 
 ### Making explicit HTTP requests to Ably Rest Endpoints / Batch publish
-- `AblyRest->Request` method should be used to make explicit HTTP requests.
-- It automatically adds necessary auth headers based on the initial auth config.
-- Following is an example of batch publish based on [ably batch publish rest endpoint doc](https://ably.com/docs/api/rest-api#batch-publish).
+- The `AblyRest->Request` method should be used to make explicit HTTP requests.
+- It automatically adds necessary auth headers based on the initial auth config and supports pagination.
+- The following is an example of using the batch publish API based on the [Ably batch publish rest endpoint documentation](https://ably.com/docs/api/rest-api#batch-publish).
 ```csharp
   var jsonPayload =
     @"{
