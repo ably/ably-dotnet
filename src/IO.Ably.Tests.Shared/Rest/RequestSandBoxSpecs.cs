@@ -117,6 +117,7 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSC19")]
+        [Trait("docUrl", "https://ably.com/docs/api/rest-api#batch-publish")]
         [Theory]
         [ProtocolData]
         public async Task BatchMessagePublishOnMultipleChannelsUsingHttpPostRequest(Protocol protocol)
@@ -133,14 +134,21 @@ namespace IO.Ably.Tests
                 paginatedResponse.Success.Should().BeTrue();
                 paginatedResponse.ErrorCode.Should().Be(0);
                 paginatedResponse.ErrorMessage.Should().BeNull();
-                paginatedResponse.Items.Should().HaveCount(2);
                 paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
-                paginatedResponse.Items.First().Should().BeOfType<JObject>();
+
+                paginatedResponse.Items.Should().HaveCount(4);
+                var counter = 1;
+                foreach (var item in paginatedResponse.Items)
+                {
+                    item["channel"].ToString().Should().Be($"channel{counter}");
+                    counter++;
+                }
             }
 
+            // Publish single message
             var objectPayload = new
             {
-                channels = new[] { "channel1", "channel2" },
+                channels = new[] { "channel1", "channel2", "channel3", "channel4" },
                 messages = new
                 {
                     id = "1",
@@ -149,17 +157,25 @@ namespace IO.Ably.Tests
             };
 
             await ValidateResponse(JObject.FromObject(objectPayload));
+            // TODO - check for available messages using history API
 
+            // Publish multiple messages
             var jsonPayload =
                 @"{
-                    ""channels"" : [ ""channel1"", ""channel2"" ],
-                    ""messages"" : {
-                        ""id"" : ""1"",
-                        ""data"" : ""foo"",
-                    }
+                    ""channels"" : [ ""channel1"", ""channel2"",""channel3"", ""channel4"" ],
+                    ""messages"" : [
+                        {
+                            ""data"" : ""message1"",
+                        },
+                        {
+                            ""name"": ""eventName"",
+                            ""data"" : ""message2"",
+                        },
+                    ]
                   }";
 
             await ValidateResponse(JObject.Parse(jsonPayload));
+            // TODO - check for available messages using history API
         }
 
         [Trait("spec", "RSC19")]
