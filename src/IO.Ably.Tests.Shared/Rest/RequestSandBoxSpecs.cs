@@ -124,10 +124,8 @@ namespace IO.Ably.Tests
         {
             var client = TrackLastRequest(await GetRestClient(protocol));
 
-            async Task ValidateResponse(JToken postData, int channelCounter = 1)
+            void ValidateResponse(HttpPaginatedResponse paginatedResponse, int channelCounter = 1)
             {
-                var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, postData, null);
-
                 _lastRequest.Headers.Should().ContainKey("Authorization");
                 paginatedResponse.Should().NotBeNull();
                 paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
@@ -164,8 +162,9 @@ namespace IO.Ably.Tests
                     data = "foo",
                 }
             };
+            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.FromObject(objectPayload), null);
 
-            await ValidateResponse(JObject.FromObject(objectPayload));
+            ValidateResponse(paginatedResponse);
 
             foreach (var channel in new[] { "channel1", "channel2", "channel3", "channel4" })
             {
@@ -190,8 +189,9 @@ namespace IO.Ably.Tests
                         }
                     ]
                   }";
+            paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
 
-            await ValidateResponse(JObject.Parse(jsonPayload), 5);
+            ValidateResponse(paginatedResponse, 5);
 
             foreach (var channel in new[] { "channel5", "channel6", "channel7", "channel8" })
             {
