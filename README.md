@@ -421,9 +421,10 @@ DateTimeOffset time = await client.TimeAsync();
 ```csharp
   var jsonPayload =
     @"{
-        ""channels"" : [ ""channel5"", ""channel6"",""channel7"", ""channel8"" ],
+        ""channels"" : [ ""channel1"", ""channel2"" ],
         ""messages"" : [
             {
+                ""name"": ""eventName"",
                 ""data"" : ""message"",
             }
         ]
