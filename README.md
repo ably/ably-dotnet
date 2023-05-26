@@ -14,7 +14,7 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 
 * [.NET Standard 2.0+](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
 * .NET 6.x, 7.x (MAUI supported)
-* .NET Framework 4.6+
+* .NET Framework 4.6.2+
 * .NET (Core) 2.0+
 * Mono 5.4+
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
