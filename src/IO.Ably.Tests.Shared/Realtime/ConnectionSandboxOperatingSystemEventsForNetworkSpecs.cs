@@ -95,6 +95,25 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN20c")]
+        public async Task
+            WhenOperatingSystemNetworkBecomesAvailableAndStateIsConnecting_ShouldTransitionToConnecting(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+
+            client.Connection.On(stateChange => Output.WriteLine("State Changed: " + stateChange.Current + " From: " + stateChange.Previous));
+            client.Connect();
+
+            await WaitForState(client, ConnectionState.Connecting);
+
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
+
+            await WaitForState(client, ConnectionState.Connecting);
+            await WaitToBecomeConnected(client);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN22")]
         public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
         {
