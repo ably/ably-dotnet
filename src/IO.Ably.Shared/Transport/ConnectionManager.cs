@@ -304,8 +304,8 @@ namespace IO.Ably.Transport
         {
             switch (state)
             {
-                // RTN20b
                 case NetworkState.Online:
+                    // RTN20b
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
@@ -315,6 +315,17 @@ namespace IO.Ably.Transport
                         }
 
                         ExecuteCommand(ConnectCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
+                    }
+
+                    // RTN20c
+                    if (ConnectionState == ConnectionState.Connecting)
+                    {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
+
+                        ExecuteCommand(SetConnectingStateCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
 
                     break;
