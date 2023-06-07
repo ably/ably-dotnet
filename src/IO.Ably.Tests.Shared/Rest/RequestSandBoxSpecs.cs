@@ -117,6 +117,96 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSC19")]
+        [Trait("docUrl", "https://ably.com/docs/api/rest-api#batch-publish")]
+        [Theory]
+        [ProtocolData]
+        public async Task BatchMessagePublishOnMultipleChannelsUsingHttpPostRequest(Protocol protocol)
+        {
+            var client = TrackLastRequest(await GetRestClient(protocol));
+
+            void ValidateResponse(HttpPaginatedResponse paginatedResponse, int channelCounter = 1)
+            {
+                _lastRequest.Headers.Should().ContainKey("Authorization");
+                paginatedResponse.Should().NotBeNull();
+                paginatedResponse.StatusCode.Should().Be(HttpStatusCode.Created); // 201
+                paginatedResponse.Success.Should().BeTrue();
+                paginatedResponse.ErrorCode.Should().Be(0);
+                paginatedResponse.ErrorMessage.Should().BeNull();
+                paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
+
+                paginatedResponse.Items.Should().HaveCount(4);
+                foreach (var item in paginatedResponse.Items)
+                {
+                    item["channel"].ToString().Should().Be($"channel{channelCounter++}");
+                }
+            }
+
+            async Task ValidateMessages(string channelName, Action<Message, int> validate)
+            {
+                var paginatedResult = await client.Channels.Get(channelName).HistoryAsync();
+                var counter = 0;
+                // No need to iterate pages since result wont exceed 100.
+                foreach (var message in paginatedResult.Items)
+                {
+                    validate(message, paginatedResult.Items.Count - counter++);
+                }
+            }
+
+            // Publish single message
+            var objectPayload = new
+            {
+                channels = new[] { "channel1", "channel2", "channel3", "channel4" },
+                messages = new
+                {
+                    id = "1",
+                    data = "foo",
+                }
+            };
+            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.FromObject(objectPayload), null);
+
+            ValidateResponse(paginatedResponse);
+
+            foreach (var channel in new[] { "channel1", "channel2", "channel3", "channel4" })
+            {
+                await ValidateMessages(channel, (message, messageIndex) =>
+                {
+                    message.Id.Should().Be("1");
+                    message.Data.Should().Be("foo");
+                });
+            }
+
+            // Publish multiple messages
+            var jsonPayload =
+                @"{
+                    ""channels"" : [ ""channel5"", ""channel6"",""channel7"", ""channel8"" ],
+                    ""messages"" : [
+                        {
+                            ""data"" : ""message1"",
+                        },
+                        {
+                            ""name"": ""eventName"",
+                            ""data"" : ""message2"",
+                        }
+                    ]
+                  }";
+            paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
+
+            ValidateResponse(paginatedResponse, 5);
+
+            foreach (var channel in new[] { "channel5", "channel6", "channel7", "channel8" })
+            {
+                await ValidateMessages(channel, (message, messageIndex) =>
+                {
+                    message.Data.Should().Be($"message{messageIndex}");
+                    if (messageIndex == 2)
+                    {
+                        message.Name.Should().Be("eventName");
+                    }
+                });
+            }
+        }
+
+        [Trait("spec", "RSC19")]
         [Trait("spec", "RSC19a")]
         [Trait("spec", "RSC19b")]
         [Trait("spec", "RSC19c")]

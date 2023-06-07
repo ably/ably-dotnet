@@ -215,5 +215,11 @@ namespace IO.Ably.Tests.Rest
             var jwtStr = await _httpClient.GetStringAsync(builder.Uri);
             return jwtStr;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            _httpClient.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }

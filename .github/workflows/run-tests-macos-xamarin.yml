@@ -1,0 +1,39 @@
+name: "Unit and Integration Test: macOS (Xamarin)"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: macos-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+
+      - name: Download dotnet framework
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            3.1.x
+
+      - name: Download dotnet build-script tools
+        run:  dotnet tool restore
+      
+      - name: Install mono
+        run: |
+          ./tools/mono-install.sh
+
+      - name: Build Xamarin projects
+        run: ./build.sh Build.Xamarin
+
+      - name: Run Unit tests using mono
+        run: ./build.sh Test.NetFramework.Unit.WithRetry
+
+      - name: Run Integration tests using mono
+        run: ./build.sh Test.NetFramework.Integration.WithRetry

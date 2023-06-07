@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using IO.Ably.Transport;
 
@@ -48,7 +50,7 @@ namespace IO.Ably
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
         public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
-        public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://docs.ably.io/client-lib-development-guide/features/#TO3l10
+        public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://docs.ably.com/client-lib-development-guide/features/#TO3l10
 
         public static readonly ITransportFactory WebSocketTransportFactory = IoC.TransportFactory;
 
@@ -97,65 +99,6 @@ namespace IO.Ably
                 $"{environment}-d-fallback.ably-realtime.com",
                 $"{environment}-e-fallback.ably-realtime.com",
             };
-        }
-
-        internal const string AblyAgentHeader = "Ably-Agent";
-        private static readonly string AblySdkIdentifier = $"ably-dotnet/{LibraryVersion}"; // RSC7d1
-
-        /// <summary>
-        /// This returns dotnet platform as per ably-lib mappings defined in agents.json.
-        /// https://github.com/ably/ably-common/blob/main/protocol/agents.json.
-        /// This is required since we are migrating from 'X-Ably-Lib' header (RSC7b) to agent headers (RSC7d).
-        /// Please note that uwp platform is Deprecated and removed as a part of https://github.com/ably/ably-dotnet/pull/1101.
-        /// </summary>
-        /// <returns> Clean Platform Identifier. </returns>
-        internal static string DotnetRuntimeIdentifier()
-        {
-            switch (IoC.PlatformId)
-            {
-                case "framework":
-                    return "dotnet-framework";
-                case "netstandard20":
-                    return "dotnet-standard";
-                case "xamarin-android":
-                    return "xamarin-android";
-                case "xamarin-ios":
-                    return "xamarin-iOS";
-            }
-
-            return string.Empty;
-        }
-
-        internal static string AblyAgentIdentifier(Dictionary<string, string> additionalAgents)
-        {
-            string GetAgentComponentString(string product, string version)
-            {
-                return string.IsNullOrEmpty(version) ? product : $"{product}/{version}";
-            }
-
-            void AddAgentIdentifier(ICollection<string> currentAgentComponents, string product, string version = null)
-            {
-                if (!string.IsNullOrEmpty(product))
-                {
-                    currentAgentComponents.Add(GetAgentComponentString(product, version));
-                }
-            }
-
-            var agentComponents = new List<string>();
-            AddAgentIdentifier(agentComponents, AblySdkIdentifier);
-            AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
-
-            if (additionalAgents == null)
-            {
-                return string.Join(" ", agentComponents);
-            }
-
-            foreach (var agent in additionalAgents)
-            {
-                AddAgentIdentifier(agentComponents, agent.Key, agent.Value);
-            }
-
-            return string.Join(" ", agentComponents);
         }
     }
 }

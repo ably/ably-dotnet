@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>
     <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <Configurations>Debug;Release;package</Configurations>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>IO.Ably</AssemblyName>
     <RootNamespace>IO.Ably</RootNamespace>
+  </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)'=='Mono'">
+	<TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Package)'=='True'">

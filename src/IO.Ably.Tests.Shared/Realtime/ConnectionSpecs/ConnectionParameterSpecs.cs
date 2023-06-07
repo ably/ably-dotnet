@@ -125,16 +125,19 @@ namespace IO.Ably.Tests.Realtime
         {
             _ = await GetConnectedClient();
 
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
-            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
-            string[] keys =
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Agent.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Agent.AblyAgentHeader].Split(' ');
+            var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier()
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier()
             };
 
-            agentValues.Should().HaveCount(keys.Length);
-            for (int i = 0; i < keys.Length; ++i)
+            keys.RemoveAll(s => s == string.Empty);
+
+            agentValues.Should().HaveCount(keys.Count);
+            for (var i = 0; i < keys.Count; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }
@@ -153,18 +156,21 @@ namespace IO.Ably.Tests.Realtime
                 };
             });
 
-            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Defaults.AblyAgentHeader);
-            var agentValues = LastCreatedTransport.Parameters.GetParams()[Defaults.AblyAgentHeader].Split(' ');
-            string[] keys =
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey(Agent.AblyAgentHeader);
+            var agentValues = LastCreatedTransport.Parameters.GetParams()[Agent.AblyAgentHeader].Split(' ');
+            var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier(),
                 "agent1",
                 "agent2",
             };
 
-            agentValues.Should().HaveCount(keys.Length);
-            for (var i = 0; i < keys.Length; ++i)
+            keys.RemoveAll(s => s == string.Empty);
+
+            agentValues.Should().HaveCount(keys.Count);
+            for (var i = 0; i < keys.Count; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }

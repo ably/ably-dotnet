@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact]
         public void InitializeClient()
         {
-            // If you do not have an API key, [sign up for a free API key now](ht tps://www.ably.io/signup)
+            // If you do not have an API key, [sign up for a free API key now](https://www.ably.com/sign-up)
             var realtimeBasic = new AblyRealtime(PlaceholderKey);
             var realtimeToken = new AblyRealtime(new ClientOptions { Token = "token" });
         }

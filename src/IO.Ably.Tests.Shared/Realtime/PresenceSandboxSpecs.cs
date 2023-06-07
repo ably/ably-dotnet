@@ -1665,6 +1665,86 @@ namespace IO.Ably.Tests.Realtime
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP16b")]
+                [Trait("spec", "RTP19a")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldFailAckQueueMessages_WhenSendFails(Protocol protocol)
+                {
+                    var transportFactory = new TestTransportFactory
+                    {
+                        BeforeMessageSent = message =>
+                        {
+                            if (message.Action == ProtocolMessage.MessageAction.Presence)
+                            {
+                                throw new Exception("RTP16b : error while sending message");
+                            }
+                        }
+                    };
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                        options.TransportFactory = transportFactory;
+                    });
+
+                    await client.WaitForState(ConnectionState.Connected);
+
+                    var channel = GetRandomChannel(client, "RTP16a");
+                    channel.Attach();
+                    await channel.WaitForAttachedState();
+
+                    var tsc = new TaskCompletionAwaiter();
+                    ErrorInfo err = null;
+                    bool? success = null;
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                    {
+                        success = b;
+                        err = info;
+                        tsc.SetCompleted();
+                    });
+
+                    await WaitFor(1000, done =>
+                    {
+                        // Ack Queue has one presence message
+                        if (channel.RealtimeClient.State.WaitingForAck.Count == 1)
+                        {
+                            done();
+                        }
+                    });
+
+                    // No pending message queue, since QueueMessages is false
+                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
+
+                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    await tsc.Task;
+
+                    // No pending message queue, since QueueMessages=false
+                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
+
+                    await WaitFor(1000, done =>
+                    {
+                        // Ack cleared after flushing the queue for transport disconnection, because QueueMessages=false
+                        if (channel.RealtimeClient.State.WaitingForAck.Count == 0)
+                        {
+                            done();
+                        }
+                    });
+
+                    success.Should().HaveValue();
+                    success.Value.Should().BeFalse();
+                    err.Should().NotBeNull();
+                    err.Message.Should().Be("Clearing message AckQueue(created at connected state) because Options.QueueMessages is false");
+                    err.Cause.InnerException.Message.Should().Be("RTP16b : error while sending message");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
                 public async Task ConnectionStateCondition_WhenConnectionIsDisconnected_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
                 {
                     /* tests disconnecting and connecting states */
@@ -1769,32 +1849,6 @@ namespace IO.Ably.Tests.Realtime
 
                 [Theory]
                 [ProtocolData]
-                [Trait("spec", "RTP16b")]
-                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitializedOrAttaching_MessageAreNotPublished(Protocol protocol)
-                {
-                    var client = await GetRealtimeClient(protocol, (options, settings) =>
-                    {
-                        options.ClientId = "RTP16b";
-                        options.QueueMessages = false;
-                    });
-                    var channel = GetRandomChannel(client, "RTP16a");
-
-                    await client.WaitForState(ConnectionState.Connected);
-                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
-                    await client.WaitForState(ConnectionState.Disconnected);
-
-                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
-
-                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
-
-                    presenceMessages.Should().HaveCount(0);
-
-                    // clean up
-                    client.Close();
-                }
-
-                [Theory]
-                [ProtocolData]
                 [Trait("spec", "RTP16c")]
                 public async Task ChannelStateCondition_WhenConnectionStateIsInvalid_MessageAreNotPublishedAndExceptionIsThrown(Protocol protocol)
                 {
@@ -1815,7 +1869,7 @@ namespace IO.Ably.Tests.Realtime
 
                         // capture all outbound protocol messages for later inspection
                         List<ProtocolMessage> messageList = new List<ProtocolMessage>();
-                        client.GetTestTransport().MessageSent = messageList.Add;
+                        client.GetTestTransport().AfterMessageSent = messageList.Add;
 
                         // force state
                         client.Workflow.QueueCommand(changeStateCommand);
@@ -1870,7 +1924,7 @@ namespace IO.Ably.Tests.Realtime
 
                         // capture all outbound protocol messages for later inspection
                         List<ProtocolMessage> messageList = new List<ProtocolMessage>();
-                        client.GetTestTransport().MessageSent = messageList.Add;
+                        client.GetTestTransport().AfterMessageSent = messageList.Add;
 
                         // force state
                         channel.SetChannelState(state);
