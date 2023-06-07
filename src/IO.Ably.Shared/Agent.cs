@@ -147,16 +147,6 @@ namespace IO.Ably
 
             return string.Empty;
         }
-#else
-        internal static string UnityPlayerIdentifier()
-        {
-            return string.Empty;
-        }
-
-        internal static string UnityOsIdentifier()
-        {
-            return string.Empty;
-        }
 #endif
 
         internal static string OsIdentifier()
