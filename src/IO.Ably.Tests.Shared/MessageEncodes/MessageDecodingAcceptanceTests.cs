@@ -73,7 +73,7 @@ namespace IO.Ably.AcceptanceTests
             private byte[] GenerateKey(int keyLength)
             {
 #if NET6_0_OR_GREATER
-                var keyGen = new Rfc2898DeriveBytes("password", 8, 8, HashAlgorithmName.MD5);
+                var keyGen = new Rfc2898DeriveBytes("password", 8, 8, HashAlgorithmName.SHA256);
 #else
                 var keyGen = new Rfc2898DeriveBytes("password", 8);
 #endif
