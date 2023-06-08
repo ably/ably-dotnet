@@ -1,8 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably;
 using IO.Ably.Realtime;
 using NUnit.Framework;
@@ -205,11 +211,81 @@ namespace Assets.Tests.EditMode
             });
         }
 
+        [UnityTest]
+        public IEnumerator TestHttpUnityAgentHeader([ValueSource(nameof(_protocols))] Protocol protocol)
+        {
+            return UniTask.ToCoroutine(async () =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+                var handler = new FakeHttpMessageHandler(response);
+                var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+                await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+                string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
+                values.Should().HaveCount(1);
+                string[] agentValues = values[0].Split(' ');
+
+                Agent.OsIdentifier().Should().StartWith("unity-");
+                Agent.UnityPlayerIdentifier().Should().StartWith("unity/");
+
+                var keys = new List<string>()
+                {
+                    "ably-dotnet/",
+                    Agent.DotnetRuntimeIdentifier(),
+                    Agent.UnityPlayerIdentifier(),
+                    Agent.OsIdentifier()
+                };
+
+                Agent.DotnetRuntimeIdentifier().Split('/').Length.Should().Be(2);
+
+                keys.RemoveAll(s => s.IsEmpty());
+
+                agentValues.Should().HaveCount(keys.Count);
+                for (var i = 0; i < keys.Count; ++i)
+                {
+                    agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+                }
+            });
+        }
+
         private static void AssertResultOk(Result result)
         {
             Assert.True(result.IsSuccess);
             Assert.False(result.IsFailure);
             Assert.Null(result.Error);
+        }
+
+        public class FakeHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly Action _sendAsyncAction;
+            private readonly Func<HttpRequestMessage, HttpResponseMessage> _getResponse;
+
+            public HttpRequestMessage LastRequest { get; private set; }
+
+            public List<HttpRequestMessage> Requests { get; } = new List<HttpRequestMessage>();
+
+            public FakeHttpMessageHandler(HttpResponseMessage response, Action sendAsyncAction = null)
+            {
+                _getResponse = request => response;
+                _sendAsyncAction = sendAsyncAction;
+            }
+
+            public FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> getResponse)
+            {
+                _getResponse = getResponse;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                NumberOfRequests++;
+                Requests.Add(request);
+                LastRequest = request;
+                var responseTask = Task.FromResult(_getResponse(request));
+                _sendAsyncAction?.Invoke();
+                return responseTask;
+            }
+
+            public int NumberOfRequests { get; private set; }
         }
     }
 }

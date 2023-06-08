@@ -203,6 +203,10 @@ namespace IO.Ably
             }
 #endif
 
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+            return UnityOsIdentifier();
+#endif
+
             // If netstandard target is used by .Net Core App, https://mariusschulz.com/blog/detecting-the-operating-system-in-net-core
             try
             {
@@ -226,13 +230,8 @@ namespace IO.Ably
                 // ignored
             }
 
-#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
-            return UnityOsIdentifier();
-#endif
-
             // If netframework/netstandard target is used by .Net Mono App, http://docs.go-mono.com/?link=P%3aSystem.Environment.OSVersion
             // https://stackoverflow.com/questions/9129491/c-sharp-compiled-in-mono-detect-os
-#pragma warning disable CS0162 // Disable code unreachable warning
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
