@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-#if NETSTANDARD2_0 && UNITY_PACKAGE
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
 using UnityEngine; // lib/UnityEngine.dll - 2019.4.40 LTS compile time, at runtime unity player version will be used.
 #endif
 
@@ -86,7 +86,7 @@ namespace IO.Ably
                 dotnetRuntimeName : $"{dotnetRuntimeName}/{dotnetRuntimeVersion}";
         }
 
-#if NETSTANDARD2_0 && UNITY_PACKAGE
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
         internal static string UnityPlayerIdentifier()
         {
             return Application.unityVersion.IsEmpty() ?
@@ -226,7 +226,7 @@ namespace IO.Ably
                 // ignored
             }
 
-#if NETSTANDARD2_0 && UNITY_PACKAGE
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
             return UnityOsIdentifier();
 #endif
 
@@ -268,7 +268,7 @@ namespace IO.Ably
             AddAgentIdentifier(agentComponents, AblySdkIdentifier);
             AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
 
-#if NETSTANDARD2_0 && UNITY_PACKAGE
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
             AddAgentIdentifier(agentComponents, UnityPlayerIdentifier());
 #endif
 
