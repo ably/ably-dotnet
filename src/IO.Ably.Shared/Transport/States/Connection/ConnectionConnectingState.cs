@@ -11,15 +11,16 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionConnectingState(IConnectionContext context, ILogger logger)
-            : this(context, new CountdownTimer("Connecting state timer", logger), logger)
+        public ConnectionConnectingState(IConnectionContext context, ILogger logger, bool isUpdate = false)
+            : this(context, new CountdownTimer("Connecting state timer", logger), logger, isUpdate)
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger, bool isUpdate = false)
             : base(context, logger)
         {
             _timer = timer;
+            IsUpdate = isUpdate;
         }
 
         public override ConnectionState State => ConnectionState.Connecting;

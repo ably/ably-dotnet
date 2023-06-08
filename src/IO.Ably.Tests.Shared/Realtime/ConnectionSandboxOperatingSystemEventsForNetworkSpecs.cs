@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -104,12 +105,18 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(stateChange => Output.WriteLine("State Changed: " + stateChange.Current + " From: " + stateChange.Previous));
             client.Connect();
 
+            var stateChanges = new List<ConnectionState>();
+            client.Connection.On(change => stateChanges.Add(change.Current));
+
             await WaitForState(client, ConnectionState.Connecting);
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             await WaitForState(client, ConnectionState.Connecting);
             await WaitToBecomeConnected(client);
+            stateChanges.Count().Should().Be(3);
+            stateChanges.Count(change => change == ConnectionState.Connecting).Should().Be(2);
+            stateChanges.Count(change => change == ConnectionState.Connected).Should().Be(1);
         }
 
         [Theory]

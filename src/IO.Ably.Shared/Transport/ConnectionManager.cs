@@ -325,7 +325,7 @@ namespace IO.Ably.Transport
                             Logger.Debug("Network state is Online. Attempting reconnect.");
                         }
 
-                        ExecuteCommand(SetConnectingStateCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
+                        ExecuteCommand(SetConnectingStateCommand.Create(isUpdate: true).TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
 
                     break;

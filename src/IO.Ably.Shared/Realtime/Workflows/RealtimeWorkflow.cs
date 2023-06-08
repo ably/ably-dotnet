@@ -741,7 +741,7 @@ namespace IO.Ably.Realtime.Workflow
                             var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                             SetNewHostInState(connectingHost);
 
-                            var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
+                            var connectingState = new ConnectionConnectingState(ConnectionManager, Logger, cmd.IsUpdate);
                             SetState(connectingState);
 
                             if (cmd.RetryAuth)
