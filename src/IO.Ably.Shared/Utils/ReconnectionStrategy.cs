@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace IO.Ably.Shared.Utils
 {
     internal class ReconnectionStrategy
     {
+        private static readonly Random Random = new Random();
+
         public static double GetBackoffCoefficient(int retryCount)
         {
             return Math.Min((retryCount + 2) / 3, 2);
@@ -13,7 +13,7 @@ namespace IO.Ably.Shared.Utils
 
         public static double GetJitterCoefficient()
         {
-            return 1 - (new Random().NextDouble() * 0.2);
+            return 1 - (Random.NextDouble() * 0.2);
         }
 
         public static double GetRetryTime(double initValue, int retryCount)
