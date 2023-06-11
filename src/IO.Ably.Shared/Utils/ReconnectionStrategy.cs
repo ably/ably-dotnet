@@ -6,9 +6,9 @@ namespace IO.Ably.Shared.Utils
     {
         private static readonly Random Random = new Random();
 
-        public static double GetBackoffCoefficient(int retryCount)
+        public static double GetBackoffCoefficient(int count)
         {
-            return Math.Min((retryCount + 2) / 3, 2);
+            return Math.Min((count + 2) / 3d, 2d);
         }
 
         public static double GetJitterCoefficient()
@@ -16,9 +16,9 @@ namespace IO.Ably.Shared.Utils
             return 1 - (Random.NextDouble() * 0.2);
         }
 
-        public static double GetRetryTime(double initValue, int retryCount)
+        public static double GetRetryTime(int initialTimeout, int retryAttempt)
         {
-            return initValue * GetBackoffCoefficient(retryCount) * GetJitterCoefficient();
+            return initialTimeout * GetBackoffCoefficient(retryAttempt) * GetJitterCoefficient();
         }
     }
 }

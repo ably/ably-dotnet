@@ -154,5 +154,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\OperatingSystemTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\SemanticVersionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ErrorPolicyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ReconnectionStrategyTest.cs" />
   </ItemGroup>
 </Project>
