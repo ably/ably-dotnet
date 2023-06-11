@@ -749,9 +749,8 @@ namespace IO.Ably.Realtime
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
             _retryCount++;
-            var retryTimeout = TimeSpan.FromMilliseconds(RealtimeClient.Options.ChannelRetryTimeout.TotalMilliseconds *
-                               ReconnectionStrategy.GetJitterCoefficient() *
-                               ReconnectionStrategy.GetBackoffCoefficient(_retryCount));
+            var retryTimeout = TimeSpan.FromMilliseconds(ReconnectionStrategy.
+                GetRetryTime(RealtimeClient.Options.ChannelRetryTimeout.TotalMilliseconds, _retryCount));
 
             // We capture the task but ignore it to make sure an error doesn't take down
             // the thread

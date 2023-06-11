@@ -16,7 +16,7 @@ namespace IO.Ably.Shared.Utils
             return 1 - (Random.NextDouble() * 0.2);
         }
 
-        public static double GetRetryTime(int initialTimeout, int retryAttempt)
+        public static double GetRetryTime(double initialTimeout, int retryAttempt)
         {
             return initialTimeout * GetBackoffCoefficient(retryAttempt) * GetJitterCoefficient();
         }
