@@ -486,7 +486,7 @@ namespace testing_ably_console
 }
 ```
 
-## Unity
+## Unity Support
 
 - Unity support is currently in beta.
 - Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
