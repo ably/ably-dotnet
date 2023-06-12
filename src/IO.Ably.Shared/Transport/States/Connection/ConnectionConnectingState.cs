@@ -29,7 +29,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override RealtimeCommand Connect()
         {
-            return EmptyCommand.Instance;
+            return SetConnectingStateCommand.Create(isUpdate: true).TriggeredBy("ConnectingState.Connect()");
         }
 
         public override void Close()
@@ -37,7 +37,7 @@ namespace IO.Ably.Transport.States.Connection
             TransitionState(SetClosingStateCommand.Create().TriggeredBy("ConnectingState.Close()"));
         }
 
-        public override async Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             if (message == null)
             {
@@ -54,25 +54,25 @@ namespace IO.Ably.Transport.States.Connection
                                 .TriggeredBy("ConnectingState.OnMessageReceived(Connected)"));
                         }
 
-                        return true;
+                        return Task.FromResult(true);
                     }
 
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         Context.ExecuteCommand(HandleConnectingDisconnectedCommand.Create(message.Error)
                             .TriggeredBy("ConnectingState.OnMessageReceived(Disconnected)"));
-                        return true;
+                        return Task.FromResult(true);
                     }
 
                 case ProtocolMessage.MessageAction.Error:
                     {
                         Context.ExecuteCommand(HandleConnectingErrorCommand.Create(message.Error)
                             .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
-                        return true;
+                        return Task.FromResult(true);
                     }
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         public override void AbortTimer()
