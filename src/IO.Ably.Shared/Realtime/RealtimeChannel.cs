@@ -745,7 +745,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// should only be called when the channel is SUSPENDED.
-        /// RTL13b
+        /// RTL13b.
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
