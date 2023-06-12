@@ -20,37 +20,7 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 10.14+](https://developer.xamarin.com/releases/ios/xamarin.ios_10/xamarin.ios_10.14/)
 * Xamarin.Mac 3.8+
-
-## Push notification
-
-The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
-
-The [Push Notifications Readme](PushNotifications.md) describes:
-
-* How to setup Push notifications for Xamarin mobile apps
-* How to use the Push Admin api to send push notifications directly to a devices or a client
-* How to subscribe to channels that support push notification
-* How to send Ably messages that include a notification
-
-## Unity
-
-- Unity support is currently in beta.
-- Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
-
-**Downloading Unity Package**
-- Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
-- Please take a look at [importing unity package](./unity/README.md#importing-unity-package) doc for initial config. and usage.
-
-**Supported Platforms**
-- Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
-- It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
-- To support **WebGL**, you should refer to [interation with browser javascript from WebGL](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). You can import [ably-js](https://github.com/ably/ably-js) as a browser javascript and call it from WebGL. For more information, refer to the project [Ably Tower Defence](https://github.com/ably-labs/ably-tower-defense/tree/js-branch/).
-
-
-**Note** - Please take a look at [Unity README](./unity/README.md) and [Ably Unity Blog](https://ably.com/blog/multiplayer-game-in-unity-with-ably) for more information.
-
-## Known Limitations
-* Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
+* Unity - note support is currently in beta for both[Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds. Find out more in the [Unity support section](#unity-support).
 
 ## Documentation
 
@@ -408,6 +378,21 @@ var firstItem = stats.Items.First();
 var nextStatsPage = await stats.NextAsync();
 ```
 
+### Push notifications
+
+The Ably.net library supports Ably's push notifications. The feature set consists of two distinct areas: 
+- [Push Admin](https://ably.com/docs/general/push/admin) for managing registrations and publishing notifications server-side
+- [Device Push Notifications](https://ably.com/docs/realtime/push) for subscribing to push notifications in your Xamarin applications
+
+The [Push Notifications README](PushNotifications.md) describes:
+
+* How to setup Push notifications for Xamarin mobile apps
+* How to use the Push Admin API to send push notifications directly to a devices or a client
+* How to subscribe to channels that support push notification
+* How to send Ably messages that include a notification
+
+_Please note: browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported._
+
 ### Fetching the Ably service time
 
 ```csharp
@@ -500,6 +485,23 @@ namespace testing_ably_console
     }
 }
 ```
+
+## Unity
+
+- Unity support is currently in beta.
+- Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
+
+**Downloading Unity Package**
+- Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 has `.unitypackage` included.
+- Please take a look at [importing unity package](./unity/README.md#importing-unity-package) doc for initial config. and usage.
+
+**Supported Platforms**
+- Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
+- It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
+- To support **WebGL**, you should refer to [interation with browser javascript from WebGL](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). You can import [ably-js](https://github.com/ably/ably-js) as a browser javascript and call it from WebGL. For more information, refer to the project [Ably Tower Defence](https://github.com/ably-labs/ably-tower-defense/tree/js-branch/).
+
+
+**Note** - Please take a look at [Unity README](./unity/README.md) and [Ably Unity Blog](https://ably.com/blog/multiplayer-game-in-unity-with-ably) for more information.
 
 ## Dependencies
 
