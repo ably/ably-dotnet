@@ -72,18 +72,11 @@ namespace IO.Ably.Realtime.Workflow
 
                 var oldState = State;
                 var newState = state.State;
-                var retryIn = state.RetryIn;
-                if (newState == ConnectionState.Disconnected)
-                {
-                    var retryInterval = retryIn?.TotalMilliseconds ??
-                                        Defaults.DisconnectedRetryTimeout.TotalMilliseconds;
-                    retryIn = TimeSpan.FromMilliseconds(ReconnectionStrategy.GetRetryTime(retryInterval, retryCount));
-                }
 
                 CurrentStateObject = state;
                 ErrorReason = state.Error;
                 var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
-                return new ConnectionStateChange(connectionEvent, oldState, newState, retryIn, ErrorReason);
+                return new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
             }
 
             public bool HasConnectionStateTtlPassed(Func<DateTimeOffset> now)

@@ -8,6 +8,7 @@ namespace IO.Ably.Tests.Shared.Utils
     public class ReconnectionStrategyTest
     {
         [Fact]
+        [Trait("spec", "RTB1")]
         public void ShouldCalculateRetryTimeoutsUsingBackOffAndJitter()
         {
             var retryAttempt = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };

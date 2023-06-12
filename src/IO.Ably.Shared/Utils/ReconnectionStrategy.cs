@@ -2,6 +2,7 @@
 
 namespace IO.Ably.Shared.Utils
 {
+    // RTB1
     internal class ReconnectionStrategy
     {
         private static readonly Random Random = new Random();

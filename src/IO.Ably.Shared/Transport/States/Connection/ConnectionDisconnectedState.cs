@@ -1,5 +1,7 @@
-﻿using IO.Ably.Realtime;
+﻿using System;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Shared.Utils;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -44,11 +46,16 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
+        // RTN14d
         public override void StartTimer()
         {
+            var retryInterval = Context.RetryTimeout.TotalMilliseconds;
+            var noOfAttempts = Context.Connection.RealtimeClient.State.AttemptsInfo.NumberOfAttempts + 1; // First attempt should start with 1 instead of 0.
+            var retryIn = TimeSpan.FromMilliseconds(ReconnectionStrategy.GetRetryTime(retryInterval, noOfAttempts));
+
             if (RetryInstantly == false)
             {
-                _timer.Start(Context.RetryTimeout, OnTimeOut);
+                _timer.Start(retryIn, OnTimeOut);
             }
         }
 

@@ -745,10 +745,12 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// should only be called when the channel is SUSPENDED.
+        /// RTL13b
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
             _retryCount++;
+
             var retryTimeout = TimeSpan.FromMilliseconds(ReconnectionStrategy.
                 GetRetryTime(RealtimeClient.Options.ChannelRetryTimeout.TotalMilliseconds, _retryCount));
 
