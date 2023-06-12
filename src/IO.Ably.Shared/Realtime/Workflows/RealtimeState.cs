@@ -58,7 +58,7 @@ namespace IO.Ably.Realtime.Workflow
 
             public ConnectionState State => CurrentStateObject.State;
 
-            public ConnectionStateChange UpdateState(ConnectionStateBase state, ILogger logger, int retryCount = 0)
+            public ConnectionStateChange UpdateState(ConnectionStateBase state, ILogger logger)
             {
                 if (!state.IsUpdate && state.State == State)
                 {
@@ -72,7 +72,6 @@ namespace IO.Ably.Realtime.Workflow
 
                 var oldState = State;
                 var newState = state.State;
-
                 CurrentStateObject = state;
                 ErrorReason = state.Error;
                 var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
@@ -138,8 +137,8 @@ namespace IO.Ably.Realtime.Workflow
 
         public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
-        public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
-            => WaitingForAck.Add(new MessageAndCallback(message, callback));
+        public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback) =>
+            WaitingForAck.Add(new MessageAndCallback(message, callback));
 
         public RealtimeState()
             : this(null)

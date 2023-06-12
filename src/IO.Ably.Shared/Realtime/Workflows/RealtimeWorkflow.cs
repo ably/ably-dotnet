@@ -955,7 +955,7 @@ namespace IO.Ably.Realtime.Workflow
 
         private void UpdateStateAndNotifyConnection(ConnectionStateBase newState)
         {
-            var change = State.Connection.UpdateState(newState, Logger, State.AttemptsInfo.NumberOfAttempts);
+            var change = State.Connection.UpdateState(newState, Logger);
             if (change != null)
             {
                 Connection.NotifyUpdate(change);
