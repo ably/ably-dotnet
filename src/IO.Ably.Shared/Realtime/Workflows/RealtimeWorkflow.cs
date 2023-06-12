@@ -926,21 +926,20 @@ namespace IO.Ably.Realtime.Workflow
 
             try
             {
-                if (newState.IsUpdate == false)
+                if (newState.IsUpdate == false && State.Connection.State == newState.State)
                 {
-                    if (State.Connection.State == newState.State)
+                    if (Logger.IsDebug)
                     {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
-                        }
-
-                        return;
+                        Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
                     }
 
-                    State.AttemptsInfo.UpdateAttemptState(newState, Logger);
-                    State.Connection.CurrentStateObject.AbortTimer();
+                    return;
                 }
+
+                State.AttemptsInfo.UpdateAttemptState(newState, Logger);
+
+                // always stop timer from old state, if needed new state timer should be used
+                State.Connection.CurrentStateObject.AbortTimer();
 
                 if (skipTimer == false)
                 {
