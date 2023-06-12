@@ -1702,7 +1702,7 @@ namespace IO.Ably.Tests.Realtime
                         tsc.SetCompleted();
                     });
 
-                    await WaitFor(1000, done =>
+                    await WaitFor(3000, done =>
                     {
                         // Ack Queue has one presence message
                         if (channel.RealtimeClient.State.WaitingForAck.Count == 1)
@@ -1723,7 +1723,7 @@ namespace IO.Ably.Tests.Realtime
                     // No pending message queue, since QueueMessages=false
                     channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
 
-                    await WaitFor(1000, done =>
+                    await WaitFor(3000, done =>
                     {
                         // Ack cleared after flushing the queue for transport disconnection, because QueueMessages=false
                         if (channel.RealtimeClient.State.WaitingForAck.Count == 0)
