@@ -50,7 +50,7 @@ namespace IO.Ably.Transport.States.Connection
         public override void StartTimer()
         {
             var retryInterval = Context.RetryTimeout.TotalMilliseconds;
-            var noOfAttempts = Context.Connection.RealtimeClient.State.AttemptsInfo.NumberOfAttempts + 1; // First attempt should start with 1 instead of 0.
+            var noOfAttempts = Context.Connection.RealtimeClient?.State?.AttemptsInfo?.NumberOfAttempts ?? 0 + 1; // First attempt should start with 1 instead of 0.
             var retryIn = TimeSpan.FromMilliseconds(ReconnectionStrategy.GetRetryTime(retryInterval, noOfAttempts));
 
             if (RetryInstantly == false)
