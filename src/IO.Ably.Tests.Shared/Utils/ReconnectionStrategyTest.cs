@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using FluentAssertions;
 using IO.Ably.Shared.Utils;
 using Xunit;
@@ -20,6 +21,8 @@ namespace IO.Ably.Tests.Shared.Utils
             retryTimeouts.Distinct().Count().Should().Be(10);
             retryTimeouts.FindAll(timeout => timeout >= 30).Should().BeEmpty();
 
+            // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
+            // Lower bound = 0.8 * Upper bound
             retryTimeouts[0].Should().BeInRange(12, 15);
             retryTimeouts[1].Should().BeInRange(16, 20);
             retryTimeouts[2].Should().BeInRange(20, 25);
@@ -27,6 +30,13 @@ namespace IO.Ably.Tests.Shared.Utils
             {
                 retryTimeouts[i].Should().BeInRange(24, 30);
             }
+        }
+
+        public static (double LowerBound, double UpperBound) Bounds(int retryAttempt, int initialTimeout)
+        {
+            var upperBound = Math.Min((retryAttempt + 2) / 3d, 2d) * initialTimeout;
+            var lowerBound = 0.8 * upperBound;
+            return (lowerBound, upperBound);
         }
     }
 }

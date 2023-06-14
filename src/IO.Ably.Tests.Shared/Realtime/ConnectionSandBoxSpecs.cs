@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -993,8 +994,11 @@ namespace IO.Ably.Tests.Realtime
                 client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
             });
 
-            var interval = reconnectedAt - disconnectedAt;
-            interval.TotalMilliseconds.Should().BeGreaterThan(5000 - 10 /* Allow 10 milliseconds */);
+            var reconnectedInTime = reconnectedAt - disconnectedAt;
+
+            var (lowerBound, _) = ReconnectionStrategyTest.Bounds(1, 5000);
+            reconnectedInTime.TotalMilliseconds.Should().BeGreaterThan(lowerBound);
+
             initialConnectionId.Should().NotBeNullOrEmpty();
             initialConnectionId.Should().NotBe(newConnectionId);
             connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
