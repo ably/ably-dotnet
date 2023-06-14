@@ -30,6 +30,17 @@ namespace IO.Ably.Tests.Shared.Utils
             {
                 retryTimeouts[i].Should().BeInRange(24, 30);
             }
+
+            void AssertBoundsUsingFormula(double retryTimeout, int attempt)
+            {
+                var (lowerBound, upperBound) = Bounds(attempt, initialTimeoutValue);
+                retryTimeout.Should().BeInRange(lowerBound, upperBound);
+            }
+
+            for (var i = 0; i < retryTimeouts.Count; i++)
+            {
+                AssertBoundsUsingFormula(retryTimeouts[i], retryAttempt[i]);
+            }
         }
 
         public static (double LowerBound, double UpperBound) Bounds(int retryAttempt, int initialTimeout)
