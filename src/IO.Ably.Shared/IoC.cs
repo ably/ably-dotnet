@@ -39,7 +39,7 @@ namespace IO.Ably
 
         public static void RegisterOsNetworkStateChanged() => Platform.RegisterOsNetworkStateChanged();
 
-        public static string PlatformId => Platform?.PlatformId ?? string.Empty;
+        public static Agent.PlatformRuntime PlatformId => Platform?.PlatformId ?? Agent.PlatformRuntime.Other;
 
         public static IMobileDevice MobileDevice
         {

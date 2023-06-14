@@ -283,7 +283,7 @@ namespace IO.Ably.Tests
             });
             await Task.Delay(2000);
             // This makes sure we get server time
-            _ = ((AblyAuth)mainClient.Auth).CreateTokenRequest();
+            _ = ((AblyAuth)mainClient.Auth).CreateTokenRequestObject();
 
             await mainClient.StatsAsync();
             ((AblyAuth)mainClient.Auth).CurrentToken.Should().NotBeSameAs(token);
@@ -373,7 +373,7 @@ namespace IO.Ably.Tests
             static void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
-                options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
+                options.AuthCallback = (tokenParams) => Task.FromResult<object>(string.Empty);
             }
 
             await TestConnectingBecomesDisconnected("With invalid AuthUrl connection becomes Disconnected", AuthUrlOptions);
@@ -869,7 +869,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
+                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestObjectAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });

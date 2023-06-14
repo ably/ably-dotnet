@@ -23,6 +23,20 @@ To get push notifications setup in your own app, read [Setting up your own app](
 
 ### Android
 
+The client library is available as a [nuget package](https://www.nuget.org/packages/ably.io.push.android/).
+
+You can install it from the Package Manager Console using this command
+
+```shell
+PM> Install-Package ably.io.push.android
+```
+
+or using the .NET CLI in your project directory using
+
+```shell
+dotnet add package ably.io.push.android
+```
+
 - Open the DotnetPush solution which can be found in the `examples` folder in the repository, make sure to change the application Id in the Manifest file.
 - Create a Firebase project, and in the Project settings, add an android app with your unique application ID. Follow the steps provided on the setup process, or the following:
     - You can leave `Debug signing certificate SHA-1` empty.
@@ -32,6 +46,20 @@ To get push notifications setup in your own app, read [Setting up your own app](
 - You can follow the excellent [Android push notifications tutorial](https://ably.com/tutorials/android-push-notifications#setup-ably-account) which includes screenshots for the steps you need to take to link your Ably account with Firebase messaging.
 
 ### iOS
+
+The client library is available as a [nuget package](https://www.nuget.org/packages/ably.io.push.ios/).
+
+You can install it from the Package Manager Console using this command
+
+```shell
+PM> Install-Package ably.io.push.ios
+```
+
+or using the .NET CLI in your project directory using
+
+```shell
+dotnet add package ably.io.push.ios
+```
 
 - You need to have a [Apple developer program](https://developer.apple.com/programs/) membership ($99/year)
 - Open your iOS app in Xcode: when in your project directory, run `xed ios` or double click `ios/Runner.xcworkspace` in `your_project_name/ios`

@@ -4,7 +4,7 @@
         <id>ably.io.push.android</id>
         <version>$version$</version>
         <title>Ably Push Android</title>
-        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
+        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green, Sachin Shinde</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>

@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact]
         public void InitializeClient()
         {
-            // If you do not have an API key, [sign up for a free API key now](ht tps://www.ably.io/signup)
+            // If you do not have an API key, [sign up for a free API key now](https://www.ably.com/sign-up)
             var realtimeBasic = new AblyRealtime(PlaceholderKey);
             var realtimeToken = new AblyRealtime(new ClientOptions { Token = "token" });
         }
@@ -197,7 +197,7 @@ namespace IO.Ably.Tests.GithubSamples
             var tokenString = token.Token; // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
             var tokenClient = new AblyRest(new ClientOptions { TokenDetails = token });
 
-            var tokenRequest = await client.Auth.CreateTokenRequestAsync();
+            var tokenRequest = await client.Auth.CreateTokenRequestObjectAsync();
 
             // Stats
             var stats = await client.StatsAsync();

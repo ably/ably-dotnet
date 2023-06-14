@@ -10,7 +10,7 @@ namespace IO.Ably
         private static readonly object _lock = new object();
 
         internal static bool HookedUpToNetworkEvents { get; private set; }
-        public string PlatformId => "xamarin-android";
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.XamarinAndroid;
         public bool SyncContextDefault => true;
         public ITransportFactory TransportFactory => null;
 

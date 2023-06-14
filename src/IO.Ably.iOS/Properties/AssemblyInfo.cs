@@ -7,4 +7,4 @@
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyDescription("Client for ably.io realtime service")]
+[assembly: AssemblyDescription("Client for ably.com realtime service")]

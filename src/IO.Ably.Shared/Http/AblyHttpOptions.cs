@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace IO.Ably
 {
@@ -36,6 +37,8 @@ namespace IO.Ably
 
         public bool AddRequestIds { get; set; }
 
+        public Dictionary<string, string> Agents { get; set; }
+
         public AblyHttpOptions()
         {
             // Used for testing
@@ -72,6 +75,7 @@ namespace IO.Ably
             FallbackHosts = options.GetFallbackHosts();
             FallbackHostsUseDefault = options.FallbackHostsUseDefault;
             AddRequestIds = options.AddRequestIds;
+            Agents = options.Agents;
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;

@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -10,25 +14,12 @@ namespace IO.Ably
     {
         internal static readonly float ProtocolVersionNumber = 1.2F;
 
-        internal static readonly string AssemblyVersion = GetVersion();
+        internal static readonly string LibraryVersion = GetVersion();
 
         internal static string GetVersion()
         {
             var version = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
-        }
-
-        public static string LibraryVersion
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(IoC.PlatformId))
-                {
-                    return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
-                }
-
-                return $"dotnet-{AssemblyVersion}";
-            }
         }
 
         public static string ProtocolVersion { get; } = ProtocolVersionNumber.ToString(CultureInfo.InvariantCulture);
@@ -59,7 +50,7 @@ namespace IO.Ably
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
         public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
-        public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://docs.ably.io/client-lib-development-guide/features/#TO3l10
+        public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://docs.ably.com/client-lib-development-guide/features/#TO3l10
 
         public static readonly ITransportFactory WebSocketTransportFactory = IoC.TransportFactory;
 

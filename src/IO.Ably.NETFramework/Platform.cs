@@ -16,7 +16,7 @@ namespace IO.Ably
 
         internal static bool HookedUpToNetworkEvents { get; private set; }
 
-        public string PlatformId => "framework";
+        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Framework;
 
         public ITransportFactory TransportFactory => null;
 

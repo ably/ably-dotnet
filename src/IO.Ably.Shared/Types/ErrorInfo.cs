@@ -13,7 +13,7 @@ namespace IO.Ably
     public class ErrorInfo
     {
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
-        internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
+        internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", ErrorCodes.Disconnected);
         internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", ErrorCodes.ConnectionSuspended);
         internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", ErrorCodes.ConnectionFailed);
         internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", ErrorCodes.Unauthorized);

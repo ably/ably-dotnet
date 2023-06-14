@@ -366,20 +366,19 @@ namespace IO.Ably
         public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
-        /// The default has changed from `true` to `false`
-        /// It will be removed in the next version of the library.
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to capture their Current SynchronizationContext and trigger handlers and emitters on the same.
         /// Default: false.
         /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
+        [Obsolete("Use CustomContext property instead, CaptureCurrentSynchronizationContext property will be removed in future versions")]
         public bool CaptureCurrentSynchronizationContext { get; set; } = false;
 
         /// <summary>
-        /// [Obsolete] Allows developers to provide their Captured Context to be used when triggering handlers and emitters
-        /// It will be removed in the next version of the library.
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to provide their Thread Synchronization Context to be used when triggering handlers and emitters.
+        /// This is majorly useful in unity, xamarin and MAUI apps.
         /// Default: null.
         /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
         public SynchronizationContext CustomContext { get; set; }
 
         /// <summary>
@@ -410,6 +409,16 @@ namespace IO.Ably
         /// Default: false.
         /// </summary>
         public bool PushAdminFullWait { get; set; }
+
+        /// <summary>
+        /// Map of agents that will be appended to the internal ably agent headers.
+        /// This should only be used by Ably-authored SDKs.
+        /// If you need to use this then you have to add the agent to the agents.json file:
+        /// https://github.com/ably/ably-common/blob/main/protocol/agents.json
+        /// The keys represent agent names and its corresponding values represent agent versions.
+        /// RSC7d6.
+        /// </summary>
+        public Dictionary<string, string> Agents { get; set; }
 
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc

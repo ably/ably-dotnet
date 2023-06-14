@@ -1,6 +1,87 @@
 # Change Log
 
-## [1.2.8](https://github.com/ably/ably-dotnet/tree/1.2.8)
+## [1.2.11](https://github.com/ably/ably-dotnet/tree/1.2.11) (2023-05-22)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.10...1.2.11)
+
+**Implemented enhancements:**
+
+- Support net6.0, net7.0 and MAUI [\#1215](https://github.com/ably/ably-dotnet/pull/1215) ([sacOO7](https://github.com/sacOO7))
+
+**Fixed bugs:**
+
+- Fix QueueMessages ClientOption [\#1219](https://github.com/ably/ably-dotnet/issues/1219)
+
+**Closed issues:**
+
+- Fix synchronization context deprecation [\#1209](https://github.com/ably/ably-dotnet/issues/1209)
+- .Net MAUI app throws System.Net.NetworkInformation.NetworkInformationException when creating AblyRealtime object [\#1205](https://github.com/ably/ably-dotnet/issues/1205)
+- Update README + Unity Documentation [\#1204](https://github.com/ably/ably-dotnet/issues/1204)
+- Automate build and package for IO.Ably.PackagePush.sln [\#1202](https://github.com/ably/ably-dotnet/issues/1202)
+- Support for .NET Multi-platform App UI \(.NET MAUI\) [\#1178](https://github.com/ably/ably-dotnet/issues/1178))
+- Update release notes with .NET 6 status [\#1116](https://github.com/ably/ably-dotnet/issues/1116)
+
+**Merged pull requests:**
+
+- Add logging doc [\#1225](https://github.com/ably/ably-dotnet/pull/1225) ([sacOO7](https://github.com/sacOO7))
+- Fix QueueMessages when set to false [\#1216](https://github.com/ably/ably-dotnet/pull/1216) ([sacOO7](https://github.com/sacOO7))
+- Support customContext  [\#1210](https://github.com/ably/ably-dotnet/pull/1210) ([sacOO7](https://github.com/sacOO7))
+- Update README and unity doc [\#1207](https://github.com/ably/ably-dotnet/pull/1207) ([sacOO7](https://github.com/sacOO7))
+- Fix release process and package publish [\#1203](https://github.com/ably/ably-dotnet/pull/1203) ([sacOO7](https://github.com/sacOO7))
+- Unity documentation [\#1124](https://github.com/ably/ably-dotnet/pull/1124) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.10](https://github.com/ably/ably-dotnet/tree/1.2.10) (2023-01-24)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.9...1.2.10)
+
+**Closed issues:**
+- Implement RSC7d \(Ably-Agent header\) [\#498](https://github.com/ably/ably-dotnet/issues/498)
+- AuthCallback returned a string which can't be converted to TokenRequest [\#1196](https://github.com/ably/ably-dotnet/issues/1196)
+- Unable to output Debug Logging to console [\#1182](https://github.com/ably/ably-dotnet/issues/1182)
+- Unity iOS: Errors while creating transport [\#764](https://github.com/ably/ably-dotnet/issues/764)
+- Unity: When building for iOS, an IL2CPP error prevents the app working [\#751](https://github.com/ably/ably-dotnet/issues/751)
+- Unity 2019.3.5 - System.EntryPointNotFoundException: CreateNLSocket [\#408](https://github.com/ably/ably-dotnet/issues/408)
+
+**Merged pull requests:**
+
+- Fix authCallback token string [\#1197](https://github.com/ably/ably-dotnet/pull/1197) ([sacOO7](https://github.com/sacOO7))
+- Feature/agent header [\#1195](https://github.com/ably/ably-dotnet/pull/1195) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.9](https://github.com/ably/ably-dotnet/tree/1.2.9) (2022-08-31)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.8...1.2.9)
+
+**Implemented enhancements:**
+
+- Add support to get channel lifecycle status [\#1150](https://github.com/ably/ably-dotnet/issues/1150)
+
+**Fixed bugs:**
+
+- ClientOptions LogLevel not working [\#1140](https://github.com/ably/ably-dotnet/issues/1140)
+
+**Closed issues:**
+
+- Unity: Investigate inability to select GitHub as SCM [\#1173](https://github.com/ably/ably-dotnet/issues/1173)
+- MacOS build fails when restoring packages [\#1160](https://github.com/ably/ably-dotnet/issues/1160)
+- Remove support for Windows 7 [\#1158](https://github.com/ably/ably-dotnet/issues/1158)
+- dotnet Update urls in readme [\#1146](https://github.com/ably/ably-dotnet/issues/1146)
+- Skipped Test: ConnectionSandboxTransportSideEffectsSpecs.WithChannelInDetachingState\_WhenTransportIsDisconnected\_ShouldResendDetachMessageOnConnectionResumed [\#834](https://github.com/ably/ably-dotnet/issues/834)
+- Dropping the `.NET Framework` solution [\#618](https://github.com/ably/ably-dotnet/issues/618)
+- Take control of our Assembly Version [\#617](https://github.com/ably/ably-dotnet/issues/617)
+- Update documentation about using alternative websocket libraries [\#425](https://github.com/ably/ably-dotnet/issues/425)
+
+**Merged pull requests:**
+
+- Contributing Guide [\#1179](https://github.com/ably/ably-dotnet/pull/1179) ([QuintinWillison](https://github.com/QuintinWillison))
+- Add channel lifecycle support [\#1172](https://github.com/ably/ably-dotnet/pull/1172) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Remove mention of Visual Studio 2017 [\#1169](https://github.com/ably/ably-dotnet/pull/1169) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Remove support for 'Windows 7'. [\#1159](https://github.com/ably/ably-dotnet/pull/1159) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Add message extras to the Message equality comparison [\#1157](https://github.com/ably/ably-dotnet/pull/1157) ([marto83](https://github.com/marto83))
+- Update documentation URLs [\#1149](https://github.com/ably/ably-dotnet/pull/1149) ([tomkirbygreen](https://github.com/tomkirbygreen))
+- Fix realtime logging [\#1139](https://github.com/ably/ably-dotnet/pull/1139) ([sacOO7](https://github.com/sacOO7))
+- Resend detach on reconnect [\#1109](https://github.com/ably/ably-dotnet/pull/1109) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.8](https://github.com/ably/ably-dotnet/tree/1.2.8) (2022-04-21)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.7...1.2.8)
 
