@@ -20,7 +20,7 @@ This is a .NET client library for Ably which targets the 1.2 client library spec
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 10.14+](https://developer.xamarin.com/releases/ios/xamarin.ios_10/xamarin.ios_10.14/)
 * Xamarin.Mac 3.8+
-* Unity - note support is currently in beta for both[Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds. Find out more in the [Unity support section](#unity-support).
+* Unity - Support is currently in beta for both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds. Find out more in the [Unity support section](#unity-support).
 
 ## Documentation
 
