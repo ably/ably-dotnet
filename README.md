@@ -24,19 +24,19 @@ This is a .NET client library for Ably which targets the 1.2 client library spec
 
 ## Documentation
 
-Visit `https://ably.com/docs` for a complete API reference and more examples.
+Visit [https://ably.com/docs](https://ably.com/docs) for a complete API reference and more examples.
 
 ## Installation
 
 The client library is available as a [nuget package](https://www.nuget.org/packages/ably.io/).
 
-You can install it from the Package Manager Console using this command
+You can install it from the Package Manager Console:
 
 ```shell
 PM> Install-Package ably.io
 ```
 
-or using the .NET CLI in your project directory using
+or using the .NET CLI in your project directory:
 
 ```shell
 dotnet add package ably.io
@@ -44,9 +44,11 @@ dotnet add package ably.io
 
 ## Using the Realtime API
 
-### Introduction
+The Realtime library is typically used client-side in your applications. It maintains a persistent connection to Ably and is a stateful library. [Find out when you should use the REST or Realtime library](https://faqs.ably.com/should-i-use-the-rest-or-realtime-library).
 
-All examples assume a client has been created as follows:
+### Instancing a Realtime client
+
+Creating a Realtime client:
 
 ```csharp
 // Using basic auth with API key
@@ -56,51 +58,23 @@ var realtime = new AblyRealtime("<api key>");
 
 ```csharp
 // Using token auth with token string
-// Note this token is not renewable, so a token callback should be used in production
+// Note this token is not renewable - a token callback should be used in production
 var realtime = new AblyRealtime(new ClientOptions { Token = "token" });
 ```
 
 If you do not have an API key, [sign up for a free API key now](https://ably.com/signup)
 
-### Connection
-
-Connecting and observing connection state changes. By default the library automatically initializes a connection.
-
-```csharp
-realtime.Connection.On(ConnectionEvent.Connected, args =>
-{
-    // Do stuff  
-});
-```
-
-To disable the default automatic connect behavior of the library, set `AutoConnect = false` when initializing the client.
-
-```csharp
-var realtime = new AblyRealtime(new ClientOptions("<api key>") { AutoConnect = false });
-// Some code
-realtime.Connect();
-```
-
-Subscribing to connection state changes and observing errors:
-
-```csharp
-realtime.Connection.On(args =>
-{
-    var currentState = args.Current; // Current state the connection transitioned to
-    var previousState = args.Previous; // Previous state
-    var error = args.Reason; // If the connection error-ed the Reason object will be populated.
-});
-```
-
 ### Subscribing to a channel
 
-Create a channel
+[Channels](https://ably.com/docs/realtime/channels?lang=javascript) are the medium through which messages are distributed. 
+
+To create a channel object:
 
 ```csharp
-IRealtimeChannel channel = realtime.Channels.Get("test");
+IRealtimeChannel channel = realtime.Channels.Get("chat");
 ```
 
-Subscribing to all events:
+Subscribe to the events published on that channel:
 
 ```csharp
 channel.Subscribe(message =>
@@ -109,74 +83,6 @@ channel.Subscribe(message =>
     var data = message.Data;
 });
 ```
-
-Subscribing to specific events:
-
-```csharp
-channel.Subscribe("myEvent", message =>
-{
-    var name = message.Name;
-    var data = message.Data;
-});
-```
-
-Observing channel state changes and errors:
-
-```csharp
-channel.On(args =>
-{
-    var state = args.NewState; // Current channel State
-    var error = args.Error; // If the channel error-ed it will be reflected here
-});
-```
-
-or
-
-```csharp
-channel.On(ChannelState.Attached, args =>
-{
-    // Do stuff when channel is attached
-});
-```
-
-### Enable logging
-
-Define a new class that implements `ILoggerSink` interface.
-
-```csharp
-class CustomLogHandler : ILoggerSink
-{
-    public void LogEvent(LogLevel level, string message)
-    {
-        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
-    }
-}
-```
-
-Update clientOptions for `LogLevel` and `LogHandler`.
-
-```csharp
-clientOpts.LogLevel = LogLevel.Debug;
-clientOpts.LogHandler = new CustomLogHandler();
-```
-
-### Subscribing to a channel in delta mode
-
-Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
-
-Request a `Vcdiff` formatted delta stream using channel options when you get the channel:
-
-```csharp
-var channelParams = new ChannelParams();
-channelParams.Add("delta", "vcdiff");
-var channelOptions = new ChannelOptions();
-channelOptions.Params = channelParams;
-IRealtimeChannel channel = ably.Channels.Get(ChannelName, channelOptions);
-```
-
-Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
-
-If you would like to inspect the `Message` instances in order to identify whether the `Data` they present was rendered from a delta message from Ably then you can see if `Extras.Delta.Format` equals `"vcdiff"`.
 
 ### Publishing to a channel
 
@@ -222,24 +128,45 @@ foreach (var message in history.Items)
 var nextPage = await history.NextAsync();
 ```
 
-### Getting presence history
-
-Getting presence history is similar to how message history works. You get back `PaginatedResult<PresenceMessage>` and can navigate or iterate through the page
+Observing [channel state changes](https://ably.com/docs/realtime/channels#channel-states) and errors:
 
 ```csharp
-var presenceHistory = await channel.Presence.HistoryAsync();
-// Loop through the presence messages
-foreach (var presence in presenceHistory.Items)
+channel.On(args =>
 {
-    // Do something with the messages
-}
-
-var presenceNextPage = await presenceHistory.NextAsync();
+    var state = args.NewState; // Current channel State
+    var error = args.Error; // If the channel error-ed it will be reflected here
+});
 ```
+
+or
+
+```csharp
+channel.On(ChannelState.Attached, args =>
+{
+    // Do stuff when channel is attached
+});
+```
+
+### Subscribing to a channel in delta mode
+
+Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+
+Request a `Vcdiff` formatted delta stream using channel options when you get the channel:
+
+```csharp
+var channelParams = new ChannelParams();
+channelParams.Add("delta", "vcdiff");
+var channelOptions = new ChannelOptions();
+channelOptions.Params = channelParams;
+IRealtimeChannel channel = ably.Channels.Get(ChannelName, channelOptions);
+```
+
+Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
+
 
 ### Getting the channel status
 
-Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc is simple
+Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc:
 
 ```csharp
 ChannelDetails details = channel.Status();
@@ -261,6 +188,71 @@ encryptedChannel.Subscribe(message =>
 encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
 ```
 
+### Connection
+
+Connecting and observing [connection state changes](https://ably.com/docs/realtime/connection#connection-state-explained). By default the library automatically initializes a connection.
+
+```csharp
+realtime.Connection.On(ConnectionEvent.Connected, args =>
+{
+    // Do stuff  
+});
+```
+
+To disable the default automatic connect behavior of the library, set `AutoConnect = false` when initializing the client.
+
+```csharp
+var realtime = new AblyRealtime(new ClientOptions("<api key>") { AutoConnect = false });
+// Some code
+realtime.Connect();
+```
+
+Subscribing to connection state changes and observing errors:
+
+```csharp
+realtime.Connection.On(args =>
+{
+    var currentState = args.Current; // Current state the connection transitioned to
+    var previousState = args.Previous; // Previous state
+    var error = args.Reason; // If the connection error-ed the Reason object will be populated.
+});
+```
+### Push notifications
+
+The Ably.net library supports Ably's push notifications. The feature set consists of two distinct areas: 
+- [Push Admin](https://ably.com/docs/general/push/admin) for managing registrations and publishing notifications server-side
+- [Device Push Notifications](https://ably.com/docs/realtime/push) for subscribing to push notifications in your Xamarin applications
+
+The [Push Notifications README](PushNotifications.md) describes:
+
+* How to setup Push notifications for Xamarin mobile apps
+* How to use the Push Admin API to send push notifications directly to a devices or a client
+* How to subscribe to channels that support push notification
+* How to send Ably messages that include a notification
+
+_Please note: browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported._
+
+### Enable logging
+
+Define a new class that implements `ILoggerSink` interface.
+
+```csharp
+class CustomLogHandler : ILoggerSink
+{
+    public void LogEvent(LogLevel level, string message)
+    {
+        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
+    }
+}
+```
+
+Update clientOptions for `LogLevel` and `LogHandler`.
+
+```csharp
+clientOpts.LogLevel = LogLevel.Debug;
+clientOpts.LogHandler = new CustomLogHandler();
+```
+
 ### Executing callbacks on Main/UI thread
 - The library creates a number of threads and all listeners/callbacks are executed on non-UI/background threads.
 - To execute listeners/callbacks on the Main/UI thread, we support capturing the `SynchronizationContext`.
@@ -269,17 +261,30 @@ encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted befo
 options.CustomContext = SynchronizationContext.Current;
 ```
 
+### Increase Transport send and receive buffers
+
+In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
+To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it.
+
+```csharp
+var maxBufferSize = 64 * 1024;
+var options = new ClientOptions();
+var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
+options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
+var realtime = new AblyRealtime(options);
+```
+
 ## Using the REST API
 
-### Introduction
+The REST library is typically used server-side in your applications and is stateless. [Find out when you should use the REST or Realtime library](https://faqs.ably.com/should-i-use-the-rest-or-realtime-library).
 
-The rest client provides a fully async wrapper around the Ably service web api.
+### Instancing a REST client
 
-All examples assume a client and/or channel has been created as follows:
+Creating a REST client and channel:
 
 ```csharp
 var client = new AblyRest("<api key>");
-IRealtimeChannel channel = client.Channels.Get("test");
+IRealtimeChannel channel = client.Channels.Get("chat");
 ```
 
 If you do not have an API key, [sign up for a free API key now](https://ably.com/signup)
@@ -380,31 +385,12 @@ var firstItem = stats.Items.First();
 var nextStatsPage = await stats.NextAsync();
 ```
 
-### Push notifications
-
-The Ably.net library supports Ably's push notifications. The feature set consists of two distinct areas: 
-- [Push Admin](https://ably.com/docs/general/push/admin) for managing registrations and publishing notifications server-side
-- [Device Push Notifications](https://ably.com/docs/realtime/push) for subscribing to push notifications in your Xamarin applications
-
-The [Push Notifications README](PushNotifications.md) describes:
-
-* How to setup Push notifications for Xamarin mobile apps
-* How to use the Push Admin API to send push notifications directly to a devices or a client
-* How to subscribe to channels that support push notification
-* How to send Ably messages that include a notification
-
-_Please note: browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported._
-
-### Fetching the Ably service time
-
-```csharp
-DateTimeOffset time = await client.TimeAsync();
-```
-
 ### Making explicit HTTP requests to Ably Rest Endpoints / Batch publish
-- The `AblyRest->Request` method should be used to make explicit HTTP requests.
+
+- The `AblyRest->Request` method can be used to make explicit HTTP requests to the [Ably REST API](https://ably.com/docs/api/rest-api)
 - It automatically adds necessary auth headers based on the initial auth config and supports pagination.
 - The following is an example of using the batch publish API based on the [Ably batch publish rest endpoint documentation](https://ably.com/docs/api/rest-api#batch-publish).
+- 
 ```csharp
   var jsonPayload =
     @"{
@@ -418,27 +404,15 @@ DateTimeOffset time = await client.TimeAsync();
       }";
   var paginatedResponse = await ablyRest.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
 ```
-- Follow official [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
 
-### Increase Transport send and receive buffers
+See the [Ably REST endpoint documentation](https://ably.com/docs/api/rest-api).
 
-In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
-To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it.
-
-```csharp
-var maxBufferSize = 64 * 1024;
-var options = new ClientOptions();
-var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
-options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
-var realtime = new AblyRealtime(options);
-```
-
-### Examples
+## Examples
 
 * More Examples can be found under ```examples``` directory.
 * While working with console app, make sure to put explicit await for async methods.
 
-#### Sample .NET Core implementation
+### Sample .NET Core implementation
 
 ```csharp
 using System;
@@ -501,7 +475,6 @@ namespace testing_ably_console
 - Ably Unity SDK supports **Windows, MacOS, Linux, Android and iOS**.
 - It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking.
 - To support **WebGL**, you should refer to [interation with browser javascript from WebGL](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). You can import [ably-js](https://github.com/ably/ably-js) as a browser javascript and call it from WebGL. For more information, refer to the project [Ably Tower Defence](https://github.com/ably-labs/ably-tower-defense/tree/js-branch/).
-
 
 **Note** - Please take a look at [Unity README](./unity/README.md) and [Ably Unity Blog](https://ably.com/blog/multiplayer-game-in-unity-with-ably) for more information.
 
