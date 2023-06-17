@@ -270,6 +270,30 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, TimeSpan.FromMilliseconds(1000));
         }
 
+        [Fact]
+        [Trait("spec", "RTN14e")]
+        public async Task WhenInDisconnectedState_ShouldTryAndReconnectAfterDisconnectedRetryTimeoutIsReached()
+        {
+            DateTimeOffset Func() => DateTimeOffset.UtcNow;
+
+            FakeTransportFactory.InitialiseFakeTransport =
+                transport => transport.OnConnectChangeStateToConnected = false;
+
+            // this will keep it in connecting state
+            var client = GetClientWithFakeTransport(opts =>
+            {
+                opts.AutoConnect = false;
+                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
+                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(1000);
+                opts.NowFunc = Func;
+            });
+
+            client.ExecuteCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonSuspended));
+
+            var elapsed = await client.WaitForState(ConnectionState.Connecting);
+            elapsed.Should().BeCloseTo(client.Options.DisconnectedRetryTimeout, TimeSpan.FromMilliseconds(1000));
+        }
+
         private static Task WaitForConnectingOrSuspended(AblyRealtime client)
         {
             return new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait();
