@@ -292,21 +292,22 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var disconnectedRetryTimeouts = new List<double>();
             do
             {
-                LastCreatedTransport.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
+                client.ExecuteCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
                 await client.WaitForState(ConnectionState.Disconnected);
                 var elapsed = await client.WaitForState(ConnectionState.Connecting);
                 disconnectedRetryTimeouts.Add(elapsed.TotalSeconds);
             }
-            while (client.Connection.State != ConnectionState.Suspended);
+            while ((disconnectedRetryTimeouts.Sum() + 10) < client.Connection.ConnectionStateTtl.TotalSeconds);
+            Output.WriteLine(disconnectedRetryTimeouts.ToJson());
 
             // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
             // Lower bound = 0.8 * Upper bound
-            disconnectedRetryTimeouts[0].Should().BeInRange(12, 15);
-            disconnectedRetryTimeouts[1].Should().BeInRange(16, 20);
-            disconnectedRetryTimeouts[2].Should().BeInRange(20, 25);
-            for (var i = 0; i < disconnectedRetryTimeouts.Count; i++)
+            disconnectedRetryTimeouts[0].Should().BeInRange(4, 5);
+            disconnectedRetryTimeouts[1].Should().BeInRange(5.33, 6.66);
+            disconnectedRetryTimeouts[2].Should().BeInRange(6.66, 8.33);
+            for (var i = 3; i < disconnectedRetryTimeouts.Count; i++)
             {
-                disconnectedRetryTimeouts[i].Should().BeInRange(24, 30);
+                disconnectedRetryTimeouts[i].Should().BeInRange(8, 10);
             }
         }
 
