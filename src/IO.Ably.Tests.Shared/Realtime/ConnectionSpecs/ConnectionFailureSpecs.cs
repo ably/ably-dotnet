@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +8,7 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
@@ -166,8 +168,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "TR2")]
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
+            // this will keep it in connecting state
             FakeTransportFactory.InitialiseFakeTransport =
-                transport => transport.OnConnectChangeStateToConnected = false; // this will keep it in connecting state
+                transport => transport.OnConnectChangeStateToConnected = false;
 
             ClientOptions options = null;
             var client = GetClientWithFakeTransport(opts =>
@@ -190,9 +193,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Done();
             });
 
-            // Let the connecting state complete it's logic otherwise by the time we get to here
-            // The transport is not created yet as this is done on a separate thread
-            await Task.Delay(1000);
+            // Let the connecting state complete and create transport, otherwise LastCreatedTransport.Id throws exception
+            await client.ProcessCommands();
 
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
 
@@ -271,27 +273,41 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         }
 
         [Fact]
-        [Trait("spec", "RTN14e")]
-        public async Task WhenInDisconnectedState_ShouldTryAndReconnectAfterDisconnectedRetryTimeoutIsReached()
+        [Trait("spec", "RTN14d")]
+        public async Task WhenInDisconnectedState_ReconnectUsingIncrementalBackoffTimeout()
         {
-            DateTimeOffset Func() => DateTimeOffset.UtcNow;
-
+            // this will keep it in connecting state when connect is called
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
-            // this will keep it in connecting state
             var client = GetClientWithFakeTransport(opts =>
             {
-                opts.AutoConnect = false;
-                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
-                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(1000);
-                opts.NowFunc = Func;
+                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(5);
             });
 
-            client.ExecuteCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonSuspended));
+            // wait for transport to be created for first connecting
+            await client.WaitForState(ConnectionState.Connecting);
+            await client.ProcessCommands();
 
-            var elapsed = await client.WaitForState(ConnectionState.Connecting);
-            elapsed.Should().BeCloseTo(client.Options.DisconnectedRetryTimeout, TimeSpan.FromMilliseconds(1000));
+            var disconnectedRetryTimeouts = new List<double>();
+            do
+            {
+                LastCreatedTransport.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
+                await client.WaitForState(ConnectionState.Disconnected);
+                var elapsed = await client.WaitForState(ConnectionState.Connecting);
+                disconnectedRetryTimeouts.Add(elapsed.TotalSeconds);
+            }
+            while (client.Connection.State != ConnectionState.Suspended);
+
+            // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
+            // Lower bound = 0.8 * Upper bound
+            disconnectedRetryTimeouts[0].Should().BeInRange(12, 15);
+            disconnectedRetryTimeouts[1].Should().BeInRange(16, 20);
+            disconnectedRetryTimeouts[2].Should().BeInRange(20, 25);
+            for (var i = 0; i < disconnectedRetryTimeouts.Count; i++)
+            {
+                disconnectedRetryTimeouts[i].Should().BeInRange(24, 30);
+            }
         }
 
         private static Task WaitForConnectingOrSuspended(AblyRealtime client)
