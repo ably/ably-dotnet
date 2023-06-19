@@ -1161,8 +1161,8 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForState(ChannelState.Attaching, TimeSpan.FromSeconds(10));
                 channelRetryTimeouts.Add(stopWatch.Elapsed.TotalSeconds);
                 stopWatch.Reset();
-
-            } while (channelRetryTimeouts.Count < 8);
+            }
+            while (channelRetryTimeouts.Count < 8);
 
             Output.WriteLine(channelRetryTimeouts.ToJson());
 
