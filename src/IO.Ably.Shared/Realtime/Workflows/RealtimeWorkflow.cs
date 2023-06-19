@@ -741,7 +741,7 @@ namespace IO.Ably.Realtime.Workflow
                             var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
                             SetNewHostInState(connectingHost);
 
-                            var connectingState = new ConnectionConnectingState(ConnectionManager, Logger, cmd.IsUpdate);
+                            var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
                             SetState(connectingState);
 
                             if (cmd.RetryAuth)
@@ -926,20 +926,21 @@ namespace IO.Ably.Realtime.Workflow
 
             try
             {
-                if (newState.IsUpdate == false && State.Connection.State == newState.State)
+                if (newState.IsUpdate == false)
                 {
-                    if (Logger.IsDebug)
+                    if (State.Connection.State == newState.State)
                     {
-                        Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"State is already {State.Connection.State}. Skipping SetState action.");
+                        }
+
+                        return;
                     }
 
-                    return;
+                    State.AttemptsInfo.UpdateAttemptState(newState, Logger);
+                    State.Connection.CurrentStateObject.AbortTimer();
                 }
-
-                State.AttemptsInfo.UpdateAttemptState(newState, Logger);
-
-                // always stop timer from old state, if needed new state timer should be used
-                State.Connection.CurrentStateObject.AbortTimer();
 
                 if (skipTimer == false)
                 {

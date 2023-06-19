@@ -11,16 +11,15 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionConnectingState(IConnectionContext context, ILogger logger, bool isUpdate = false)
-            : this(context, new CountdownTimer("Connecting state timer", logger), logger, isUpdate)
+        public ConnectionConnectingState(IConnectionContext context, ILogger logger)
+            : this(context, new CountdownTimer("Connecting state timer", logger), logger)
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger, bool isUpdate = false)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger)
             : base(context, logger)
         {
             _timer = timer;
-            IsUpdate = isUpdate;
         }
 
         public override ConnectionState State => ConnectionState.Connecting;
@@ -29,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override RealtimeCommand Connect()
         {
-            return SetConnectingStateCommand.Create(isUpdate: true).TriggeredBy("ConnectingState.Connect()");
+            return EmptyCommand.Instance;
         }
 
         public override void Close()
