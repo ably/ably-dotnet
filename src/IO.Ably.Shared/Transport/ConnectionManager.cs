@@ -307,8 +307,7 @@ namespace IO.Ably.Transport
                 case NetworkState.Online:
                     // RTN20b
                     if (ConnectionState == ConnectionState.Disconnected ||
-                        ConnectionState == ConnectionState.Suspended ||
-                        ConnectionState == ConnectionState.Connecting)
+                        ConnectionState == ConnectionState.Suspended)
                     {
                         if (Logger.IsDebug)
                         {
