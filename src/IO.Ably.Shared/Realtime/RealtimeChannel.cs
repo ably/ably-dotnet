@@ -691,6 +691,8 @@ namespace IO.Ably.Realtime
                             break;
 
                         case ChannelState.Attaching:
+                            // Since attachtimeout will transition state to suspended, no need to suspend it twice
+                            AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to suspended", ErrorCodes.InternalError));
                             /* RTL13b says we need to become suspended, but continue to retry */
                             Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
                             SetChannelState(ChannelState.Suspended, error, protocolMessage);
@@ -747,7 +749,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        /// should only be called when the channel is SUSPENDED.
+        /// should only be called when the channel gets into SUSPENDED.
         /// RTL13b.
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
