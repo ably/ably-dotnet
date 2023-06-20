@@ -100,29 +100,29 @@ namespace IO.Ably.Tests.Realtime
         public async Task
             WhenOperatingSystemNetworkBecomesAvailableAndStateIsConnecting_ShouldTransitionToConnectingAndRenewsTransport(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+            var transportFactory = new TestTransportFactory(transport => { transport.KeepInConnectingState = true; });
+
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.AutoConnect = false;
+                options.TransportFactory = transportFactory;
+            });
 
             client.Connection.On(stateChange => Output.WriteLine("State Changed: " + stateChange.Current + " From: " + stateChange.Previous));
             client.Connect();
 
             await WaitForState(client, ConnectionState.Connecting);
-            await client.ProcessCommands();
-            client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Connected); // keep in connecting state
+            await client.ProcessCommands(); // waits for workflow command to finish so transport can be created for connecting state
+
             var transportId = client.ConnectionManager.Transport.Id;
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
+            await client.ProcessCommands();
+            var newTransportId = client.ConnectionManager.Transport.Id;
 
-            // Asserts new transport created for new reconnect caused by NotifyOSNetworkState.
-            await WaitFor(done =>
-            {
-                if (client.ConnectionManager.Transport.Id != transportId)
-                {
-                    // New transport created
-                    done();
-                }
-            });
+            newTransportId.Should().NotBe(transportId);
 
-            await WaitToBecomeConnected(client);
+            await client.WaitForState(ConnectionState.Connecting);
         }
 
         [Theory]
