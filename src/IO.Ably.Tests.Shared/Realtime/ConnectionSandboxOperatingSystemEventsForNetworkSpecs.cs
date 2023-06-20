@@ -107,6 +107,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client, ConnectionState.Connecting);
             await client.ProcessCommands(); // wait for processing commands and transport to be created
+            client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Connected); // keep in connecting state
 
             var transportId = client.ConnectionManager.Transport.Id;
 
