@@ -432,7 +432,7 @@ namespace IO.Ably
 
         internal bool SkipInternetCheck { get; set; }
 
-        internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+        internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.RealtimeRequestTimeout;
 
         /// <summary>
         /// Default constructor for ClientOptions.
