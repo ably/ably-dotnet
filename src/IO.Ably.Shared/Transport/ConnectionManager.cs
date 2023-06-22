@@ -160,12 +160,12 @@ namespace IO.Ably.Transport
                 {
                     while (true)
                     {
-                        var (success, newState) = await waiter.Wait(Defaults.DefaultRealtimeTimeout);
+                        var (success, newState) = await waiter.Wait(Defaults.RealtimeRequestTimeout);
                         if (success == false)
                         {
                             throw new AblyException(
                                 new ErrorInfo(
-                                $"Connection state didn't change after Auth updated within {Defaults.DefaultRealtimeTimeout}",
+                                $"Connection state didn't change after Auth updated within {Defaults.RealtimeRequestTimeout}",
                                 40140));
                         }
 
