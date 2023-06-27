@@ -13,7 +13,7 @@ This is a .NET client library for Ably. The library currently targets the [Ably 
 ## Supported platforms
 
 * [.NET Standard 2.0+](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
-* .NET 6.x, 7.x (MAUI supported)
+* .NET 6.x, 7.x, MAUI, check [MAUI config](#maui-configuration).
 * .NET Framework 4.6.2+
 * .NET (Core) 2.0+
 * Mono 5.4+
@@ -445,6 +445,17 @@ var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferS
 options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
 var realtime = new AblyRealtime(options);
 ```
+
+### MAUI configuration
+- Make sure to disable assembly trimming for `IO.Ably`.
+- Add following to the `.csproj` file.
+```
+<ItemGroup>
+  <TrimmerRootAssembly Include="IO.Ably" />
+</ItemGroup>
+```
+- For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
+
 
 ### Examples
 
