@@ -160,12 +160,12 @@ namespace IO.Ably.Transport
                 {
                     while (true)
                     {
-                        var (success, newState) = await waiter.Wait(Defaults.DefaultRealtimeTimeout);
+                        var (success, newState) = await waiter.Wait(Defaults.RealtimeRequestTimeout);
                         if (success == false)
                         {
                             throw new AblyException(
                                 new ErrorInfo(
-                                $"Connection state didn't change after Auth updated within {Defaults.DefaultRealtimeTimeout}",
+                                $"Connection state didn't change after Auth updated within {Defaults.RealtimeRequestTimeout}",
                                 40140));
                         }
 
@@ -305,6 +305,7 @@ namespace IO.Ably.Transport
             switch (state)
             {
                 case NetworkState.Online:
+                    // RTN20b
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
@@ -316,7 +317,20 @@ namespace IO.Ably.Transport
                         ExecuteCommand(ConnectCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
 
+                    // RTN20c
+                    if (ConnectionState == ConnectionState.Connecting)
+                    {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
+
+                        ExecuteCommand(SetConnectingStateCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
+                    }
+
                     break;
+
+                // RTN20a
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
                         ConnectionState == ConnectionState.Connecting)

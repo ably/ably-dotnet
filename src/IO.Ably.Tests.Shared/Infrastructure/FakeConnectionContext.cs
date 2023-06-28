@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
 
         public bool ShouldWeRenewTokenValue { get; set; }
 
-        public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+        public TimeSpan DefaultTimeout { get; set; } = Defaults.RealtimeRequestTimeout;
 
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
