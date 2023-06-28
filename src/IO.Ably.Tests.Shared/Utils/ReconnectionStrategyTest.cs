@@ -12,10 +12,10 @@ namespace IO.Ably.Tests.Shared.Utils
         [Trait("spec", "RTB1")]
         public void ShouldCalculateRetryTimeoutsUsingBackOffAndJitter()
         {
-            var retryAttempt = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            var retryAttempts = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
             var initialTimeoutValue = 15;
 
-            var retryTimeouts = retryAttempt.Select(attempt =>
+            var retryTimeouts = retryAttempts.Select(attempt =>
                 ReconnectionStrategy.GetRetryTime(initialTimeoutValue, attempt)).ToList();
 
             retryTimeouts.Distinct().Count().Should().Be(10);
@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Shared.Utils
 
             for (var i = 0; i < retryTimeouts.Count; i++)
             {
-                AssertBoundsUsingFormula(retryTimeouts[i], retryAttempt[i]);
+                AssertBoundsUsingFormula(retryTimeouts[i], retryAttempts[i]);
             }
         }
 
