@@ -31,7 +31,11 @@ namespace IO.Ably.Tests.MessageEncodes
 
         private byte[] GenerateKey(int keyLength)
         {
+#if NET6_0_OR_GREATER
+            var keyGen = new Rfc2898DeriveBytes("password", 8, 8, HashAlgorithmName.SHA256);
+#else
             var keyGen = new Rfc2898DeriveBytes("password", 8);
+#endif
             return keyGen.GetBytes(keyLength / 8);
         }
 
@@ -66,7 +70,11 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithInvalidAlgorithm_Throws()
             {
+#if NET6_0_OR_GREATER
+                var keyGen = new Rfc2898DeriveBytes("password", 8, 8, HashAlgorithmName.SHA256);
+#else
                 var keyGen = new Rfc2898DeriveBytes("password", 8);
+#endif
                 var key = keyGen.GetBytes(Crypto.DefaultKeylength / 8);
 
                 var options = new ChannelOptions(new CipherParams("mgg", key));

@@ -389,7 +389,11 @@ namespace IO.Ably
         /// which used to prevent the library from initialising.
         /// Default: true.
         /// </summary>
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+        public bool AutomaticNetworkStateMonitoring { get; set; } = false;
+#else
         public bool AutomaticNetworkStateMonitoring { get; set; } = true;
+#endif
 
         /// <summary>
         /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server

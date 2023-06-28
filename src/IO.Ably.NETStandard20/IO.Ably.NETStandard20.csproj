@@ -59,4 +59,10 @@
     <ProjectReference Include="..\..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\lib\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
