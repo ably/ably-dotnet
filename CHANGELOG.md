@@ -1,5 +1,34 @@
 # Change Log
 
+## [1.2.12](https://github.com/ably/ably-dotnet/tree/1.2.12) (2023-06-29)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.11...1.2.12)
+
+**Implemented enhancements:**
+
+- Implement incremental backoff and jitter [\#1156](https://github.com/ably/ably-dotnet/issues/1156)
+
+**Closed issues:**
+
+- in maui, android, getting nullreference exception when creating ablyRest and AblyRealtime in Release [\#1241](https://github.com/ably/ably-dotnet/issues/1241)
+- Update git submodules to `main` branch [\#1234](https://github.com/ably/ably-dotnet/issues/1234)
+- Add tests + doc for batch publish [\#1232](https://github.com/ably/ably-dotnet/issues/1232)
+- Fix SDK version for unity package exporter [\#1228](https://github.com/ably/ably-dotnet/issues/1228)
+- Implement RTN20C: Handle os connectivity event while `CONNECTING` [\#1218](https://github.com/ably/ably-dotnet/issues/1218)
+- Update README with logging [\#1217](https://github.com/ably/ably-dotnet/issues/1217)
+- Add unity specific agent header [\#1208](https://github.com/ably/ably-dotnet/issues/1208)
+- Expunge references of 'ably.io' from URLs etc [\#1112](https://github.com/ably/ably-dotnet/issues/1112)
+
+**Merged pull requests:**
+
+- Fix README supported platforms + flaky tests [\#1236](https://github.com/ably/ably-dotnet/pull/1236) ([sacOO7](https://github.com/sacOO7))
+- Update/git submodules [\#1235](https://github.com/ably/ably-dotnet/pull/1235) ([sacOO7](https://github.com/sacOO7))
+- Fix ably io urls [\#1233](https://github.com/ably/ably-dotnet/pull/1233) ([sacOO7](https://github.com/sacOO7))
+- Update doc+tests for batch publish [\#1230](https://github.com/ably/ably-dotnet/pull/1230) ([sacOO7](https://github.com/sacOO7))
+- Handle connectivity event [\#1226](https://github.com/ably/ably-dotnet/pull/1226) ([sacOO7](https://github.com/sacOO7))
+- Unity agent header [\#1220](https://github.com/ably/ably-dotnet/pull/1220) ([sacOO7](https://github.com/sacOO7))
+- Add incremental backoff and jitter [\#1176](https://github.com/ably/ably-dotnet/pull/1176) ([sacOO7](https://github.com/sacOO7))
+
 ## [1.2.11](https://github.com/ably/ably-dotnet/tree/1.2.11) (2023-05-22)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.10...1.2.11)
