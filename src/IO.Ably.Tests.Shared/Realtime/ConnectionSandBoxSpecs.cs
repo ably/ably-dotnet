@@ -89,7 +89,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client);
 
-            client.Connection.ConnectionStateTtl.Should().NotBe(Defaults.ConnectionStateTtl);
+            client.Connection.ConnectionStateTtl.Should().Be(Defaults.ConnectionStateTtl);
         }
 
         [Theory]
