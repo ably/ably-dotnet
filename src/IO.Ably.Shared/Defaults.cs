@@ -45,7 +45,7 @@ namespace IO.Ably
         public static readonly TimeSpan RealtimeRequestTimeout = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
-        public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
+        public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(120);
         public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://docs.ably.com/client-lib-development-guide/features/#TO3l10
 
         public static readonly ITransportFactory WebSocketTransportFactory = IoC.TransportFactory;
