@@ -449,7 +449,7 @@ var realtime = new AblyRealtime(options);
 ### MAUI configuration
 - Make sure to disable assembly trimming for `IO.Ably`.
 - Add following to the `.csproj` file.
-```
+```xml
 <ItemGroup>
   <TrimmerRootAssembly Include="IO.Ably" />
 </ItemGroup>
