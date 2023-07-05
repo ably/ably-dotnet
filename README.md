@@ -447,8 +447,9 @@ var realtime = new AblyRealtime(options);
 ```
 
 ### MAUI configuration
-- Make sure to disable assembly trimming for `IO.Ably`.
-- Add following to the `.csproj` file.
+- Since `ably-dotnet` makes use of the reflection API, MAUI assembly trimming may cause issues.
+- When using MAUI, we recommend adding the following to your `.csproj` file to disable assembly trimming.
+
 ```xml
 <ItemGroup>
   <TrimmerRootAssembly Include="IO.Ably" />
