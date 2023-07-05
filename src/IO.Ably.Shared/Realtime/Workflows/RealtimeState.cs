@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Ably.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -136,8 +137,8 @@ namespace IO.Ably.Realtime.Workflow
 
         public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
-        public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
-        => WaitingForAck.Add(new MessageAndCallback(message, callback));
+        public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback) =>
+            WaitingForAck.Add(new MessageAndCallback(message, callback));
 
         public RealtimeState()
             : this(null)

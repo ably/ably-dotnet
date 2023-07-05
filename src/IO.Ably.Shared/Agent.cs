@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+using UnityEngine; // lib/UnityEngine.dll - 2019.4.40 LTS compile time, at runtime unity player version will be used.
+#endif
+
 namespace IO.Ably
 {
     internal static class Agent
@@ -82,14 +86,80 @@ namespace IO.Ably
                 dotnetRuntimeName : $"{dotnetRuntimeName}/{dotnetRuntimeVersion}";
         }
 
-        // Note - MAUI OS detection requires maui specific dependencies, https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/information?view=net-maui-7.0&tabs=windows
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+        internal static string UnityPlayerIdentifier()
+        {
+            return Application.unityVersion.IsEmpty() ?
+                "unity" : $"unity/{Application.unityVersion}";
+        }
+
+        public static class UnityOS
+        {
+            public const string Windows = "unity-windows";
+            public const string MacOS = "unity-macOS";
+            public const string Linux = "unity-linux";
+            public const string Android = "unity-android";
+            public const string IOS = "unity-iOS";
+            public const string TvOS = "unity-tvOS";
+            public const string WebGL = "unity-webGL";
+            public const string Switch = "unity-nintendo-switch";
+            public const string PS4 = "unity-PS4";
+            public const string PS5 = "unity-PS5";
+            public const string Xbox = "unity-xbox";
+        }
+
+        internal static string UnityOsIdentifier()
+        {
+            try
+            {
+                // lib/UnityEngine.dll - 2019.4.40 LTS compile time.
+                // Added cases for consistent platforms for future versions of unity.
+                // At runtime unity player version >= 2019.x.x will be used.
+                switch (Application.platform)
+                {
+                    case RuntimePlatform.OSXEditor:
+                        return UnityOS.MacOS;
+                    case RuntimePlatform.OSXPlayer:
+                        return UnityOS.MacOS;
+                    case RuntimePlatform.WindowsPlayer:
+                        return UnityOS.Windows;
+                    case RuntimePlatform.WindowsEditor:
+                        return UnityOS.Windows;
+                    case RuntimePlatform.IPhonePlayer:
+                        return UnityOS.IOS;
+                    case RuntimePlatform.Android:
+                        return UnityOS.Android;
+                    case RuntimePlatform.LinuxPlayer:
+                        return UnityOS.Linux;
+                    case RuntimePlatform.LinuxEditor:
+                        return UnityOS.Linux;
+                    case RuntimePlatform.WebGLPlayer:
+                        return UnityOS.WebGL;
+                    case RuntimePlatform.PS4:
+                        return UnityOS.PS4;
+                    case RuntimePlatform.XboxOne:
+                        return UnityOS.Xbox;
+                    case RuntimePlatform.tvOS:
+                        return UnityOS.TvOS;
+                    case RuntimePlatform.Switch:
+                        return UnityOS.Switch;
+                    case RuntimePlatform.PS5:
+                        return UnityOS.PS5;
+                }
+            }
+            catch
+            {
+                // ignored, If enum case is not found for future versions of unity
+            }
+
+            return string.Empty;
+        }
+#endif
+
         internal static string OsIdentifier()
         {
             switch (IoC.PlatformId)
             {
-                // For windows only dotnet-framework, return windows OS => https://dotnet.microsoft.com/en-us/download/dotnet-framework
-                case PlatformRuntime.Framework:
-                    return OS.Windows;
                 case PlatformRuntime.XamarinAndroid:
                     return OS.Android;
                 case PlatformRuntime.XamarinIos:
@@ -140,9 +210,14 @@ namespace IO.Ably
             }
 #endif
 
-            // If netstandard target is used by .Net Core App, https://mariusschulz.com/blog/detecting-the-operating-system-in-net-core
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+            return UnityOsIdentifier();
+#endif
+
+#pragma warning disable CS0162 // Disable code unreachable warning when above conditional statement is true
             try
             {
+                // If netstandard target is used by .Net Core App, https://mariusschulz.com/blog/detecting-the-operating-system-in-net-core
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     return OS.Linux;
@@ -157,28 +232,29 @@ namespace IO.Ably
                 {
                     return OS.Windows;
                 }
+
+                // If netframework/netstandard target is used by .Net Mono App, http://docs.go-mono.com/?link=P%3aSystem.Environment.OSVersion
+                // https://stackoverflow.com/questions/9129491/c-sharp-compiled-in-mono-detect-os
+                switch (Environment.OSVersion.Platform)
+                {
+                    case PlatformID.Win32NT:
+                    case PlatformID.Win32S:
+                    case PlatformID.Win32Windows:
+                    case PlatformID.WinCE:
+                        return OS.Windows;
+                    case PlatformID.Unix:
+                        return OS.Linux;
+                    case PlatformID.MacOSX:
+                        return OS.MacOS;
+                }
             }
             catch
             {
-                // ignored
-            }
-
-            // If netstandard target is used by .Net Mono App, http://docs.go-mono.com/?link=P%3aSystem.Environment.OSVersion
-            // https://stackoverflow.com/questions/9129491/c-sharp-compiled-in-mono-detect-os
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.WinCE:
-                    return OS.Windows;
-                case PlatformID.Unix:
-                    return OS.Linux;
-                case PlatformID.MacOSX:
-                    return OS.MacOS;
+                // ignored, if above code throws runtime exception for class/type/enum not found
             }
 
             return string.Empty;
+#pragma warning restore CS0162
         }
 
         internal static string AblyAgentIdentifier(Dictionary<string, string> additionalAgents)
@@ -199,6 +275,11 @@ namespace IO.Ably
             var agentComponents = new List<string>();
             AddAgentIdentifier(agentComponents, AblySdkIdentifier);
             AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
+
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+            AddAgentIdentifier(agentComponents, UnityPlayerIdentifier());
+#endif
+
             AddAgentIdentifier(agentComponents, OsIdentifier());
 
             if (additionalAgents == null)

@@ -95,6 +95,8 @@ namespace IO.Ably.Tests.Infrastructure
         public Action<ProtocolMessage> BeforeDataProcessed;
         public Action<ProtocolMessage> AfterDataReceived;
 
+        public bool KeepInConnectingState { get; set; }
+
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
         {
             WrappedTransport = wrappedTransport;
@@ -124,6 +126,11 @@ namespace IO.Ably.Tests.Infrastructure
             if (ThrowOnConnect)
             {
                 throw new SocketException();
+            }
+
+            if (KeepInConnectingState)
+            {
+                return;
             }
 
             WrappedTransport.Connect();

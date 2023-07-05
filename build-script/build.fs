@@ -44,6 +44,7 @@ Usage:
 Options:
   -t <str>       Target
   -v <str>       Version
+  -d <str>       Define Compilation Constant
   -f <str>       Target Framework Moniker (TFM)
 """
 
@@ -63,6 +64,11 @@ let initTargets (argv) =
         match DocoptResult.tryGetArgument "-v" parsedArguments with
         | None -> ""
         | Some version -> version
+
+    let compilationConstant =
+        match DocoptResult.tryGetArgument "-d" parsedArguments with
+        | None -> ""
+        | Some compilationConstant -> compilationConstant
 
     let framework: string option =
         match DocoptResult.tryGetArgument "-f" parsedArguments with
@@ -356,7 +362,12 @@ let initTargets (argv) =
             runFrameworkTests (Method test) TestRunnerErrorLevel.Error |> ignore)
 
     Target.create "NetStandard - Build" (fun _ ->
-        DotNet.build (fun opts -> { opts with Configuration = configuration }) NetStandardSolution)
+        DotNet.build
+            (fun opts ->
+                { opts with
+                    Configuration = configuration
+                    MSBuildParams = { opts.MSBuildParams with Properties = [ "DefineConstants", compilationConstant ] } })
+            NetStandardSolution)
 
     Target.create "NetStandard - Unit Tests" (fun _ -> runStandardTests UnitTests |> ignore)
 

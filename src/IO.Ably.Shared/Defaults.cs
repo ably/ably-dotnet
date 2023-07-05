@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -46,7 +42,7 @@ namespace IO.Ably
         public static readonly TimeSpan HttpMaxRetryDuration = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan MaxHttpRequestTimeout = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan MaxHttpOpenTimeout = TimeSpan.FromSeconds(4);
-        public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
+        public static readonly TimeSpan RealtimeRequestTimeout = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
         public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
