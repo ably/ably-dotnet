@@ -85,11 +85,17 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task ShouldSaveConnectionStateTtlToConnectionObject(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol);
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(60);
+            client.State.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromSeconds(60));
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromSeconds(60));
 
+            client.Connect();
             await WaitForState(client);
 
-            client.Connection.ConnectionStateTtl.Should().Be(Defaults.ConnectionStateTtl);
+            var connectMessage = client.GetTestTransport().ProtocolMessagesReceived.First(msg => msg.Action == ProtocolMessage.MessageAction.Connected);
+            connectMessage.ConnectionDetails.ConnectionStateTtl.Should().Be(TimeSpan.FromMinutes(2));
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromMinutes(2));
         }
 
         [Theory]
