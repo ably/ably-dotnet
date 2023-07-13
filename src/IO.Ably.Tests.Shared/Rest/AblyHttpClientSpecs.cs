@@ -95,14 +95,19 @@ namespace IO.Ably.Tests
             values.Should().HaveCount(1);
             string[] agentValues = values[0].Split(' ');
 
-            string[] keys =
+            var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier()
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier()
             };
 
-            agentValues.Should().HaveCount(keys.Length);
-            for (int i = 0; i < keys.Length; ++i)
+            Agent.DotnetRuntimeIdentifier().Split('/').Length.Should().Be(2);
+
+            keys.RemoveAll(s => s.IsEmpty());
+
+            agentValues.Should().HaveCount(keys.Count);
+            for (var i = 0; i < keys.Count; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }
@@ -131,16 +136,19 @@ namespace IO.Ably.Tests
             values.Should().HaveCount(1);
             string[] agentValues = values[0].Split(' ');
 
-            string[] keys =
+            var keys = new List<string>()
             {
                 "ably-dotnet/",
-                Defaults.DotnetRuntimeIdentifier(),
+                Agent.DotnetRuntimeIdentifier(),
+                Agent.OsIdentifier(),
                 "agent1",
                 "agent2",
             };
 
-            agentValues.Should().HaveCount(keys.Length);
-            for (var i = 0; i < keys.Length; ++i)
+            keys.RemoveAll(s => s.IsEmpty());
+
+            agentValues.Should().HaveCount(keys.Count);
+            for (var i = 0; i < keys.Count; ++i)
             {
                 agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
             }

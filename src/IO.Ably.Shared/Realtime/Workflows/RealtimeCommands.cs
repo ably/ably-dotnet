@@ -223,7 +223,7 @@ namespace IO.Ably.Realtime.Workflow
                 " ClearConnectionKey: " + ClearConnectionKey;
         }
 
-        public static SetDisconnectedStateCommand Create (
+        public static SetDisconnectedStateCommand Create(
             ErrorInfo error,
             bool retryInstantly = false,
             bool skipAttach = false,

@@ -172,12 +172,12 @@ namespace IO.Ably.Transport
                 {
                     while (true)
                     {
-                        var (success, newState) = await waiter.Wait(Defaults.DefaultRealtimeTimeout);
+                        var (success, newState) = await waiter.Wait(Defaults.RealtimeRequestTimeout);
                         if (success == false)
                         {
                             throw new AblyException(
                                 new ErrorInfo(
-                                $"Connection state didn't change after Auth updated within {Defaults.DefaultRealtimeTimeout}",
+                                $"Connection state didn't change after Auth updated within {Defaults.RealtimeRequestTimeout}",
                                 40140));
                         }
 
@@ -238,17 +238,23 @@ namespace IO.Ably.Transport
                 Logger.Error($"Failed to encode protocol message: {encodingResult.Error.Message}");
             }
 
-            if (State.CanSend == false && State.CanQueue == false)
+            if (State.CanSend == false)
             {
-                throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
-            }
+                if (Options.QueueMessages == false)
+                {
+                    throw new AblyException(
+                        $"Not queuing messages for [{State.State}] since Options.QueueMessages is set to False.",
+                        ErrorInfo.ReasonUnknown.Code,
+                        HttpStatusCode.BadRequest);
+                }
 
-            if (State.CanSend == false && State.CanQueue && Options.QueueMessages == false)
-            {
-                throw new AblyException(
-                    $"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
-                    Connection.ConnectionState.DefaultErrorInfo.Code,
-                    HttpStatusCode.ServiceUnavailable);
+                if (State.CanQueue == false)
+                {
+                    throw new AblyException(
+                        $"The current connection state [{State.State}] does not allow messages to be sent.",
+                        ErrorInfo.ReasonUnknown.Code,
+                        HttpStatusCode.BadRequest);
+                }
             }
 
             ExecuteCommand(SendMessageCommand.Create(message, callback).TriggeredBy("ConnectionManager.Send()"));
@@ -310,6 +316,7 @@ namespace IO.Ably.Transport
             switch (state)
             {
                 case NetworkState.Online:
+                    // RTN20b
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
@@ -321,7 +328,20 @@ namespace IO.Ably.Transport
                         ExecuteCommand(ConnectCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
 
+                    // RTN20c
+                    if (ConnectionState == ConnectionState.Connecting)
+                    {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
+
+                        ExecuteCommand(SetConnectingStateCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
+                    }
+
                     break;
+
+                // RTN20a
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
                         ConnectionState == ConnectionState.Connecting)

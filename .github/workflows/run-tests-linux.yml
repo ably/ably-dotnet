@@ -1,0 +1,37 @@
+name: "Unit and Integration Test: Linux"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+
+    strategy:
+      matrix:
+        targetframework: [ "net6.0", "net7.0" ]
+
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          submodules: 'recursive'
+
+      - name: Download dotnet framework
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+
+      - name: Download dotnet build-script tools
+        run:  dotnet tool restore
+
+      - name: Unit tests
+        run: ./build.sh Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
+
+      - name: Integration tests
+        run: ./build.sh Test.NetStandard.Integration.WithRetry -f ${{ matrix.targetframework }}

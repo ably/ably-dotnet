@@ -366,20 +366,19 @@ namespace IO.Ably
         public Dictionary<string, object> TransportParams { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
-        /// The default has changed from `true` to `false`
-        /// It will be removed in the next version of the library.
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to capture their Current SynchronizationContext and trigger handlers and emitters on the same.
         /// Default: false.
         /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
+        [Obsolete("Use CustomContext property instead, CaptureCurrentSynchronizationContext property will be removed in future versions")]
         public bool CaptureCurrentSynchronizationContext { get; set; } = false;
 
         /// <summary>
-        /// [Obsolete] Allows developers to provide their Captured Context to be used when triggering handlers and emitters
-        /// It will be removed in the next version of the library.
+        /// Useful where you want to execute callbacks on the main/UI thread instead of background thread in UI based apps.
+        /// Allows developers to provide their Thread Synchronization Context to be used when triggering handlers and emitters.
+        /// This is majorly useful in unity, xamarin and MAUI apps.
         /// Default: null.
         /// </summary>
-        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
         public SynchronizationContext CustomContext { get; set; }
 
         /// <summary>
@@ -390,7 +389,11 @@ namespace IO.Ably
         /// which used to prevent the library from initialising.
         /// Default: true.
         /// </summary>
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+        public bool AutomaticNetworkStateMonitoring { get; set; } = false;
+#else
         public bool AutomaticNetworkStateMonitoring { get; set; } = true;
+#endif
 
         /// <summary>
         /// Allows developers to control how often (in milliseconds) the heartbeat is checked to determine if the server
@@ -433,7 +436,7 @@ namespace IO.Ably
 
         internal bool SkipInternetCheck { get; set; }
 
-        internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+        internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.RealtimeRequestTimeout;
 
         /// <summary>
         /// Default constructor for ClientOptions.

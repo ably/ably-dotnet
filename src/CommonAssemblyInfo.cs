@@ -4,13 +4,13 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("Ably")]
 [assembly: AssemblyProduct("Ably .NET Library")]
-[assembly: AssemblyVersion("2.0.0")]
-[assembly: AssemblyFileVersion("2.0.0")]
+[assembly: AssemblyVersion("1.2.12")]
+[assembly: AssemblyFileVersion("1.2.12")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const System.String AssemblyCompany = "Ably";
         internal const System.String AssemblyProduct = "Ably .NET Library";
-        internal const System.String AssemblyVersion = "2.0.0";
-        internal const System.String AssemblyFileVersion = "2.0.0";
+        internal const System.String AssemblyVersion = "1.2.12";
+        internal const System.String AssemblyFileVersion = "1.2.12";
     }
 }

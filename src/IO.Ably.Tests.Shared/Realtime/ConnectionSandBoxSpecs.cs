@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Utils;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -84,11 +85,17 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task ShouldSaveConnectionStateTtlToConnectionObject(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol);
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(60);
+            client.State.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromSeconds(60));
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromSeconds(60));
 
+            client.Connect();
             await WaitForState(client);
 
-            client.Connection.ConnectionStateTtl.Should().NotBe(Defaults.ConnectionStateTtl);
+            var connectMessage = client.GetTestTransport().ProtocolMessagesReceived.First(msg => msg.Action == ProtocolMessage.MessageAction.Connected);
+            connectMessage.ConnectionDetails.ConnectionStateTtl.Should().Be(TimeSpan.FromMinutes(2));
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.FromMinutes(2));
         }
 
         [Theory]
@@ -907,8 +914,11 @@ namespace IO.Ably.Tests.Realtime
                 client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
             });
 
-            var interval = reconnectedAt - disconnectedAt;
-            interval.TotalMilliseconds.Should().BeGreaterThan(5000 - 10 /* Allow 10 milliseconds */);
+            var reconnectedInTime = reconnectedAt - disconnectedAt;
+
+            var (lowerBound, _) = ReconnectionStrategyTest.Bounds(1, 5000);
+            reconnectedInTime.TotalMilliseconds.Should().BeGreaterThan(lowerBound);
+
             initialConnectionId.Should().NotBeNullOrEmpty();
             initialConnectionId.Should().NotBe(newConnectionId);
             connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));

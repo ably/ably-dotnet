@@ -11,15 +11,8 @@
 
 ## Building and Packaging
 
-The build scripts are written using ```fake``` and need to be run on Windows with Visual Studio 2019 installed. Fake and nuget.exe can be installed via [chocolatey](https://chocolatey.org)
-
-```shell
-choco install fake
-choco install nuget.commandline
-```
-
-Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests.
-To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
+- The build scripts are written using [fake build project](https://fake.build/guide/getting-started.html#Run-FAKE-using-a-dedicated-build-project).
+- For more information on building, testing and packaging, take a look at [FAKE build scripts](./build-script/README.md).
 
 ## Working from source
 
@@ -99,14 +92,28 @@ Note: it was recently decided to remove explicit mention of Windows 7 as a suppo
 
 ## Release process
 
+>Important Note 
+>- If local dotnet environment + project setup is not available, please use [github codespaces](https://github.com/codespaces) instead.
+>- We have created `.devcontainer` folder at root specifying necessary dependencies for environment setup needed for release process.
+>- Visit [ably-dotnet](https://github.com/ably/ably-dotnet) repo, click on `Code` button at the right corner and create codespace for current branch from `Codespaces` tab. It will take some time to create the environment. Once codespace is created for the project, you can proceed with release steps mentioned below.
+
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
-1. Create a release branch named in the form `release/1.2.3`.
-2. Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.2.3`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
-3. Update the version number and commit that change.
-4. Create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
-5. Run `package.cmd` to create the nuget package.
-6. Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
-7. Against `main`, add a tag for the version and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`.
-8. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-9. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/))
+1. Create a branch for the release, named like release/1.2.3 (where 1.2.3 is the new version number).
+2. Replace all references of the current version number with the new version number and commit the changes (In current case, files are `src/CommonAssemblyInfo.cs` and `unity/Assets/Ably/version.txt`).
+3. Run `./unity-plugins-updater.sh 1.2.3` (linux/mac) / `.\unity-plugins-updater.cmd 1.2.3` (windows) at root and commit generated `.dll` and `.pdb` files.
+4. Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
+  - The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-dotnet --since-tag 1.2.3 --output delta.md --token $GITHUB_TOKEN_WITH_REPO_ACCESS`. Generate token [here](https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token).
+  - Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file.
+  - The contents of that new file (`delta.md`) then need to be manually inserted at the top of the `CHANGELOG.md`, changing the "Unreleased" heading and linking with the current version numbers.
+  - Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`.
+5. Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`.
+6. Push the branch and create a release PR (ensure you include an SDK Team Engineering Lead and the SDK Team Product Manager as reviewers) and gain approvals for it, then merge that to `main`.
+7. Go to [Github Actions tab](https://github.com/ably/ably-dotnet/actions), click on [Package Ably](https://github.com/ably/ably-dotnet/actions/workflows/package.yml) workflow at the left nav-bar. On the right corner, click on `Run workflow` with the current release tag as a input to `Ably version`.
+  - You can check all latest workflows under [Github Actions Tab](https://github.com/ably/ably-dotnet/actions). Download the generated artifact named `output-package` at the end of the latest successful workflow run.
+  - `output-package` artifact is a zip with 4 files => `ably.io.1.2.3.nupkg`, `ably.io.push.android.1.2.3.nupkg`,`ably.io.push.ios.1.2.3.nupkg` and `ably.io.1.2.3.unitypackage`.
+  - If using github codespaces, you can upload downloaded `output-package` artifact by dragging into it.
+8. Extract `output-package`, open bash/powershell in the same folder and run `dotnet nuget push ably.io.*.nupkg --api-key GENERATED_API_KEY_FROM_NUGET_ACCOUNT --source https://api.nuget.org/v3/index.json` (More information on publishing nuget package can be found [here](https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio?tabs=netcore-cli#publish-with-the-net-cli-or-nuget-cli))
+9. Add a tag to the new `main` head commit and push to origin such as `git tag 1.2.3 && git push origin 1.2.3`
+10. Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry, upload `ably.io.1.2.3.unitypackage` as a file to the latest release note.
+11. Create the entry on the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/)).

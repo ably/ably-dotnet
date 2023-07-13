@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
-using IO.Ably.Tests.DotNetCore20;
+using IO.Ably.Tests.Extensions;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
@@ -1118,6 +1119,121 @@ namespace IO.Ably.Tests.Realtime
 
             client.GetTestTransport().ProtocolMessagesSent
                 .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task WhenChannelSuspended_ShouldRetryUsingIncrementalBackoffAfterRetryWhenFirstDetachReceived(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = TimeSpan.FromSeconds(2);
+                options.ChannelRetryTimeout = TimeSpan.FromSeconds(5);
+            });
+
+            await client.WaitForState();
+
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+
+            // block attach messages being sent, keeping channel in attaching state
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            channel.Attach();
+
+            // Send first detach message, it will keep retrying until attached state is reached.
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+            client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+
+            var stopWatch = new Stopwatch();
+            var channelRetryTimeouts = new List<double>();
+            do
+            {
+                await channel.WaitForState(ChannelState.Suspended);
+                stopWatch.Start();
+
+                await channel.WaitForState(ChannelState.Attaching, TimeSpan.FromSeconds(10));
+                channelRetryTimeouts.Add(stopWatch.Elapsed.TotalSeconds);
+                stopWatch.Reset();
+            }
+            while (channelRetryTimeouts.Count < 8);
+
+            Output.WriteLine(channelRetryTimeouts.ToJson());
+
+            // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
+            // Lower bound = 0.8 * Upper bound
+            // Adding 20ms delay to accomodate start and stop
+            channelRetryTimeouts[0].Should().BeInRange(4, 5 + 0.20);
+            channelRetryTimeouts[1].Should().BeInRange(5.33, 6.66 + 0.20);
+            channelRetryTimeouts[2].Should().BeInRange(6.66, 8.33 + 0.20);
+            for (var i = 3; i < channelRetryTimeouts.Count; i++)
+            {
+                channelRetryTimeouts[i].Should().BeInRange(8, 10 + 0.20);
+            }
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task WhenChannelSuspended_ShouldRetryUsingIncrementalBackoffForConsistentDetachReceived(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.ChannelRetryTimeout = TimeSpan.FromSeconds(5);
+            });
+
+            await client.WaitForState();
+
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+
+            // block attach messages being sent, keeping channel in attaching state
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            channel.Attach();
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            var stopWatch = new Stopwatch();
+            var channelRetryTimeouts = new List<double>();
+            do
+            {
+                client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+
+                await channel.WaitForState(ChannelState.Suspended);
+                stopWatch.Start();
+
+                await channel.WaitForState(ChannelState.Attaching, TimeSpan.FromSeconds(10));
+                channelRetryTimeouts.Add(stopWatch.Elapsed.TotalSeconds);
+                stopWatch.Reset();
+            }
+            while (channelRetryTimeouts.Count < 8);
+
+            Output.WriteLine(channelRetryTimeouts.ToJson());
+
+            // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
+            // Lower bound = 0.8 * Upper bound
+            // Adding 20ms delay to accomodate start and stop
+            channelRetryTimeouts[0].Should().BeInRange(4, 5 + 0.20);
+            channelRetryTimeouts[1].Should().BeInRange(5.33, 6.66 + 0.20);
+            channelRetryTimeouts[2].Should().BeInRange(6.66, 8.33 + 0.20);
+            for (var i = 3; i < channelRetryTimeouts.Count; i++)
+            {
+                channelRetryTimeouts[i].Should().BeInRange(8, 10 + 0.20);
+            }
 
             client.Close();
         }

@@ -1,6 +1,6 @@
 using System;
 
-namespace IO.Ably.Tests.DotNetCore20
+namespace IO.Ably.Tests.Extensions
 {
     /// <summary>
     /// Helper methods to make adding channel options easier.

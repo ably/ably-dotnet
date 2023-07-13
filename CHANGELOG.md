@@ -1,5 +1,81 @@
 # Change Log
 
+## [1.2.12](https://github.com/ably/ably-dotnet/tree/1.2.12) (2023-06-29)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.11...1.2.12)
+
+**Implemented enhancements:**
+
+- Implement incremental backoff and jitter [\#1156](https://github.com/ably/ably-dotnet/issues/1156)
+
+**Closed issues:**
+
+- in maui, android, getting nullreference exception when creating ablyRest and AblyRealtime in Release [\#1241](https://github.com/ably/ably-dotnet/issues/1241)
+- Update git submodules to `main` branch [\#1234](https://github.com/ably/ably-dotnet/issues/1234)
+- Add tests + doc for batch publish [\#1232](https://github.com/ably/ably-dotnet/issues/1232)
+- Fix SDK version for unity package exporter [\#1228](https://github.com/ably/ably-dotnet/issues/1228)
+- Implement RTN20C: Handle os connectivity event while `CONNECTING` [\#1218](https://github.com/ably/ably-dotnet/issues/1218)
+- Update README with logging [\#1217](https://github.com/ably/ably-dotnet/issues/1217)
+- Add unity specific agent header [\#1208](https://github.com/ably/ably-dotnet/issues/1208)
+- Expunge references of 'ably.io' from URLs etc [\#1112](https://github.com/ably/ably-dotnet/issues/1112)
+
+**Merged pull requests:**
+
+- Fix README supported platforms + flaky tests [\#1236](https://github.com/ably/ably-dotnet/pull/1236) ([sacOO7](https://github.com/sacOO7))
+- Update/git submodules [\#1235](https://github.com/ably/ably-dotnet/pull/1235) ([sacOO7](https://github.com/sacOO7))
+- Fix ably io urls [\#1233](https://github.com/ably/ably-dotnet/pull/1233) ([sacOO7](https://github.com/sacOO7))
+- Update doc+tests for batch publish [\#1230](https://github.com/ably/ably-dotnet/pull/1230) ([sacOO7](https://github.com/sacOO7))
+- Handle connectivity event [\#1226](https://github.com/ably/ably-dotnet/pull/1226) ([sacOO7](https://github.com/sacOO7))
+- Unity agent header [\#1220](https://github.com/ably/ably-dotnet/pull/1220) ([sacOO7](https://github.com/sacOO7))
+- Add incremental backoff and jitter [\#1176](https://github.com/ably/ably-dotnet/pull/1176) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.11](https://github.com/ably/ably-dotnet/tree/1.2.11) (2023-05-22)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.10...1.2.11)
+
+**Implemented enhancements:**
+
+- Support net6.0, net7.0 and MAUI [\#1215](https://github.com/ably/ably-dotnet/pull/1215) ([sacOO7](https://github.com/sacOO7))
+
+**Fixed bugs:**
+
+- Fix QueueMessages ClientOption [\#1219](https://github.com/ably/ably-dotnet/issues/1219)
+
+**Closed issues:**
+
+- Fix synchronization context deprecation [\#1209](https://github.com/ably/ably-dotnet/issues/1209)
+- .Net MAUI app throws System.Net.NetworkInformation.NetworkInformationException when creating AblyRealtime object [\#1205](https://github.com/ably/ably-dotnet/issues/1205)
+- Update README + Unity Documentation [\#1204](https://github.com/ably/ably-dotnet/issues/1204)
+- Automate build and package for IO.Ably.PackagePush.sln [\#1202](https://github.com/ably/ably-dotnet/issues/1202)
+- Support for .NET Multi-platform App UI \(.NET MAUI\) [\#1178](https://github.com/ably/ably-dotnet/issues/1178))
+- Update release notes with .NET 6 status [\#1116](https://github.com/ably/ably-dotnet/issues/1116)
+
+**Merged pull requests:**
+
+- Add logging doc [\#1225](https://github.com/ably/ably-dotnet/pull/1225) ([sacOO7](https://github.com/sacOO7))
+- Fix QueueMessages when set to false [\#1216](https://github.com/ably/ably-dotnet/pull/1216) ([sacOO7](https://github.com/sacOO7))
+- Support customContext  [\#1210](https://github.com/ably/ably-dotnet/pull/1210) ([sacOO7](https://github.com/sacOO7))
+- Update README and unity doc [\#1207](https://github.com/ably/ably-dotnet/pull/1207) ([sacOO7](https://github.com/sacOO7))
+- Fix release process and package publish [\#1203](https://github.com/ably/ably-dotnet/pull/1203) ([sacOO7](https://github.com/sacOO7))
+- Unity documentation [\#1124](https://github.com/ably/ably-dotnet/pull/1124) ([sacOO7](https://github.com/sacOO7))
+
+## [1.2.10](https://github.com/ably/ably-dotnet/tree/1.2.10) (2023-01-24)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.9...1.2.10)
+
+**Closed issues:**
+- Implement RSC7d \(Ably-Agent header\) [\#498](https://github.com/ably/ably-dotnet/issues/498)
+- AuthCallback returned a string which can't be converted to TokenRequest [\#1196](https://github.com/ably/ably-dotnet/issues/1196)
+- Unable to output Debug Logging to console [\#1182](https://github.com/ably/ably-dotnet/issues/1182)
+- Unity iOS: Errors while creating transport [\#764](https://github.com/ably/ably-dotnet/issues/764)
+- Unity: When building for iOS, an IL2CPP error prevents the app working [\#751](https://github.com/ably/ably-dotnet/issues/751)
+- Unity 2019.3.5 - System.EntryPointNotFoundException: CreateNLSocket [\#408](https://github.com/ably/ably-dotnet/issues/408)
+
+**Merged pull requests:**
+
+- Fix authCallback token string [\#1197](https://github.com/ably/ably-dotnet/pull/1197) ([sacOO7](https://github.com/sacOO7))
+- Feature/agent header [\#1195](https://github.com/ably/ably-dotnet/pull/1195) ([sacOO7](https://github.com/sacOO7))
+
 ## [1.2.9](https://github.com/ably/ably-dotnet/tree/1.2.9) (2022-08-31)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.8...1.2.9)

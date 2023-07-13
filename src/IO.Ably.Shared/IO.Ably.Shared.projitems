@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyInsecureRequestException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageDataConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasConverter.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ConnectionChangeAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ErrorPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ReconnectionStrategy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\StringUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TaskUtils.cs" />
   </ItemGroup>

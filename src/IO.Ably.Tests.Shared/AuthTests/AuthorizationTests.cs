@@ -29,7 +29,7 @@ namespace IO.Ably.Tests
             TokenParams @params = null,
             AuthOptions options = null)
         {
-            return JsonHelper.Deserialize<TokenRequest>(await client.Auth.CreateTokenRequestAsync(@params, options));
+            return await client.Auth.CreateTokenRequestObjectAsync(@params, options);
         }
 
         public class General : AuthorizationTests
@@ -54,7 +54,7 @@ namespace IO.Ably.Tests
 
             private static TokenRequest CreateDefaultTokenRequest(AblyRest client)
             {
-                return JsonHelper.Deserialize<TokenRequest>(client.Auth.CreateTokenRequestAsync().Result);
+                return client.Auth.CreateTokenRequestObjectAsync().Result;
             }
 
             [Fact]
@@ -289,14 +289,14 @@ namespace IO.Ably.Tests
             public async Task WithOutKeyIdThrowsException()
             {
                 var client = new AblyRest(new ClientOptions { UseTokenAuth = true });
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync());
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestObjectAsync());
             }
 
             [Fact]
             public async Task WithOutKeyValueThrowsException()
             {
                 var client = new AblyRest(new ClientOptions { Key = "111.222" });
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync());
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestObjectAsync());
             }
 
             public CreateTokenRequestSpecs(ITestOutputHelper output)

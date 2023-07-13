@@ -1,3 +1,4 @@
 @echo off
 cls
-if "%~1"=="" (fake run build.fsx) else (fake run build.fsx -t %*)
+dotnet tool restore
+if "%~1"=="" (dotnet run --project ./build-script/build-script.fsproj) else (dotnet run --project ./build-script/build-script.fsproj -- -t %*)
