@@ -10,9 +10,9 @@ namespace IO.Ably.Tests.Shared.Realtime
         [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
         [Trait("spec", "RTN16j")]
-        public void ShouldEncodeRecoveryKeyContext()
+        public void ShouldEncodeRecoveryKeyContextObject()
         {
-            var expectedChannelData =
+            const string expectedRecoveryKey =
                 "{\"connectionKey\":\"uniqueKey\",\"msgSerial\":1,\"channelSerials\":{\"channel1\":\"1\",\"channel2\":\"2\",\"channel3\":\"3\"}}";
             var recoveryKey = new RecoveryKeyContext()
             {
@@ -26,17 +26,17 @@ namespace IO.Ably.Tests.Shared.Realtime
                 MsgSerial = 1,
             };
 
-            var encodedData = recoveryKey.Encode();
-            Assert.Equal(expectedChannelData, encodedData);
+            var encodedRecoveryKey = recoveryKey.Encode();
+            Assert.Equal(expectedRecoveryKey, encodedRecoveryKey);
         }
 
         [Fact]
         [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
         [Trait("spec", "RTN16j")]
-        public void ShouldDecodeRecoveryKeyContext()
+        public void ShouldDecodeRecoveryKeyToRecoveryKeyContextObject()
         {
-            var recoveryKey =
+            const string recoveryKey =
                 "{\"connectionKey\":\"key2\",\"msgSerial\":5,\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
             var recoveryKeyContext = RecoveryKeyContext.Decode(recoveryKey);
             Assert.Equal("key2", recoveryKeyContext.ConnectionKey);
@@ -54,9 +54,9 @@ namespace IO.Ably.Tests.Shared.Realtime
         [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
         [Trait("spec", "RTN16j")]
-        public void ShouldReturnNullForRecoveryContext()
+        public void ShouldReturnNullRecoveryContextWhileDecodingFaultyRecoveryKey()
         {
-            var recoveryKey =
+            const string recoveryKey =
                 "{\"connectionKey\":\"key2\",\"msgSerial\":\"incorrectStringSerial\",\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
             var recoveryKeyContext = RecoveryKeyContext.Decode(recoveryKey);
             Assert.Null(recoveryKeyContext);
