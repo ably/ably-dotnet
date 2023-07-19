@@ -1383,7 +1383,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Close();
                 }
 
-                [Theory(Skip = "Check for duplicate presence messages being entered")]
+                [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP17f")]
                 public async Task WhenChannelBecomesFreshAttachedShouldReEnterMembersFromInternalMap(Protocol protocol)
