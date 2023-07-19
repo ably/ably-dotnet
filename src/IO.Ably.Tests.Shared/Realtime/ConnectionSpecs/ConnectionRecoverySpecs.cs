@@ -52,8 +52,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
-            paramsDict.ContainsKey("msg_serial").Should().BeFalse();
             paramsDict["recover"].Should().Be("uniqueKey");
+
+            paramsDict.ContainsKey("msg_serial").Should().BeFalse();
+            client.Connection.MessageSerial.Should().Be(45);
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)
