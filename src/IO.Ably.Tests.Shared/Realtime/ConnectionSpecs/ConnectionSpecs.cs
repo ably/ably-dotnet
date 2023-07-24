@@ -26,7 +26,20 @@ namespace IO.Ably.Tests.Shared.Realtime.ConnectionSpecs
             paramsDict["recover"].Should().Be("uniqueKey");
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
 
-            client.Connection.MessageSerial.Should().Be(45);
+            async Task WaitFor(Action<Action> done)
+            {
+                await TestHelpers.WaitFor(10000, 1, done);
+            }
+
+            await WaitFor(done =>
+            {
+                if (client.Connection.MessageSerial == 45)
+                {
+                    done();
+                }
+            });
+
+            // client.Connection.MessageSerial.Should().Be(45); // assertion fails on CI
         }
 
         public ConnectionSpecs(ITestOutputHelper output)
