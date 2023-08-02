@@ -761,12 +761,12 @@ namespace IO.Ably.Realtime.Workflow
 
                     case SetFailedStateCommand cmd:
 
-                        State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
                         var error = TransformIfTokenErrorAndNotRetryable();
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         ConnectionManager.DestroyTransport();
 
@@ -838,12 +838,13 @@ namespace IO.Ably.Realtime.Workflow
                         break;
 
                     case SetClosingStateCommand _:
+
                         var transport = ConnectionManager.Transport;
                         var connectedTransport = transport?.State == TransportState.Connected;
 
                         var closingState = new ConnectionClosingState(ConnectionManager, connectedTransport, Logger);
-
                         SetState(closingState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         if (connectedTransport)
                         {
@@ -865,11 +866,12 @@ namespace IO.Ably.Realtime.Workflow
 
                         var suspendedState = new ConnectionSuspendedState(ConnectionManager, cmd.Error, Logger);
                         SetState(suspendedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
+
                         break;
 
                     case SetClosedStateCommand cmd:
 
-                        State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
@@ -878,6 +880,7 @@ namespace IO.Ably.Realtime.Workflow
                         };
 
                         SetState(closedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         ConnectionManager.DestroyTransport();
 
