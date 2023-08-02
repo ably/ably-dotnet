@@ -29,26 +29,7 @@ namespace IO.Ably
     /// <summary>An utility class for logging various messages.</summary>
     public static class DefaultLogger
     {
-        private static readonly object SyncLock = new object();
-        private static ILogger _loggerInstance;
-
-        internal static ILogger LoggerInstance
-        {
-            get
-            {
-                if (_loggerInstance == null)
-                {
-                    lock (SyncLock)
-                    {
-                        _loggerInstance = InternalLogger.Create();
-                    }
-                }
-
-                return _loggerInstance;
-            }
-
-            set => _loggerInstance = value;
-        }
+        internal static ILogger LoggerInstance => InternalLogger.Create();
 
         /// <summary>Maximum level to log.</summary>
         /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
