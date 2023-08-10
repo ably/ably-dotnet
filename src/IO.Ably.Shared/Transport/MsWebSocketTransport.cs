@@ -83,7 +83,7 @@ namespace IO.Ably.Transport
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
-            Logger = parameters.Logger ?? DefaultLogger.LoggerInstance;
+            Logger = parameters.Logger;
         }
 
         /// <inheritdoc cref="ITransport" />

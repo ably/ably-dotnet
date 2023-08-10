@@ -6,6 +6,7 @@ using FluentAssertions;
 using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Xunit.Abstractions;
 

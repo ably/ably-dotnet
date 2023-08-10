@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 
 namespace IO.Ably.Tests.MessageEncodes

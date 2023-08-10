@@ -42,7 +42,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
             Now = nowFunc;
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            Logger = logger;
             Connection = connection;
         }
 

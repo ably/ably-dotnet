@@ -15,6 +15,7 @@ using IO.Ably.Types;
 
 using FluentAssertions;
 using FluentAssertions.Execution;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 

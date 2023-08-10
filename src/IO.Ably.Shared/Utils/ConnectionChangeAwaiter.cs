@@ -7,7 +7,7 @@ namespace IO.Ably.Utils
     internal class ConnectionChangeAwaiter
     {
         private ConnectionState _currentState;
-
+        private ILogger _logger;
         private readonly Connection _connection;
         private readonly string _id = Guid.NewGuid().ToString("D").Split('-')[0];
 
@@ -15,13 +15,14 @@ namespace IO.Ably.Utils
         {
             _connection = connection;
             _currentState = _connection.State;
+            _logger = connection.Logger;
         }
 
         public async Task<(bool, ConnectionState?)> Wait(TimeSpan timeout)
         {
-            if (DefaultLogger.IsDebug)
+            if (_logger.IsDebug)
             {
-                DefaultLogger.Debug($"[{_id}] Waiting for state change for {timeout.TotalSeconds} seconds");
+                _logger.Debug($"[{_id}] Waiting for state change for {timeout.TotalSeconds} seconds");
             }
 
             TaskCompletionSource<(bool, ConnectionState?)> taskCompletionSource =

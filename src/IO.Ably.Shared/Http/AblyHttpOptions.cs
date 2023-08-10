@@ -56,7 +56,7 @@ namespace IO.Ably
             FallbackHostsUseDefault = false;
 
             NowFunc = Defaults.NowFunc();
-            Logger = DefaultLogger.LoggerInstance;
+            Logger = InternalLogger.Create();
         }
 
         public AblyHttpOptions(ClientOptions options)

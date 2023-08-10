@@ -50,7 +50,7 @@ namespace IO.Ably.Transport
 
         private bool _disposed;
 
-        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; }
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;

@@ -3,6 +3,7 @@ using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Tests;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 

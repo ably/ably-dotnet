@@ -132,7 +132,7 @@ namespace IO.Ably.Push
 
         internal static bool IsLocalDeviceInitialized => Instance != null;
 
-        internal static LocalDevice GetInstance(IMobileDevice mobileDevice, string clientId)
+        internal static LocalDevice GetInstance(IMobileDevice mobileDevice, string clientId, ILogger logger)
         {
             if (mobileDevice is null)
             {
@@ -143,7 +143,7 @@ namespace IO.Ably.Push
             switch (Instance)
             {
                 case null:
-                    if (LoadPersistedLocalDevice(mobileDevice, out var device))
+                    if (LoadPersistedLocalDevice(mobileDevice, out var device, logger))
                     {
                         Instance = device;
                     }
@@ -159,9 +159,9 @@ namespace IO.Ably.Push
             }
         }
 
-        internal static bool LoadPersistedLocalDevice(IMobileDevice mobileDevice, out LocalDevice persistedDevice)
+        internal static bool LoadPersistedLocalDevice(IMobileDevice mobileDevice, out LocalDevice persistedDevice, ILogger logger)
         {
-            Debug("Loading Local Device persisted state.");
+            logger.Debug("Loading Local Device persisted state.");
             string GetDeviceSetting(string key) => mobileDevice.GetPreference(key, PersistKeys.Device.SharedName);
 
             string id = GetDeviceSetting(PersistKeys.Device.DeviceId);
@@ -194,7 +194,7 @@ namespace IO.Ably.Push
                 }
             }
 
-            Debug($"LocalDevice loaded: {persistedDevice.ToJson()}");
+            logger.Debug($"LocalDevice loaded: {persistedDevice.ToJson()}");
 
             return true;
         }
@@ -217,7 +217,5 @@ namespace IO.Ably.Push
             mobileDevice.SetPreference(PersistKeys.Device.TokenType, token.Type, PersistKeys.Device.SharedName);
             mobileDevice.SetPreference(PersistKeys.Device.Token, token.Token, PersistKeys.Device.SharedName);
         }
-
-        private static void Debug(string message) => DefaultLogger.Debug($"LocalDevice: {message}");
     }
 }

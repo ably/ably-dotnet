@@ -106,7 +106,7 @@ namespace IO.Ably
                 {
                     lock (_deviceLock)
                     {
-                        return LocalDevice.GetInstance(MobileDevice, Auth.ClientId);
+                        return LocalDevice.GetInstance(MobileDevice, Auth.ClientId, Logger);
                     }
                 }
 
