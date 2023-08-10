@@ -124,14 +124,13 @@ namespace IO.Ably
         /// <summary>Initializes the rest client and validates the passed in options.</summary>
         private void InitializeAbly(IMobileDevice mobileDevice)
         {
-            Logger = Options.Logger;
-            Logger.LogLevel = Options.LogLevel;
-
             if (Options == null)
             {
-                Logger.Error("No options provider to Ably rest");
-                throw new AblyException("Invalid options");
+                throw new AblyException("No clientOptions provided to AblyRest instance");
             }
+
+            Logger = Options.Logger;
+            Logger.LogLevel = Options.LogLevel;
 
             if (Options.LogHandler != null)
             {

@@ -79,6 +79,11 @@ namespace IO.Ably
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;
+            Logger.LogLevel = options.LogLevel;
+            if (options.LogHandler != null)
+            {
+                Logger.LoggerSink = options.LogHandler;
+            }
         }
     }
 }

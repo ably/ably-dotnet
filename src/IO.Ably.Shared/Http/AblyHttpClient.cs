@@ -17,7 +17,7 @@ namespace IO.Ably
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
             Now = options.NowFunc;
-            Logger = options.Logger ?? DefaultLogger.LoggerInstance;
+            Logger = options.Logger;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
             SendAsync = InternalSendAsync;

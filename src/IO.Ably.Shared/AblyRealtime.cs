@@ -51,6 +51,11 @@ namespace IO.Ably
 
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc, IMobileDevice mobileDevice = null)
         {
+            if (options == null)
+            {
+                throw new AblyException("No clientOptions provided to AblyRealtime instance");
+            }
+
             Logger = options.Logger;
             Logger.LogLevel = options.LogLevel;
 
