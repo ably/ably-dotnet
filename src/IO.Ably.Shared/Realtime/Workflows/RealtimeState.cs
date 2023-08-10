@@ -138,19 +138,17 @@ namespace IO.Ably.Realtime.Workflow
         public readonly List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
 
         public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback) =>
-            WaitingForAck.Add(new MessageAndCallback(message, callback));
+            WaitingForAck.Add(new MessageAndCallback(message, callback, Logger));
 
-        public RealtimeState()
-            : this(null)
+        public RealtimeState(List<string> fallbackHosts, ILogger logger, Func<DateTimeOffset> now = null)
         {
-        }
-
-        public RealtimeState(List<string> fallbackHosts, Func<DateTimeOffset> now = null)
-        {
+            Logger = logger;
             Connection = new ConnectionData(fallbackHosts);
             AttemptsInfo = new ConnectionAttemptsInfo(now);
             PendingMessages = new List<MessageAndCallback>();
         }
+
+        public ILogger Logger { get; set; }
 
         public JObject WhatDoIHave()
         {

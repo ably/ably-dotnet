@@ -74,7 +74,7 @@ namespace IO.Ably
             Channels = new RealtimeChannels(this, Connection, mobileDevice);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
-            State = new RealtimeState(options.GetFallbackHosts()?.Shuffle().ToList(), options.NowFunc);
+            State = new RealtimeState(options.GetFallbackHosts()?.Shuffle().ToList(), Logger, options.NowFunc);
 
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();

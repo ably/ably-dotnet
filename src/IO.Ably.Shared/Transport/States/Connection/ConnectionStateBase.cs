@@ -15,8 +15,6 @@ namespace IO.Ably.Transport.States.Connection
             Context = context;
         }
 
-        internal ILogger Logger { get; private set; }
-
         protected readonly IConnectionContext Context;
 
         public abstract ConnectionState State { get; }

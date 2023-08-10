@@ -144,7 +144,7 @@ namespace IO.Ably.Tests
 
         private ConnectionClosingState GetState(ErrorInfo info = null, bool connectedTransport = true)
         {
-            return new ConnectionClosingState(_context, info, connectedTransport, _timer, Logger);
+            return new ConnectionClosingState(_context, info, connectedTransport, _timer);
         }
     }
 }

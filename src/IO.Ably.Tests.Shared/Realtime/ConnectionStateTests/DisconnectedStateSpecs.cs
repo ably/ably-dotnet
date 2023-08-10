@@ -107,7 +107,7 @@ namespace IO.Ably.Tests
 
         private ConnectionDisconnectedState GetState(ErrorInfo error = null)
         {
-            return new ConnectionDisconnectedState(_context, error, _timer, Logger);
+            return new ConnectionDisconnectedState(_context, error, _timer);
         }
     }
 }

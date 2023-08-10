@@ -7,7 +7,8 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionStateBase
     {
-        public ConnectionConnectedState(IConnectionContext context,
+        public ConnectionConnectedState(
+                                        IConnectionContext context,
                                         ErrorInfo error = null,
                                         bool isUpdate = false)
                                         : base(context)

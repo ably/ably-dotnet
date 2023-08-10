@@ -486,7 +486,7 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient();
 
                 // Closed
-                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
+                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager));
                 var closedAttach = await client.Channels.Get("closed").AttachAsync();
                 AssertAttachResultIsFailure(closedAttach);
 
@@ -503,8 +503,7 @@ namespace IO.Ably.Tests.Realtime
                 // Failed
                 client.Workflow.SetState(new ConnectionFailedState(
                     client.ConnectionManager,
-                    ErrorInfo.ReasonFailed,
-                    Logger));
+                    ErrorInfo.ReasonFailed));
 
                 var failedAttach = await client.Channels.Get("failed").AttachAsync();
                 AssertAttachResultIsFailure(failedAttach);
@@ -534,7 +533,7 @@ namespace IO.Ably.Tests.Realtime
                 switch (state)
                 {
                     case ConnectionState.Closed:
-                        client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
+                        client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager));
                         break;
                     case ConnectionState.Closing:
                         client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
@@ -545,8 +544,7 @@ namespace IO.Ably.Tests.Realtime
                     case ConnectionState.Failed:
                         client.Workflow.SetState(new ConnectionFailedState(
                             client.ConnectionManager,
-                            ErrorInfo.ReasonFailed,
-                            Logger));
+                            ErrorInfo.ReasonFailed));
                         break;
                 }
 

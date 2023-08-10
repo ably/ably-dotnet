@@ -7,7 +7,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonFailed;
 
-        public ConnectionFailedState(IConnectionContext context, ErrorInfo error) : base(context)
+        public ConnectionFailedState(IConnectionContext context, ErrorInfo error)
+            : base(context)
         {
             Error = error ?? ErrorInfo.ReasonFailed;
         }

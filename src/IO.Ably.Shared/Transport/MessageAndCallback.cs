@@ -13,11 +13,11 @@ namespace IO.Ably.Transport
 
         public Action<bool, ErrorInfo> Callback { get; }
 
-        public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback, ILogger logger = null)
+        public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback, ILogger logger)
         {
             Message = message;
             Callback = callback;
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            Logger = logger;
         }
 
         protected bool Equals(MessageAndCallback other)

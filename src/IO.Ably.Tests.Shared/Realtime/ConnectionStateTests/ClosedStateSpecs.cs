@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
 
             _logger = InternalLogger.Create(Defaults.DefaultLogLevel, sink);
             var context = new FakeConnectionContext();
-            _state = new ConnectionClosedState(context, _logger);
+            _state = new ConnectionClosedState(context);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace IO.Ably.Tests
         public void WhenCloseCalled_ShouldDoNothing()
         {
             // Act
-            new ConnectionClosedState(null, _logger).Close();
+            new ConnectionClosedState(null).Close();
         }
 
         [Theory]

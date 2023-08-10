@@ -91,7 +91,7 @@ namespace IO.Ably.Realtime.Workflow
 
         private void SetInitialConnectionState()
         {
-            var initialState = new ConnectionInitializedState(ConnectionManager, Logger);
+            var initialState = new ConnectionInitializedState(ConnectionManager);
             State.Connection.CurrentStateObject = initialState;
             SetRecoverKeyIfPresent(Client.Options.Recover);
         }
@@ -630,8 +630,7 @@ namespace IO.Ably.Realtime.Workflow
             var connectedState = new ConnectionConnectedState(
                 ConnectionManager,
                 cmd.Message.Error,
-                cmd.IsUpdate,
-                Logger);
+                cmd.IsUpdate);
 
             SetState(connectedState);
 
@@ -716,7 +715,7 @@ namespace IO.Ably.Realtime.Workflow
                 switch (command)
                 {
                     case ForceStateInitializationCommand _:
-                        var initState = new ConnectionInitializedState(ConnectionManager, Logger);
+                        var initState = new ConnectionInitializedState(ConnectionManager);
                         SetState(initState);
                         break;
                     case SetConnectedStateCommand cmd:
@@ -779,7 +778,7 @@ namespace IO.Ably.Realtime.Workflow
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
                         var error = TransformIfTokenErrorAndNotRetryable();
-                        var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
+                        var failedState = new ConnectionFailedState(ConnectionManager, error);
                         SetState(failedState);
 
                         ConnectionManager.DestroyTransport();
@@ -886,7 +885,7 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
 
-                        var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
+                        var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error)
                         {
                             Exception = cmd.Exception,
                         };
@@ -1017,7 +1016,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             if (message.AckRequired)
             {
-                State.WaitingForAck.Add(new MessageAndCallback(message, callback));
+                State.WaitingForAck.Add(new MessageAndCallback(message, callback, Logger));
                 if (Logger.IsDebug)
                 {
                     Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");

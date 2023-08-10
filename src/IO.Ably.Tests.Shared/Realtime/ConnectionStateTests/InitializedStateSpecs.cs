@@ -17,7 +17,7 @@ namespace IO.Ably.Tests
             : base(output)
         {
             var context = new FakeConnectionContext();
-            _state = new ConnectionInitializedState(context, Logger);
+            _state = new ConnectionInitializedState(context);
         }
 
         [Fact]
