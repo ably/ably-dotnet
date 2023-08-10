@@ -29,6 +29,7 @@ namespace IO.Ably
         /// The implementation will only allow one registration to operating system network state events even
         /// thought this method can be called multiple times.
         /// </summary>
-        void RegisterOsNetworkStateChanged();
+        /// <param name="logger">Logger provided by the realtime client.</param>
+        void RegisterOsNetworkStateChanged(ILogger logger);
     }
 }

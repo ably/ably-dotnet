@@ -14,14 +14,14 @@ namespace IO.Ably
         public ITransportFactory TransportFactory => null;
         public IMobileDevice MobileDevice { get; set; }
 
-        public void RegisterOsNetworkStateChanged()
+        public void RegisterOsNetworkStateChanged(ILogger logger)
         {
             lock (_lock)
             {
                 if (HookedUpToNetworkEvents == false)
                 {
                     NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
-                        Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
+                        Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline, logger);
                 }
 
                 HookedUpToNetworkEvents = true;

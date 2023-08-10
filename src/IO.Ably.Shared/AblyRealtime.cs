@@ -19,7 +19,7 @@ namespace IO.Ably
     {
         private SynchronizationContext _synchronizationContext;
 
-        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; }
 
         internal RealtimeWorkflow Workflow { get; private set; }
 
@@ -51,11 +51,7 @@ namespace IO.Ably
 
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, IMobileDevice, AblyRest> createRestFunc, IMobileDevice mobileDevice = null)
         {
-            if (options.Logger != null)
-            {
-                Logger = options.Logger;
-            }
-
+            Logger = options.Logger;
             Logger.LogLevel = options.LogLevel;
 
             if (options.LogHandler != null)
@@ -67,12 +63,12 @@ namespace IO.Ably
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options, mobileDevice) : new AblyRest(options, mobileDevice);
             Push = new PushRealtime(RestClient, Logger);
 
-            Connection = new Connection(this, options.NowFunc, options.Logger);
+            Connection = new Connection(this, options.NowFunc);
             Connection.Initialise();
 
             if (options.AutomaticNetworkStateMonitoring)
             {
-                IoC.RegisterOsNetworkStateChanged();
+                IoC.RegisterOsNetworkStateChanged(Logger);
             }
 
             Channels = new RealtimeChannels(this, Connection, mobileDevice);
