@@ -30,7 +30,7 @@ namespace IO.Ably.Tests
                 return;
             }
 
-            var channelAwaiter = new ChannelAwaiter(channel, awaitedState, channel.Options.Logger);
+            var channelAwaiter = new ChannelAwaiter(channel, awaitedState, ((RealtimeChannel)channel)?.Logger);
             var timespan = waitSpan.GetValueOrDefault(TimeSpan.FromSeconds(5));
             Result<bool> result = await channelAwaiter.WaitAsync(timespan);
             if (result.IsFailure)

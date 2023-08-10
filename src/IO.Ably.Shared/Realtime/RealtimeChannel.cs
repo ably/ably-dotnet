@@ -128,11 +128,11 @@ namespace IO.Ably.Realtime
             AblyRealtime realtimeClient,
             ChannelOptions options,
             IMobileDevice mobileDevice = null)
-            : base(options.Logger)
+            : base(realtimeClient.Logger)
         {
             Name = name;
             Options = options;
-            MessageDecodingContext = new DecodingContext(options);
+            MessageDecodingContext = new DecodingContext(Logger, options);
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;

@@ -514,7 +514,6 @@ namespace IO.Ably.Tests.Rest
             });
 
             var opts = GetOptions(_examples);
-            opts.Logger = logger;
             var channel1 = client.Channels.Get("persisted:encryption", opts);
 
             const string payload = "test payload";
@@ -522,7 +521,7 @@ namespace IO.Ably.Tests.Rest
 
             await Task.Delay(1000);
 
-            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
 
             var message = (await channel2.HistoryAsync()).Items.First();
 
@@ -643,7 +642,7 @@ namespace IO.Ably.Tests.Rest
             const string payload = "test payload";
             await channel1.PublishAsync("test", payload);
 
-            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
 
             await Task.Delay(1000);
 

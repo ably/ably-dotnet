@@ -3,14 +3,12 @@ using IO.Ably.Encryption;
 namespace IO.Ably
 {
     /// <summary>
-    /// Channel options used for initialising channels.
+    /// Channel options used for initializing channels.
     /// </summary>
     public class ChannelOptions
     {
         private ChannelModes _modes = new ChannelModes();
         private ChannelParams _params = new ChannelParams();
-
-        internal ILogger Logger { get; set; }
 
         /// <summary>
         /// Indicates whether the channel is encrypted.
@@ -48,7 +46,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="params"><see cref="IO.Ably.CipherParams"/>.</param>
         public ChannelOptions(CipherParams @params)
-            : this(DefaultLogger.LoggerInstance, true, @params) { }
+            : this(true, @params) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
@@ -57,21 +55,12 @@ namespace IO.Ably
         /// <param name="params">optional, <see cref="CipherParams"/>.</param>
         /// <param name="modes">optional, <see cref="ChannelModes"/>.</param>
         /// <param name="channelParams">optional, <see cref="ChannelParams"/>.</param>
-        public ChannelOptions(
-            bool encrypted = false,
-            CipherParams @params = null,
-            ChannelModes modes = null,
-            ChannelParams channelParams = null)
-            : this(null, encrypted, @params, modes, channelParams) { }
-
         internal ChannelOptions(
-            ILogger logger,
             bool encrypted = false,
             CipherParams @params = null,
             ChannelModes modes = null,
             ChannelParams channelParams = null)
         {
-            Logger = logger ?? DefaultLogger.LoggerInstance;
             Encrypted = encrypted;
             CipherParams = @params ?? Crypto.GetDefaultParams();
             Modes = modes;
@@ -84,7 +73,6 @@ namespace IO.Ably
         /// <param name="key">cipher key.</param>
         public ChannelOptions(byte[] key)
         {
-            Logger = DefaultLogger.LoggerInstance;
             Encrypted = true;
             CipherParams = new CipherParams(key);
         }

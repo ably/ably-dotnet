@@ -15,19 +15,15 @@ namespace IO.Ably.MessageEncoders
         /// <summary>
         /// Initializes a new instance of the <see cref="DecodingContext"/> class.
         /// </summary>
-        public DecodingContext()
-        {
-            ChannelOptions = new ChannelOptions();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DecodingContext"/> class.
-        /// </summary>
+        /// <param name="logger">Logger passed from clientOptions.</param>
         /// <param name="options">Channel options used for the encode / decode operations.</param>
-        public DecodingContext(ChannelOptions options)
+        public DecodingContext(ILogger logger, ChannelOptions options = null)
         {
+            Logger = logger;
             ChannelOptions = options ?? new ChannelOptions();
         }
+
+        public ILogger Logger { get; set; }
     }
 
     /// <summary>
@@ -39,10 +35,11 @@ namespace IO.Ably.MessageEncoders
         /// Creates a new <see cref="DecodingContext"/> from the provided <see cref="ChannelOptions"/>.
         /// </summary>
         /// <param name="options">the <see cref="ChannelOptions"/> used in the new context.</param>
+        /// <param name="logger">logger passed from original instance.</param>
         /// <returns><see cref="DecodingContext"/> created with passed Channel options.</returns>
-        public static DecodingContext ToDecodingContext(this ChannelOptions options)
+        public static DecodingContext ToDecodingContext(this ChannelOptions options, ILogger logger)
         {
-            return new DecodingContext(options ?? new ChannelOptions());
+            return new DecodingContext(logger, options);
         }
     }
 }

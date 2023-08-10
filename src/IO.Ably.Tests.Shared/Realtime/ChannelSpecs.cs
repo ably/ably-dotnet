@@ -1109,7 +1109,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
-                    channel.WaitForState(ChannelState.Attaching);
+                    await channel.WaitForState(ChannelState.Attaching);
                     await client.ProcessCommands();
 
                     var protocolMessage = LastCreatedTransport.LastMessageSend;
@@ -1128,7 +1128,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
-                    channel.WaitForState(ChannelState.Attaching);
+                    await channel.WaitForState(ChannelState.Attaching);
                     await client.ProcessCommands();
 
                     var protocolMessage = LastCreatedTransport.LastMessageSend;
@@ -1277,7 +1277,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
-                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(client.Logger), new[] { message });
 
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
@@ -1300,7 +1300,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Subscribe(msg => { receivedMessage = msg; });
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
-                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(client.Logger), new[] { message });
 
                 var testSink = new TestLoggerSink();
                 using (DefaultLogger.SetTempDestination(testSink))
@@ -1585,7 +1585,7 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient();
 
                 var channel = client.Channels.Get("history");
-                client.ProcessMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                await client.ProcessMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     Channel = "history",
                     ChannelSerial = "101"

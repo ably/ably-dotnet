@@ -11,7 +11,7 @@ namespace IO.Ably.MessageEncoders
         public override Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context)
         {
             var options = context.ChannelOptions;
-            var logger = options?.Logger ?? DefaultLogger.LoggerInstance;
+            var logger = context.Logger;
 
             if (IsEmpty(payload.Data) || !CurrentEncodingIs(payload, EncodingName))
             {
