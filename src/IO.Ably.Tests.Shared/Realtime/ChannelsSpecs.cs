@@ -188,7 +188,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
-            await new ChannelAwaiter(channel, ChannelState.Detached).WaitAsync();
+            await new ChannelAwaiter(channel, ChannelState.Detached, client.Logger).WaitAsync();
 
             // Assert
             client.Channels.Should().BeEmpty();

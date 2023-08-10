@@ -22,9 +22,9 @@ namespace IO.Ably.Realtime
         private readonly object _lock = new object();
         private readonly Action _onTimeout;
 
-        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger = null, Action onTimeout = null)
+        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger, Action onTimeout = null)
         {
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            Logger = logger;
             _name = $"#{channel.Name}:{awaitedState} awaiter";
             _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;

@@ -126,9 +126,9 @@ namespace IO.Ably.Realtime
             string name,
             string clientId,
             AblyRealtime realtimeClient,
-            ChannelOptions options = null,
+            ChannelOptions options,
             IMobileDevice mobileDevice = null)
-            : base(options?.Logger)
+            : base(options.Logger)
         {
             Name = name;
             Options = options;
