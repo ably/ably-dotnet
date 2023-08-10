@@ -5,8 +5,8 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionInitializedState : ConnectionStateBase
     {
-        public ConnectionInitializedState(IConnectionContext context, ILogger logger)
-            : base(context, logger)
+        public ConnectionInitializedState(IConnectionContext context)
+            : base(context)
         { }
 
         public override bool CanQueue => true;

@@ -10,9 +10,8 @@ namespace IO.Ably.Transport.States.Connection
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionStateBase
     {
-        protected ConnectionStateBase(IConnectionContext context, ILogger logger)
+        protected ConnectionStateBase(IConnectionContext context)
         {
-            Logger = logger ?? DefaultLogger.LoggerInstance;
             Context = context;
         }
 

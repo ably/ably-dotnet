@@ -12,12 +12,12 @@ namespace IO.Ably.Transport.States.Connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionConnectingState(IConnectionContext context, ILogger logger)
-            : this(context, new CountdownTimer("Connecting state timer", logger), logger)
+            : this(context, new CountdownTimer("Connecting state timer", logger))
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger)
-            : base(context, logger)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer)
+            : base(context)
         {
             _timer = timer;
         }
