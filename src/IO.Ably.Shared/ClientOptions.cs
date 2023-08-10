@@ -432,7 +432,7 @@ namespace IO.Ably
         }
 
         [JsonIgnore]
-        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; } = InternalLogger.Create();
 
         internal bool SkipInternetCheck { get; set; }
 
