@@ -6,6 +6,7 @@ using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Tests.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -65,7 +66,7 @@ namespace IO.Ably.Tests.Push
             const string token = "registration_token";
             SetSetting(PersistKeys.Device.Token, token);
 
-            var loadResult = LocalDevice.LoadPersistedLocalDevice(mobileDevice, out var localDevice);
+            var loadResult = LocalDevice.LoadPersistedLocalDevice(mobileDevice, out var localDevice, DefaultLogger.LoggerInstance);
             loadResult.Should().BeTrue();
             localDevice.Platform.Should().Be(mobileDevice.DevicePlatform);
             localDevice.FormFactor.Should().Be(mobileDevice.FormFactor);
