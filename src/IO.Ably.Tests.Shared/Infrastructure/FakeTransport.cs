@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 

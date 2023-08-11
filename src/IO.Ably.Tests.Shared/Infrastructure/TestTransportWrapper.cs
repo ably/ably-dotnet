@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 

@@ -40,7 +40,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="options"><see cref="ClientOptions"/>.</param>
         public AblyRealtime(ClientOptions options)
-            : this(options, CreateRestFunc, IoC.MobileDevice)
+            : this(options, CreateRestFunc)
         {
         }
 
@@ -65,6 +65,7 @@ namespace IO.Ably
             }
 
             CaptureSynchronizationContext(options);
+
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options, mobileDevice) : new AblyRest(options, mobileDevice);
             Push = new PushRealtime(RestClient, Logger);
 
@@ -73,10 +74,10 @@ namespace IO.Ably
 
             if (options.AutomaticNetworkStateMonitoring)
             {
-                IoC.RegisterOsNetworkStateChanged(Logger);
+                RestClient.Ioc.RegisterOsNetworkStateChanged();
             }
 
-            Channels = new RealtimeChannels(this, Connection, mobileDevice);
+            Channels = new RealtimeChannels(this, Connection, RestClient.MobileDevice);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
             State = new RealtimeState(options.GetFallbackHosts()?.Shuffle().ToList(), Logger, options.NowFunc);

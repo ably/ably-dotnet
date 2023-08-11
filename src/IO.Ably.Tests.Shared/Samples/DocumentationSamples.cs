@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 
 namespace IO.Ably.Tests.Samples
 {
