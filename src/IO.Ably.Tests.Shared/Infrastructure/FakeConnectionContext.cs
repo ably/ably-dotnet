@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
     {
         public FakeConnectionContext()
         {
-            Connection = new Connection(new AblyRealtime(new ClientOptions() { AutoConnect = false }), TestHelpers.NowFunc());
+            Connection = new Connection(new AblyRealtime(new ClientOptions() { Key = "dummy", AutoConnect = false }), TestHelpers.NowFunc());
             Connection.Initialise();
         }
 
