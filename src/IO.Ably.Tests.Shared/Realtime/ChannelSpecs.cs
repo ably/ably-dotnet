@@ -1304,11 +1304,13 @@ namespace IO.Ably.Tests.Realtime
                 MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(client.Logger), new[] { message });
 
                 var testSink = new TestLoggerSink();
-                using (DefaultLogger.SetTempDestination(testSink))
-                {
-                    client.FakeMessageReceived(message, channel.Name);
-                    await client.ProcessCommands();
-                }
+                var oldSink = client.Logger.LoggerSink;
+                client.Logger.LoggerSink = testSink;
+
+                client.FakeMessageReceived(message, channel.Name);
+                await client.ProcessCommands();
+
+                client.Logger.LoggerSink = oldSink;
 
                 receivedMessage.Encoding.Should().Be(message.Encoding);
                 testSink.Messages.Should().Contain(x => x.Contains("Error decrypting payload"));
