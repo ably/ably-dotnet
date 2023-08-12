@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.Push
             rest.MobileDevice.Should().BeNull();
         }
 
-        [Fact(Skip = "Intermittently fails")]
+        [Fact]
         [Trait("spec", "RSH8a")]
         public void LocalDevice_IsOnlyInitialisedOnce()
         {
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests.Push
             device.FormFactor.Should().NotBeEmpty();
         }
 
-        [Fact(Skip = "Intermittently fails")]
+        [Fact]
         [Trait("spec", "RSH8a")]
         [Trait("spec", "RSH8b")]
         public void LocalDevice_WhenRestClientContainsClientId_ShouldHaveTheSameClientId()
