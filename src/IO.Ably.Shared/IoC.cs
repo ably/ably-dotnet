@@ -36,7 +36,6 @@ namespace IO.Ably
                     return null;
                 }
             }
-            set => Platform.MobileDevice = value;
         }
     }
 }

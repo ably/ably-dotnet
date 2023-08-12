@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Push
             realtime.Device.Should().NotBeNull();
         }
 
-        [Fact(Skip = "Intermittently fails")]
+        [Fact]
         [Trait("spec", "RSH8")]
         public void WhenPlatformsDoesNotSupportPushNotifications_DeviceShouldBeNull()
         {

@@ -147,12 +147,7 @@ namespace IO.Ably
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
             Ioc = new IoC(Logger);
-            if (mobileDevice != null)
-            {
-                Ioc.MobileDevice = mobileDevice;
-            }
-
-            MobileDevice = Ioc.MobileDevice;
+            MobileDevice = mobileDevice ?? Ioc.MobileDevice;
             Channels = new RestChannels(this, MobileDevice);
             Push = new PushRest(this, Logger);
             AblyAuth.OnClientIdChanged = OnAuthClientIdChanged;
