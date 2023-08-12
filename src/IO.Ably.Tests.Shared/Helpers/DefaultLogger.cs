@@ -30,13 +30,6 @@ namespace IO.Ably.Tests.Shared.Helpers
         /// </summary>
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
 
-        internal static IDisposable SetTempDestination(ILoggerSink loggerSink)
-        {
-            ILoggerSink oldLoggerSink = LoggerInstance.LoggerSink;
-            LoggerInstance.LoggerSink = loggerSink;
-            return new ActionOnDispose(() => LoggerInstance.LoggerSink = oldLoggerSink);
-        }
-
         /// <summary>Log an error message.</summary>
         internal static void Error(string message, Exception ex)
         {

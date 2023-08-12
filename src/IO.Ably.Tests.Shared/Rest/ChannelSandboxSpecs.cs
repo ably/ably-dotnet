@@ -634,9 +634,8 @@ namespace IO.Ably.Tests.Rest
         public async Task WithEncryptionCipherAlgorithmMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
-            var logger = InternalLogger.Create(Defaults.DefaultLogLevel, loggerSink);
 
-            var client = await GetRestClient(protocol);
+            var client = await GetRestClient(protocol, options => options.LogHandler = loggerSink);
             var channel1 = client.Channels.Get("persisted:encryption", GetOptions(_examples));
 
             const string payload = "test payload";
