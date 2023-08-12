@@ -137,7 +137,7 @@ namespace IO.Ably.Push
             if (mobileDevice is null)
             {
                 throw new AblyException(
-                    "Cannot initialise LocalDevice instance before initialising the MobileDevice class. For Android call AndroidMobileDevice.Initialise() and for iOS call AppleMobileDevice.Initialise()");
+                    "Cannot initialise LocalDevice instance before initializing the MobileDevice class. For Android call AndroidMobileDevice.Initialise() and for iOS call AppleMobileDevice.Initialise()");
             }
 
             switch (Instance)
