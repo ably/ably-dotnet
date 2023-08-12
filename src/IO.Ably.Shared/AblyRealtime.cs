@@ -74,7 +74,7 @@ namespace IO.Ably
 
             if (options.AutomaticNetworkStateMonitoring)
             {
-                RestClient.Ioc.RegisterOsNetworkStateChanged();
+                IoC.RegisterOsNetworkStateChanged(Logger);
             }
 
             Channels = new RealtimeChannels(this, Connection, RestClient.MobileDevice);

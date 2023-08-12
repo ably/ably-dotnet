@@ -19,8 +19,6 @@ namespace IO.Ably
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
         private LocalDevice _device;
 
-        internal IoC Ioc { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyRest"/> class using an api key.</summary>
         /// <param name="apiKey">Full api key.</param>
@@ -146,8 +144,8 @@ namespace IO.Ably
             HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
-            Ioc = new IoC(Logger);
-            MobileDevice = mobileDevice ?? Ioc.MobileDevice;
+
+            MobileDevice = mobileDevice;
             Channels = new RestChannels(this, MobileDevice);
             Push = new PushRest(this, Logger);
             AblyAuth.OnClientIdChanged = OnAuthClientIdChanged;

@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
 using Android.Gms.Tasks;
@@ -12,13 +13,13 @@ namespace IO.Ably.Push.Android
     public class AndroidMobileDevice : IMobileDevice
     {
         private const string TokenType = "fcm";
-        private readonly ILogger _logger;
         private static AblyRealtime _realtimeInstance;
 
-        internal AndroidMobileDevice(PushCallbacks callbacks, ILogger logger)
+        private ILogger Logger { get; set; }
+
+        internal AndroidMobileDevice(PushCallbacks callbacks)
         {
             Callbacks = callbacks;
-            _logger = logger;
         }
 
         /// <summary>
@@ -44,11 +45,11 @@ namespace IO.Ably.Push.Android
         /// <returns>Initialised Ably instance which supports push notification registrations.</returns>
         public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, PushCallbacks callbacks = null)
         {
-            var androidMobileDevice = new AndroidMobileDevice(callbacks ?? new PushCallbacks(), DefaultLogger.LoggerInstance);
-            IoC.MobileDevice = androidMobileDevice;
+            var androidMobileDevice = new AndroidMobileDevice(callbacks ?? new PushCallbacks());
 
             // Create the instance of ably used for Push registrations
             _realtimeInstance = new AblyRealtime(ablyClientOptions, androidMobileDevice);
+            androidMobileDevice.Logger = _realtimeInstance.Logger;
             _realtimeInstance.Push.InitialiseStateMachine();
             return _realtimeInstance;
         }
@@ -100,15 +101,15 @@ namespace IO.Ably.Push.Android
         {
             try
             {
-                _logger.Debug("Requesting a new Registration token");
+                Logger.Debug("Requesting a new Registration token");
                 var messagingInstance = FirebaseMessaging.Instance;
                 var resultTask = messagingInstance.GetToken();
 
-                resultTask.AddOnCompleteListener(new RequestTokenCompleteListener(callback, _logger));
+                resultTask.AddOnCompleteListener(new RequestTokenCompleteListener(callback, Logger));
             }
             catch (Exception e)
             {
-                _logger.Error("Error while requesting a new Registration token.", e);
+                Logger.Error("Error while requesting a new Registration token.", e);
                 var errorInfo = new ErrorInfo($"Failed to request AndroidToken. Error: {e?.Message}.", 50000, HttpStatusCode.InternalServerError, e);
                 callback(Result.Fail<RegistrationToken>(errorInfo));
             }

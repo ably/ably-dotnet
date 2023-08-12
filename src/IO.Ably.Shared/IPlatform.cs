@@ -16,10 +16,6 @@ namespace IO.Ably
     {
         Agent.PlatformRuntime PlatformId { get; }
 
-        ITransportFactory TransportFactory { get; }
-
-        IMobileDevice MobileDevice { get; set; }
-
         /// <summary>
         /// This method when implemented in each Platform class includes logic to subscribe to
         /// NetworkStatus changes from the operating system. It is then exposed through
