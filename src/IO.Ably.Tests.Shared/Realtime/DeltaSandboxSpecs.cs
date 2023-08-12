@@ -231,7 +231,7 @@ namespace IO.Ably.Tests.Realtime
             var firstMessageReceived = new TaskCompletionAwaiter();
             using (((IInternalLogger)Logger).CreateDisposableLoggingContext(testSink))
             {
-                var realtime = await GetRealtimeClient(protocol);
+                var realtime = await GetRealtimeClient(protocol, (options, _) => options.LogHandler = testSink);
                 var channel = realtime.Channels.Get(channelName, new ChannelOptions(channelParams: new ChannelParams { { "delta", "vcdiff" } }));
 
                 var received = new List<Message>();
