@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Shared.Helpers;
 
 namespace IO.Ably.Tests.Infrastructure
 {

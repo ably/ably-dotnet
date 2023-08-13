@@ -137,9 +137,7 @@ namespace IO.Ably.Tests
         {
             // Because this test depends on static state in the 'Platform' type we need
             // to (re)Initialize the static 'Platform' state before each test run.
-
-            Platform.Initialize();
-
+            Platform.HookedUpToNetworkEvents = false;
             _ = new AblyRealtime(new ClientOptions(ValidKey)
             {
                 AutomaticNetworkStateMonitoring = enabled,

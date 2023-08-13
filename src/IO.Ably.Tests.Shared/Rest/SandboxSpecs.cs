@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 

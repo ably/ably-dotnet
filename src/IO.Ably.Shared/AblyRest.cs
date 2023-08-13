@@ -42,7 +42,7 @@ namespace IO.Ably
         {
             Options = new ClientOptions();
             init(Options);
-            InitializeAbly(IoC.MobileDevice);
+            InitializeAbly();
         }
 
         /// <summary>
@@ -50,11 +50,11 @@ namespace IO.Ably
         /// </summary>
         /// <param name="clientOptions">instance of clientOptions.</param>
         public AblyRest(ClientOptions clientOptions)
-            : this(clientOptions, IoC.MobileDevice)
+            : this(clientOptions, null)
         {
         }
 
-        internal AblyRest(ClientOptions clientOptions, IMobileDevice mobileDevice)
+        internal AblyRest(ClientOptions clientOptions, IMobileDevice mobileDevice = null)
         {
             Options = clientOptions;
             InitializeAbly(mobileDevice);
@@ -122,7 +122,7 @@ namespace IO.Ably
         internal ILogger Logger { get; set; }
 
         /// <summary>Initializes the rest client and validates the passed in options.</summary>
-        private void InitializeAbly(IMobileDevice mobileDevice)
+        private void InitializeAbly(IMobileDevice mobileDevice = null)
         {
             if (Options == null)
             {
@@ -144,9 +144,10 @@ namespace IO.Ably
             HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
-            Channels = new RestChannels(this, mobileDevice);
-            Push = new PushRest(this, Logger);
+
             MobileDevice = mobileDevice;
+            Channels = new RestChannels(this, MobileDevice);
+            Push = new PushRest(this, Logger);
             AblyAuth.OnClientIdChanged = OnAuthClientIdChanged;
         }
 

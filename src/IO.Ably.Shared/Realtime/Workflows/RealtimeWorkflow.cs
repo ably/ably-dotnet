@@ -430,7 +430,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     if (error.IsTokenError)
                     {
-                        return HandleConnectingTokenErrorCommand.Create(error)
+                        return HandleConnectingTokenErrorCommand.Create(error, Logger)
                             .TriggeredBy(cmd);
                     }
 

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;

@@ -5,7 +5,26 @@ namespace IO.Ably.Tests.Shared.Helpers
     /// <summary>An utility class for logging various messages.</summary>
     public static class DefaultLogger
     {
-        internal static ILogger LoggerInstance => InternalLogger.Create();
+        private static readonly object SyncLock = new object();
+        private static ILogger _loggerInstance;
+
+        internal static ILogger LoggerInstance
+        {
+            get
+            {
+                if (_loggerInstance == null)
+                {
+                    lock (SyncLock)
+                    {
+                        _loggerInstance = InternalLogger.Create();
+                    }
+                }
+
+                return _loggerInstance;
+            }
+
+            set => _loggerInstance = value;
+        }
 
         /// <summary>Maximum level to log.</summary>
         /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
@@ -29,13 +48,6 @@ namespace IO.Ably.Tests.Shared.Helpers
         /// IsDebug.
         /// </summary>
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
-
-        internal static IDisposable SetTempDestination(ILoggerSink loggerSink)
-        {
-            ILoggerSink oldLoggerSink = LoggerInstance.LoggerSink;
-            LoggerInstance.LoggerSink = loggerSink;
-            return new ActionOnDispose(() => LoggerInstance.LoggerSink = oldLoggerSink);
-        }
 
         /// <summary>Log an error message.</summary>
         internal static void Error(string message, Exception ex)
