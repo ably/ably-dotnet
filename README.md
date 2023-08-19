@@ -235,7 +235,7 @@ if (result.IsFailure)
 }
 ```
 
-- If sending message as a dotnet object instance, internal newtonsoft will apply default serialization settings.
+- If publishing message as a dotnet object instance, internal newtonsoft will apply default serialization settings.
 - To avoid this, apply custom serialization settings externally, send it as a serialized string instead.
 ```csharp
 var serializedData = JsonConvert.SerializeObject(message,
@@ -345,7 +345,7 @@ catch(AblyException ablyError)
 }
 ```
 
-- If sending message as a dotnet object instance, internal newtonsoft will apply default serialization settings.
+- If publishing message as a dotnet object instance, internal newtonsoft will apply default serialization settings.
 - To avoid this, apply custom serialization settings externally, send it as a serialized string instead.
 ```csharp
 var serializedData = JsonConvert.SerializeObject(message,
