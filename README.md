@@ -331,6 +331,21 @@ catch(AblyException ablyError)
 }
 ```
 
+- If sending message as a dotnet object instance, internal newtonsoft will apply default serialization settings.
+- To avoid this, apply custom serialization settings externally, send it as a serialized string instead.
+```csharp
+var serializedData = JsonConvert.SerializeObject(message,
+    new JsonSerializerSettings
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+    });
+
+var ablyMessage = new Message("name", serializedData) {Encoding = "json"};
+
+channel.Publish(ablyMessage);
+```
+
+
 ### Querying channel history
 
 ```csharp
