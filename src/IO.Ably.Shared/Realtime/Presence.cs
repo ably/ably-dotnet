@@ -493,7 +493,6 @@ namespace IO.Ably.Realtime
                     return;
             }
 
-            // RTP16
             switch (_channel.State)
             {
                 case ChannelState.Initialized:
@@ -522,7 +521,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        // RTP16b
         private bool PendingPresenceEnqueue(QueuedPresenceMessage msg)
         {
             if (!_connection.Options.QueueMessages)
@@ -745,7 +743,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        // RTP5a
         internal void ChannelDetachedOrFailed(ErrorInfo error)
         {
             FailQueuedMessages(error);
@@ -753,7 +750,6 @@ namespace IO.Ably.Realtime
             InternalMap.Clear();
         }
 
-        // RTP5f
         internal void ChannelSuspended(ErrorInfo error)
         {
             /*

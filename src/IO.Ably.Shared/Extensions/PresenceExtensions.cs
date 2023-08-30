@@ -9,13 +9,11 @@
 
         public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
         {
-            // RTP2b1
             if (thisMessage.IsSynthesized() || thatMessage.IsSynthesized())
             {
                 return thisMessage.Timestamp > thatMessage.Timestamp;
             }
 
-            // RTP2b2
             var thisValues = thisMessage.Id.Split(':');
             var thatValues = thatMessage.Id.Split(':');
 
