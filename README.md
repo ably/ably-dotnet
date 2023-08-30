@@ -235,8 +235,8 @@ if (result.IsFailure)
 }
 ```
 
-- When published message is a dotnet object instance, internal newtonsoft will apply default serialization settings.
-- If received message has unwanted serialization, publish it as a serialized string instead by applying custom serialization settings externally.
+- When calling `channel.Publish` with a dotnet object instance as the message data, the library will use the Newtonsoft Json.NET library to serialize the message with default serialization settings.
+- If you need to use custom seralization settings, you can apply the serialization yourself and send the resulting string as the message data:
 
 ```csharp
 var serializedData = JsonConvert.SerializeObject(message,
