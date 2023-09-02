@@ -28,7 +28,7 @@ namespace IO.Ably.Realtime
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
-            InternalMap = new InternalPresenceMap(channel.Name, logger);
+            InternalMap = new InternalPresenceMap(channel.Name, logger); // RTP17h
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
@@ -67,6 +67,9 @@ namespace IO.Ably.Realtime
 
         internal PresenceMap Map { get; }
 
+        /// <summary>
+        /// Indicates members belonging to current connectionId.
+        /// </summary>
         internal PresenceMap InternalMap { get; } // RTP17
 
         internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
@@ -656,12 +659,11 @@ namespace IO.Ably.Realtime
             OnSyncCompleted();
         }
 
-        // RTP17g
-        private void EnterPresenceForRecordedMembersWithCurrentConnectionId()
+        private void EnterMembersFromInternalPresenceMap()
         {
+            // RTP17g
             foreach (var item in InternalMap.Values)
             {
-                var clientId = item.ClientId;
                 try
                 {
                     var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data, item.Id);
@@ -669,28 +671,23 @@ namespace IO.Ably.Realtime
                     {
                         if (!success)
                         {
-                            /*
-                             * (RTP17e)  If any of the automatic ENTER presence messages published
-                             * in RTP17f fail, then an UPDATE event should be emitted on the channel
-                             * with resumed set to true and reason set to an ErrorInfo object with error
-                             * code value 91004 and the error message string containing the message
-                             * received from Ably (if applicable), the code received from Ably
-                             * (if applicable) and the explicit or implicit client_id of the PresenceMessage
-                             */
-                            var errorString =
-                                $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({info.Message})";
-                            Logger.Error(errorString);
-                            _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                            EmitChannelUpdateErrorEvent(item.ClientId, _channel.Name, info.Message);
                         }
                     });
                 }
                 catch (AblyException e)
                 {
-                    var errorString =
-                        $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({e.ErrorInfo.Message})";
-                    Logger.Error(errorString);
-                    _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                    EmitChannelUpdateErrorEvent(item.ClientId, _channel.Name, e.ErrorInfo.Message);
                 }
+            }
+
+            // (RTP17e)
+            void EmitChannelUpdateErrorEvent(string clientId, string channelName, string errorMessage)
+            {
+                var errorString =
+                    $"Cannot automatically re-enter {clientId} on channel {channelName} ({errorMessage})";
+                Logger.Error(errorString);
+                _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
             }
         }
 
@@ -747,17 +744,12 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void HandleAlreadyAttachedChannel(ProtocolMessage attachedMessage)
-        {
-            ChannelAttached(attachedMessage, true);
-        }
-
-        internal void ChannelAttached(ProtocolMessage attachedMessage, bool duplicateAttachedMessage = false)
+        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isNewAttach = false)
         {
             // RTP17f
-            if (!duplicateAttachedMessage)
+            if (isNewAttach)
             {
-                EnterPresenceForRecordedMembersWithCurrentConnectionId();
+                EnterMembersFromInternalPresenceMap();
             }
 
             /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */

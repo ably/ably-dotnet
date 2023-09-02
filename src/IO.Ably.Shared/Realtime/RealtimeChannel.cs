@@ -685,7 +685,7 @@ namespace IO.Ably.Realtime
                 case ChannelState.Attached:
                     _retryCount = 0;
                     AttachResume = true;
-                    Presence.ChannelAttached(protocolMessage);
+                    Presence.ChannelAttached(protocolMessage, previousState != ChannelState.Attached);
                     break;
                 case ChannelState.Detached:
                     /* RTL13a check for unexpected detach */
