@@ -13,7 +13,7 @@ namespace IO.Ably.Realtime
         private readonly string _channelName;
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;
 
-        private ICollection<string> _residualMembers;
+        private ICollection<string> _beforeSyncMembers;
         private bool _isSyncInProgress;
 
         public PresenceMap(string channelName, ILogger logger)
@@ -75,7 +75,7 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 // we've seen this member, so do not remove it at the end of sync
-                _residualMembers?.Remove(GetKey(item));
+                _beforeSyncMembers?.Remove(GetKey(item));
             }
 
             try
@@ -133,7 +133,7 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    _residualMembers = new HashSet<string>(_members.Keys);
+                    _beforeSyncMembers = new HashSet<string>(_members.Keys);
                     IsSyncInProgress = true;
                 }
             }
@@ -166,11 +166,11 @@ namespace IO.Ably.Realtime
 
                 lock (_lock)
                 {
-                    if (_residualMembers != null)
+                    if (_beforeSyncMembers != null)
                     {
                         // Any members that were present at the start of the sync,
                         // and have not been seen in sync, can be removed
-                        foreach (var member in _residualMembers)
+                        foreach (var member in _beforeSyncMembers)
                         {
                             if (_members.TryRemove(member, out PresenceMessage pm))
                             {
@@ -178,7 +178,7 @@ namespace IO.Ably.Realtime
                             }
                         }
 
-                        _residualMembers = null;
+                        _beforeSyncMembers = null;
                     }
                 }
             }
@@ -204,7 +204,7 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 _members?.Clear();
-                _residualMembers?.Clear();
+                _beforeSyncMembers?.Clear();
             }
         }
 

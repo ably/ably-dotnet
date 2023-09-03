@@ -641,21 +641,17 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            var residualMembers = Map.EndSync();
-
-            /*
-             * RTP19: ... The PresenceMessage published should contain the original attributes of the presence
-             * member with the action set to LEAVE, PresenceMessage#id set to null, and the timestamp set
-             * to the current time ...
-             */
-            foreach (var presenceMessage in residualMembers)
+            // RTP19
+            var localNonUpdatedMembersDuringSync = Map.EndSync();
+            foreach (var presenceMessage in localNonUpdatedMembersDuringSync)
             {
                 presenceMessage.Action = PresenceAction.Leave;
                 presenceMessage.Id = null;
                 presenceMessage.Timestamp = DateTimeOffset.UtcNow;
             }
 
-            Publish(residualMembers);
+            Publish(localNonUpdatedMembersDuringSync);
+
             OnSyncCompleted();
         }
 
@@ -737,10 +733,6 @@ namespace IO.Ably.Realtime
         // RTP5f
         internal void ChannelSuspended(ErrorInfo error)
         {
-            /*
-                 * (RTP5f) If the channel enters the SUSPENDED state then all queued presence messages will fail
-                 * immediately, and the PresenceMap is maintained
-                 */
             FailQueuedMessages(error);
         }
 
@@ -752,14 +744,12 @@ namespace IO.Ably.Realtime
                 EnterMembersFromInternalPresenceMap();
             }
 
-            /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
             StartSync();
-            var hasPresence = attachedMessage != null &&
-                              attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
 
+            // RTP1
             if (hasPresence)
             {
-                // RTP1 If [HAS_PRESENCE] flag is 1, should set presence sync as active (Doesn't necessarily mean members are available)
                 if (Logger.IsDebug)
                 {
                     Logger.Debug(
@@ -767,22 +757,14 @@ namespace IO.Ably.Realtime
                 }
 
                 StartSync();
-                SendQueuedMessages();
             }
             else
             {
-                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
-                    * the presence map should be considered in sync immediately
-                    * with no members present on the channel
-                    *
-                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
-                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
-                    */
                 EndSync();
-                SendQueuedMessages();
-
-                // TODO: Missing sending my members if any
             }
+
+            // RTP5b
+            SendQueuedMessages();
         }
 
         private void SendQueuedMessages()
