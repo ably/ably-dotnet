@@ -685,7 +685,7 @@ namespace IO.Ably.Realtime
                 case ChannelState.Attached:
                     _retryCount = 0;
                     AttachResume = true;
-                    Presence.ChannelAttached(protocolMessage, previousState != ChannelState.Attached);
+                    Presence.ChannelAttached(protocolMessage);
                     break;
                 case ChannelState.Detached:
                     /* RTL13a check for unexpected detach */
@@ -823,15 +823,12 @@ namespace IO.Ably.Realtime
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
-        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed, ProtocolMessage message = null)
+        internal void EmitErrorUpdate(ErrorInfo errorInfo, bool resumed, ProtocolMessage message = null)
         {
-            if (State == ChannelState.Attached)
+            Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed)
             {
-                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed)
-                {
-                    ProtocolMessage = message,
-                });
-            }
+                ProtocolMessage = message,
+            });
         }
 
         internal bool ShouldReAttach(ChannelOptions options)

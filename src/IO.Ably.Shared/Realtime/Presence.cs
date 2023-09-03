@@ -671,23 +671,23 @@ namespace IO.Ably.Realtime
                     {
                         if (!success)
                         {
-                            EmitChannelUpdateErrorEvent(item.ClientId, _channel.Name, info.Message);
+                            EmitErrorUpdate(item.ClientId, _channel.Name, info.Message);
                         }
                     });
                 }
                 catch (AblyException e)
                 {
-                    EmitChannelUpdateErrorEvent(item.ClientId, _channel.Name, e.ErrorInfo.Message);
+                    EmitErrorUpdate(item.ClientId, _channel.Name, e.ErrorInfo.Message);
                 }
             }
 
             // (RTP17e)
-            void EmitChannelUpdateErrorEvent(string clientId, string channelName, string errorMessage)
+            void EmitErrorUpdate(string clientId, string channelName, string errorMessage)
             {
                 var errorString =
                     $"Cannot automatically re-enter {clientId} on channel {channelName} ({errorMessage})";
                 Logger.Error(errorString);
-                _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                _channel.EmitErrorUpdate(new ErrorInfo(errorString, 91004), true);
             }
         }
 
@@ -744,10 +744,10 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isNewAttach = false)
+        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isAttachWithoutMessageLoss = true)
         {
             // RTP17f
-            if (isNewAttach)
+            if (isAttachWithoutMessageLoss)
             {
                 EnterMembersFromInternalPresenceMap();
             }

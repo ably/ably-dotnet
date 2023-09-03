@@ -69,13 +69,11 @@ namespace IO.Ably.Realtime
                         channel.Params = new ReadOnlyChannelParams(protocolMessage.Params);
                     }
 
-                    if (channel.State == ChannelState.Attached)
+                    // RTL12
+                    if (channel.State == ChannelState.Attached && !protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                     {
-                        // RTL12
-                        if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
-                        {
-                            channel.EmitUpdate(protocolMessage.Error, false, protocolMessage);
-                        }
+                        channel.Presence.ChannelAttached(protocolMessage, false);
+                        channel.EmitErrorUpdate(protocolMessage.Error, false, protocolMessage);
                     }
                     else
                     {
