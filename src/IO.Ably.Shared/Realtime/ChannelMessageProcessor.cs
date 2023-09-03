@@ -153,7 +153,7 @@ namespace IO.Ably.Realtime
                     }
                     else
                     {
-                        channel.Presence.OnPresence(protocolMessage.Presence, null);
+                        channel.Presence.OnPresence(protocolMessage.Presence);
                     }
 
                     break;

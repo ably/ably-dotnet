@@ -547,33 +547,35 @@ namespace IO.Ably.Realtime
             string syncCursor = null;
             var syncChannelSerial = protocolMessage.ChannelSerial;
 
-            if (syncChannelSerial != null)
+            if (syncChannelSerial.IsNotEmpty())
             {
-                int colonPos = syncChannelSerial.IndexOf(':');
-                string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
+                var serials = syncChannelSerial.Split(':');
+                var syncSequenceId = serials[0];
+                syncCursor = serials.Length > 1 ? serials[1] : string.Empty;
 
                 /* If a new sequence identifier is sent from Ably, then the client library
                  * must consider that to be the start of a new sync sequence
                  * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
-                                         && _currentSyncChannelSerial != serial)
+                if (Map.IsSyncInProgress && _currentSyncChannelSerial != syncSequenceId)
                 {
                     EndSync();
                 }
 
-                StartSync();
-
-                syncCursor = syncChannelSerial.Substring(colonPos);
-                if (syncCursor.Length > 1)
+                if (syncCursor.IsNotEmpty())
                 {
-                    _currentSyncChannelSerial = serial;
+                    _currentSyncChannelSerial = syncSequenceId;
                 }
+            }
+
+            if (syncChannelSerial.IsEmpty() || syncCursor.IsNotEmpty())
+            {
+                StartSync();
             }
 
             OnPresence(protocolMessage.Presence);
 
             // if this is the last message in a sequence of sync updates, end the sync
-            if (syncChannelSerial == null || syncCursor.Length <= 1)
+            if (syncChannelSerial.IsEmpty() || syncCursor.IsEmpty())
             {
                 EndSync();
                 _currentSyncChannelSerial = null;
