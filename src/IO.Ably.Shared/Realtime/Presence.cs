@@ -479,6 +479,7 @@ namespace IO.Ably.Realtime
 
         internal void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
         {
+            // RTP16a, RTL6c
             switch (_connection.Connection.State)
             {
                 case ConnectionState.Initialized:
@@ -499,25 +500,25 @@ namespace IO.Ably.Realtime
             // RTP16
             switch (_channel.State)
             {
-                case ChannelState.Initialized:
+                case ChannelState.Initialized: // RTP16b
                     if (PendingPresenceEnqueue(new QueuedPresenceMessage(msg, callback)))
                     {
                         _channel.Attach();
                     }
 
                     break;
-                case ChannelState.Attaching:
+                case ChannelState.Attaching: // RTP16b
                     PendingPresenceEnqueue(new QueuedPresenceMessage(msg, callback));
 
                     break;
-                case ChannelState.Attached:
+                case ChannelState.Attached: // RTP16a
                     var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name)
                     {
                         Presence = new[] { msg },
                     };
                     _connection.Send(message, callback);
                     break;
-                default:
+                default: // RTP16c
                     var error = new ErrorInfo($"Unable to enter presence channel in {_channel.State} state", ErrorCodes.UnableToEnterPresenceChannelInvalidState);
                     Logger.Warning(error.ToString());
                     ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, nameof(UpdatePresence));
@@ -643,16 +644,16 @@ namespace IO.Ably.Realtime
 
             // RTP19
             var localNonUpdatedMembersDuringSync = Map.EndSync();
-            foreach (var presenceMessage in localNonUpdatedMembersDuringSync)
+            foreach (var presenceMember in localNonUpdatedMembersDuringSync)
             {
-                presenceMessage.Action = PresenceAction.Leave;
-                presenceMessage.Id = null;
-                presenceMessage.Timestamp = DateTimeOffset.UtcNow;
+                presenceMember.Action = PresenceAction.Leave;
+                presenceMember.Id = null;
+                presenceMember.Timestamp = DateTimeOffset.UtcNow;
             }
 
             Publish(localNonUpdatedMembersDuringSync);
 
-            OnSyncCompleted();
+            NotifySyncCompleted();
         }
 
         private void EnterMembersFromInternalPresenceMap()
@@ -744,10 +745,11 @@ namespace IO.Ably.Realtime
                 EnterMembersFromInternalPresenceMap();
             }
 
+            // RTP19
             StartSync();
-            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
 
             // RTP1
+            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
             if (hasPresence)
             {
                 if (Logger.IsDebug)
@@ -760,7 +762,7 @@ namespace IO.Ably.Realtime
             }
             else
             {
-                EndSync();
+                EndSync(); // RTP19
             }
 
             // RTP5b
@@ -852,7 +854,7 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-        private void OnSyncCompleted()
+        private void NotifySyncCompleted()
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
