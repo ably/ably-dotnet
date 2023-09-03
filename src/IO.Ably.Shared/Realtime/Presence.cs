@@ -544,39 +544,46 @@ namespace IO.Ably.Realtime
 
         internal void OnSyncMessage(ProtocolMessage protocolMessage)
         {
-            OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
+            string syncCursor = null;
+            var syncChannelSerial = protocolMessage.ChannelSerial;
+
+            if (syncChannelSerial != null)
+            {
+                int colonPos = syncChannelSerial.IndexOf(':');
+                string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
+
+                /* If a new sequence identifier is sent from Ably, then the client library
+                 * must consider that to be the start of a new sync sequence
+                 * and any previous in-flight sync should be discarded. (part of RTP18)*/
+                if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
+                                         && _currentSyncChannelSerial != serial)
+                {
+                    EndSync();
+                }
+
+                StartSync();
+
+                syncCursor = syncChannelSerial.Substring(colonPos);
+                if (syncCursor.Length > 1)
+                {
+                    _currentSyncChannelSerial = serial;
+                }
+            }
+
+            OnPresence(protocolMessage.Presence);
+
+            // if this is the last message in a sequence of sync updates, end the sync
+            if (syncChannelSerial == null || syncCursor.Length <= 1)
+            {
+                EndSync();
+                _currentSyncChannelSerial = null;
+            }
         }
 
-        internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
+        internal void OnPresence(PresenceMessage[] messages)
         {
             try
             {
-                string syncCursor = null;
-
-                // if we got here from SYNC message
-                if (syncChannelSerial != null)
-                {
-                    int colonPos = syncChannelSerial.IndexOf(':');
-                    string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
-
-                    /* If a new sequence identifier is sent from Ably, then the client library
-                     * must consider that to be the start of a new sync sequence
-                     * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                    if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
-                                             && _currentSyncChannelSerial != serial)
-                    {
-                        EndSync();
-                    }
-
-                    StartSync();
-
-                    syncCursor = syncChannelSerial.Substring(colonPos);
-                    if (syncCursor.Length > 1)
-                    {
-                        _currentSyncChannelSerial = serial;
-                    }
-                }
-
                 if (messages != null)
                 {
                     foreach (var message in messages)
@@ -614,13 +621,6 @@ namespace IO.Ably.Realtime
                 else
                 {
                     Logger.Debug("Sync with no presence");
-                }
-
-                // if this is the last message in a sequence of sync updates, end the sync
-                if (syncChannelSerial == null || syncCursor.Length <= 1)
-                {
-                    EndSync();
-                    _currentSyncChannelSerial = null;
                 }
             }
             catch (Exception ex)
