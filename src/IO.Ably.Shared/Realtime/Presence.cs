@@ -542,6 +542,11 @@ namespace IO.Ably.Realtime
             return true;
         }
 
+        internal void OnSyncMessage(ProtocolMessage protocolMessage)
+        {
+            OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
+        }
+
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
             try

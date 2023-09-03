@@ -147,11 +147,14 @@ namespace IO.Ably.Realtime
                         channel.OnError(presenceDecodeResult.Error);
                     }
 
-                    string syncSerial = protocolMessage.Action == ProtocolMessage.MessageAction.Sync
-                            ? protocolMessage.ChannelSerial
-                            : null;
-
-                    channel.Presence.OnPresence(protocolMessage.Presence, syncSerial);
+                    if (protocolMessage.Action == ProtocolMessage.MessageAction.Sync)
+                    {
+                        channel.Presence.OnSyncMessage(protocolMessage);
+                    }
+                    else
+                    {
+                        channel.Presence.OnPresence(protocolMessage.Presence, null);
+                    }
 
                     break;
             }
