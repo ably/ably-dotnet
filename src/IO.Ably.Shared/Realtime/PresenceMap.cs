@@ -59,7 +59,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public bool InitialSyncCompleted { get; private set; }
+        public bool SyncCompleted { get; private set; }
 
         public PresenceMessage[] Values
         {
@@ -191,7 +191,7 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    InitialSyncCompleted = true;
+                    SyncCompleted = true;
                     IsSyncInProgress = false;
                 }
             }
@@ -216,7 +216,7 @@ namespace IO.Ably.Realtime
             {
                 ["channelName"] = _channelName,
                 ["syncInProgress"] = _isSyncInProgress,
-                ["initialSyncComplete"] = InitialSyncCompleted,
+                ["initialSyncComplete"] = SyncCompleted,
                 ["members"] = new JArray(matchingMembers),
             };
 

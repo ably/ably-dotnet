@@ -21,7 +21,6 @@ namespace IO.Ably.Realtime
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
         private readonly IConnectionManager _connection;
         private string _currentSyncChannelSerial;
-        private bool _initialSyncCompleted;
         private bool _disposedValue;
 
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
@@ -35,8 +34,6 @@ namespace IO.Ably.Realtime
             _clientId = clientId;
         }
 
-        private event EventHandler InitialSyncCompleted;
-
         internal event EventHandler SyncCompleted;
 
         internal ILogger Logger { get; private set; }
@@ -44,19 +41,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Has the sync completed.
         /// </summary>
-        public bool SyncComplete
-        {
-            get => Map.InitialSyncCompleted | _initialSyncCompleted;
-
-            private set
-            {
-                _initialSyncCompleted = value;
-                if (_initialSyncCompleted)
-                {
-                    OnInitialSyncCompleted();
-                }
-            }
-        }
+        public bool SyncComplete => Map.SyncCompleted;
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
@@ -75,20 +60,10 @@ namespace IO.Ably.Realtime
         internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
 
         /// <summary>
-        /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
-        /// with no members present on the channel. See [RTP1] for more detail.
-        /// </summary>
-        internal void SkipSync()
-        {
-            SyncComplete = true;
-        }
-
-        /// <summary>
         /// Disposes the current Presence instance. Removes all listening handlers.
         /// </summary>
         internal void RemoveAllListeners()
         {
-            InitialSyncCompleted = null;
             SyncCompleted = null;
             _handlers.RemoveAll();
         }
@@ -196,7 +171,6 @@ namespace IO.Ably.Realtime
             void OnSyncEvent(object sender, EventArgs args) => CheckAndSet();
 
             _channel.StateChanged += OnChannelStateChanged;
-            InitialSyncCompleted += OnSyncEvent;
             Map.SyncNoLongerInProgress += OnSyncEvent;
 
             // Do a manual check in case we are already in the desired state
@@ -205,7 +179,6 @@ namespace IO.Ably.Realtime
 
             // unsubscribe from events
             _channel.StateChanged -= OnChannelStateChanged;
-            InitialSyncCompleted -= OnSyncEvent;
             Map.SyncNoLongerInProgress -= OnSyncEvent;
 
             if (!syncIsComplete)
