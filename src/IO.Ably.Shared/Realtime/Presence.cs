@@ -530,20 +530,17 @@ namespace IO.Ably.Realtime
                 /* If a new sequence identifier is sent from Ably, then the client library
                  * must consider that to be the start of a new sync sequence
                  * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                if (MembersMap.IsSyncInProgress && _currentSyncChannelSerial != syncSequenceId)
+                if (MembersMap.IsSyncInProgress && _currentSyncChannelSerial.IsNotEmpty() && _currentSyncChannelSerial != syncSequenceId)
                 {
                     EndSync();
                 }
+
+                StartSync();
 
                 if (syncCursor.IsNotEmpty())
                 {
                     _currentSyncChannelSerial = syncSequenceId;
                 }
-            }
-
-            if (syncChannelSerial.IsEmpty() || syncCursor.IsNotEmpty())
-            {
-                StartSync();
             }
 
             OnPresence(protocolMessage.Presence);
