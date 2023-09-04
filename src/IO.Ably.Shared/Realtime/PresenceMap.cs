@@ -160,6 +160,7 @@ namespace IO.Ably.Realtime
             {
                 if (!IsSyncInProgress)
                 {
+                    SyncCompleted = true;
                     return removed.ToArray();
                 }
 
