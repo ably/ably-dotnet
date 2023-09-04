@@ -41,7 +41,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Has the sync completed.
         /// </summary>
-        public bool SyncComplete => MembersMap.SyncCompleted;
+        public bool SyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.

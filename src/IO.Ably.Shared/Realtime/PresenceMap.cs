@@ -225,8 +225,8 @@ namespace IO.Ably.Realtime
             var state = new JObject
             {
                 ["channelName"] = _channelName,
-                ["syncInProgress"] = _isSyncInProgress,
-                ["initialSyncComplete"] = SyncCompleted,
+                ["syncInProgress"] = IsSyncInProgress,
+                ["syncCompleted"] = SyncCompleted,
                 ["members"] = new JArray(matchingMembers),
             };
 
