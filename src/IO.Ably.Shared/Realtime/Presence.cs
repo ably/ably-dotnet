@@ -26,8 +26,8 @@ namespace IO.Ably.Realtime
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string clientId, ILogger logger)
         {
             Logger = logger;
-            Map = new PresenceMap(channel.Name, logger);
-            InternalMap = new InternalPresenceMap(channel.Name, logger); // RTP17h
+            MembersMap = new PresenceMap(channel.Name, logger);
+            InternalMembersMap = new InternalPresenceMap(channel.Name, logger);
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
@@ -41,21 +41,22 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Has the sync completed.
         /// </summary>
-        public bool SyncComplete => Map.SyncCompleted;
+        public bool SyncComplete => MembersMap.SyncCompleted;
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
         /// </summary>
-        public bool IsSyncInProgress => Map.IsSyncInProgress;
+        public bool IsSyncInProgress => MembersMap.IsSyncInProgress;
 
-        internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
-
-        internal PresenceMap Map { get; }
+        /// <summary>
+        /// Indicates all members present on the channel.
+        /// </summary>
+        internal PresenceMap MembersMap { get; } // RTP2
 
         /// <summary>
         /// Indicates members belonging to current connectionId.
         /// </summary>
-        internal PresenceMap InternalMap { get; } // RTP17
+        internal PresenceMap InternalMembersMap { get; } // RTP17h
 
         internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
 
@@ -101,7 +102,7 @@ namespace IO.Ably.Realtime
                 _ = await WaitForSyncAsync();
             }
 
-            var result = Map.Values.Where(x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
+            var result = MembersMap.Values.Where(x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
                                                && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId));
             return result;
         }
@@ -152,7 +153,7 @@ namespace IO.Ably.Realtime
             // The InternalSync should be completed and the channels Attached or Attaching
             void CheckAndSet()
             {
-                if (InternalSyncComplete
+                if (SyncComplete
                     && (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
                 {
                     tsc.TrySetResult(true);
@@ -171,7 +172,7 @@ namespace IO.Ably.Realtime
             void OnSyncEvent(object sender, EventArgs args) => CheckAndSet();
 
             _channel.StateChanged += OnChannelStateChanged;
-            Map.SyncNoLongerInProgress += OnSyncEvent;
+            SyncCompleted += OnSyncEvent;
 
             // Do a manual check in case we are already in the desired state
             CheckAndSet();
@@ -179,7 +180,7 @@ namespace IO.Ably.Realtime
 
             // unsubscribe from events
             _channel.StateChanged -= OnChannelStateChanged;
-            Map.SyncNoLongerInProgress -= OnSyncEvent;
+            SyncCompleted -= OnSyncEvent;
 
             if (!syncIsComplete)
             {
@@ -529,7 +530,7 @@ namespace IO.Ably.Realtime
                 /* If a new sequence identifier is sent from Ably, then the client library
                  * must consider that to be the start of a new sync sequence
                  * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                if (Map.IsSyncInProgress && _currentSyncChannelSerial != syncSequenceId)
+                if (MembersMap.IsSyncInProgress && _currentSyncChannelSerial != syncSequenceId)
                 {
                     EndSync();
                 }
@@ -570,18 +571,18 @@ namespace IO.Ably.Realtime
                             case PresenceAction.Enter:
                             case PresenceAction.Update:
                             case PresenceAction.Present:
-                                broadcast &= Map.Put(message);
+                                broadcast &= MembersMap.Put(message);
                                 if (updateInternalPresence)
                                 {
-                                    InternalMap.Put(message);
+                                    InternalMembersMap.Put(message);
                                 }
 
                                 break;
                             case PresenceAction.Leave:
-                                broadcast &= Map.Remove(message);
+                                broadcast &= MembersMap.Remove(message);
                                 if (updateInternalPresence && !message.IsSynthesized())
                                 {
-                                    InternalMap.Remove(message);
+                                    InternalMembersMap.Remove(message);
                                 }
 
                                 break;
@@ -611,7 +612,7 @@ namespace IO.Ably.Realtime
         {
             if (!IsSyncInProgress)
             {
-                Map.StartSync();
+                MembersMap.StartSync();
             }
         }
 
@@ -623,7 +624,7 @@ namespace IO.Ably.Realtime
             }
 
             // RTP19
-            var localNonUpdatedMembersDuringSync = Map.EndSync();
+            var localNonUpdatedMembersDuringSync = MembersMap.EndSync();
             foreach (var presenceMember in localNonUpdatedMembersDuringSync)
             {
                 presenceMember.Action = PresenceAction.Leave;
@@ -639,7 +640,7 @@ namespace IO.Ably.Realtime
         private void EnterMembersFromInternalPresenceMap()
         {
             // RTP17g
-            foreach (var item in InternalMap.Values)
+            foreach (var item in InternalMembersMap.Values)
             {
                 try
                 {
@@ -707,8 +708,8 @@ namespace IO.Ably.Realtime
         internal void ChannelDetachedOrFailed(ErrorInfo error)
         {
             FailQueuedMessages(error);
-            Map.Clear();
-            InternalMap.Clear();
+            MembersMap.Clear();
+            InternalMembersMap.Clear();
         }
 
         // RTP5f
@@ -842,14 +843,9 @@ namespace IO.Ably.Realtime
         internal JToken GetState() => new JObject
         {
             ["handlers"] = _handlers.GetState(),
-            ["members"] = Map.GetState(),
+            ["members"] = MembersMap.GetState(),
             ["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message))),
         };
-
-        private void OnInitialSyncCompleted()
-        {
-            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
-        }
 
         /// <summary>
         /// Dispose(bool disposing) executes in two distinct scenarios. If disposing equals true, the method has

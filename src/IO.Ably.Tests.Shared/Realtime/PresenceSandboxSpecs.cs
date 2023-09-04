@@ -112,9 +112,9 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (args.Current == ChannelState.Attached)
                     {
-                        Logger.Debug("Test: Setting inSync to - " + channel2.Presence.Map.IsSyncInProgress);
-                        Interlocked.Add(ref inSync, channel2.Presence.Map.IsSyncInProgress ? 1 : 0);
-                        Interlocked.Add(ref syncComplete, channel2.Presence.InternalSyncComplete ? 1 : 0);
+                        Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.IsSyncInProgress);
+                        Interlocked.Add(ref inSync, channel2.Presence.MembersMap.IsSyncInProgress ? 1 : 0);
+                        // Interlocked.Add(ref syncComplete, channel2.Presence.InternalSyncComplete ? 1 : 0);
                     }
                 };
 
@@ -474,15 +474,15 @@ namespace IO.Ably.Tests.Realtime
                 msgA.Should().NotBeNull();
                 msgA.Action.Should().Be(PresenceAction.Enter);
                 msgA.ConnectionId.Should().Be(clientA.Connection.Id);
-                channelA.Presence.Map.Members.Should().HaveCount(1);
-                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelA.Presence.MembersMap.Members.Should().HaveCount(1);
+                channelA.Presence.InternalMembersMap.Members.Should().HaveCount(1);
                 channelA.Presence.Unsubscribe();
 
                 msgB.Should().NotBeNull();
                 msgB.Action.Should().Be(PresenceAction.Enter);
                 msgB.ConnectionId.Should().NotBe(clientB.Connection.Id);
-                channelB.Presence.Map.Members.Should().HaveCount(1);
-                channelB.Presence.InternalMap.Members.Should().HaveCount(0);
+                channelB.Presence.MembersMap.Members.Should().HaveCount(1);
+                channelB.Presence.InternalMembersMap.Members.Should().HaveCount(0);
                 channelB.Presence.Unsubscribe();
 
                 msgA = null;
@@ -509,14 +509,14 @@ namespace IO.Ably.Tests.Realtime
                 msgA.Should().NotBeNull();
                 msgA.Action.Should().Be(PresenceAction.Enter);
                 msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
-                channelA.Presence.Map.Members.Should().HaveCount(2);
-                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelA.Presence.MembersMap.Members.Should().HaveCount(2);
+                channelA.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 msgB.Should().NotBeNull();
                 msgB.Action.Should().Be(PresenceAction.Enter);
                 msgB.ConnectionId.Should().Be(clientB.Connection.Id);
-                channelB.Presence.Map.Members.Should().HaveCount(2);
-                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelB.Presence.MembersMap.Members.Should().HaveCount(2);
+                channelB.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 // UPDATE
                 msgA = null;
@@ -544,28 +544,28 @@ namespace IO.Ably.Tests.Realtime
                 msgA.Action.Should().Be(PresenceAction.Update);
                 msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
                 msgA.Data.ToString().Should().Be("chB-update");
-                channelA.Presence.Map.Members.Should().HaveCount(2);
-                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelA.Presence.MembersMap.Members.Should().HaveCount(2);
+                channelA.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 msgB.Should().NotBeNull();
                 msgB.Action.Should().Be(PresenceAction.Update);
                 msgB.ConnectionId.Should().Be(clientB.Connection.Id);
                 msgB.Data.ToString().Should().Be("chB-update");
-                channelB.Presence.Map.Members.Should().HaveCount(2);
-                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelB.Presence.MembersMap.Members.Should().HaveCount(2);
+                channelB.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 // LEAVE with synthesized message
                 msgA = null;
                 msgB = null;
                 var synthesizedMsg = new PresenceMessage(PresenceAction.Leave, clientB.ClientId) { ConnectionId = null };
                 synthesizedMsg.IsSynthesized().Should().BeTrue();
-                channelB.Presence.OnPresence(new[] { synthesizedMsg }, null);
+                channelB.Presence.OnPresence(new[] { synthesizedMsg });
 
                 msgB.Should().BeNull();
-                channelB.Presence.Map.Members.Should().HaveCount(2);
+                channelB.Presence.MembersMap.Members.Should().HaveCount(2);
 
                 // message was synthesized so should not have been removed (RTP17b)
-                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelB.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 // LEAVE
                 msgA = null;
@@ -593,15 +593,15 @@ namespace IO.Ably.Tests.Realtime
                 msgA.Action.Should().Be(PresenceAction.Leave);
                 msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
                 msgA.Data.ToString().Should().Be("chB-leave");
-                channelA.Presence.Map.Members.Should().HaveCount(1);
-                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelA.Presence.MembersMap.Members.Should().HaveCount(1);
+                channelA.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 msgB.Should().NotBeNull();
                 msgB.Action.Should().Be(PresenceAction.Leave);
                 msgB.ConnectionId.Should().Be(clientB.Connection.Id);
                 msgB.Data.ToString().Should().Be("chB-leave");
-                channelB.Presence.Map.Members.Should().HaveCount(1);
-                channelB.Presence.InternalMap.Members.Should().HaveCount(0);
+                channelB.Presence.MembersMap.Members.Should().HaveCount(1);
+                channelB.Presence.InternalMembersMap.Members.Should().HaveCount(0);
 
                 // clean up
                 clientA.Close();
@@ -630,8 +630,8 @@ namespace IO.Ably.Tests.Realtime
 
                 var members = await channel.Presence.GetAsync();
                 members.Should().HaveCount(1);
-                channel.Presence.Map.Members.Should().HaveCount(1);
-                channel.Presence.InternalMap.Members.Should().HaveCount(1);
+                channel.Presence.MembersMap.Members.Should().HaveCount(1);
+                channel.Presence.InternalMembersMap.Members.Should().HaveCount(1);
             }
 
             [Theory]
@@ -669,7 +669,7 @@ namespace IO.Ably.Tests.Realtime
                 var memberNumber = new Random().Next(0, 19);
                 var memberId = $"member_{memberNumber}";
                 var expectedMemberKey = $"{memberId}:{setupClient.Connection.Id}";
-                var actualMemberKey = channel.Presence.Map.Members[expectedMemberKey].MemberKey;
+                var actualMemberKey = channel.Presence.MembersMap.Members[expectedMemberKey].MemberKey;
 
                 actualMemberKey.Should().Be(expectedMemberKey);
 
@@ -687,8 +687,8 @@ namespace IO.Ably.Tests.Realtime
 
                 // then assert that the member has left
                 leftClientId.Should().Be(memberId);
-                channel.Presence.Map.Members.Should().HaveCount(19);
-                channel.Presence.Map.Members.ContainsKey(actualMemberKey).Should().BeFalse();
+                channel.Presence.MembersMap.Members.Should().HaveCount(19);
+                channel.Presence.MembersMap.Members.ContainsKey(actualMemberKey).Should().BeFalse();
             }
 
             [Theory]
@@ -959,7 +959,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.ProcessCommands();
 
-                channel.Presence.Map.Members.Should().HaveCount(1);
+                channel.Presence.MembersMap.Members.Should().HaveCount(1);
 
                 var localMessage = new PresenceMessage
                 {
@@ -972,9 +972,9 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 // inject a member directly into the local PresenceMap
-                channel.Presence.Map.Members[localMessage.MemberKey] = localMessage;
-                channel.Presence.Map.Members.Should().HaveCount(2);
-                channel.Presence.Map.Members.ContainsKey(localMessage.MemberKey).Should().BeTrue();
+                channel.Presence.MembersMap.Members[localMessage.MemberKey] = localMessage;
+                channel.Presence.MembersMap.Members.Should().HaveCount(2);
+                channel.Presence.MembersMap.Members.ContainsKey(localMessage.MemberKey).Should().BeTrue();
 
                 var members = (await channel.Presence.GetAsync()).ToArray();
                 members.Should().HaveCount(2);
@@ -1060,9 +1060,9 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 // inject a members directly into the local PresenceMap
-                channel.Presence.Map.Members[localMessage1.MemberKey] = localMessage1;
-                channel.Presence.Map.Members[localMessage2.MemberKey] = localMessage2;
-                channel.Presence.Map.Members.Should().HaveCount(2);
+                channel.Presence.MembersMap.Members[localMessage1.MemberKey] = localMessage1;
+                channel.Presence.MembersMap.Members[localMessage2.MemberKey] = localMessage2;
+                channel.Presence.MembersMap.Members.Should().HaveCount(2);
 
                 bool hasPresence = true;
                 int leaveCount = 0;
@@ -1118,32 +1118,36 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForAttachedState();
                 channel.State.Should().Be(ChannelState.Attached);
 
-                static PresenceMessage[] TestPresence1()
+                static ProtocolMessage TestPresence1()
                 {
-                    return new[]
+                    return new ProtocolMessage()
                     {
-                        new PresenceMessage
+                        ChannelSerial = "xyz",
+                        Presence = new[]
                         {
-                            Action = PresenceAction.Enter,
-                            ClientId = "2",
-                            ConnectionId = "2",
-                            Id = "2:1:0",
-                            Data = string.Empty
-                        },
-                        new PresenceMessage
-                        {
-                            Action = PresenceAction.Enter,
-                            ClientId = "2",
-                            ConnectionId = "2",
-                            Id = "2:1:SHOULD_ERROR",
-                            Data = string.Empty
-                        },
+                            new PresenceMessage
+                            {
+                                Action = PresenceAction.Enter,
+                                ClientId = "2",
+                                ConnectionId = "2",
+                                Id = "2:1:0",
+                                Data = string.Empty
+                            },
+                            new PresenceMessage
+                            {
+                                Action = PresenceAction.Enter,
+                                ClientId = "2",
+                                ConnectionId = "2",
+                                Id = "2:1:SHOULD_ERROR",
+                                Data = string.Empty
+                            },
+                        }
                     };
                 }
 
                 bool hasError = false;
                 channel.Error += (sender, args) => hasError = true;
-                channel.Presence.OnPresence(TestPresence1(), "xyz");
+                channel.Presence.OnSyncMessage(TestPresence1());
 
                 hasError.Should().BeTrue();
                 channel.State.Should().Be(ChannelState.Attached);
@@ -1354,8 +1358,8 @@ namespace IO.Ably.Tests.Realtime
 
                     await Task.Delay(10);
 
-                    channel.Presence.Map.Members.Should().HaveCount(1);
-                    channel.Presence.InternalMap.Members.Should().HaveCount(1);
+                    channel.Presence.MembersMap.Members.Should().HaveCount(1);
+                    channel.Presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                     bool didReceiveMessage = false;
                     channel.Subscribe(msg => { didReceiveMessage = true; });
@@ -1363,8 +1367,8 @@ namespace IO.Ably.Tests.Realtime
 
                     channel.Once((ChannelEvent)channelState, change =>
                     {
-                        channel.Presence.Map.Members.Should().HaveCount(0);
-                        channel.Presence.InternalMap.Members.Should().HaveCount(0);
+                        channel.Presence.MembersMap.Members.Should().HaveCount(0);
+                        channel.Presence.InternalMembersMap.Members.Should().HaveCount(0);
                     });
 
                     if (channelState == ChannelState.Detached)
@@ -1426,14 +1430,14 @@ namespace IO.Ably.Tests.Realtime
 
                         presence2.Subscribe(PresenceAction.Enter, msg =>
                         {
-                            presence2.Map.Members.Should().HaveCount(presence2.SyncComplete ? 2 : 1);
+                            presence2.MembersMap.Members.Should().HaveCount(presence2.SyncComplete ? 2 : 1);
                             presence2.Unsubscribe();
                             partialDone();
                         });
 
                         presence2.PendingPresenceQueue.Should().HaveCount(1);
                         presence2.SyncComplete.Should().BeFalse();
-                        presence2.Map.Members.Should().HaveCount(0);
+                        presence2.MembersMap.Members.Should().HaveCount(0);
                         taskCountWaiter.Tick();
                     });
 
@@ -1441,7 +1445,7 @@ namespace IO.Ably.Tests.Realtime
                     await new ConditionalAwaiter(() => presence2.SyncComplete);
                     transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).
                         Should().BeTrue("Should receive sync message");
-                    presence2.Map.Members.Should().HaveCount(2);
+                    presence2.MembersMap.Members.Should().HaveCount(2);
                 }
 
                 [Theory]

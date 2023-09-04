@@ -15,6 +15,7 @@ namespace IO.Ably.Realtime
 
         private ICollection<string> _beforeSyncMembers;
         private bool _isSyncInProgress;
+        private bool _isSyncCompleted;
 
         public PresenceMap(string channelName, ILogger logger)
         {
@@ -27,8 +28,6 @@ namespace IO.Ably.Realtime
         {
             return presence.MemberKey;
         }
-
-        internal event EventHandler SyncNoLongerInProgress;
 
         // Exposed internally to allow for testing.
         internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
@@ -47,19 +46,29 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    var previous = _isSyncInProgress;
                     _isSyncInProgress = value;
-
-                    // if we have gone from true to false then fire SyncNoLongerInProgress
-                    if (previous && !_isSyncInProgress)
-                    {
-                        OnSyncNoLongerInProgress();
-                    }
                 }
             }
         }
 
-        public bool SyncCompleted { get; private set; }
+        public bool SyncCompleted
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _isSyncCompleted;
+                }
+            }
+
+            private set
+            {
+                lock (_lock)
+                {
+                    _isSyncCompleted = value;
+                }
+            }
+        }
 
         public PresenceMessage[] Values
         {
@@ -221,11 +230,6 @@ namespace IO.Ably.Realtime
             };
 
             return state;
-        }
-
-        private void OnSyncNoLongerInProgress()
-        {
-            SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
         }
     }
 
