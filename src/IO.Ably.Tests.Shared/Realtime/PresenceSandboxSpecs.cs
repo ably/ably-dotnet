@@ -95,33 +95,31 @@ namespace IO.Ably.Tests.Realtime
                 var client2 = await GetRealtimeClient(protocol);
                 var channel = GetChannel(client, testChannel);
 
-                List<Task> tasks = new List<Task>();
-                for (int count = 1; count < 10; count++)
+                for (var count = 1; count < 10; count++)
                 {
-                    tasks.Add(channel.Presence.EnterClientAsync($"client-{count}", null));
+                    await channel.Presence.EnterClientAsync($"client-{count}", null);
                 }
-
-                await Task.WhenAll(tasks.ToArray());
 
                 var channel2 = GetChannel(client2, testChannel);
 
-                int inSync = 0;
-                int syncComplete = 0;
+                var awaiter = new TaskCompletionAwaiter();
 
+                bool syncInProgress = false, syncComplete = false;
                 channel2.InternalStateChanged += (_, args) =>
                 {
                     if (args.Current == ChannelState.Attached)
                     {
                         Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.IsSyncInProgress);
-                        Interlocked.Add(ref inSync, channel2.Presence.MembersMap.IsSyncInProgress ? 1 : 0);
-                        // Interlocked.Add(ref syncComplete, channel2.Presence.InternalSyncComplete ? 1 : 0);
+                        syncInProgress = channel2.Presence.IsSyncInProgress;
+                        syncComplete = channel2.Presence.SyncComplete;
+                        awaiter.SetCompleted();
                     }
                 };
-
                 await channel2.AttachAsync();
-                await Task.Delay(1000);
-                inSync.Should().Be(1);
-                syncComplete.Should().Be(0);
+                await awaiter.Task;
+
+                syncInProgress.Should().Be(true);
+                syncComplete.Should().Be(false);
             }
 
             /*
@@ -1884,7 +1882,7 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (change.Current == ConnectionState.Connected)
                             {
-                                await Task.Delay(500);
+                                await channel.WaitForAttachedState();
                                 p1 = await channel.Presence.GetAsync();
                                 done();
                             }
