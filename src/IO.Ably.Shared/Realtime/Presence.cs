@@ -647,7 +647,7 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data, item.Id);
+                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data);
                     UpdatePresence(itemToSend, (success, info) =>
                     {
                         if (!success)

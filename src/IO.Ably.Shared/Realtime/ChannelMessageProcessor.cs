@@ -77,6 +77,7 @@ namespace IO.Ably.Realtime
                     }
                     else
                     {
+                        channel.Presence.ChannelAttached(protocolMessage);
                         channel.SetChannelState(ChannelState.Attached, protocolMessage);
                     }
 
