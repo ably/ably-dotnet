@@ -145,7 +145,7 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    _beforeSyncMembers = new HashSet<string>(_members.Keys);
+                    _beforeSyncMembers = new HashSet<string>(_members.Keys); // RTP19
                     SyncInProgress = true;
                     SyncCompleted = false;
                 }
@@ -179,10 +179,9 @@ namespace IO.Ably.Realtime
 
                 lock (_lock)
                 {
+                    // RTP19
                     if (_beforeSyncMembers != null)
                     {
-                        // Any members that were present at the start of the sync,
-                        // and have not been seen in sync, can be removed
                         foreach (var member in _beforeSyncMembers)
                         {
                             if (_members.TryRemove(member, out PresenceMessage pm))
@@ -237,7 +236,7 @@ namespace IO.Ably.Realtime
         }
     }
 
-    // RTP17h
+    // RTP17
     internal class InternalPresenceMap : PresenceMap
     {
         public InternalPresenceMap(string channelName, ILogger logger)
@@ -245,6 +244,7 @@ namespace IO.Ably.Realtime
         {
         }
 
+        // RTP17h
         internal override string GetKey(PresenceMessage presence)
         {
             return presence.ClientId;
