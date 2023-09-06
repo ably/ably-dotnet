@@ -32,7 +32,7 @@ namespace IO.Ably.Realtime
         // Exposed internally to allow for testing.
         internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
 
-        public bool IsSyncInProgress
+        public bool SyncInProgress
         {
             get
             {
@@ -89,6 +89,7 @@ namespace IO.Ably.Realtime
 
             try
             {
+                // RTP2a, RTP2b
                 if (_members.TryGetValue(GetKey(item), out var existingItem) && existingItem.IsNewerThan(item))
                 {
                     return false;
@@ -117,6 +118,8 @@ namespace IO.Ably.Realtime
         public bool Remove(PresenceMessage item)
         {
             PresenceMessage existingItem;
+
+            // RTP2a, RTP2b
             if (_members.TryGetValue(GetKey(item), out existingItem) && existingItem.IsNewerThan(item))
             {
                 return false;
@@ -135,15 +138,16 @@ namespace IO.Ably.Realtime
         {
             if (_logger.IsDebug)
             {
-                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {SyncInProgress}");
             }
 
-            if (!IsSyncInProgress)
+            if (!SyncInProgress)
             {
                 lock (_lock)
                 {
                     _beforeSyncMembers = new HashSet<string>(_members.Keys);
-                    IsSyncInProgress = true;
+                    SyncInProgress = true;
+                    SyncCompleted = false;
                 }
             }
         }
@@ -152,20 +156,19 @@ namespace IO.Ably.Realtime
         {
             if (_logger.IsDebug)
             {
-                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {SyncInProgress}");
             }
 
             List<PresenceMessage> removed = new List<PresenceMessage>();
             try
             {
-                if (!IsSyncInProgress)
+                if (!SyncInProgress)
                 {
                     SyncCompleted = true;
                     return removed.ToArray();
                 }
 
-                // We can now strip out the ABSENT members, as we have
-                // received all of the out-of-order sync messages
+                // RTP2f
                 foreach (var member in _members.ToArray())
                 {
                     if (member.Value.Action == PresenceAction.Absent)
@@ -202,7 +205,7 @@ namespace IO.Ably.Realtime
                 lock (_lock)
                 {
                     SyncCompleted = true;
-                    IsSyncInProgress = false;
+                    SyncInProgress = false;
                 }
             }
 
@@ -225,7 +228,7 @@ namespace IO.Ably.Realtime
             var state = new JObject
             {
                 ["channelName"] = _channelName,
-                ["syncInProgress"] = IsSyncInProgress,
+                ["syncInProgress"] = SyncInProgress,
                 ["syncCompleted"] = SyncCompleted,
                 ["members"] = new JArray(matchingMembers),
             };

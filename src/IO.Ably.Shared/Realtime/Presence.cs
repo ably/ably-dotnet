@@ -34,19 +34,19 @@ namespace IO.Ably.Realtime
             _clientId = clientId;
         }
 
-        internal event EventHandler SyncCompleted;
+        internal event EventHandler SyncCompletedEvHandler;
 
         internal ILogger Logger { get; private set; }
 
         /// <summary>
         /// Has the sync completed.
         /// </summary>
-        public bool SyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
+        public bool IsSyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
         /// </summary>
-        public bool IsSyncInProgress => MembersMap.IsSyncInProgress;
+        public bool IsSyncInProgress => MembersMap.SyncInProgress;
 
         /// <summary>
         /// Indicates all members present on the channel.
@@ -65,7 +65,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         internal void RemoveAllListeners()
         {
-            SyncCompleted = null;
+            SyncCompletedEvHandler = null;
             _handlers.RemoveAll();
         }
 
@@ -153,7 +153,7 @@ namespace IO.Ably.Realtime
             // The InternalSync should be completed and the channels Attached or Attaching
             void CheckAndSet()
             {
-                if (SyncComplete
+                if (IsSyncComplete
                     && (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
                 {
                     tsc.TrySetResult(true);
@@ -172,7 +172,7 @@ namespace IO.Ably.Realtime
             void OnSyncEvent(object sender, EventArgs args) => CheckAndSet();
 
             _channel.StateChanged += OnChannelStateChanged;
-            SyncCompleted += OnSyncEvent;
+            SyncCompletedEvHandler += OnSyncEvent;
 
             // Do a manual check in case we are already in the desired state
             CheckAndSet();
@@ -180,7 +180,7 @@ namespace IO.Ably.Realtime
 
             // unsubscribe from events
             _channel.StateChanged -= OnChannelStateChanged;
-            SyncCompleted -= OnSyncEvent;
+            SyncCompletedEvHandler -= OnSyncEvent;
 
             if (!syncIsComplete)
             {
@@ -530,7 +530,7 @@ namespace IO.Ably.Realtime
                 /* If a new sequence identifier is sent from Ably, then the client library
                  * must consider that to be the start of a new sync sequence
                  * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                if (MembersMap.IsSyncInProgress && _currentSyncChannelSerial.IsNotEmpty() && _currentSyncChannelSerial != syncSequenceId)
+                if (IsSyncInProgress && _currentSyncChannelSerial.IsNotEmpty() && _currentSyncChannelSerial != syncSequenceId)
                 {
                     EndSync();
                 }
@@ -565,6 +565,7 @@ namespace IO.Ably.Realtime
                         var broadcast = true;
                         switch (message.Action)
                         {
+                            // RTP2d
                             case PresenceAction.Enter:
                             case PresenceAction.Update:
                             case PresenceAction.Present:
@@ -575,6 +576,8 @@ namespace IO.Ably.Realtime
                                 }
 
                                 break;
+
+                            // RTP2e
                             case PresenceAction.Leave:
                                 broadcast &= MembersMap.Remove(message);
                                 if (updateInternalPresence && !message.IsSynthesized())
@@ -585,6 +588,7 @@ namespace IO.Ably.Realtime
                                 break;
                         }
 
+                        // RTP2g
                         if (broadcast)
                         {
                             Publish(message);
@@ -834,7 +838,7 @@ namespace IO.Ably.Realtime
 
         private void NotifySyncCompleted()
         {
-            SyncCompleted?.Invoke(this, EventArgs.Empty);
+            SyncCompletedEvHandler?.Invoke(this, EventArgs.Empty);
         }
 
         internal JToken GetState() => new JObject

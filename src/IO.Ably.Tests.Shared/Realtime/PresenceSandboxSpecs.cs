@@ -82,7 +82,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForAttachedState();
                 channel.State.Should().Be(ChannelState.Attached);
 
-                channel.Presence.SyncComplete.Should().BeTrue();
+                channel.Presence.IsSyncComplete.Should().BeTrue();
             }
 
             [Theory]
@@ -109,9 +109,9 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (args.Current == ChannelState.Attached)
                     {
-                        Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.IsSyncInProgress);
+                        Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.SyncInProgress);
                         syncInProgress = channel2.Presence.IsSyncInProgress;
-                        syncComplete = channel2.Presence.SyncComplete;
+                        syncComplete = channel2.Presence.IsSyncComplete;
                         awaiter.SetCompleted();
                     }
                 };
@@ -661,7 +661,7 @@ namespace IO.Ably.Tests.Realtime
 
                 // sync should not be in progress and initial an sync should have completed
                 channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
-                channel.Presence.SyncComplete.Should().BeTrue();
+                channel.Presence.IsSyncComplete.Should().BeTrue();
 
                 // pull a random member key from the presence map
                 var memberNumber = new Random().Next(0, 19);
@@ -1424,19 +1424,19 @@ namespace IO.Ably.Tests.Realtime
 
                         presence2.Subscribe(PresenceAction.Enter, msg =>
                         {
-                            presence2.MembersMap.Members.Should().HaveCount(presence2.SyncComplete ? 2 : 1);
+                            presence2.MembersMap.Members.Should().HaveCount(presence2.IsSyncComplete ? 2 : 1);
                             presence2.Unsubscribe();
                             partialDone();
                         });
 
                         presence2.PendingPresenceQueue.Should().HaveCount(1);
-                        presence2.SyncComplete.Should().BeFalse();
+                        presence2.IsSyncComplete.Should().BeFalse();
                         presence2.MembersMap.Members.Should().HaveCount(0);
                         taskCountWaiter.Tick();
                     });
 
                     var transport = client2.GetTestTransport();
-                    await new ConditionalAwaiter(() => presence2.SyncComplete);
+                    await new ConditionalAwaiter(() => presence2.IsSyncComplete);
                     transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).
                         Should().BeTrue("Should receive sync message");
                     presence2.MembersMap.Members.Should().HaveCount(2);

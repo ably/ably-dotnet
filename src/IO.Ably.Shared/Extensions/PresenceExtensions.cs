@@ -7,6 +7,7 @@
             return msg.Id == null || !msg.Id.StartsWith(msg.ConnectionId);
         }
 
+        // RTP2b, RTP2c
         public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
         {
             // RTP2b1
