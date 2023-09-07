@@ -599,8 +599,8 @@ namespace IO.Ably.Realtime.Workflow
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            var resumeOrRecoverSuccess = State.Connection.IsResumed(info) && cmd.Message.Error == null;
-            var isResumedOrRecoveredConnection = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty(); // recover will only be used during init, resume will be used for all subsequent requests
+            var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty(); // recover will only be used during init, resume will be used for all subsequent requests
+            var resumeOrRecoverSuccess = State.Connection.IsResumed(info) && cmd.Message.Error == null; // RTN15c6
 
             State.Connection.Update(info);
 
@@ -620,13 +620,13 @@ namespace IO.Ably.Realtime.Workflow
             Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
 
             // RTN15c7
-            if (isResumedOrRecoveredConnection && !resumeOrRecoverSuccess)
+            if (isConnectionResumeOrRecoverAttempt && !resumeOrRecoverSuccess)
             {
                 State.Connection.MessageSerial = 0;
             }
 
             // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
-            if (State.Connection.HasConnectionStateTtlPassed(Now) || isResumedOrRecoveredConnection)
+            if (State.Connection.HasConnectionStateTtlPassed(Now) || isConnectionResumeOrRecoverAttempt)
             {
                 foreach (var channel in Channels)
                 {
