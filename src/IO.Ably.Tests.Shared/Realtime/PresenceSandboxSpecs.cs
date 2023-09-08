@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using IO.Ably.Realtime;
@@ -423,7 +422,7 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP17f")]
-            public async Task OnResumedAttach_ShouldReEnterMembersFromInternalMap(Protocol protocol)
+            public async Task OnAttach_ShouldEnterMembersFromInternalMap(Protocol protocol)
             {
                 var channelName = "RTP17c2".AddRandomSuffix();
                 var setupClient = await GetRealtimeClient(protocol);
@@ -536,7 +535,6 @@ namespace IO.Ably.Tests.Realtime
                 channelB.State.Should().Be(ChannelState.Attaching);
                 await channelB.WaitForAttachedState();
                 channelB.State.Should().Be(ChannelState.Attached);
-
                 // ENTER
                 PresenceMessage msgA = null, msgB = null;
                 await WaitForMultiple(2, partialDone =>
@@ -544,12 +542,14 @@ namespace IO.Ably.Tests.Realtime
                     channelA.Presence.Subscribe(msg =>
                     {
                         msgA = msg;
+                        channelA.Presence.Unsubscribe();
                         partialDone();
                     });
 
                     channelB.Presence.Subscribe(msg =>
                     {
                         msgB = msg;
+                        channelB.Presence.Unsubscribe();
                         partialDone();
                     });
 
