@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.IO;
+using FluentAssertions;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,14 +20,12 @@ namespace IO.Ably.Tests.Shared.Realtime.ConnectionSpecs
                 transport => transport.OnConnectChangeStateToConnected = false;
             var client = GetClientWithFakeTransport(options => { options.Recover = recoveryKey; });
 
-            await Task.Delay(9000);
-            client.Connection.MessageSerial.Should().Be(45);
-
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
             paramsDict["recover"].Should().Be("uniqueKey");
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
+            client.Connection.MessageSerial.Should().Be(45);
         }
 
         public ConnectionSpecs(ITestOutputHelper output)

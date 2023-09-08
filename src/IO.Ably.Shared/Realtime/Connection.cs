@@ -209,7 +209,7 @@ namespace IO.Ably.Realtime
         ///     message and, in the failed state in particular, provides diagnostic
         ///     error information.
         /// </summary>
-        public ErrorInfo ErrorReason => InnerState.ErrorReason;
+        public ErrorInfo ErrorReason => InnerState.ErrorReason; // RTN15c7
 
         /// <summary>
         /// Gets the currently used Host.

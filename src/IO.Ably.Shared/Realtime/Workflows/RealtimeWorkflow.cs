@@ -599,10 +599,12 @@ namespace IO.Ably.Realtime.Workflow
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty(); // recover will only be used during init, resume will be used for all subsequent requests
-            var resumeOrRecoverSuccess = State.Connection.IsResumed(info) && cmd.Message.Error == null; // RTN15c6
+            // recover is used when set via clientOptions#recover initially, resume will be used for all subsequent requests.
+            var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty();
 
-            State.Connection.Update(info);
+            var resumeOrRecoverSuccess = State.Connection.Id == info.ConnectionId && cmd.Message.Error == null; // RTN15c6, RTN16d
+
+            State.Connection.Update(info); // RTN16d, RTN15e
 
             if (info.ClientId.IsNotEmpty())
             {
@@ -615,7 +617,7 @@ namespace IO.Ably.Realtime.Workflow
                 cmd.IsUpdate,
                 Logger);
 
-            SetState(connectedState);
+            SetState(connectedState); // RTN15c7 - if error, set on connection and part of emitted connected event
 
             Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
 

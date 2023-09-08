@@ -87,10 +87,6 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
 
-            // RTN16d
-            public bool IsResumed(ConnectionInfo info) =>
-                Key.IsNotEmpty() && Id == info.ConnectionId;
-
             public void ClearKeyAndId()
             {
                 Id = string.Empty;
