@@ -25,6 +25,7 @@ namespace IO.Ably.Tests.Shared.Realtime.ConnectionSpecs
             paramsDict.ContainsKey("recover").Should().BeTrue();
             paramsDict["recover"].Should().Be("uniqueKey");
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
+            await Task.Delay(2000);
             client.Connection.MessageSerial.Should().Be(45);
         }
 
