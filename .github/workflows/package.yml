@@ -73,7 +73,7 @@ jobs:
           with:
             dotnet-version: |
               2.x.x
-              6.x.x
+              6.0.407
 
         # Checkout unity packager
         - name: Checkout unity-packager repo
