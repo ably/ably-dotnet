@@ -1,4 +1,3 @@
-MSBuild.StructuredLogger
 Microsoft.Build
 Microsoft.Build.Tasks.Core
 Fake.Core.Target

@@ -18,8 +18,8 @@ jobs:
         with:
           dotnet-version: |
             3.1.x
-            6.0.x
-            7.0.x
+            6.0.407
+            7.0.202
       - name: Download fake-cli
         run:  dotnet tool restore
       - name: Package
@@ -45,8 +45,8 @@ jobs:
         with:
           dotnet-version: |
             3.1.x
-            6.0.x
-            7.0.x
+            6.0.407
+            7.0.202
       - name: Download fake-cli
         run:  dotnet tool install fake-cli --version 5.20.4 --tool-path .
       - name: Restore packages
@@ -73,7 +73,7 @@ jobs:
           with:
             dotnet-version: |
               2.x.x
-              6.0.x
+              6.0.407
 
         # Checkout unity packager
         - name: Checkout unity-packager repo
