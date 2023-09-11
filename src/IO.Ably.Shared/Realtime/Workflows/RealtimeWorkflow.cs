@@ -602,7 +602,7 @@ namespace IO.Ably.Realtime.Workflow
             // recover is used when set via clientOptions#recover initially, resume will be used for all subsequent requests.
             var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty();
 
-            var resumeOrRecoverError = State.Connection.Id != info.ConnectionId && cmd.Message.Error != null; // RTN15c7, RTN16d
+            var failedResumeOrRecover = State.Connection.Id != info.ConnectionId && cmd.Message.Error != null; // RTN15c7, RTN16d
 
             State.Connection.Update(info); // RTN16d, RTN15e
 
@@ -622,7 +622,7 @@ namespace IO.Ably.Realtime.Workflow
             Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
 
             // RTN15c7
-            if (isConnectionResumeOrRecoverAttempt && resumeOrRecoverError)
+            if (isConnectionResumeOrRecoverAttempt && failedResumeOrRecover)
             {
                 State.Connection.MessageSerial = 0;
             }
@@ -639,7 +639,7 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
 
-            SendPendingMessages(); // RTN19a
+            SendPendingMessagesOnConnected(failedResumeOrRecover); // RTN19a
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)
@@ -801,6 +801,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         SetState(disconnectedState, skipTimer: cmd.SkipAttach);
 
+                        // RTN7d
                         if (Client.Options.QueueMessages == false)
                         {
                             var failAckMessages = new ErrorInfo(
@@ -965,12 +966,26 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private void SendPendingMessages()
+        private void SendPendingMessagesOnConnected(bool failedResumeOrRecover)
         {
-            // RTN19a - Resend any messages waiting an Ack Queue
-            foreach (var message in State.WaitingForAck.Select(x => x.Message))
+            // RTN19a1
+            if (failedResumeOrRecover)
             {
-                ConnectionManager.SendToTransport(message);
+                foreach (var messageAndCallback in State.WaitingForAck)
+                {
+                    State.PendingMessages.Add(new MessageAndCallback(
+                        messageAndCallback.Message,
+                        messageAndCallback.Callback,
+                        messageAndCallback.Logger));
+                }
+            }
+            else
+            {
+                // RTN19a2 - successful resume, msgSerial doesn't change
+                foreach (var message in State.WaitingForAck.Select(x => x.Message))
+                {
+                    ConnectionManager.SendToTransport(message);
+                }
             }
 
             if (Logger.IsDebug && State.PendingMessages.Count > 0)
