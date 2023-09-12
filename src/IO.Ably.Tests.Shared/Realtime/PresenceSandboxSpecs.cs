@@ -309,10 +309,10 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            [Theory(Skip = "Intermittently fails, also need to update the test as per spec")]
+            [Theory(Skip = "Fails for last assertion, rest channel not retrieving updated presence")]
             [InlineData(Protocol.Json, 30)] // Wait for 30 seconds
             [InlineData(Protocol.Json, 60)] // Wait for 1 minute
-            [Trait("spec", "RTP17e")]
+            [Trait("spec", "RTP17f")]
             public async Task Presence_ShouldReenterPresenceAfterAConnectionLoss(Protocol protocol, int waitInSeconds)
             {
                 var channelName = "RTP17e".AddRandomSuffix();
@@ -338,47 +338,53 @@ namespace IO.Ably.Tests.Realtime
                     IRealtimeClient rt,
                     IRestClient rest)
                 {
-                    var rtChannel = rt.Channels.Get(channelName);
+                    var realtimeChan = rt.Channels.Get(channelName);
 
-                    var rChannel = rest.Channels.Get(channelName);
+                    var restChan = rest.Channels.Get(channelName);
 
-                    await rtChannel.Presence.EnterAsync();
-                    await rtChannel.WaitForAttachedState();
-                    _ = await rtChannel.Presence.WaitSync();
+                    await realtimeChan.Presence.EnterAsync();
+                    await realtimeChan.WaitForAttachedState();
+                    _ = await realtimeChan.Presence.WaitSync();
 
-                    return (rtChannel, rChannel);
+                    return (realtimeChan, restChan);
                 }
 
-                async Task<bool> HasRestPresence(IRestChannel rChannel)
-                {
-                    var result = await rChannel.Presence.GetAsync();
-                    return result.Items.Exists(message =>
-                        message.ClientId.EqualsTo("martin"));
-                }
-
-                Task Sleep(int seconds) => Task.Delay(seconds * 1000);
-
-                async Task WaitForNoPresenceOnChannel(IRestChannel rChannel)
+                async Task<bool> WaitForRestPresence(IRestChannel restChan, bool shouldBePresent = true)
                 {
                     int count = 0;
                     while (true)
                     {
-                        bool hasPresence = await HasRestPresence(rChannel);
+                        var result = await restChan.Presence.GetAsync();
+                        var hasPresence = result.Items.Exists(message =>
+                                message.ClientId.EqualsTo("martin"));
+                        if (shouldBePresent && hasPresence)
+                        {
+                            break;
+                        }
+
+                        if (!shouldBePresent && !hasPresence)
+                        {
+                            break;
+                        }
 
                         if (count > 30)
                         {
-                            throw new AssertionFailedException("After 1 minute of trying we still have presence. Not good.");
-                        }
-
-                        if (hasPresence == false)
-                        {
-                            break;
+                            return false;
                         }
 
                         await Sleep(2);
 
                         count++;
                     }
+
+                    return true;
+                }
+
+                Task Sleep(int seconds) => Task.Delay(seconds * 1000);
+
+                async Task<bool> WaitForNoPresenceOnChannel(IRestChannel rChannel)
+                {
+                    return await WaitForRestPresence(rChannel, false);
                 }
 
                 // arrange
@@ -389,7 +395,7 @@ namespace IO.Ably.Tests.Realtime
                 try
                 {
                     // act
-                    (await HasRestPresence(restChannel)).Should().BeTrue();
+                    (await WaitForRestPresence(restChannel)).Should().BeTrue();
 
                     // Kill the transport but don't tell the library
                     testTransport.Close();
@@ -404,13 +410,10 @@ namespace IO.Ably.Tests.Realtime
                     await realtimeClient.WaitForState(ConnectionState.Disconnected);
                     await realtimeClient.WaitForState(ConnectionState.Connected);
                     await realtimeChannel.WaitForAttachedState();
-                    _ = await realtimeChannel.Presence.WaitSync();
+                    var messages = await realtimeChannel.Presence.GetAsync();
+                    messages.Count().Should().Be(1);
 
-                    // Wait for a second because the Rest call returns [] if done straight away
-                    await Sleep(1);
-
-                    // assert
-                    (await HasRestPresence(restChannel)).Should().BeTrue();
+                    (await WaitForRestPresence(restChannel)).Should().BeTrue();
                 }
                 finally
                 {
