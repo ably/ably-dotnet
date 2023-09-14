@@ -664,7 +664,7 @@ namespace IO.Ably.Tests.Realtime
             attachedChannels.Should().HaveCount(channelCount);
         }
 
-        [Theory(Skip = "Keeps failing")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c4")]
         public async Task ResumeRequest_WithFatalErrorInConnection_ClientAndChannelsShouldBecomeFailed(Protocol protocol)
@@ -673,9 +673,11 @@ namespace IO.Ably.Tests.Realtime
             {
                 options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
             });
+            await client.WaitForState(ConnectionState.Connected);
+
             var channel = (RealtimeChannel)client.Channels.Get("RTN15c4".AddRandomSuffix());
             channel.Attach();
-            await client.WaitForState(ConnectionState.Connected);
+            await channel.WaitForAttachedState();
 
             client.GetTestTransport().Close(false);
             await client.WaitForState(ConnectionState.Disconnected);
@@ -693,27 +695,29 @@ namespace IO.Ably.Tests.Realtime
                 });
             });
 
-            ConnectionStateChange stateChange = null;
+            ConnectionStateChange failedStateChange = null;
             await WaitFor(done =>
             {
                 client.Connection.Once(ConnectionEvent.Failed, change =>
                 {
-                    stateChange = change;
+                    failedStateChange = change;
                     done();
                 });
             });
 
-            stateChange.Reason.Code.Should().Be(errInfo.Code);
-            stateChange.Reason.Message.Should().Be(errInfo.Message);
+            failedStateChange.Previous.Should().Be(ConnectionState.Connecting);
+            failedStateChange.Current.Should().Be(ConnectionState.Failed);
+            failedStateChange.Reason.Code.Should().Be(errInfo.Code);
+            failedStateChange.Reason.Message.Should().Be(errInfo.Message);
+
+            client.Connection.ErrorReason.Code.Should().Be(errInfo.Code);
+            client.Connection.ErrorReason.Message.Should().Be(errInfo.Message);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
 
             await channel.WaitForState(ChannelState.Failed);
             channel.State.Should().Be(ChannelState.Failed);
             channel.ErrorReason.Code.Should().Be(errInfo.Code);
             channel.ErrorReason.Message.Should().Be(errInfo.Message);
-
-            client.Connection.ErrorReason.Code.Should().Be(errInfo.Code);
-            client.Connection.ErrorReason.Message.Should().Be(errInfo.Message);
-            client.Connection.State.Should().Be(ConnectionState.Failed);
 
             client.Close();
         }
