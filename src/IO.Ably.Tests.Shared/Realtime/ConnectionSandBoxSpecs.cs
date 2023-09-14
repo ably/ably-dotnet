@@ -572,10 +572,10 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c7")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError(Protocol protocol)
+        public async Task ResumeRequest_ConnectedProtocolMessageWithResumeFailedShouldEmitErrorOnConnection(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c3".AddRandomSuffix());
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c7".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             channel.Attach();
             await channel.WaitForAttachedState();
@@ -598,7 +598,7 @@ namespace IO.Ably.Tests.Realtime
 
             stateChange.Should().NotBeNull();
             stateChange.HasError.Should().BeTrue();
-            stateChange.Reason.Code.Should().Be(80018);
+            stateChange.Reason.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
             stateChange.Reason.Should().Be(client.Connection.ErrorReason);
 
             var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived.FirstOrDefault(x => x.Action == ProtocolMessage.MessageAction.Connected);
@@ -610,6 +610,58 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Id.Should().NotBe(oldConnectionId);
             client.Connection.Key.Should().NotBe(oldKey);
             client.Connection.MessageSerial.Should().Be(0);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c6")]
+        [Trait("spec", "RTN15c7")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_AttachedAllChannels(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channelName = "RTN15c3".AddRandomSuffix();
+            const int channelCount = 5;
+            await client.WaitForState(ConnectionState.Connected);
+
+            var channels = new List<RealtimeChannel>();
+            for (var i = 0; i < channelCount; i++)
+            {
+                channels.Add(client.Channels.Get($"{channelName}_{i}") as RealtimeChannel);
+            }
+
+            List<RealtimeChannel> attachedChannels = new List<RealtimeChannel>();
+
+            await WaitForMultiple(channelCount, partialDone =>
+            {
+                foreach (var channel in channels)
+                {
+                    channel.Attach();
+                    channel.Once(ChannelEvent.Attached, _ =>
+                    {
+                        partialDone();
+                    });
+                }
+            });
+
+            client.SimulateLostConnectionAndState();
+            await client.WaitForState(ConnectionState.Connected);
+
+            await WaitForMultiple(channelCount, partialDone =>
+            {
+                foreach (var channel in channels)
+                {
+                    channel.Once(ChannelEvent.Attaching, _ =>
+                    {
+                        channel.Once(ChannelEvent.Attached, _ =>
+                        {
+                            attachedChannels.Add(channel);
+                            partialDone();
+                        });
+                    });
+                }
+            });
+
+            attachedChannels.Should().HaveCount(channelCount);
         }
 
         [Theory(Skip = "Keeps failing")]
@@ -1005,9 +1057,9 @@ namespace IO.Ably.Tests.Realtime
             var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
             err.Should().NotBeNull();
-            err.Code.Should().Be(80018);
+            err.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
             client.Connection.MessageSerial.Should().Be(0);
-            client.Connection.ErrorReason.Code.Should().Be(80018);
+            client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
         }
 
         [Theory]
@@ -1036,8 +1088,8 @@ namespace IO.Ably.Tests.Realtime
             var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
             err.Should().NotBeNull();
-            err.Code.Should().Be(80018);
-            client.Connection.ErrorReason.Code.Should().Be(80018);
+            err.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
+            client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
             client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
