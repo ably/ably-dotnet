@@ -378,14 +378,14 @@ namespace IO.Ably.Realtime.Workflow
             Error = error;
         }
 
-        public static RealtimeCommand Create(ErrorInfo error)
+        public static RealtimeCommand Create(ErrorInfo error, ILogger logger)
         {
             if (error == null || error.IsTokenError == false)
             {
 #if DEBUG
                 throw new ArgumentException("Cannot create a TokenError command with an error that is not a token error.");
 #else
-                DefaultLogger.Warning("Cannot create a TokenError command with an error that is not a token error");
+                logger.Warning("Cannot create a TokenError command with an error that is not a token error");
 
                 // TODO: Sentry alert
                 return EmptyCommand.Instance;

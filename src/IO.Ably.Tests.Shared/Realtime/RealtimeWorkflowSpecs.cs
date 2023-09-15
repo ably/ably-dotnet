@@ -180,7 +180,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             {
                 var client = GetDisconnectedClient();
 
-                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null));
+                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null, client.Logger));
 
                 client.ExecuteCommand(SetSuspendedStateCommand.Create(null));
 
@@ -267,7 +267,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             {
                 var client = GetDisconnectedClient();
 
-                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null));
+                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null, client.Logger));
 
                 client.ExecuteCommand(SetClosedStateCommand.Create());
 
@@ -307,7 +307,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             {
                 var client = GetDisconnectedClient();
 
-                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null));
+                client.State.WaitingForAck.Add(new MessageAndCallback(new ProtocolMessage(), null, client.Logger));
 
                 client.ExecuteCommand(SetClosedStateCommand.Create());
 

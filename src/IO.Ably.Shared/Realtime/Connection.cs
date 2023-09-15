@@ -45,16 +45,9 @@ namespace IO.Ably.Realtime
         /// the network state.
         /// </summary>
         /// <param name="state">The current state of the OS network connection.</param>
-        public static void NotifyOperatingSystemNetworkState(NetworkState state) =>
-            NotifyOperatingSystemNetworkState(state, null);
-
+        /// <param name="logger">Logger provided by the realtime client.</param>
         internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
-            if (logger == null)
-            {
-                logger = DefaultLogger.LoggerInstance;
-            }
-
             if (logger.IsDebug)
             {
                 logger.Debug("OS Network connection state: " + state);
@@ -119,8 +112,8 @@ namespace IO.Ably.Realtime
                  || State == Realtime.ConnectionState.Disconnected)
                 && RealtimeClient.Options.QueueMessages);
 
-        internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null)
-            : base(logger)
+        internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc)
+            : base(realtimeClient.Logger)
         {
             Now = nowFunc;
             RealtimeClient = realtimeClient;

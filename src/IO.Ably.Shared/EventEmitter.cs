@@ -109,7 +109,7 @@ namespace IO.Ably
     {
         internal EventEmitter(ILogger logger)
         {
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            Logger = logger;
         }
 
         internal ILogger Logger { get; set; }

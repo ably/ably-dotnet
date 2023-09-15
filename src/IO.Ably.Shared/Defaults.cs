@@ -48,7 +48,7 @@ namespace IO.Ably
         public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(120); // https://sdk.ably.com/builds/ably/specification/main/features/#DF1a
         public static readonly TimeSpan FallbackRetryTimeout = TimeSpan.FromMinutes(10); // https://sdk.ably.com/builds/ably/specification/main/features/#TO3l10
 
-        public static readonly ITransportFactory WebSocketTransportFactory = IoC.TransportFactory;
+        public static readonly ITransportFactory WebSocketTransportFactory = new MsWebSocketTransport.TransportFactory();
 
         internal const int TokenErrorCodesRangeStart = 40140;
         internal const int TokenErrorCodesRangeEnd = 40149;

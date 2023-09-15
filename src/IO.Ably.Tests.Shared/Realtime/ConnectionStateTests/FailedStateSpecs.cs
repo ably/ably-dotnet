@@ -74,7 +74,7 @@ namespace IO.Ably.Tests
 
         private ConnectionFailedState GetState(ErrorInfo info = null)
         {
-            return new ConnectionFailedState(_context, info, Logger);
+            return new ConnectionFailedState(_context, info);
         }
     }
 }

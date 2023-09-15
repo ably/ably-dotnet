@@ -1,5 +1,6 @@
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 
 namespace IO.Ably.Tests.MessageEncodes
@@ -20,7 +21,7 @@ namespace IO.Ably.Tests.MessageEncodes
         private IPayload DecodePayload(object data, string encoding = "")
         {
             var payload = new Message { Data = data, Encoding = encoding };
-            return _encoder.Decode(payload, new DecodingContext()).Value;
+            return _encoder.Decode(payload, new DecodingContext(DefaultLogger.LoggerInstance)).Value;
         }
 
         public class Decode : Utf8EncoderTests

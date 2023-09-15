@@ -7,13 +7,13 @@ namespace IO.Ably.Transport.States.Connection
     {
         public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonClosed;
 
-        public ConnectionClosedState(IConnectionContext context, ILogger logger)
-            : this(context, null, logger)
+        public ConnectionClosedState(IConnectionContext context)
+            : this(context, null)
         {
         }
 
-        public ConnectionClosedState(IConnectionContext context, ErrorInfo error, ILogger logger)
-            : base(context, logger)
+        public ConnectionClosedState(IConnectionContext context, ErrorInfo error)
+            : base(context)
         {
             Error = error ?? ErrorInfo.ReasonClosed;
         }

@@ -1,27 +1,24 @@
-﻿using IO.Ably.Transport;
-using System.Net.NetworkInformation;
-using IO.Ably.Push;
+﻿using System.Net.NetworkInformation;
 using IO.Ably.Realtime;
 
 namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
-        private static readonly object _lock = new object();
-
-        internal static bool HookedUpToNetworkEvents { get; private set; }
         public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.XamarinIos;
-        public ITransportFactory TransportFactory => null;
-        public IMobileDevice MobileDevice { get; set; }
 
-        public void RegisterOsNetworkStateChanged()
+        private static readonly object Lock = new object();
+
+        internal static bool HookedUpToNetworkEvents { get; set; }
+
+        public void RegisterOsNetworkStateChanged(ILogger logger)
         {
-            lock (_lock)
+            lock (Lock)
             {
                 if (HookedUpToNetworkEvents == false)
                 {
                     NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
-                        Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
+                        Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline, logger);
                 }
 
                 HookedUpToNetworkEvents = true;

@@ -87,7 +87,7 @@ namespace IO.Ably.Transport
         {
         }
 
-        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
+        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
         {
             var result = new TransportParams
             {
@@ -101,8 +101,8 @@ namespace IO.Ably.Transport
                 FallbackHosts = options.GetFallbackHosts(),
                 UseBinaryProtocol = options.UseBinaryProtocol,
                 RecoverValue = options.Recover,
-                Logger = logger ?? options.Logger,
-                AdditionalParameters = StringifyParameters(options.TransportParams),
+                Logger = auth.Logger,
+                AdditionalParameters = StringifyParameters(options.TransportParams, auth.Logger),
                 AuthMethod = auth.AuthMethod,
                 Agents = options.Agents
             };
@@ -124,7 +124,7 @@ namespace IO.Ably.Transport
 
             return result;
 
-            Dictionary<string, string> StringifyParameters(Dictionary<string, object> originalParams)
+            Dictionary<string, string> StringifyParameters(Dictionary<string, object> originalParams, ILogger logger)
             {
                 if (originalParams is null)
                 {
@@ -148,7 +148,7 @@ namespace IO.Ably.Transport
                             }
                             catch (Exception e)
                             {
-                                logger?.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
+                                logger.Error($"Error converting custom transport parameter '{key}'. Error: {e.Message}");
 
                                 return string.Empty;
                             }

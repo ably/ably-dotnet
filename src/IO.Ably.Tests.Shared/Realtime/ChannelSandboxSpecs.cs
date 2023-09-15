@@ -856,7 +856,7 @@ namespace IO.Ably.Tests.Realtime
                 // do nothing
             });
 
-            var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
+            var result = await new ChannelAwaiter(channel, ChannelState.Failed, client.Logger).WaitAsync();
             await Task.Delay(100);
             result.IsSuccess.Should().BeTrue();
 
@@ -1017,7 +1017,7 @@ namespace IO.Ably.Tests.Realtime
 
             await Task.WhenAll(task, task2);
 
-            var result = await new ChannelAwaiter(channel, ChannelState.Attached).WaitAsync();
+            var result = await new ChannelAwaiter(channel, ChannelState.Attached, client1.Logger).WaitAsync();
             result.IsSuccess.Should().BeTrue();
         }
 

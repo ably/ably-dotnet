@@ -10,17 +10,17 @@ namespace IO.Ably.Transport.States.Connection
         public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonSuspended;
 
         public ConnectionSuspendedState(IConnectionContext context, ILogger logger)
-            : this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
+            : this(context, null, new CountdownTimer("Suspended state timer", logger))
         {
         }
 
         public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ILogger logger)
-            : this(context, error, new CountdownTimer("Suspended state timer", logger), logger)
+            : this(context, error, new CountdownTimer("Suspended state timer", logger))
         {
         }
 
-        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
-            : base(context, logger)
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer)
+            : base(context)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonSuspended;

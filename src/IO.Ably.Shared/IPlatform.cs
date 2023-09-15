@@ -16,10 +16,6 @@ namespace IO.Ably
     {
         Agent.PlatformRuntime PlatformId { get; }
 
-        ITransportFactory TransportFactory { get; }
-
-        IMobileDevice MobileDevice { get; set; }
-
         /// <summary>
         /// This method when implemented in each Platform class includes logic to subscribe to
         /// NetworkStatus changes from the operating system. It is then exposed through
@@ -29,6 +25,7 @@ namespace IO.Ably
         /// The implementation will only allow one registration to operating system network state events even
         /// thought this method can be called multiple times.
         /// </summary>
-        void RegisterOsNetworkStateChanged();
+        /// <param name="logger">Logger provided by the realtime client.</param>
+        void RegisterOsNetworkStateChanged(ILogger logger);
     }
 }

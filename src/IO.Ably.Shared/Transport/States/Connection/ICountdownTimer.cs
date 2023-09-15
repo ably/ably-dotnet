@@ -35,7 +35,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public CountdownTimer(string name, ILogger logger)
         {
-            _logger = logger ?? DefaultLogger.LoggerInstance;
+            _logger = logger;
             _name = name;
             _lock = new object();
         }

@@ -12,13 +12,13 @@ namespace IO.Ably.Push.iOS
     {
         private const string TokenType = "apns";
 
-        private readonly ILogger _logger;
         private static AblyRealtime _realtimeInstance;
 
-        private AppleMobileDevice(PushCallbacks callbacks, ILogger logger)
+        private ILogger Logger { get; set; }
+
+        private AppleMobileDevice(PushCallbacks callbacks)
         {
             Callbacks = callbacks;
-            _logger = logger;
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace IO.Ably.Push.iOS
         /// <returns>Initialised Ably instance which supports push notification registrations.</returns>
         public static IRealtimeClient Initialise(ClientOptions ablyClientOptions, PushCallbacks callbacks = null)
         {
-            var mobileDevice = new AppleMobileDevice(callbacks, DefaultLogger.LoggerInstance);
-            IoC.MobileDevice = mobileDevice;
+            var mobileDevice = new AppleMobileDevice(callbacks);
             _realtimeInstance = new AblyRealtime(ablyClientOptions, mobileDevice);
+            mobileDevice.Logger = _realtimeInstance.Logger;
             _realtimeInstance.Push.InitialiseStateMachine();
             return _realtimeInstance;
         }
@@ -95,7 +95,7 @@ namespace IO.Ably.Push.iOS
         /// <inheritdoc/>
         public void SetPreference(string key, string value, string groupName)
         {
-            _logger.Debug($"Setting preferences: {groupName}:{key} with value {value}");
+            Logger.Debug($"Setting preferences: {groupName}:{key} with value {value}");
             Preferences.Set(key, value, groupName);
         }
 
@@ -108,14 +108,14 @@ namespace IO.Ably.Push.iOS
         /// <inheritdoc/>
         public void RemovePreference(string key, string groupName)
         {
-            _logger.Debug($"Removing preference: {groupName}:{key}");
+            Logger.Debug($"Removing preference: {groupName}:{key}");
             Preferences.Remove(key, groupName);
         }
 
         /// <inheritdoc/>
         public void ClearPreferences(string groupName)
         {
-            _logger.Debug($"Clearing preferences group: {groupName}");
+            Logger.Debug($"Clearing preferences group: {groupName}");
             Preferences.Clear(groupName);
         }
 
@@ -136,7 +136,7 @@ namespace IO.Ably.Push.iOS
                         }
                         else
                         {
-                            _logger.Error($"Error signing up for remote notifications: {error.LocalizedDescription}");
+                            Logger.Error($"Error signing up for remote notifications: {error.LocalizedDescription}");
                         }
                     });
             }

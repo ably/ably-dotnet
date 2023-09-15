@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 
 namespace IO.Ably.AcceptanceTests
@@ -56,10 +57,10 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Fact]
-        public void ClientOptionsWithNoLoggerSpecified_ShouldUseTheDefaultLogger()
+        public void ClientOptionsWithNoLoggerSpecified_ShouldUseTheInternalLogger()
         {
             var opts = new ClientOptions();
-            Assert.Same(opts.Logger, DefaultLogger.LoggerInstance);
+            Assert.IsType<InternalLogger>(opts.Logger);
         }
 
         [Fact]

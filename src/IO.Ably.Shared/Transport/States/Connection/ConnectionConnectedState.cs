@@ -10,9 +10,8 @@ namespace IO.Ably.Transport.States.Connection
         public ConnectionConnectedState(
                                         IConnectionContext context,
                                         ErrorInfo error = null,
-                                        bool isUpdate = false,
-                                        ILogger logger = null)
-                                        : base(context, logger)
+                                        bool isUpdate = false)
+                                        : base(context)
         {
             Error = error;
             IsUpdate = isUpdate;

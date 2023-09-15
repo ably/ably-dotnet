@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;
@@ -12,7 +13,7 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ConnectionAttemptsInfoSpecs : MockHttpRealtimeSpecs
     {
-        private readonly RealtimeState _state = new RealtimeState();
+        private readonly RealtimeState _state = new RealtimeState(null, DefaultLogger.LoggerInstance);
 
         private ConnectionAttemptsInfo Info => _state.AttemptsInfo;
 
@@ -46,7 +47,7 @@ namespace IO.Ably.Tests.Realtime
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
             var now = new Now();
-            var state = new RealtimeState(null, now.ValueFn);
+            var state = new RealtimeState(null, DefaultLogger.LoggerInstance, now.ValueFn);
 
             state.AttemptsInfo.Attempts.Add(new ConnectionAttempt(now.Value));
 

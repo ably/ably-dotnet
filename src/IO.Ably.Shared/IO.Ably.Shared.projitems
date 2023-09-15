@@ -18,7 +18,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageDataConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DefaultLoggerSink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChannelModeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IInternalLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILoggerSink.cs" />
@@ -111,7 +110,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCipher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRestClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DefaultLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\Base64Encoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\CipherEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\JsonEncoder.cs" />

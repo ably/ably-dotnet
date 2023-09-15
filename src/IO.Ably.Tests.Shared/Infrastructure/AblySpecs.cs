@@ -1,4 +1,5 @@
 using System;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests

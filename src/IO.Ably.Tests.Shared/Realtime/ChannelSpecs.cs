@@ -15,6 +15,7 @@ using IO.Ably.Types;
 
 using FluentAssertions;
 using FluentAssertions.Execution;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -486,7 +487,7 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient();
 
                 // Closed
-                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
+                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager));
                 var closedAttach = await client.Channels.Get("closed").AttachAsync();
                 AssertAttachResultIsFailure(closedAttach);
 
@@ -503,8 +504,7 @@ namespace IO.Ably.Tests.Realtime
                 // Failed
                 client.Workflow.SetState(new ConnectionFailedState(
                     client.ConnectionManager,
-                    ErrorInfo.ReasonFailed,
-                    Logger));
+                    ErrorInfo.ReasonFailed));
 
                 var failedAttach = await client.Channels.Get("failed").AttachAsync();
                 AssertAttachResultIsFailure(failedAttach);
@@ -534,7 +534,7 @@ namespace IO.Ably.Tests.Realtime
                 switch (state)
                 {
                     case ConnectionState.Closed:
-                        client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
+                        client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager));
                         break;
                     case ConnectionState.Closing:
                         client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
@@ -545,8 +545,7 @@ namespace IO.Ably.Tests.Realtime
                     case ConnectionState.Failed:
                         client.Workflow.SetState(new ConnectionFailedState(
                             client.ConnectionManager,
-                            ErrorInfo.ReasonFailed,
-                            Logger));
+                            ErrorInfo.ReasonFailed));
                         break;
                 }
 
@@ -1111,7 +1110,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
-                    channel.WaitForState(ChannelState.Attaching);
+                    await channel.WaitForState(ChannelState.Attaching);
                     await client.ProcessCommands();
 
                     var protocolMessage = LastCreatedTransport.LastMessageSend;
@@ -1130,7 +1129,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = await GetTestChannel(client, channelOptions);
                     channel.Attach();
 
-                    channel.WaitForState(ChannelState.Attaching);
+                    await channel.WaitForState(ChannelState.Attaching);
                     await client.ProcessCommands();
 
                     var protocolMessage = LastCreatedTransport.LastMessageSend;
@@ -1279,7 +1278,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
-                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(client.Logger), new[] { message });
 
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
@@ -1302,14 +1301,16 @@ namespace IO.Ably.Tests.Realtime
                 channel.Subscribe(msg => { receivedMessage = msg; });
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
-                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(), new[] { message });
+                MessageHandler.EncodePayloads(otherChannelOptions.ToDecodingContext(client.Logger), new[] { message });
 
                 var testSink = new TestLoggerSink();
-                using (DefaultLogger.SetTempDestination(testSink))
-                {
-                    client.FakeMessageReceived(message, channel.Name);
-                    await client.ProcessCommands();
-                }
+                var oldSink = client.Logger.LoggerSink;
+                client.Logger.LoggerSink = testSink;
+
+                client.FakeMessageReceived(message, channel.Name);
+                await client.ProcessCommands();
+
+                client.Logger.LoggerSink = oldSink;
 
                 receivedMessage.Encoding.Should().Be(message.Encoding);
                 testSink.Messages.Should().Contain(x => x.Contains("Error decrypting payload"));
@@ -1587,7 +1588,7 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient();
 
                 var channel = client.Channels.Get("history");
-                client.ProcessMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                await client.ProcessMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     Channel = "history",
                     ChannelSerial = "101"

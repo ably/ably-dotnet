@@ -42,7 +42,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
             Now = nowFunc;
-            Logger = logger ?? DefaultLogger.LoggerInstance;
+            Logger = logger;
             Connection = connection;
         }
 
@@ -220,7 +220,7 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            Result encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext());
+            Result encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToDecodingContext(Logger));
             if (encodingResult.IsFailure)
             {
                 Logger.Error($"Failed to encode protocol message: {encodingResult.Error.Message}");

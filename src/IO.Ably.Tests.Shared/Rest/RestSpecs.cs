@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using IO.Ably.AcceptanceTests;
 
 using FluentAssertions;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -354,9 +355,10 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3c")]
             public void WithLogHandler_ShouldUseNewLogHandler()
             {
-                _ = new AblyRest(new ClientOptions(ValidKey) { LogHandler = new TestLogHandler() });
+                var restClient = new AblyRest(new ClientOptions(ValidKey) { LogHandler = new TestLogHandler() });
 
-                Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
+                restClient.Logger.LoggerSink.Should().NotBeOfType<DefaultLoggerSink>();
+                restClient.Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
             }
 
             [Fact]

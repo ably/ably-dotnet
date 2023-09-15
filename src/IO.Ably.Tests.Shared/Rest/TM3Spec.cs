@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 using IO.Ably.Encryption;
+using IO.Ably.Tests.Shared.Extensions;
 using Xunit;
 
 namespace IO.Ably.Tests.Rest
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests.Rest
         public void Message_FromEncoded_WithNoEncoding()
         {
             var msg = new Message("name", "some-data");
-            var fromEncoded = Message.FromEncoded(msg);
+            var fromEncoded = MessageExtensions.FromEncoded(msg);
 
             fromEncoded.Name.Should().Be("name");
             fromEncoded.Data.Should().Be("some-data");
@@ -32,7 +33,7 @@ namespace IO.Ably.Tests.Rest
             };
 
             var msg = new Message("name", JsonHelper.Serialize(d)) { Encoding = "json" };
-            var fromEncoded = Message.FromEncoded(msg);
+            var fromEncoded = MessageExtensions.FromEncoded(msg);
 
             fromEncoded.Name.Should().Be("name");
             JsonHelper.Serialize(fromEncoded.Data).Should().Be(JsonHelper.Serialize(d));
@@ -50,7 +51,7 @@ namespace IO.Ably.Tests.Rest
             };
 
             var msg = new Message("name", JsonHelper.Serialize(d)) { Encoding = "foo/json" };
-            var fromEncoded = Message.FromEncoded(msg);
+            var fromEncoded = MessageExtensions.FromEncoded(msg);
 
             fromEncoded.Name.Should().Be("name");
             JsonHelper.Serialize(fromEncoded.Data).Should().Be(JsonHelper.Serialize(d));
@@ -67,7 +68,7 @@ namespace IO.Ably.Tests.Rest
             var payload = "payload".AddRandomSuffix();
 
             var msg = new Message("name", crypto.Encrypt(Encoding.UTF8.GetBytes(payload))) { Encoding = "utf-8/cipher+aes-128-cbc" };
-            var fromEncoded = Message.FromEncoded(msg, new ChannelOptions(cipherParams));
+            var fromEncoded = MessageExtensions.FromEncoded(msg, new ChannelOptions(cipherParams));
 
             fromEncoded.Name.Should().Be("name");
             fromEncoded.Data.Should().BeEquivalentTo(payload);
@@ -83,7 +84,7 @@ namespace IO.Ably.Tests.Rest
 
             var msg = new Message("name", Encoding.UTF8.GetBytes(payload)) { Encoding = "utf-8/cipher+aes-128-cbc" };
 
-            Assert.Throws<AblyException>(() => Message.FromEncoded(msg, new ChannelOptions(cipherParams)));
+            Assert.Throws<AblyException>(() => MessageExtensions.FromEncoded(msg, new ChannelOptions(cipherParams)));
         }
 
         [Fact]
@@ -96,7 +97,7 @@ namespace IO.Ably.Tests.Rest
                 new Message("name2", "some-data2")
             };
 
-            var fromEncoded = Message.FromEncodedArray(msg);
+            var fromEncoded = MessageExtensions.FromEncodedArray(msg);
 
             fromEncoded.Should().HaveCount(2);
 
@@ -123,7 +124,7 @@ namespace IO.Ably.Tests.Rest
 
                 var msg = new Message("name", JsonHelper.Serialize(d)) { Encoding = "foo/json" };
                 var msgJson = JsonHelper.Serialize(msg);
-                var fromEncoded = Message.FromEncoded(msgJson);
+                var fromEncoded = MessageExtensions.FromEncoded(msgJson);
 
                 fromEncoded.Name.Should().Be("name");
                 JsonHelper.Serialize(fromEncoded.Data).Should().Be(JsonHelper.Serialize(d));
@@ -142,7 +143,7 @@ namespace IO.Ably.Tests.Rest
                 var encryptedString = crypto.Encrypt(payload.GetBytes());
                 var msg = new Message("name", encryptedString.ToBase64()) { Encoding = "utf-8/cipher+aes-128-cbc/base64" };
                 var msgJson = JsonHelper.Serialize(msg);
-                var fromEncoded = Message.FromEncoded(msgJson, new ChannelOptions(cipherParams));
+                var fromEncoded = MessageExtensions.FromEncoded(msgJson, new ChannelOptions(cipherParams));
 
                 fromEncoded.Name.Should().Be("name");
                 fromEncoded.Data.Should().BeEquivalentTo(payload);
@@ -161,7 +162,7 @@ namespace IO.Ably.Tests.Rest
 
                 var messagesJson = JsonHelper.Serialize(messages);
 
-                var fromEncoded = Message.FromEncodedArray(messagesJson);
+                var fromEncoded = MessageExtensions.FromEncodedArray(messagesJson);
 
                 fromEncoded.Should().HaveCount(2);
 

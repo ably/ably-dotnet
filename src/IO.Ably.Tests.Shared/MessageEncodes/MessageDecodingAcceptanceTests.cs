@@ -3,6 +3,7 @@ using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Tests;
+using IO.Ably.Tests.Shared.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,8 +29,9 @@ namespace IO.Ably.AcceptanceTests
             {
                 var payload = new Message { Data = _base64Data, Encoding = "utf-8/base64" };
 
-                var context = new DecodingContext();
-                MessageHandler.DecodePayload(payload, context);
+                var logger = DefaultLogger.LoggerInstance;
+                var context = new DecodingContext(logger);
+                MessageHandler.DecodePayload(payload, context, logger);
 
                 context.PreviousPayload.GetBytes().Should().BeEquivalentTo(_binaryData);
                 context.PreviousPayload.Encoding.Should().BeEquivalentTo("utf-8");
@@ -39,12 +41,14 @@ namespace IO.Ably.AcceptanceTests
             public void WhenBase64IsNotTheFirstEncoding_ShouldSaveTheOriginalPayloadInContext()
             {
                 var message = new Message { Data = new { Text = "Hello" } };
-                MessageHandler.EncodePayload(message, new DecodingContext());
+
+                var logger = DefaultLogger.LoggerInstance;
+                MessageHandler.EncodePayload(message, new DecodingContext(logger));
                 var payloadData = message.Data as string;
                 var payloadEncoding = message.Encoding;
 
-                var context = new DecodingContext();
-                MessageHandler.DecodePayload(message, context);
+                var context = new DecodingContext(logger);
+                MessageHandler.DecodePayload(message, context, logger);
                 context.PreviousPayload.GetBytes().Should().BeEquivalentTo(payloadData.GetBytes());
                 context.PreviousPayload.Encoding.Should().Be(payloadEncoding);
             }
@@ -62,8 +66,10 @@ namespace IO.Ably.AcceptanceTests
                         GenerateKey(Crypto.DefaultKeylength),
                         Encryption.CipherMode.CBC));
 
-                var context = channelOptions.ToDecodingContext();
-                var result = MessageHandler.DecodePayload(payload, context);
+                var logger = DefaultLogger.LoggerInstance;
+
+                var context = channelOptions.ToDecodingContext(logger);
+                var result = MessageHandler.DecodePayload(payload, context, logger);
 
                 result.IsFailure.Should().BeTrue();
                 payload.Encoding.Should().Be(initialEncoding);
