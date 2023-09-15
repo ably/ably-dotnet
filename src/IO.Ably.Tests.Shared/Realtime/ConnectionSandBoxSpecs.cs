@@ -675,9 +675,14 @@ namespace IO.Ably.Tests.Realtime
             });
             await client.WaitForState(ConnectionState.Connected);
 
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c4".AddRandomSuffix());
-            channel.Attach();
-            await channel.WaitForAttachedState();
+            var channels = new List<RealtimeChannel>();
+            for (var i = 0; i < 4; i++)
+            {
+                var channel = (RealtimeChannel)client.Channels.Get("RTN15c4".AddRandomSuffix());
+                channel.Attach();
+                await channel.WaitForAttachedState();
+                channels.Add(channel);
+            }
 
             client.GetTestTransport().Close(false);
             await client.WaitForState(ConnectionState.Disconnected);
@@ -714,10 +719,13 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.ErrorReason.Message.Should().Be(errInfo.Message);
             client.Connection.State.Should().Be(ConnectionState.Failed);
 
-            await channel.WaitForState(ChannelState.Failed);
-            channel.State.Should().Be(ChannelState.Failed);
-            channel.ErrorReason.Code.Should().Be(errInfo.Code);
-            channel.ErrorReason.Message.Should().Be(errInfo.Message);
+            foreach (var channel in channels)
+            {
+                await channel.WaitForState(ChannelState.Failed);
+                channel.State.Should().Be(ChannelState.Failed);
+                channel.ErrorReason.Code.Should().Be(errInfo.Code);
+                channel.ErrorReason.Message.Should().Be(errInfo.Message);
+            }
 
             client.Close();
         }
@@ -728,30 +736,36 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
-            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(10) });
-            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(1); // Cheat to make sure the client uses the token
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                options.TokenDetails = tokenDetails;
-                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
             });
 
             await client.WaitForState(ConnectionState.Connected);
-
             var channel = client.Channels.Get("RTN15c5".AddRandomSuffix());
             channel.Attach();
+            await channel.WaitForAttachedState();
+            channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
 
+            var expiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) });
+            expiredToken.Expires = DateTimeOffset.UtcNow.AddMinutes(1); // Cheat to make sure the client uses the token
+            client.Options.TokenDetails = expiredToken;
             var initialConnectionId = client.Connection.Id;
             var initialTransport = client.GetTestTransport();
 
-            channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
+            client.GetTestTransport().Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
 
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
-                           {
-                               change.Reason.Code.Should().Be(ErrorCodes.TokenExpired);
-                           });
+            {
+                change.Reason.Code.Should().Be(ErrorCodes.AccountBlocked);
+            });
+
+            await client.WaitForState(ConnectionState.Connecting);
             await client.WaitForState(ConnectionState.Disconnected);
+
+            await client.WaitForState(ConnectionState.Connecting);
             await client.WaitForState(ConnectionState.Connected);
 
             // transport should have been closed and the client should have a new transport instanced
@@ -1070,7 +1084,7 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTN16l")]
         [Trait("spec", "RTN15c4")]
-        public async Task WithIncorrectRecoverData_ShouldFailAndSetAReasonOnTheConnection(Protocol protocol)
+        public async Task WithInvalidRecoverData_ShouldFailAndSetAReasonOnTheConnection(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
