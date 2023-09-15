@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -162,7 +163,7 @@ namespace IO.Ably.Tests
                     data = "foo",
                 }
             };
-            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.FromObject(objectPayload), null);
+            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JToken.FromObject(objectPayload), null);
 
             ValidateResponse(paginatedResponse);
 
@@ -189,7 +190,7 @@ namespace IO.Ably.Tests
                         }
                     ]
                   }";
-            paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
+            paginatedResponse = await client.Request(HttpMethod.Post.Method, "/messages", null, jsonPayload, null);
 
             ValidateResponse(paginatedResponse, 5);
 
