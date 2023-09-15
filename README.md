@@ -419,16 +419,19 @@ DateTimeOffset time = await client.TimeAsync();
 - It automatically adds necessary auth headers based on the initial auth config and supports pagination.
 - The following is an example of using the batch publish API based on the [Ably batch publish rest endpoint documentation](https://ably.com/docs/api/rest-api#batch-publish).
 ```csharp
-  var jsonPayload =
-    @"{
-        ""channels"" : [ ""channel1"", ""channel2"" ],
-        ""messages"" : [
+    var objectPayload = new
+    {
+        channels = new[] { "channel1", "channel2", "channel3", "channel4" },
+        messages = new[]
+        {
+            new
             {
-                ""name"": ""eventName"",
-                ""data"" : ""message"",
+                name = "eventName",
+                data = "foo",
             }
-        ]
-      }";
+        }
+    };
+  var jsonPayload = JsonConvert.SerializeObject(objectPayload);
   var paginatedResponse = await ablyRest.Request(HttpMethod.Post, "/messages", null, jsonPayload, null);
 ```
 - Follow official [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
