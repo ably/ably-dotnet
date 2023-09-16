@@ -489,7 +489,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithError(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c1".AddRandomSuffix());
+            var channel = (RealtimeChannel)client.Channels.Get("RTN15c2".AddRandomSuffix());
             await client.WaitForState(ConnectionState.Connected);
             var connectionId = client.Connection.Id;
 
@@ -584,7 +584,9 @@ namespace IO.Ably.Tests.Realtime
             var oldConnectionId = client.Connection.Id;
             var oldKey = client.Connection.Key;
 
-            client.SimulateLostConnectionAndState();
+            client.State.Connection.Id = string.Empty;
+            client.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx"; // invalid connection key for next resume request
+            client.GetTestTransport().Close(false);
 
             ConnectionStateChange stateChange = null;
             await WaitFor(done =>
@@ -610,16 +612,18 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Id.Should().NotBe(oldConnectionId);
             client.Connection.Key.Should().NotBe(oldKey);
             client.Connection.MessageSerial.Should().Be(0);
+
+            client.Close();
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c6")]
         [Trait("spec", "RTN15c7")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_AttachedAllChannels(Protocol protocol)
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameOrNewConnectionId_AttachesAllChannels(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var channelName = "RTN15c3".AddRandomSuffix();
+            var channelName = "RTN15c6.RTN15c7.".AddRandomSuffix();
             const int channelCount = 5;
             await client.WaitForState(ConnectionState.Connected);
 
@@ -642,9 +646,11 @@ namespace IO.Ably.Tests.Realtime
                     });
                 }
             });
+            client.State.Connection.Id = string.Empty;
+            client.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx"; // invalid connection key for next resume request
+            client.GetTestTransport().Close(false);
 
-            client.SimulateLostConnectionAndState();
-            await client.WaitForState(ConnectionState.Connected);
+            // Should send message on the channel so it gets into pending state
 
             await WaitForMultiple(channelCount, partialDone =>
             {
@@ -661,7 +667,10 @@ namespace IO.Ably.Tests.Realtime
                 }
             });
 
+            // Check if channels have processed pending queued messages
             attachedChannels.Should().HaveCount(channelCount);
+
+            client.Close();
         }
 
         [Theory]
@@ -758,12 +767,16 @@ namespace IO.Ably.Tests.Realtime
             var prevTransport = client.GetTestTransport();
 
             ConnectionStateChange stateChange = null;
-            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            await WaitFor(done =>
             {
-                stateChange = change;
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
             });
-            await client.WaitForState(ConnectionState.Disconnected); // Disconnected due to token expired
             stateChange.Should().NotBeNull();
+            stateChange.Current.Should().Be(ConnectionState.Disconnected); // Disconnected due to token expired
             stateChange.HasError.Should().BeTrue();
             stateChange.Reason.Code.Should().Be(ErrorCodes.TokenExpired);
 
@@ -773,6 +786,8 @@ namespace IO.Ably.Tests.Realtime
             var newTransport = client.GetTestTransport();
             newTransport.Should().NotBe(prevTransport);
             client.Connection.Id.Should().Be(prevConnectionId); // connection should be resumed, connectionId should be unchanged
+
+            client.Close();
         }
 
         [Theory]
