@@ -736,45 +736,43 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
-
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+                options.AuthCallback = async @params =>
+                {
+                    var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(5) });
+                    tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(1); // Cheat to make sure the client uses the token
+                    return tokenDetails;
+                };
+                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
             });
-
             await client.WaitForState(ConnectionState.Connected);
             var channel = client.Channels.Get("RTN15c5".AddRandomSuffix());
             channel.Attach();
             await channel.WaitForAttachedState();
             channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
 
-            var expiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) });
-            expiredToken.Expires = DateTimeOffset.UtcNow.AddMinutes(1); // Cheat to make sure the client uses the token
-            client.Options.TokenDetails = expiredToken;
-            var initialConnectionId = client.Connection.Id;
-            var initialTransport = client.GetTestTransport();
-
-            client.GetTestTransport().Close(false);
             await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connected); // Connected with a resume request
+            var prevConnectionId = client.Connection.Id;
+            var prevTransport = client.GetTestTransport();
 
+            ConnectionStateChange stateChange = null;
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
-                change.Reason.Code.Should().Be(ErrorCodes.AccountBlocked);
+                stateChange = change;
             });
-
-            await client.WaitForState(ConnectionState.Connecting);
-            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Disconnected); // Disconnected due to token expired
+            stateChange.Should().NotBeNull();
+            stateChange.HasError.Should().BeTrue();
+            stateChange.Reason.Code.Should().Be(ErrorCodes.TokenExpired);
 
             await client.WaitForState(ConnectionState.Connecting);
             await client.WaitForState(ConnectionState.Connected);
-
-            // transport should have been closed and the client should have a new transport instanced
-            var secondTransport = client.GetTestTransport();
-            initialTransport.Should().NotBe(secondTransport);
-            initialTransport.State.Should().Be(TransportState.Closed);
-
-            // connection should be resumed, connectionId should be unchanged
-            client.Connection.Id.Should().Be(initialConnectionId);
+            prevTransport.State.Should().Be(TransportState.Closed); // transport should have been closed and the client should have a new transport instanced
+            var newTransport = client.GetTestTransport();
+            newTransport.Should().NotBe(prevTransport);
+            client.Connection.Id.Should().Be(prevConnectionId); // connection should be resumed, connectionId should be unchanged
         }
 
         [Theory]
