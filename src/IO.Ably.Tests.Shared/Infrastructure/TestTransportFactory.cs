@@ -4,6 +4,10 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Tests.Infrastructure
 {
+    /// <summary>
+    /// This class is used for controlling wrapped TestTranport externally.
+    /// Can only be passed as a clientOption.
+    /// </summary>
     public class TestTransportFactory : ITransportFactory
     {
         private readonly Action<TestTransportWrapper> _onWrappedTransportCreated;
