@@ -626,49 +626,56 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "RTN15c6.RTN15c7.".AddRandomSuffix();
             const int channelCount = 5;
             await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
 
             var channels = new List<RealtimeChannel>();
             for (var i = 0; i < channelCount; i++)
             {
-                channels.Add(client.Channels.Get($"{channelName}_{i}") as RealtimeChannel);
+                var channel = client.Channels.Get($"{channelName}_{i}");
+                await channel.AttachAsync();
+                channels.Add(channel as RealtimeChannel);
             }
 
-            List<RealtimeChannel> attachedChannels = new List<RealtimeChannel>();
-
-            await WaitForMultiple(channelCount, partialDone =>
+            async Task CheckForAttachedChannelsAfterResume()
             {
-                foreach (var channel in channels)
+                var attachedChannels = new List<RealtimeChannel>();
+                await WaitForMultiple(channelCount, partialDone =>
                 {
-                    channel.Attach();
-                    channel.Once(ChannelEvent.Attached, _ =>
+                    foreach (var channel in channels)
                     {
-                        partialDone();
-                    });
-                }
-            });
+                        channel.Once(ChannelEvent.Attaching, _ =>
+                        {
+                            channel.Once(ChannelEvent.Attached, _ =>
+                            {
+                                attachedChannels.Add(channel);
+                                partialDone();
+                            });
+                        });
+                    }
+                });
+                attachedChannels.Should().HaveCount(channelCount);
+
+                // TODO - check for processed pending messages
+            }
+
+            client.GetTestTransport().Close(false);
+            await CheckForAttachedChannelsAfterResume();
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1); // For every new transport, list is reset
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId); // resume successful - RTN15c6
+            connectedProtocolMessage.Error.Should().BeNull();
+            client.Connection.ErrorReason.Should().BeNull();
+
             client.State.Connection.Id = string.Empty;
             client.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx"; // invalid connection key for next resume request
             client.GetTestTransport().Close(false);
-
-            // Should send message on the channel so it gets into pending state
-
-            await WaitForMultiple(channelCount, partialDone =>
-            {
-                foreach (var channel in channels)
-                {
-                    channel.Once(ChannelEvent.Attaching, _ =>
-                    {
-                        channel.Once(ChannelEvent.Attached, _ =>
-                        {
-                            attachedChannels.Add(channel);
-                            partialDone();
-                        });
-                    });
-                }
-            });
-
-            // Check if channels have processed pending queued messages
-            attachedChannels.Should().HaveCount(channelCount);
+            await CheckForAttachedChannelsAfterResume();
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1); // For every new transport, list is reset
+            connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().NotBe(connectionId); // resume unsuccessful - RTN15c7
+            connectedProtocolMessage.Error.Should().NotBeNull();
+            client.Connection.ErrorReason.ToString().Should().Be(connectedProtocolMessage.Error.ToString());
+            client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
 
             client.Close();
         }
