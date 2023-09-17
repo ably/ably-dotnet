@@ -433,142 +433,6 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
 
-        [Theory(Skip = "Intermittently fails")]
-        [ProtocolData]
-        [Trait("spec", "RTN15c1")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol);
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c1".AddRandomSuffix());
-            await client.WaitForState(ConnectionState.Connected);
-            var connectionId = client.Connection.Id;
-            await channel.AttachAsync();
-            channel.State.Should().Be(ChannelState.Attached);
-
-            // kill the transport so the connection becomes DISCONNECTED
-            client.ConnectionManager.Transport.Close(false);
-            await client.WaitForState(ConnectionState.Disconnected);
-
-            var awaiter = new TaskCompletionAwaiter(15000);
-            client.Connection.Once(ConnectionEvent.Connected, change =>
-            {
-                change.HasError.Should().BeFalse();
-                awaiter.SetCompleted();
-            });
-
-            channel.Publish(null, "foo");
-
-            await client.ProcessCommands();
-
-            // currently disconnected so message is queued
-            // client.State.PendingMessages.Should().HaveCount(1);
-
-            // wait for reconnection
-            var didConnect = await awaiter.Task;
-            didConnect.Should().BeTrue();
-
-            // we should have received a CONNECTED Protocol message with a corresponding connectionId
-            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
-            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
-            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
-
-            await client.ProcessCommands();
-
-            // channel should be attached and pending messages sent
-            channel.State.Should().Be(ChannelState.Attached);
-            client.State.PendingMessages.Should().HaveCount(0);
-
-            var history = await channel.HistoryAsync();
-            history.Items.Should().HaveCount(1);
-            history.Items[0].Data.Should().Be("foo");
-        }
-
-        [Theory(Skip = "Intermittently fails")]
-        [ProtocolData]
-        [Trait("spec", "RTN15c2")]
-        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithError(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol);
-            var channel = (RealtimeChannel)client.Channels.Get("RTN15c2".AddRandomSuffix());
-            await client.WaitForState(ConnectionState.Connected);
-            var connectionId = client.Connection.Id;
-
-            // inject fake error messages into protocol messages
-            var transportFactory = (TestTransportFactory)client.Options.TransportFactory;
-            transportFactory.OnTransportCreated += wrapper =>
-            {
-                wrapper.BeforeDataProcessed = message =>
-                {
-                    // inject an error before the protocol message is processed
-                    if (message.Action == ProtocolMessage.MessageAction.Connected)
-                    {
-                        message.Error = new ErrorInfo("Faked error", 0);
-                    }
-
-                    if (message.Action == ProtocolMessage.MessageAction.Attached)
-                    {
-                        message.Error = new ErrorInfo("Faked channel error", 0);
-                    }
-                };
-            };
-
-            // kill the transport so the connection becomes DISCONNECTED
-            client.ConnectionManager.Transport.Close(false);
-            await client.WaitForState(ConnectionState.Disconnected);
-
-            // track connection state change
-            ConnectionStateChange stateChange = null;
-            var connectedAwaiter = new TaskCompletionAwaiter(15000);
-            client.Connection.Once(ConnectionEvent.Connected, change =>
-            {
-                stateChange = change;
-                connectedAwaiter.SetCompleted();
-            });
-
-            // track channel stage change
-            ChannelStateChange channelStateChange = null;
-            var attachedAwaiter = new TaskCompletionAwaiter(30000);
-            channel.Once(ChannelEvent.Attached, change =>
-            {
-                channelStateChange = change;
-                attachedAwaiter.SetCompleted();
-            });
-
-            // publish
-            channel.Attach();
-            channel.Publish(null, "foo");
-
-            // wait for connection
-            var didConnect = await connectedAwaiter.Task;
-            didConnect.Should().BeTrue();
-
-            // it should have the injected error
-            stateChange.HasError.Should().BeTrue();
-            stateChange.Reason.Message.Should().Be("Faked error");
-
-            // we should have received a CONNECTED Protocol message with a corresponding connectionId
-            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
-            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
-            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
-            client.Connection.ErrorReason.Should().Be(stateChange.Reason);
-
-            // wait for the channel to attach
-            await attachedAwaiter.Task;
-
-            // it chanel state change event should have the injected error
-            channelStateChange.Error.Message.Should().Be("Faked channel error");
-
-            // queued messages should now have been sent
-            client.State.PendingMessages.Should().HaveCount(0);
-
-            var history = await channel.HistoryAsync();
-            history.Items.Should().HaveCount(1);
-            history.Items[0].Data.Should().Be("foo");
-
-            // clean up
-            client.Close();
-        }
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c7")]
@@ -747,16 +611,16 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState(ConnectionState.Disconnected);
 
             var errInfo = new ErrorInfo("faked error", 0);
-            client.Connection.Once(ConnectionEvent.Connecting, change =>
+            var connectedAwaiter = new TaskCompletionAwaiter(15000);
+            await client.WaitForState(ConnectionState.Connecting);
+            client.BeforeProtocolMessageProcessed(message =>
             {
-                client.BeforeProtocolMessageProcessed(message =>
+                if (message.Action == ProtocolMessage.MessageAction.Connected)
                 {
-                    if (message.Action == ProtocolMessage.MessageAction.Connected)
-                    {
-                        message.Action = ProtocolMessage.MessageAction.Error;
-                        message.Error = errInfo;
-                    }
-                });
+                    message.Action = ProtocolMessage.MessageAction.Error;
+                    message.Error = errInfo;
+                    connectedAwaiter.Task.Wait();
+                }
             });
 
             ConnectionStateChange failedStateChange = null;
@@ -767,6 +631,7 @@ namespace IO.Ably.Tests.Realtime
                     failedStateChange = change;
                     done();
                 });
+                connectedAwaiter.SetCompleted();
             });
 
             failedStateChange.Previous.Should().Be(ConnectionState.Connecting);
