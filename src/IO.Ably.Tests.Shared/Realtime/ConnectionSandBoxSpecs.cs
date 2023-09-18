@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Shared.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Tests.Shared.Utils;
 using IO.Ably.Transport;
@@ -482,6 +483,49 @@ namespace IO.Ably.Tests.Realtime
             {
                 channel2Message.Data.Should().Be("hello");
             }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN16d")]
+        public async Task RecoverRequest_ShouldInitializeRecoveryContextAndReceiveSameConnectionIdOnRecoverSuccess(Protocol protocol)
+        {
+            var client1 = await GetRealtimeClient(protocol);
+            await client1.WaitForState(ConnectionState.Connected);
+            var client1ConnectionId = client1.Connection.Id;
+            for (var i = 0; i < 5; i++)
+            {
+                var channel = client1.Channels.Get("RTN16d".AddRandomSuffix());
+                await channel.AttachAsync();
+            }
+
+            var recoveryKey = client1.Connection.CreateRecoveryKey();
+            var recoveryKeyContext = RecoveryKeyContext.Decode(recoveryKey);
+
+            recoveryKeyContext.ConnectionKey.Should().Be(client1.Connection.Key);
+            recoveryKeyContext.ChannelSerials.Count.Should().Be(client1.Channels.Count());
+            recoveryKeyContext.MsgSerial.Should().Be(client1.Connection.MessageSerial);
+
+            client1.ExecuteCommand(SetDisconnectedStateCommand.Create(null));
+
+            var client2 = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.Recover = recoveryKey;
+            });
+
+            await client2.WaitForState(ConnectionState.Connected);
+            client2.Connection.Id.Should().Be(client1ConnectionId);
+            client2.Connection.MessageSerial.Should().Be(recoveryKeyContext.MsgSerial);
+            client2.Connection.Key.Should().NotBe(recoveryKeyContext.ConnectionKey);
+            foreach (var realtimeChannel in client1.Channels)
+            {
+                realtimeChannel.Properties.ChannelSerial.Should().Be(recoveryKeyContext.ChannelSerials[realtimeChannel.Name]);
+            }
+
+            client2.Options.Recover.Should().BeNull();
+
+            client1.Close();
+            client2.Close();
         }
 
         [Theory]
