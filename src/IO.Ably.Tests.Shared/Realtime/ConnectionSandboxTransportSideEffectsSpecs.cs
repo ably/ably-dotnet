@@ -15,66 +15,29 @@ namespace IO.Ably.Tests.Realtime
     [Trait("type", "integration")]
     public class ConnectionSandboxTransportSideEffectsSpecs : SandboxSpecs
     {
-        /*
-         * (RTN19b) If there are any pending channels i.e. in the ATTACHING or DETACHING state,
-         * the respective ATTACH or DETACH message should be resent to Ably
-         */
-        [Theory(Skip = "Intermittently fails")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
         {
-            var channelName = "test-channel".AddRandomSuffix();
-            var sentMessages = new List<ProtocolMessage>();
-
-            int attachMessageCount = 0;
-
-            AblyRealtime client = null;
-            client = await GetRealtimeClient(protocol, (options, settings) =>
-            {
-                options.TransportFactory = new TestTransportFactory
-                {
-                    OnMessageSent = OnMessageSent,
-                };
-            });
-
-            void OnMessageSent(ProtocolMessage message)
-            {
-                sentMessages.Add(message);
-                if (message.Action == ProtocolMessage.MessageAction.Attach)
-                {
-                    if (attachMessageCount == 0)
-                    {
-                        attachMessageCount++;
-                        client.GetTestTransport().Close(suppressClosedEvent: false);
-                    }
-                }
-            }
-
-            bool didDisconnect = false;
-            client.Connection.Once(ConnectionEvent.Disconnected, change =>
-            {
-                didDisconnect = true;
-            });
-
+            var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
 
-            var channel = client.Channels.Get(channelName);
-            channel.Attach();
+            // Will be unblocked on new transport/connection
+            client.BlockActionFromSending(ProtocolMessage.MessageAction.Attach);
 
-            await channel.WaitForState(ChannelState.Attaching);
+            var channel = client.Channels.Get("RTN19b".AddRandomSuffix());
+            channel.Once(ChannelEvent.Attaching, change =>
+            {
+                client.GetTestTransport().Close(suppressClosedEvent: false);
+            });
+            await channel.AttachAsync();
 
             await client.WaitForState(ConnectionState.Disconnected);
-            await client.WaitForState(ConnectionState.Connecting);
+            channel.State.Should().Be(ChannelState.Attaching);
             await client.WaitForState(ConnectionState.Connected);
 
-            client.Connection.State.Should().Be(ConnectionState.Connected);
-            didDisconnect.Should().BeTrue();
-
             await channel.WaitForAttachedState();
-
-            var attachCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach);
-            attachCount.Should().Be(2);
 
             client.Close();
         }
@@ -82,37 +45,25 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
-        [Trait("intermittent", "true")] // I think the logic behind resending the detach message has an issue
+        [Trait("description", "detached only works if detach message is received on old transport")]
         public async Task WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(Protocol protocol)
         {
-            int detachMessageCount = 0;
-            AblyRealtime client = null;
-            var channelName = "test-channel".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            await client.WaitForState(ConnectionState.Connected);
 
-            client = await GetRealtimeClient(protocol, (options, settings) =>
-            {
-                options.TransportFactory = new TestTransportFactory
-                {
-                    OnMessageSent = OnMessageSent,
-                };
-            });
+            var channel = client.Channels.Get("RTN19b".AddRandomSuffix());
+            await channel.AttachAsync();
 
-            void OnMessageSent(ProtocolMessage message)
+            // Will be reset on new transport/connection
+            client.GetTestTransport().AfterMessageSent += message =>
             {
                 if (message.Action == ProtocolMessage.MessageAction.Detach)
                 {
-                    if (detachMessageCount == 0)
-                    {
-                        detachMessageCount++;
-                        client.GetTestTransport().Close(suppressClosedEvent: false);
-                    }
+                    client.BlockActionFromReceiving(ProtocolMessage.MessageAction.Detached);
+                    client.GetTestTransport().Close(suppressClosedEvent: false);
                 }
-            }
+            };
 
-            await client.WaitForState(ConnectionState.Connected);
-
-            var channel = client.Channels.Get(channelName);
-            await channel.AttachAsync();
             channel.Detach();
             await channel.WaitForState(ChannelState.Detaching);
 
@@ -126,7 +77,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19")]
-        [Trait("spec", "RTN19a")]
+        [Trait("spec", "RTN19a1")]
         public async Task OnConnected_ShouldResendAckWithConnectionMessageSerialIfResumeFailed(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
@@ -134,11 +85,11 @@ namespace IO.Ably.Tests.Realtime
             var initialConnectionId = client.Connection.Id;
             var channel = client.Channels.Get("RTN19a".AddRandomSuffix());
 
-            // var client2 = await GetRealtimeClient(protocol);
-            // var channel2 = client2.Channels.Get(channel.Name);
-            // await channel2.AttachAsync();
-            // var channel2Messages = new List<Message>();
-            // channel2.Subscribe(message => channel2Messages.Add(message));
+            var client2 = await GetRealtimeClient(protocol);
+            var channel2 = client2.Channels.Get(channel.Name);
+            await channel2.AttachAsync();
+            var channel2Messages = new List<Message>();
+            channel2.Subscribe(message => channel2Messages.Add(message));
 
             // Sending dummy messages to increment messageSerial
             await channel.PublishAsync("dummy1", "data1");
@@ -186,8 +137,8 @@ namespace IO.Ably.Tests.Realtime
                 initialMessagesIdToSerialMap[keyValuePair.Key].Should().NotBe(keyValuePair.Value);
             }
 
-            // TODO - Message duplicates can't be detected since messages id's not available
-            // channel2Messages.Count.Should().Be(noOfMessagesSent + 2); // first 2 dummy messages
+            // Duplicate messages received on second channel
+            channel2Messages.Count.Should().Be((noOfMessagesSent * 2) + 2); // add first 2 dummy messages
 
             client.Close();
         }
@@ -195,7 +146,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19")]
-        [Trait("spec", "RTN19b")]
+        [Trait("spec", "RTN19a2")]
         public async Task OnConnected_ShouldResendAckWithSameMessageSerialIfResumeSuccessful(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
