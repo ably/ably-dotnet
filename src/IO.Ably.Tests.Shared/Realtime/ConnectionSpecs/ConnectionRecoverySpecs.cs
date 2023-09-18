@@ -1,8 +1,9 @@
-using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Shared.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,6 +70,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
         [Trait("spec", "RTN16j")]
+        [Trait("spec", "RTN16k")]
         public async Task RecoveryKey_MsgSerialShouldNotBeSentToAblyButShouldBeSetOnConnection()
         {
             var recoveryKey =
@@ -82,8 +84,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             paramsDict.ContainsKey("recover").Should().BeTrue();
             paramsDict["recover"].Should().Be("uniqueKey");
             paramsDict.ContainsKey("msg_serial").Should().BeFalse();
-            await Task.Delay(2000);
-            client.Connection.MessageSerial.Should().Be(45);
+
+            await new ConditionalAwaiter(() => client.Connection.MessageSerial == 45);
+            client.Channels.Count().Should().Be(3);
+            var channelCounter = 1;
+            foreach (var realtimeChannel in client.Channels.OrderBy(channel => channel.Name))
+            {
+                realtimeChannel.Name.Should().Be($"channel{channelCounter}");
+                realtimeChannel.Properties.ChannelSerial.Should().Be($"{channelCounter}");
+                channelCounter++;
+            }
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)
