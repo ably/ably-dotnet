@@ -868,7 +868,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h2")]
         public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter();
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
@@ -880,6 +879,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
+            var awaiter = new TaskCompletionAwaiter();
             var stateChanges = new List<ConnectionStateChange>();
             client.Connection.On(state =>
             {
