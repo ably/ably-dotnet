@@ -228,7 +228,7 @@ namespace IO.Ably.Realtime
             Attach(null, null, callback);
         }
 
-        private void Attach(
+        internal void Attach(
             ErrorInfo error,
             ProtocolMessage msg = null,
             Action<bool, ErrorInfo> callback = null,
@@ -286,9 +286,13 @@ namespace IO.Ably.Realtime
             ProtocolMessage CreateAttachMessage()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
+
+                // RTL4c1
+                message.ChannelSerial = Properties.ChannelSerial;
+
                 if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
                 {
-                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
+                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial; // Excludes PresenceMessage ChannelSerial (not included in backlogs anyways)
                 }
 
                 if (Options.Params.Any())
@@ -660,6 +664,12 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"HandleStateChange state change from {State} to {state}");
             }
 
+            // RTP5a1
+            if (state == ChannelState.Detached || state == ChannelState.Suspended || state == ChannelState.Failed)
+            {
+                Properties.ChannelSerial = null;
+            }
+
             var previousState = State;
             State = state;
 
@@ -675,7 +685,6 @@ namespace IO.Ably.Realtime
                 case ChannelState.Attached:
                     _retryCount = 0;
                     AttachResume = true;
-                    Presence.ChannelAttached(protocolMessage);
                     break;
                 case ChannelState.Detached:
                     /* RTL13a check for unexpected detach */
@@ -813,15 +822,12 @@ namespace IO.Ably.Realtime
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
-        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed, ProtocolMessage message = null)
+        internal void EmitErrorUpdate(ErrorInfo errorInfo, bool resumed, ProtocolMessage message = null)
         {
-            if (State == ChannelState.Attached)
+            Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed)
             {
-                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed)
-                {
-                    ProtocolMessage = message,
-                });
-            }
+                ProtocolMessage = message,
+            });
         }
 
         internal bool ShouldReAttach(ChannelOptions options)

@@ -53,7 +53,7 @@ namespace IO.Ably
         /// <param name="action">presence action.</param>
         /// <param name="clientId">id of client.</param>
         public PresenceMessage(PresenceAction action, string clientId)
-            : this(action, clientId, null)
+            : this(action, clientId, null, null)
         {
         }
 
@@ -63,11 +63,13 @@ namespace IO.Ably
         /// <param name="action">presence action.</param>
         /// <param name="clientId">id of client.</param>
         /// <param name="data">custom data object passed with the presence message.</param>
-        public PresenceMessage(PresenceAction action, string clientId, object data)
+        /// <param name="id">ably message id.</param>
+        public PresenceMessage(PresenceAction action, string clientId, object data, string id = null)
         {
             Action = action;
             ClientId = clientId;
             Data = data;
+            Id = id;
         }
 
         /// <summary>

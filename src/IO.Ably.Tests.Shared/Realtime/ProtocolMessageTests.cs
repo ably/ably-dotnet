@@ -86,7 +86,7 @@ namespace IO.Ably.Tests.Shared.Realtime
             pm.HasFlag(ProtocolMessage.Flag.Subscribe).Should().BeFalse();
             pm.HasFlag(ProtocolMessage.Flag.PresenceSubscribe).Should().BeTrue();
 
-            // TR4a,TR4b,TR4c,TR4d,TR4e (show it is removed),TR4f,TR4g,TR4h,TR4i,TR4j,TR4k,TR4l,TR4m
+            // TR4a,TR4b,TR4c,TR4d,TR4e (show it is removed),TR4f (removed),TR4g,TR4h,TR4i,TR4j,TR4k,TR4l,TR4m
             var propertyNamesAndTypes = new[]
             {
                 ("Action", typeof(ProtocolMessage.MessageAction)),
@@ -95,7 +95,6 @@ namespace IO.Ably.Tests.Shared.Realtime
                 ("Channel", typeof(string)),
                 ("ChannelSerial", typeof(string)),
                 ("ConnectionId", typeof(string)),
-                ("ConnectionSerial", typeof(long?)),
                 ("ConnectionDetails", typeof(ConnectionDetails)),
                 ("Count", typeof(int?)),
                 ("Error", typeof(ErrorInfo)),
@@ -108,8 +107,8 @@ namespace IO.Ably.Tests.Shared.Realtime
             };
 
             var props = pm.GetType().GetProperties();
-            props.Length.Should().Be(16);
-            propertyNamesAndTypes.Length.Should().Be(16);
+            props.Length.Should().Be(15);
+            propertyNamesAndTypes.Length.Should().Be(15);
 
             foreach (var propertyInfo in props)
             {

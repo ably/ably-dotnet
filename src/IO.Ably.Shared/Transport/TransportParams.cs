@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using IO.Ably.Shared.Realtime;
 
 namespace IO.Ably.Transport
 {
@@ -12,8 +12,6 @@ namespace IO.Ably.Transport
     /// </summary>
     public class TransportParams
     {
-        internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
-
         internal ILogger Logger { get; private set; }
 
         /// <summary>
@@ -40,11 +38,6 @@ namespace IO.Ably.Transport
         /// Connection key.
         /// </summary>
         public string ConnectionKey { get; private set; }
-
-        /// <summary>
-        /// Connection serial.
-        /// </summary>
-        public long? ConnectionSerial { get; set; }
 
         /// <summary>
         /// Whether to use the binary protocol.
@@ -87,7 +80,7 @@ namespace IO.Ably.Transport
         {
         }
 
-        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
+        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, ILogger logger = null)
         {
             var result = new TransportParams
             {
@@ -96,7 +89,6 @@ namespace IO.Ably.Transport
                 Port = options.Tls ? options.TlsPort : options.Port,
                 ClientId = options.GetClientId(),
                 ConnectionKey = connectionKey,
-                ConnectionSerial = connectionSerial,
                 EchoMessages = options.EchoMessages,
                 FallbackHosts = options.GetFallbackHosts(),
                 UseBinaryProtocol = options.UseBinaryProtocol,
@@ -195,21 +187,19 @@ namespace IO.Ably.Transport
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
             result["echo"] = EchoMessages.ToString().ToLower();
 
+            // RTN15b - resume connection using connectionKey
             if (ConnectionKey.IsNotEmpty())
             {
                 result["resume"] = ConnectionKey;
-                if (ConnectionSerial.HasValue)
-                {
-                    result["connection_serial"] = ConnectionSerial.Value.ToString();
-                }
             }
+
+            // RTN16k - recover connection using clientOptions#recover connectionKey
             else if (RecoverValue.IsNotEmpty())
             {
-                var match = RecoveryKeyRegex.Match(RecoverValue);
-                if (match.Success)
+                var recoveryKeyContext = RecoveryKeyContext.Decode(RecoverValue, Logger);
+                if (recoveryKeyContext != null)
                 {
-                    result["recover"] = match.Groups[1].Value;
-                    result["connection_serial"] = match.Groups[2].Value;
+                    result["recover"] = recoveryKeyContext.ConnectionKey;
                 }
             }
 

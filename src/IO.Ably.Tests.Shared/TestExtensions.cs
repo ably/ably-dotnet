@@ -61,13 +61,6 @@ namespace IO.Ably.Tests
             transport.BlockReceiveActions.Add(action);
         }
 
-        internal static void SimulateLostConnectionAndState(this AblyRealtime client)
-        {
-            client.State.Connection.Id = string.Empty;
-            client.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
-            client.GetTestTransport().Close(false);
-        }
-
         internal static void BeforeProtocolMessageProcessed(this AblyRealtime client, Action<ProtocolMessage> action)
         {
             var t = client.GetTestTransport();
