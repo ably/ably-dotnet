@@ -1657,78 +1657,117 @@ namespace IO.Ably.Tests.Realtime
                 [Theory]
                 [ProtocolData]
                 [Trait("spec", "RTP16b")]
-                [Trait("spec", "RTP19a")]
-                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldFailAckQueueMessages_WhenSendFails(Protocol protocol)
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitializedOrAttaching_MessageAreNotPublished(Protocol protocol)
                 {
-                    var transportFactory = new TestTransportFactory
-                    {
-                        BeforeMessageSent = message =>
-                        {
-                            if (message.Action == ProtocolMessage.MessageAction.Presence)
-                            {
-                                throw new Exception("RTP16b : error while sending message");
-                            }
-                        }
-                    };
-
                     var client = await GetRealtimeClient(protocol, (options, settings) =>
                     {
                         options.ClientId = "RTP16b";
                         options.QueueMessages = false;
-                        options.TransportFactory = transportFactory;
                     });
 
                     await client.WaitForState(ConnectionState.Connected);
 
                     var channel = GetRandomChannel(client, "RTP16a");
+                    channel.State.Should().Be(ChannelState.Initialized);
+                    await EnterPresenceAndCheckForError();
+
+                    client.BlockActionFromSending(ProtocolMessage.MessageAction.Attach);
+                    channel.Attach();
+                    await channel.WaitForState(ChannelState.Attaching);
+                    await EnterPresenceAndCheckForError();
+
+                    // QueueCommand will not retry instantly
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
+                    await client.WaitForState(ConnectionState.Disconnected);
+                    await EnterPresenceAndCheckForError();
+
+                    // clean up
+                    client.Close();
+
+                    async Task EnterPresenceAndCheckForError()
+                    {
+                        var enterPresenceAwaiter = new TaskCompletionAwaiter();
+                        ErrorInfo err = null;
+                        bool? success = null;
+                        channel.Presence.Enter("dummy data", (b, info) =>
+                        {
+                            success = b;
+                            err = info;
+                            enterPresenceAwaiter.SetCompleted();
+                        });
+                        await client.ProcessCommands();
+
+                        // No messages sent because queueMessages false
+                        channel.Presence.PendingPresenceQueue.Should().HaveCount(0);
+                        client.State.PendingMessages.Should().HaveCount(0);
+
+                        if (client.Connection.State != ConnectionState.Disconnected)
+                        {
+                            var presenceMessagesSent = client.GetTestTransport().ProtocolMessagesSent
+                                .FindAll(msg => msg.Action == ProtocolMessage.MessageAction.Presence);
+                            presenceMessagesSent.Should().HaveCount(0);
+                        }
+
+                        await enterPresenceAwaiter.Task;
+
+                        success.Should().HaveValue();
+                        success.Value.Should().BeFalse();
+                        err.Should().NotBeNull();
+                        err.Message.Should().Be("Unable enqueue message because Options.QueueMessages is set to False.");
+                    }
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTN7d")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_ShouldFailAckQueueMessages_WhenSendFails(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTN7d";
+                        options.QueueMessages = false;
+                    });
+
+                    await client.WaitForState(ConnectionState.Connected);
+
+                    var channel = GetRandomChannel(client, "RTN7d");
                     channel.Attach();
                     await channel.WaitForAttachedState();
 
-                    var tsc = new TaskCompletionAwaiter();
+                    client.BlockActionFromSending(ProtocolMessage.MessageAction.Presence);
+
+                    var enterPresenceAwaiter = new TaskCompletionAwaiter();
                     ErrorInfo err = null;
                     bool? success = null;
-                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                    channel.Presence.Enter("dummy data", (b, info) =>
                     {
                         success = b;
                         err = info;
-                        tsc.SetCompleted();
+                        enterPresenceAwaiter.SetCompleted();
                     });
+                    await client.ProcessCommands();
 
-                    await WaitFor(done =>
-                    {
-                        // Ack Queue has one presence message
-                        if (channel.RealtimeClient.State.WaitingForAck.Count == 1)
-                        {
-                            done();
-                        }
-                    });
+                    // All messages sent
+                    channel.Presence.PendingPresenceQueue.Should().HaveCount(0);
+                    client.State.PendingMessages.Should().HaveCount(0);
 
-                    // No pending message queue, since QueueMessages is false
-                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
+                    // no ack received, so ack queue has one presence message
+                    await new ConditionalAwaiter(() => channel.RealtimeClient.State.WaitingForAck.Count == 1);
 
-                    Presence.QueuedPresenceMessage[] presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                    // Disconnect using QueueCommand will not retry instantly
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
+                    await client.WaitForState(ConnectionState.Disconnected);
 
-                    presenceMessages.Should().HaveCount(0);
+                    await enterPresenceAwaiter.Task;
 
-                    await tsc.Task;
-
-                    // No pending message queue, since QueueMessages=false
-                    channel.RealtimeClient.State.PendingMessages.Should().HaveCount(0);
-
-                    await WaitFor(done =>
-                    {
-                        // Ack cleared after flushing the queue for transport disconnection, because QueueMessages=false
-                        if (channel.RealtimeClient.State.WaitingForAck.Count == 0)
-                        {
-                            done();
-                        }
-                    });
+                    // Fail all ack/nack, because QueueMessages=false
+                    channel.RealtimeClient.State.WaitingForAck.Should().HaveCount(0);
 
                     success.Should().HaveValue();
                     success.Value.Should().BeFalse();
                     err.Should().NotBeNull();
                     err.Message.Should().Be("Clearing message AckQueue(created at connected state) because Options.QueueMessages is false");
-                    err.Cause.InnerException.Message.Should().Be("RTP16b : error while sending message");
+                    err.Code.Should().Be(ErrorCodes.Disconnected); // cleared because of disconnection
 
                     // clean up
                     client.Close();
