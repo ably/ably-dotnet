@@ -23,7 +23,6 @@
 - MAUI config doc [\#1245](https://github.com/ably/ably-dotnet/pull/1245) ([sacOO7](https://github.com/sacOO7))
 - \[SDK-3703\] Feature/integration 2.0 [\#1199](https://github.com/ably/ably-dotnet/pull/1199) ([sacOO7](https://github.com/sacOO7))
 - Update integration 2.0 spec [\#1198](https://github.com/ably/ably-dotnet/pull/1198) ([sacOO7](https://github.com/sacOO7))
-- Rename getRecoveryKey-\>createRecoveryKey per updated spec [\#1185](https://github.com/ably/ably-dotnet/pull/1185) ([SimonWoolf](https://github.com/SimonWoolf))
 - Remove connection serial [\#1183](https://github.com/ably/ably-dotnet/pull/1183) ([sacOO7](https://github.com/sacOO7))
 
 ## [1.2.12](https://github.com/ably/ably-dotnet/tree/1.2.12) (2023-06-29)
