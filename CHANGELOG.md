@@ -6,7 +6,7 @@
 
 **Implemented enhancements:**
 
-- Upgrade library to protocol v2 [\#1244](https://github.com/ably/ably-dotnet/issues/1244)
+- Upgrade library to protocol v2 [\#1199](https://github.com/ably/ably-dotnet/pull/1199)
 
 **Closed issues:**
 
@@ -21,9 +21,6 @@
 - Fix readme [\#1256](https://github.com/ably/ably-dotnet/pull/1256) ([sacOO7](https://github.com/sacOO7))
 - Updated connectionTtl to be 120 seconds [\#1247](https://github.com/ably/ably-dotnet/pull/1247) ([sacOO7](https://github.com/sacOO7))
 - MAUI config doc [\#1245](https://github.com/ably/ably-dotnet/pull/1245) ([sacOO7](https://github.com/sacOO7))
-- \[SDK-3703\] Feature/integration 2.0 [\#1199](https://github.com/ably/ably-dotnet/pull/1199) ([sacOO7](https://github.com/sacOO7))
-- Update integration 2.0 spec [\#1198](https://github.com/ably/ably-dotnet/pull/1198) ([sacOO7](https://github.com/sacOO7))
-- Remove connection serial [\#1183](https://github.com/ably/ably-dotnet/pull/1183) ([sacOO7](https://github.com/sacOO7))
 
 ## [1.2.12](https://github.com/ably/ably-dotnet/tree/1.2.12) (2023-06-29)
 
