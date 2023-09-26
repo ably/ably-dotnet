@@ -6,7 +6,7 @@
 
 **Implemented enhancements:**
 
-- Implement no connection serial [\#1244](https://github.com/ably/ably-dotnet/issues/1244)
+- Upgrade library to protocol v2 [\#1244](https://github.com/ably/ably-dotnet/issues/1244)
 
 **Closed issues:**
 
