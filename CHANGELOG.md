@@ -1,5 +1,27 @@
 # Change Log
 
+## [1.2.13](https://github.com/ably/ably-dotnet/tree/1.2.13) (2023-09-25)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.12...1.2.13)
+
+**Implemented enhancements:**
+
+- Upgrade library to protocol v2 [\#1199](https://github.com/ably/ably-dotnet/pull/1199)
+
+**Closed issues:**
+
+- Error getting value from "Id" on IO.Ably.Message, code 50000 \(ios-net7 deployed, maui\) [\#1259](https://github.com/ably/ably-dotnet/issues/1259)
+- Channel messages are missed or delayed [\#1252](https://github.com/ably/ably-dotnet/issues/1252)
+- Update connectionStateTtl [\#1243](https://github.com/ably/ably-dotnet/issues/1243)
+- Update README for MAUI trimming config [\#1242](https://github.com/ably/ably-dotnet/issues/1242)
+- Improve CI testing process [\#362](https://github.com/ably/ably-dotnet/issues/362)
+
+**Merged pull requests:**
+
+- Fix readme [\#1256](https://github.com/ably/ably-dotnet/pull/1256) ([sacOO7](https://github.com/sacOO7))
+- Updated connectionTtl to be 120 seconds [\#1247](https://github.com/ably/ably-dotnet/pull/1247) ([sacOO7](https://github.com/sacOO7))
+- MAUI config doc [\#1245](https://github.com/ably/ably-dotnet/pull/1245) ([sacOO7](https://github.com/sacOO7))
+
 ## [1.2.12](https://github.com/ably/ably-dotnet/tree/1.2.12) (2023-06-29)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.11...1.2.12)
