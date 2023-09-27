@@ -432,7 +432,7 @@ DateTimeOffset time = await client.TimeAsync();
         }
     };
   var jsonPayload = JsonConvert.SerializeObject(objectPayload);
-  var paginatedResponse = await ablyRest.Request(HttpMethod.Post, "/messages", null, jsonPayload, null);
+  var paginatedResponse = await ablyRest.RequestV2(HttpMethod.Post, "/messages", null, jsonPayload, null);
 ```
 - Follow official [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
 

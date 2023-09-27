@@ -308,6 +308,16 @@ namespace IO.Ably
             return await ExecuteHttpPaginatedRequest(request, requestParams, HttpPaginatedRequestInternal);
         }
 
+        /// <summary>
+        /// Make a generic HTTP request against an endpoint representing a collection
+        /// of some type; this is to provide a forward compatibility path for new APIs.
+        /// </summary>
+        /// <param name="method">http method.</param>
+        /// <param name="path">the path component of the resource URI.</param>
+        /// <param name="requestParams">(optional; may be null): any parameters to send with the request; see API-specific documentation.</param>
+        /// <param name="body">(optional; may be null): RequestBody encoded into a JToken. It will be sent as a json object.</param>
+        /// <param name="headers">(optional; may be null): any additional headers to send; see API-specific documentation.</param>
+        /// <returns>a page of results.</returns>
         [Obsolete("Use RequestV2 instead")]
         public async Task<HttpPaginatedResponse> Request(string method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
         {
