@@ -106,6 +106,13 @@ namespace IO.Ably.Rest
         /// Returns the active status for the channel including the number of publishers, subscribers and presenceMembers etc.
         /// </summary>
         /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
+        Task<ChannelDetails> StatusAsync();
+
+        /// <summary>
+        /// Sync version of <see cref="StatusAsync()"/>.
+        /// /// Prefer async version where possible.
+        /// </summary>
+        /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
         ChannelDetails Status();
     }
 

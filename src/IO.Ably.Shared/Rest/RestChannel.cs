@@ -227,7 +227,8 @@ namespace IO.Ably.Rest
             return AsyncHelper.RunSync(() => HistoryAsync(query));
         }
 
-        private async Task<ChannelDetails> StatusAsync()
+        /// <inheritdoc/>
+        public async Task<ChannelDetails> StatusAsync()
         {
             AblyRequest request = _ablyRest.CreateGetRequest("/channels/" + Name);
             return await _ablyRest.ExecuteRequest<ChannelDetails>(request);
