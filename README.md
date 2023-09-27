@@ -487,7 +487,7 @@ var realtime = new AblyRealtime(options);
 </ItemGroup>
 ```
 - For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
-
+- To resolve issues related to iOS signed release, [update csproj config](https://github.com/ably/ably-dotnet/issues/1259#issuecomment-1723307985)
 
 ### Examples
 
