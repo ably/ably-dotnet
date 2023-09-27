@@ -200,8 +200,6 @@ namespace IO.Ably.Tests.Realtime
 
             var firstTransport = LastCreatedTransport;
             var connectionKey = client.Connection.Key;
-            Debug.Assert(client.Connection.Serial.HasValue, "Expected a serial number, got null");
-            var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
 
             await client.WaitForState(ConnectionState.Connecting);
@@ -213,19 +211,16 @@ namespace IO.Ably.Tests.Realtime
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
                 .WhoseValue.Should().Be(connectionKey);
-            urlParams.Should().ContainKey("connection_serial")
-                .WhoseValue.Should().Be(serial.ToString());
             LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
-        public async Task AckMessagesAreFailedWhenConnectionIsDroppedAndNotResumed()
+        [Trait("spec", "RTN15a")]
+        public async Task AckMessagesAreSentWhenConnectionIsDroppedAndNotResumed()
         {
             var client = await SetupConnectedClient();
 
             List<bool> callbackResults = new List<bool>();
-
             void Callback(bool b, ErrorInfo info) => callbackResults.Add(b);
 
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), Callback);
@@ -236,16 +231,12 @@ namespace IO.Ably.Tests.Realtime
             client.State.WaitingForAck.Should().HaveCount(2);
 
             await CloseAndWaitToReconnect(client);
-
-            LastCreatedTransport.SentMessages.Should().BeEmpty();
-            client.State.WaitingForAck.Should().BeEmpty();
-
-            callbackResults.Should().HaveCount(2);
-            callbackResults.All(x => x == false).Should().BeTrue();
+            client.State.WaitingForAck.Should().HaveCount(2);
+            LastCreatedTransport.SentMessages.Should().HaveCount(2);
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
+        [Trait("spec", "RTN15a")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
             var client = await SetupConnectedClient();

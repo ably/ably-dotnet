@@ -93,7 +93,6 @@ namespace IO.Ably.Realtime.Workflow
         {
             var initialState = new ConnectionInitializedState(ConnectionManager, Logger);
             State.Connection.CurrentStateObject = initialState;
-            SetRecoverKeyIfPresent(Client.Options.Recover);
         }
 
         public void Start()
@@ -520,7 +519,6 @@ namespace IO.Ably.Realtime.Workflow
             {
                 try
                 {
-                    State.Connection.UpdateSerial(message);
                     State.Connection.SetConfirmedAlive(Now());
 
                     foreach (var (name, handler) in ProtocolMessageProcessors)
@@ -597,30 +595,16 @@ namespace IO.Ably.Realtime.Workflow
             return ConnectionManager.SendToTransport(message);
         }
 
-        private void SetRecoverKeyIfPresent(string recover)
-        {
-            if (recover.IsNotEmpty())
-            {
-                var match = TransportParams.RecoveryKeyRegex.Match(recover);
-                if (match.Success && long.TryParse(match.Groups[3].Value, out long messageSerial))
-                {
-                    State.Connection.MessageSerial = messageSerial;
-                }
-                else
-                {
-                    Logger.Error($"Recovery Key '{recover}' could not be parsed.");
-                }
-            }
-        }
-
         private void HandleConnectedCommand(SetConnectedStateCommand cmd)
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            bool resumed = State.Connection.IsResumed(info);
-            bool hadPreviousConnection = State.Connection.Key.IsNotEmpty();
+            // recover is used when set via clientOptions#recover initially, resume will be used for all subsequent requests.
+            var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty();
 
-            State.Connection.Update(info);
+            var failedResumeOrRecover = State.Connection.Id != info.ConnectionId && cmd.Message.Error != null; // RTN15c7, RTN16d
+
+            State.Connection.Update(info); // RTN16d, RTN15e
 
             if (info.ClientId.IsNotEmpty())
             {
@@ -633,25 +617,29 @@ namespace IO.Ably.Realtime.Workflow
                 cmd.IsUpdate,
                 Logger);
 
-            SetState(connectedState);
+            SetState(connectedState); // RTN15c7 - if error, set on connection and part of emitted connected event
 
-            if (hadPreviousConnection && resumed == false)
+            Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
+
+            // RTN15c7
+            if (isConnectionResumeOrRecoverAttempt && failedResumeOrRecover)
             {
-                ClearAckQueueAndFailMessages(null);
+                State.Connection.MessageSerial = 0;
+            }
 
-                Logger.Warning(
-                    "Force detaching all attached channels because the connection did not resume successfully!");
-
+            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
+            if (State.Connection.HasConnectionStateTtlPassed(Now) || isConnectionResumeOrRecoverAttempt)
+            {
                 foreach (var channel in Channels)
                 {
-                    if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
+                    if (channel.State == ChannelState.Attaching || channel.State == ChannelState.Attached || channel.State == ChannelState.Suspended)
                     {
-                        ((RealtimeChannel)channel).SetChannelState(ChannelState.Detached, cmd.Message.Error);
+                        ((RealtimeChannel)channel).Attach(null, null, null, true); // state changes as per RTL2g
                     }
                 }
             }
 
-            SendPendingMessages(resumed);
+            SendPendingMessagesOnConnected(failedResumeOrRecover); // RTN19a
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)
@@ -775,12 +763,12 @@ namespace IO.Ably.Realtime.Workflow
 
                     case SetFailedStateCommand cmd:
 
-                        State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
                         var error = TransformIfTokenErrorAndNotRetryable();
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         ConnectionManager.DestroyTransport();
 
@@ -813,6 +801,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         SetState(disconnectedState, skipTimer: cmd.SkipAttach);
 
+                        // RTN7d
                         if (Client.Options.QueueMessages == false)
                         {
                             var failAckMessages = new ErrorInfo(
@@ -852,12 +841,13 @@ namespace IO.Ably.Realtime.Workflow
                         break;
 
                     case SetClosingStateCommand _:
+
                         var transport = ConnectionManager.Transport;
                         var connectedTransport = transport?.State == TransportState.Connected;
 
                         var closingState = new ConnectionClosingState(ConnectionManager, connectedTransport, Logger);
-
                         SetState(closingState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         if (connectedTransport)
                         {
@@ -879,11 +869,12 @@ namespace IO.Ably.Realtime.Workflow
 
                         var suspendedState = new ConnectionSuspendedState(ConnectionManager, cmd.Error, Logger);
                         SetState(suspendedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
+
                         break;
 
                     case SetClosedStateCommand cmd:
 
-                        State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
@@ -892,6 +883,7 @@ namespace IO.Ably.Realtime.Workflow
                         };
 
                         SetState(closedState);
+                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         ConnectionManager.DestroyTransport();
 
@@ -974,11 +966,22 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private void SendPendingMessages(bool resumed)
+        private void SendPendingMessagesOnConnected(bool failedResumeOrRecover)
         {
-            if (resumed)
+            // RTN19a1
+            if (failedResumeOrRecover)
             {
-                // Resend any messages waiting an Ack Queue
+                foreach (var messageAndCallback in State.WaitingForAck)
+                {
+                    State.PendingMessages.Add(new MessageAndCallback(
+                        messageAndCallback.Message,
+                        messageAndCallback.Callback,
+                        messageAndCallback.Logger));
+                }
+            }
+            else
+            {
+                // RTN19a2 - successful resume, msgSerial doesn't change
                 foreach (var message in State.WaitingForAck.Select(x => x.Message))
                 {
                     ConnectionManager.SendToTransport(message);

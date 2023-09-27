@@ -6,15 +6,16 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal sealed class PresenceMap
+    internal class PresenceMap
     {
         private readonly object _lock = new object();
         private readonly ILogger _logger;
         private readonly string _channelName;
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;
 
-        private ICollection<string> _residualMembers;
+        private ICollection<string> _beforeSyncMembers;
         private bool _isSyncInProgress;
+        private bool _isSyncCompleted;
 
         public PresenceMap(string channelName, ILogger logger)
         {
@@ -23,12 +24,15 @@ namespace IO.Ably.Realtime
             _members = new ConcurrentDictionary<string, PresenceMessage>();
         }
 
-        internal event EventHandler SyncNoLongerInProgress;
+        internal virtual string GetKey(PresenceMessage presence)
+        {
+            return presence.MemberKey;
+        }
 
         // Exposed internally to allow for testing.
         internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
 
-        public bool IsSyncInProgress
+        public bool SyncInProgress
         {
             get
             {
@@ -42,19 +46,29 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    var previous = _isSyncInProgress;
                     _isSyncInProgress = value;
-
-                    // if we have gone from true to false then fire SyncNoLongerInProgress
-                    if (previous && !_isSyncInProgress)
-                    {
-                        OnSyncNoLongerInProgress();
-                    }
                 }
             }
         }
 
-        public bool InitialSyncCompleted { get; private set; }
+        public bool SyncCompleted
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _isSyncCompleted;
+                }
+            }
+
+            private set
+            {
+                lock (_lock)
+                {
+                    _isSyncCompleted = value;
+                }
+            }
+        }
 
         public PresenceMessage[] Values
         {
@@ -70,12 +84,13 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 // we've seen this member, so do not remove it at the end of sync
-                _residualMembers?.Remove(item.MemberKey);
+                _beforeSyncMembers?.Remove(GetKey(item));
             }
 
             try
             {
-                if (_members.TryGetValue(item.MemberKey, out var existingItem) && existingItem.IsNewerThan(item))
+                // RTP2a, RTP2b
+                if (_members.TryGetValue(GetKey(item), out var existingItem) && existingItem.IsNewerThan(item))
                 {
                     return false;
                 }
@@ -95,7 +110,7 @@ namespace IO.Ably.Realtime
                     break;
             }
 
-            _members[item.MemberKey] = item;
+            _members[GetKey(item)] = item;
 
             return true;
         }
@@ -103,12 +118,14 @@ namespace IO.Ably.Realtime
         public bool Remove(PresenceMessage item)
         {
             PresenceMessage existingItem;
-            if (_members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+
+            // RTP2a, RTP2b
+            if (_members.TryGetValue(GetKey(item), out existingItem) && existingItem.IsNewerThan(item))
             {
                 return false;
             }
 
-            _members.TryRemove(item.MemberKey, out PresenceMessage _);
+            _members.TryRemove(GetKey(item), out PresenceMessage _);
             if (existingItem?.Action == PresenceAction.Absent)
             {
                 return false;
@@ -121,15 +138,16 @@ namespace IO.Ably.Realtime
         {
             if (_logger.IsDebug)
             {
-                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {SyncInProgress}");
             }
 
-            if (!IsSyncInProgress)
+            if (!SyncInProgress)
             {
                 lock (_lock)
                 {
-                    _residualMembers = new HashSet<string>(_members.Keys);
-                    IsSyncInProgress = true;
+                    _beforeSyncMembers = new HashSet<string>(_members.Keys); // RTP19
+                    SyncInProgress = true;
+                    SyncCompleted = false;
                 }
             }
         }
@@ -138,19 +156,19 @@ namespace IO.Ably.Realtime
         {
             if (_logger.IsDebug)
             {
-                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                _logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {SyncInProgress}");
             }
 
             List<PresenceMessage> removed = new List<PresenceMessage>();
             try
             {
-                if (!IsSyncInProgress)
+                if (!SyncInProgress)
                 {
+                    SyncCompleted = true;
                     return removed.ToArray();
                 }
 
-                // We can now strip out the ABSENT members, as we have
-                // received all of the out-of-order sync messages
+                // RTP2f
                 foreach (var member in _members.ToArray())
                 {
                     if (member.Value.Action == PresenceAction.Absent)
@@ -161,11 +179,10 @@ namespace IO.Ably.Realtime
 
                 lock (_lock)
                 {
-                    if (_residualMembers != null)
+                    // RTP19
+                    if (_beforeSyncMembers != null)
                     {
-                        // Any members that were present at the start of the sync,
-                        // and have not been seen in sync, can be removed
-                        foreach (var member in _residualMembers)
+                        foreach (var member in _beforeSyncMembers)
                         {
                             if (_members.TryRemove(member, out PresenceMessage pm))
                             {
@@ -173,7 +190,7 @@ namespace IO.Ably.Realtime
                             }
                         }
 
-                        _residualMembers = null;
+                        _beforeSyncMembers = null;
                     }
                 }
             }
@@ -186,8 +203,8 @@ namespace IO.Ably.Realtime
             {
                 lock (_lock)
                 {
-                    InitialSyncCompleted = true;
-                    IsSyncInProgress = false;
+                    SyncCompleted = true;
+                    SyncInProgress = false;
                 }
             }
 
@@ -199,7 +216,7 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 _members?.Clear();
-                _residualMembers?.Clear();
+                _beforeSyncMembers?.Clear();
             }
         }
 
@@ -210,17 +227,27 @@ namespace IO.Ably.Realtime
             var state = new JObject
             {
                 ["channelName"] = _channelName,
-                ["syncInProgress"] = _isSyncInProgress,
-                ["initialSyncComplete"] = InitialSyncCompleted,
+                ["syncInProgress"] = SyncInProgress,
+                ["syncCompleted"] = SyncCompleted,
                 ["members"] = new JArray(matchingMembers),
             };
 
             return state;
         }
+    }
 
-        private void OnSyncNoLongerInProgress()
+    // RTP17
+    internal class InternalPresenceMap : PresenceMap
+    {
+        public InternalPresenceMap(string channelName, ILogger logger)
+            : base(channelName, logger)
         {
-            SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+        }
+
+        // RTP17h
+        internal override string GetKey(PresenceMessage presence)
+        {
+            return presence.ClientId;
         }
     }
 }

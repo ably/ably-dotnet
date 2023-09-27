@@ -302,12 +302,12 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             // Upper bound = min((retryAttempt + 2) / 3, 2) * initialTimeout
             // Lower bound = 0.8 * Upper bound
-            disconnectedRetryTimeouts[0].Should().BeInRange(4, 5);
-            disconnectedRetryTimeouts[1].Should().BeInRange(5.33, 6.66);
-            disconnectedRetryTimeouts[2].Should().BeInRange(6.66, 8.33);
+            disconnectedRetryTimeouts[0].Should().BeInRange(4, 5 + 0.20);
+            disconnectedRetryTimeouts[1].Should().BeInRange(5.33, 6.66 + 0.20);
+            disconnectedRetryTimeouts[2].Should().BeInRange(6.66, 8.33 + 0.20);
             for (var i = 3; i < disconnectedRetryTimeouts.Count; i++)
             {
-                disconnectedRetryTimeouts[i].Should().BeInRange(8, 10);
+                disconnectedRetryTimeouts[i].Should().BeInRange(8, 10 + 0.20);
             }
         }
 

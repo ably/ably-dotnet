@@ -120,8 +120,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
-                ConnectionId = "1",
-                ConnectionSerial = 100
+                ConnectionId = "1"
             });
 
             await client.WaitForState(ConnectionState.Connected);
@@ -185,8 +184,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
-                ConnectionId = "1",
-                ConnectionSerial = 100
+                ConnectionId = "1"
             });
 
             await client.WaitForState(ConnectionState.Connected);

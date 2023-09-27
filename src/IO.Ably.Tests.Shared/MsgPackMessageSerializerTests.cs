@@ -379,26 +379,6 @@ namespace IO.Ably.Tests
         [InlineData(123)]
         [InlineData(0)]
         [InlineData(-1)]
-        public void DeserializesMessageCorrectly_ConnectionSerial(long connectionSerial)
-        {
-            // Arrange
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x81);
-            expectedMessage.AddRange(SerializeString("connectionSerial"));
-            expectedMessage.Add(BitConverter.GetBytes(connectionSerial).First());
-
-            // Act
-            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
-
-            // Assert
-            target.Should().NotBeNull();
-            Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
-        }
-
-        [Theory]
-        [InlineData(123)]
-        [InlineData(0)]
-        [InlineData(-1)]
         public void DeserializesMessageCorrectly_Count(int count)
         {
             // Arrange

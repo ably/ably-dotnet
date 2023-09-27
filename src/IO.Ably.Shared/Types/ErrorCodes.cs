@@ -80,7 +80,6 @@ namespace IO.Ably
         public const int ConnectionNotEstablishedNoTransportHandle = 80009;
         public const int InvalidTransportHandle = 80010;
         public const int UnableToRecoverIncompatibleAuthParams = 80011;
-        public const int UnableToRecoverInvalidOrUnspecifiedConnectionSerial = 80012;
         public const int ProtocolError = 80013;
         public const int ConnectionTimedOut = 80014;
         public const int IncompatibleConnectionParams = 80015;

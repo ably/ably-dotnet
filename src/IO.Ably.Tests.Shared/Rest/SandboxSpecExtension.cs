@@ -55,11 +55,11 @@ namespace IO.Ably.Tests
 
             void OnPresenceOnSyncCompleted(object sender, EventArgs e)
             {
-                presence.SyncCompleted -= OnPresenceOnSyncCompleted;
+                presence.SyncCompletedEventHandler -= OnPresenceOnSyncCompleted;
                 taskCompletionSource.SetResult(true);
             }
 
-            presence.SyncCompleted += OnPresenceOnSyncCompleted;
+            presence.SyncCompletedEventHandler += OnPresenceOnSyncCompleted;
             var timeout = waitSpan ?? TimeSpan.FromSeconds(2);
             var waitTask = Task.Delay(timeout);
 

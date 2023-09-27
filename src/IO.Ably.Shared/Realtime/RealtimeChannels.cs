@@ -246,5 +246,28 @@ namespace IO.Ably.Realtime
                     break;
             }
         }
+
+        // RTN16j, RTL15b
+        internal void SetChannelSerialsFromRecoverOption(IDictionary<string, string> serials)
+        {
+            foreach (var keyValuePair in serials)
+            {
+                var channelName = keyValuePair.Key;
+                var channelSerial = keyValuePair.Value;
+                var channel = (RealtimeChannel)Get(channelName);
+                channel.Properties.ChannelSerial = channelSerial;
+            }
+        }
+
+        internal IDictionary<string, string> GetChannelSerials()
+        {
+            var channelSerials = new Dictionary<string, string>();
+            foreach (var realtimeChannel in this)
+            {
+                channelSerials[realtimeChannel.Name] = realtimeChannel.Properties.ChannelSerial;
+            }
+
+            return channelSerials;
+        }
     }
 }

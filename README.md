@@ -235,6 +235,21 @@ if (result.IsFailure)
 }
 ```
 
+- When calling `channel.Publish` with a dotnet object instance as the message data, the library will use the Newtonsoft Json.NET library to serialize the message with default serialization settings.
+- If you need to use custom seralization settings, you can apply the serialization yourself and send the resulting string as the message data:
+
+```csharp
+var serializedData = JsonConvert.SerializeObject(message,
+    new JsonSerializerSettings
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+    });
+
+var ablyMessage = new Message("name", serializedData) {Encoding = "json"};
+
+channel.Publish(ablyMessage);
+```
+
 ### Getting channel history
 
 Calling history returns a paginated list of message. The object is of type `PaginatedResult<Message>` and can be iterated through as a normal list.  
@@ -330,6 +345,22 @@ catch(AblyException ablyError)
     // Log error
 }
 ```
+
+- When calling `channel.PublishAsync` with a dotnet object instance as the message data, the library will use the Newtonsoft Json.NET library to serialize the message with default serialization settings.
+- If you need to use custom seralization settings, you can apply the serialization yourself and send the resulting string as the message data:
+
+```csharp
+var serializedData = JsonConvert.SerializeObject(message,
+    new JsonSerializerSettings
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+    });
+
+var ablyMessage = new Message("name", serializedData) {Encoding = "json"};
+
+channel.Publish(ablyMessage);
+```
+
 
 ### Querying channel history
 
@@ -459,7 +490,7 @@ var realtime = new AblyRealtime(options);
 </ItemGroup>
 ```
 - For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
-
+- To resolve issues related to iOS signed release, [update csproj config](https://github.com/ably/ably-dotnet/issues/1259#issuecomment-1723307985)
 
 ### Examples
 

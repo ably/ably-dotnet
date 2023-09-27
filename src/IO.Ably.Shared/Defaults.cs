@@ -6,10 +6,8 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    internal static class Defaults
+    internal class Defaults
     {
-        internal static readonly float ProtocolVersionNumber = 1.2F;
-
         internal static readonly string LibraryVersion = GetVersion();
 
         internal static string GetVersion()
@@ -18,7 +16,7 @@ namespace IO.Ably
             return version.Split('.').Take(3).JoinStrings(".");
         }
 
-        public static string ProtocolVersion { get; } = ProtocolVersionNumber.ToString(CultureInfo.InvariantCulture);
+        public const string ProtocolVersion = "2"; // CSV2
 
         public const int QueryLimit = 100;
 

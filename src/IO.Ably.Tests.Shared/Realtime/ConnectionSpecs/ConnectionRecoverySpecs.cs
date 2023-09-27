@@ -1,7 +1,11 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
+using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,67 +15,108 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
     public class ConnectionRecoverySpecs : AblyRealtimeSpecs
     {
         [Fact]
-        [Trait("spec", "RTN16c")]
-        public async Task WhenConnectionIsClosed_ConnectionIdAndKeyShouldBeReset()
+        [Trait("spec", "RTN16g")]
+        [Trait("spec", "RTN16g1")]
+        public async Task CreateRecoveryKey_ShouldReturnSerializedConnectionKeyAndMsgSerialAndChannelSerials()
         {
-            var client = await GetConnectedClient();
+            const string expectedRecoveryKey = "{\"connectionKey\":\"connectionKey\",\"msgSerial\":0,\"channelSerials\":{}}";
+
+            var client = GetClientWithFakeTransport();
+            var connectedProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
+                ConnectionId = "1"
+            };
+            client.FakeProtocolMessageReceived(connectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.CreateRecoveryKey().Should().Be(expectedRecoveryKey);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN16g2")]
+        public async Task CreateRecoveryKey_ShouldReturnNullRecoveryKeyForNullConnectionKeyOrWhenStateIsClosed()
+        {
+            var client = GetClientWithFakeTransport();
+            client.Connection.CreateRecoveryKey().Should().BeNullOrEmpty(); // connectionKey is empty
+
+            client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
+            client.Connection.CreateRecoveryKey().Should().NotBeNullOrEmpty();
 
             client.Close();
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-
             await client.WaitForState(ConnectionState.Closed);
-            client.Connection.Id.Should().BeNullOrEmpty();
-            client.Connection.Key.Should().BeNullOrEmpty();
+            client.Connection.CreateRecoveryKey().Should().BeNullOrEmpty();
         }
 
         [Fact]
-        [Trait("spec", "RTN16b")]
-        public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
+        [Trait("spec", "RTN16m")]
+        [System.Obsolete]
+        public async Task DeprecatedRecoveryKeyProperty_ShouldBehaveSameAsCreateRecoveryKey()
         {
-            var client = await GetConnectedClient();
-            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
+            const string expectedRecoveryKey = "{\"connectionKey\":\"connectionKey\",\"msgSerial\":0,\"channelSerials\":{}}";
+
+            var client = GetClientWithFakeTransport();
+            var connectedProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails { ConnectionKey = "connectionKey" },
+                ConnectionId = "1"
+            };
+            client.FakeProtocolMessageReceived(connectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.RecoveryKey.Should().Be(expectedRecoveryKey);
         }
 
         [Fact]
+        [Trait("spec", "RTN16i")]
         [Trait("spec", "RTN16f")]
+        [Trait("spec", "RTN16j")]
+        [Trait("spec", "RTN16k")]
         public async Task RecoveryKey_MsgSerialShouldNotBeSentToAblyButShouldBeSetOnConnection()
         {
-            // RecoveryKey should be in the format
-            // LettersOrNumbers:Number:Number
-            TransportParams.RecoveryKeyRegex.Match("a:b:c").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:b:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:2:c").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("$1:2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("$a:2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:@2:3").Success.Should().BeFalse();
-            TransportParams.RecoveryKeyRegex.Match("a:2:3!").Success.Should().BeFalse();
-
-            // these should be valid
-            TransportParams.RecoveryKeyRegex.Match("1:2:3").Success.Should().BeTrue();
-            TransportParams.RecoveryKeyRegex.Match("a:2:3").Success.Should().BeTrue();
-
-            const string recoveryKey = "abcxyz:100:99";
-            var match = TransportParams.RecoveryKeyRegex.Match(recoveryKey);
-            match.Success.Should().BeTrue();
-            match.Groups[1].Value.Should().Be("abcxyz");
-            match.Groups[2].Value.Should().Be("100");
-            match.Groups[3].Value.Should().Be("99");
-
-            var parts = recoveryKey.Split(':');
-
-            var client = GetRealtimeClient(options => { options.Recover = recoveryKey; });
+            var recoveryKey =
+                "{\"connectionKey\":\"uniqueKey\",\"msgSerial\":45,\"channelSerials\":{\"channel1\":\"1\",\"channel2\":\"2\",\"channel3\":\"3\"}}";
+            var client = GetClientWithFakeTransport(options => { options.Recover = recoveryKey; });
 
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
-            paramsDict.ContainsKey("connection_serial").Should().BeTrue();
-            paramsDict.ContainsKey("msg_serial").Should().BeFalse();
+            paramsDict["recover"].Should().Be("uniqueKey");
 
-            paramsDict["recover"].Should().Be(parts[0]);
-            paramsDict["connection_serial"].Should().Be(parts[1]);
+            client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
 
-            client.Connection.MessageSerial.Should().Be(99);
+            client.Connection.MessageSerial.Should().Be(45);
+            client.Channels.Count().Should().Be(3);
+            var channelCounter = 1;
+            foreach (var realtimeChannel in client.Channels.OrderBy(channel => channel.Name))
+            {
+                realtimeChannel.Name.Should().Be($"channel{channelCounter}");
+                realtimeChannel.Properties.ChannelSerial.Should().Be($"{channelCounter}");
+                channelCounter++;
+            }
+
+            // Recover should be set to null once used
+            client.Options.Recover.Should().BeNull();
+
+            client.Connection.InnerState.MessageSerial = 0;
+            client.Channels.ReleaseAll();
+
+            client.ExecuteCommand(SetDisconnectedStateCommand.Create(null, true));
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
+            paramsDict = transportParams.GetParams();
+            paramsDict.ContainsKey("recover").Should().BeFalse(); // recover param should be empty for next attempt
+
+            client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
+
+            // Recover options shouldn't be used for next retry
+            client.Connection.MessageSerial.Should().Be(0);
+            client.Channels.Count().Should().Be(0);
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)
