@@ -279,6 +279,55 @@ namespace IO.Ably.Tests.Rest
             }
         }
 
+        public class ChannelStatus : ChannelSpecs
+        {
+            public ChannelStatus(ITestOutputHelper output)
+                : base(output)
+            {
+            }
+
+            [Fact]
+            [Trait("spec", "XXX")]
+            public async Task Status_ShouldMakeGetRequest()
+            {
+                const string channelName = "test:one";
+                var response = new ChannelDetails
+                {
+                    ChannelId = "foo",
+                    Status = new Ably.Rest.ChannelStatus
+                    {
+                        IsActive = true,
+                        Occupancy = new ChannelOccupancy
+                        {
+                            Metrics = new ChannelMetrics
+                            {
+                                Connections = 1,
+                                Publishers = 2,
+                                Subscribers = 3,
+                                PresenceConnections = 4,
+                                PresenceSubscribers = 5,
+                                PresenceMembers = 6,
+                            },
+                        },
+                    },
+                };
+                var client = GetRestClient(request => new AblyResponse
+                {
+                    Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                    TextResponse = response.ToJson(),
+                }.ToTask());
+
+                var channel = client.Channels.Get(channelName);
+                var result = await channel.StatusAsync();
+                LastRequest.Method.Should().Be(HttpMethod.Get);
+                LastRequest.Url.Should().Be($"/channels/{channelName}");
+                result.Status.Occupancy.Metrics.PresenceMembers.Should().Be(6);
+
+                var syncResult = channel.Status();
+                syncResult.Should().BeEquivalentTo(result);
+            }
+        }
+
         public class ChannelHistory : ChannelSpecs
         {
             private readonly IRestChannel _channel;
