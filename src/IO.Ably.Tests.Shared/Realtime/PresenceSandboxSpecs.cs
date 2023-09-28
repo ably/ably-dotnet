@@ -513,6 +513,7 @@ namespace IO.Ably.Tests.Realtime
             [ProtocolData]
             [Trait("spec", "RTP17")]
             [Trait("spec", "RTP17b")]
+            [Trait("behavior", "flaky")]
             public async Task Presence_ShouldHaveInternalMapForCurrentConnectionId(Protocol protocol)
             {
                 /*
@@ -564,14 +565,12 @@ namespace IO.Ably.Tests.Realtime
                 msgA.ConnectionId.Should().Be(clientA.Connection.Id);
                 channelA.Presence.MembersMap.Members.Should().HaveCount(1);
                 channelA.Presence.InternalMembersMap.Members.Should().HaveCount(1);
-                channelA.Presence.Unsubscribe();
 
                 msgB.Should().NotBeNull();
                 msgB.Action.Should().Be(PresenceAction.Enter);
                 msgB.ConnectionId.Should().NotBe(clientB.Connection.Id);
                 channelB.Presence.MembersMap.Members.Should().HaveCount(1);
                 channelB.Presence.InternalMembersMap.Members.Should().HaveCount(0);
-                channelB.Presence.Unsubscribe();
 
                 msgA = null;
                 msgB = null;
