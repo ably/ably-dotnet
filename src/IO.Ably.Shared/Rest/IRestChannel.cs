@@ -49,6 +49,12 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query);
 
         /// <summary>
+        /// Returns the active status for the channel including the number of publishers, subscribers and presenceMembers etc.
+        /// </summary>
+        /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
+        Task<ChannelDetails> StatusAsync();
+
+        /// <summary>
         /// Name of the channel.
         /// </summary>
         string Name { get; }
@@ -103,7 +109,8 @@ namespace IO.Ably.Rest
         PaginatedResult<Message> History(PaginatedRequestParams query);
 
         /// <summary>
-        /// Returns the active status for the channel including the number of publishers, subscribers and presenceMembers etc.
+        /// Sync version of <see cref="StatusAsync()"/>.
+        /// Prefer async version where possible.
         /// </summary>
         /// <returns><see cref="ChannelDetails"/>Channel Details.</returns>
         ChannelDetails Status();
