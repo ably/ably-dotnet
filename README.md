@@ -285,7 +285,7 @@ var presenceNextPage = await presenceHistory.NextAsync();
 Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc is simple
 
 ```csharp
-ChannelDetails details = channel.Status();
+ChannelDetails details = await channel.StatusAsync();
 ChannelMetrics metrics = details.Status.Occupancy.Metrics;
 // Do something with 'metrics.Publishers' etc
 ```
