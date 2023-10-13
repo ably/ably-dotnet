@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -75,12 +76,12 @@ namespace IO.Ably.Tests
                 mockHttp.When(new HttpMethod(verb), "https://localhost/*").Respond(HttpStatusCode.OK, "application/json", "{ \"verb\": \"" + verb + "\" }");
                 client.HttpClient.Client = mockHttp.ToHttpClient();
 
-                var response = await client.Request(verb, "/");
+                var response = await client.RequestV2(verb, "/");
                 response.Success.Should().BeTrue($"'{verb}' verb should be supported ");
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
                 response.Items.First()["verb"].ToString().Should().Be(verb);
 
-                var failedResponse = await client.Request("INVALID_HTTP_VERB", "/");
+                var failedResponse = await client.RequestV2("INVALID_HTTP_VERB", "/");
                 failedResponse.Success.Should().BeFalse($"'INVALID_HTTP_VERB' should fail because '{verb}' verb is expected by mock HTTP server.");
             }
         }
@@ -99,7 +100,7 @@ namespace IO.Ably.Tests
             var testParams = new Dictionary<string, string> { { "testParams", "testParamValue" } };
             var testHeaders = new Dictionary<string, string> { { "X-Test-Header", "testHeaderValue" } };
 
-            var paginatedResponse = await client.Request(HttpMethod.Get.Method, _channelPath, testParams, null, testHeaders);
+            var paginatedResponse = await client.RequestV2(HttpMethod.Get.Method, _channelPath, testParams, null, testHeaders);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             _lastRequest.Headers.Should().ContainKey("X-Test-Header");
@@ -162,7 +163,7 @@ namespace IO.Ably.Tests
                     data = "foo",
                 }
             };
-            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.FromObject(objectPayload), null);
+            var paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JToken.FromObject(objectPayload), null);
 
             ValidateResponse(paginatedResponse);
 
@@ -189,7 +190,7 @@ namespace IO.Ably.Tests
                         }
                     ]
                   }";
-            paginatedResponse = await client.Request(HttpMethod.Post, "/messages", null, JObject.Parse(jsonPayload), null);
+            paginatedResponse = await client.RequestV2(HttpMethod.Post.Method, "/messages", null, jsonPayload, null);
 
             ValidateResponse(paginatedResponse, 5);
 
@@ -374,7 +375,7 @@ namespace IO.Ably.Tests
             }));
 
             client.HttpClient.SetPreferredHost("echo.ably.io/respondwith?status=400");
-            var response = await client.Request(HttpMethod.Post.Method, "/");
+            var response = await client.RequestV2(HttpMethod.Post.Method, "/");
             response.Success.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
