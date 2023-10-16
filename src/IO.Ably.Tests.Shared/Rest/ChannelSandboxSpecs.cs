@@ -665,7 +665,7 @@ namespace IO.Ably.Tests.Rest
             AblyRest client = await GetRestClient(protocol);
             IRestChannel c = client.Channels.Get(Name);
 
-            ChannelDetails cd = c.Status();
+            ChannelDetails cd = await c.StatusAsync();
             cd.ChannelId.Should().Be(Name);
             cd.Status.IsActive.Should().BeTrue();
 
