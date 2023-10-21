@@ -1,5 +1,24 @@
 # Change Log
 
+## [1.2.14](https://github.com/ably/ably-dotnet/tree/1.2.14) (2023-10-21)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.13...1.2.14)
+
+**Fixed bugs:**
+
+- Realtime Channel Status method [\#1240](https://github.com/ably/ably-dotnet/issues/1240)
+
+**Closed issues:**
+
+- No `async` version of `IRestChannel.Status` [\#1263](https://github.com/ably/ably-dotnet/issues/1263)
+- Ably and ClientWebsocket [\#1257](https://github.com/ably/ably-dotnet/issues/1257)
+- JSON Encoding issues [\#1255](https://github.com/ably/ably-dotnet/issues/1255)
+
+**Merged pull requests:**
+
+- Add async version of channel status [\#1266](https://github.com/ably/ably-dotnet/pull/1266) ([sacOO7](https://github.com/sacOO7))
+- Fix ably request method param [\#1260](https://github.com/ably/ably-dotnet/pull/1260) ([sacOO7](https://github.com/sacOO7))
+
 ## [1.2.13](https://github.com/ably/ably-dotnet/tree/1.2.13) (2023-09-25)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.12...1.2.13)
