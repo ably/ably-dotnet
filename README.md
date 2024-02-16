@@ -21,7 +21,7 @@ This is a .NET client library for Ably which targets the 2.0 client library spec
 * [Xamarin.iOS 10.14+](https://developer.xamarin.com/releases/ios/xamarin.ios_10/xamarin.ios_10.14/)
 * Xamarin.Mac 3.8+
 * Unity 2019.x +, [check README](./unity/README.md)
-* Push Notification, check [support section](#push-notification).
+* Push Notification, [check support section](#push-notification).
 
 ## Documentation
 
