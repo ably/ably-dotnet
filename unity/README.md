@@ -63,7 +63,8 @@ namespace Example.ChatApp
         }
     }
 ```
-- Please take a look at [Unity Demo Chat App](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
+- Please take a look at [Unity demo chat app](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
+- Also check blog on [Multiplayer game in unity with ably](https://ably.com/blog/multiplayer-game-in-unity-with-ably).
 
 ### Unsupported Platforms
 - It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking. We have active issue to add support for the same https://github.com/ably/ably-dotnet/issues/1211.
