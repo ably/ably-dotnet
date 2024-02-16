@@ -21,39 +21,23 @@ This is a .NET client library for Ably which targets the 2.0 client library spec
 * [Xamarin.iOS 10.14+](https://developer.xamarin.com/releases/ios/xamarin.ios_10/xamarin.ios_10.14/)
 * Xamarin.Mac 3.8+
 * Unity 2019.x +, [check README](./unity/README.md)
-
-## Push notification
-
-The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
-
-The [Push Notifications Readme](PushNotifications.md) describes:
-
-* How to setup Push notifications for Xamarin mobile apps
-* How to use the Push Admin api to send push notifications directly to a devices or a client
-* How to subscribe to channels that support push notification
-* How to send Ably messages that include a notification
-
-## Unity
-Please take a look at [Unity README](./unity/README.md) and [Ably Unity Blog](https://ably.com/blog/multiplayer-game-in-unity-with-ably) for `ably-unity` sdk usage in your application.
-
-## Known Limitations
-* Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
+* Push Notification, check [support section](#push-notification).
 
 ## Documentation
 
-Visit `https://ably.com/docs` for a complete API reference and more examples.
+Visit [https://ably.com/docs](https://ably.com/docs) for a complete API reference and more examples.
 
 ## Installation
 
 The client library is available as a [nuget package](https://www.nuget.org/packages/ably.io/).
 
-You can install it from the Package Manager Console using this command
+You can install it from the Package Manager Console:
 
 ```shell
 PM> Install-Package ably.io
 ```
 
-or using the .NET CLI in your project directory using
+or using the .NET CLI in your project directory:
 
 ```shell
 dotnet add package ably.io
@@ -61,17 +45,21 @@ dotnet add package ably.io
 
 ## Using the Realtime API
 
+The Realtime library is typically used client-side in your applications. It maintains a persistent connection to Ably and is a stateful library. [Find out when you should use the REST or Realtime library](https://faqs.ably.com/should-i-use-the-rest-or-realtime-library).
+
 ### Introduction
 
-All examples assume a client has been created as follows:
+Creating a Realtime client:
 
 ```csharp
 // Using basic auth with API key
+// Note in production, an API key should not be used in untrusted mobile/browser clients
 var realtime = new AblyRealtime("<api key>");
 ```
 
 ```csharp
 // Using token auth with token string
+// Note this token is not renewable - a token callback should be used in production
 var realtime = new AblyRealtime(new ClientOptions { Token = "token" });
 ```
 
@@ -291,15 +279,15 @@ options.CustomContext = SynchronizationContext.Current;
 
 ## Using the REST API
 
-### Introduction
+The REST library is typically used server-side in your applications and is stateless. [Find out when you should use the REST or Realtime library](https://faqs.ably.com/should-i-use-the-rest-or-realtime-library).
 
-The rest client provides a fully async wrapper around the Ably service web api.
+### Instancing a REST client
 
-All examples assume a client and/or channel has been created as follows:
+Creating a REST client and channel:
 
 ```csharp
 var client = new AblyRest("<api key>");
-IRealtimeChannel channel = client.Channels.Get("test");
+IRealtimeChannel channel = client.Channels.Get("chat");
 ```
 
 If you do not have an API key, [sign up for a free API key now](https://ably.com/signup)
@@ -433,9 +421,10 @@ ChannelMetrics metrics = details.Status.Occupancy.Metrics;
 ```
 
 ### Making explicit HTTP requests to Ably Rest Endpoints / Batch publish
-- The `AblyRest->Request` method should be used to make explicit HTTP requests.
+- The `AblyRest->Request` method can be used to make explicit HTTP requests to the [Ably REST API](https://ably.com/docs/api/rest-api).
 - It automatically adds necessary auth headers based on the initial auth config and supports pagination.
 - The following is an example of using the batch publish API based on the [Ably batch publish rest endpoint documentation](https://ably.com/docs/api/rest-api#batch-publish).
+
 ```csharp
     var objectPayload = new
     {
@@ -533,6 +522,20 @@ namespace testing_ably_console
     }
 }
 ```
+
+## Push notification
+The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
+
+The [Push Notifications Readme](PushNotifications.md) describes:
+
+* How to setup Push notifications for Xamarin mobile apps.
+* How to use the Push Admin api to send push notifications directly to a devices or a client.
+* How to subscribe to channels that support push notification.
+* How to send Ably messages that include a notification.
+
+## Known Limitations
+* Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
+
 
 ## Dependencies
 
