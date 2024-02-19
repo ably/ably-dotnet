@@ -721,7 +721,7 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isAttachWithoutMessageLoss = true)
+        internal void ChannelAttached(ProtocolMessage attachedMessage)
         {
             // RTP19
             StartSync();
@@ -747,10 +747,7 @@ namespace IO.Ably.Realtime
             SendQueuedMessages();
 
             // RTP17f
-            if (isAttachWithoutMessageLoss)
-            {
-                EnterMembersFromInternalPresenceMap();
-            }
+            EnterMembersFromInternalPresenceMap();
         }
 
         private void SendQueuedMessages()
