@@ -70,10 +70,13 @@ namespace IO.Ably.Realtime
                     }
 
                     // RTL12
-                    if (channel.State == ChannelState.Attached && !protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
+                    if (channel.State == ChannelState.Attached)
                     {
-                        channel.Presence.ChannelAttached(protocolMessage, false);
-                        channel.EmitErrorUpdate(protocolMessage.Error, false, protocolMessage);
+                        if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
+                        {
+                            channel.Presence.ChannelAttached(protocolMessage, false);
+                            channel.EmitErrorUpdate(protocolMessage.Error, false, protocolMessage);
+                        }
                     }
                     else
                     {
