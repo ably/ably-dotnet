@@ -1,13 +1,6 @@
 # Ably Unity SDK
-- Unity support is currently in beta.
 - Supports both [Mono](https://docs.unity3d.com/Manual/Mono.html) and [IL2CPP](https://docs.unity3d.com/Manual/IL2CPP.html) builds.
-
-Considerations:
-* We are actively working towards automated testing by integrating Unity Cloud Build into our .NET CI pipeline.
-* Installation requires developers to import a custom Unity package that includes all of Ably's dependencies.
-
-### Supported Platforms
-- Windows, MacOS, Linux, Android and iOS.
+- Supports **Windows**, **MacOS**, **Linux**, **Android** and **iOS**.
 
 ### System Requirements
 * Unity 2019.x.x or newer
@@ -70,11 +63,13 @@ namespace Example.ChatApp
         }
     }
 ```
-- Please take a look at [Unity Demo Chat App](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
+- Please take a look at [Unity demo chat app](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
+- Also check blog on [Multiplayer game in unity with ably](https://ably.com/blog/multiplayer-game-in-unity-with-ably).
 
 ### Unsupported Platforms
-- WebGL: Due to incompatibility with WebSockets.<br/>
-For more information on this, read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking in the Unity documentation.
+- It doesn't support **WebGL** due to incompatibility with WebSockets. Read the [Direct Socket Access](https://docs.unity3d.com/2019.3/Documentation/Manual/webgl-networking.html) section under WebGL Networking. We have active issue to add support for the same https://github.com/ably/ably-dotnet/issues/1211.
+- To support **WebGL**, you should refer to [interation with browser javascript from WebGL](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). You can import [ably-js](https://github.com/ably/ably-js) as a browser javascript and call it from WebGL. For more information, refer to the project [Ably Tower Defence](https://github.com/ably-labs/ably-tower-defense/tree/js-branch/).
+
 
 ### Contributing
 - Please take a look at the [contributing doc](CONTRIBUTING.md) for information relating to local development setup, writing and running tests.
