@@ -47,7 +47,7 @@ dotnet add package ably.io
 
 The Realtime library is typically used client-side in your applications. It maintains a persistent connection to Ably and is a stateful library. [Find out when you should use the REST or Realtime library](https://faqs.ably.com/should-i-use-the-rest-or-realtime-library).
 
-### Introduction
+### Instancing a Realtime client
 
 Creating a Realtime client:
 
@@ -97,13 +97,15 @@ realtime.Connection.On(args =>
 
 ### Subscribing to a channel
 
-Create a channel
+[Channels](https://ably.com/docs/realtime/channels?lang=javascript) are the medium through which messages are distributed. 
+
+To create a channel object:
 
 ```csharp
 IRealtimeChannel channel = realtime.Channels.Get("test");
 ```
 
-Subscribing to all events:
+Subscribe to all events published on that channel:
 
 ```csharp
 channel.Subscribe(message =>
@@ -141,45 +143,6 @@ channel.On(ChannelState.Attached, args =>
     // Do stuff when channel is attached
 });
 ```
-
-### Enable logging
-
-Define a new class that implements `ILoggerSink` interface.
-
-```csharp
-class CustomLogHandler : ILoggerSink
-{
-    public void LogEvent(LogLevel level, string message)
-    {
-        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
-    }
-}
-```
-
-Update clientOptions for `LogLevel` and `LogHandler`.
-
-```csharp
-clientOpts.LogLevel = LogLevel.Debug;
-clientOpts.LogHandler = new CustomLogHandler();
-```
-
-### Subscribing to a channel in delta mode
-
-Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
-
-Request a `Vcdiff` formatted delta stream using channel options when you get the channel:
-
-```csharp
-var channelParams = new ChannelParams();
-channelParams.Add("delta", "vcdiff");
-var channelOptions = new ChannelOptions();
-channelOptions.Params = channelParams;
-IRealtimeChannel channel = ably.Channels.Get(ChannelName, channelOptions);
-```
-
-Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
-
-If you would like to inspect the `Message` instances in order to identify whether the `Data` they present was rendered from a delta message from Ably then you can see if `Extras.Delta.Format` equals `"vcdiff"`.
 
 ### Publishing to a channel
 
@@ -255,6 +218,24 @@ foreach (var presence in presenceHistory.Items)
 var presenceNextPage = await presenceHistory.NextAsync();
 ```
 
+### Subscribing to a channel in delta mode
+
+Subscribing to a channel in delta mode enables [delta compression](https://ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+
+Request a `Vcdiff` formatted delta stream using channel options when you get the channel:
+
+```csharp
+var channelParams = new ChannelParams();
+channelParams.Add("delta", "vcdiff");
+var channelOptions = new ChannelOptions();
+channelOptions.Params = channelParams;
+IRealtimeChannel channel = ably.Channels.Get(ChannelName, channelOptions);
+```
+
+Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.Data` instances that are delivered to your `Action<Message>` handler continue to contain the values that were originally published.
+
+If you would like to inspect the `Message` instances in order to identify whether the `Data` they present was rendered from a delta message from Ably then you can see if `Extras.Delta.Format` equals `"vcdiff"`.
+
 ### Symmetric end-to-end encrypted payloads on a channel
 
 When a 128-bit or 256-bit key is provided to the library, all payloads are encrypted and decrypted automatically using that key on the channel. The secret key is never transmitted to Ably and thus it is the developer's responsibility to distribute a secret key to both publishers and subscribers.
@@ -275,6 +256,40 @@ encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted befo
 
 ```
 options.CustomContext = SynchronizationContext.Current;
+```
+
+### Increase Transport send and receive buffers
+
+In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
+To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it.
+
+```csharp
+var maxBufferSize = 64 * 1024;
+var options = new ClientOptions();
+var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
+options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
+var realtime = new AblyRealtime(options);
+```
+
+### Enable logging
+
+Define a new class that implements `ILoggerSink` interface.
+
+```csharp
+class CustomLogHandler : ILoggerSink
+{
+    public void LogEvent(LogLevel level, string message)
+    {
+        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
+    }
+}
+```
+
+Update clientOptions for `LogLevel` and `LogHandler`.
+
+```csharp
+clientOpts.LogLevel = LogLevel.Debug;
+clientOpts.LogHandler = new CustomLogHandler();
 ```
 
 ## Using the REST API
@@ -412,7 +427,7 @@ DateTimeOffset time = await client.TimeAsync();
 
 ### Getting the channel status
 
-Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc is simple
+Getting the current status of a channel, including details of the current number of `Publishers`, `Subscribers` and `PresenceMembers` etc:
 
 ```csharp
 ChannelDetails details = await channel.StatusAsync();
@@ -441,20 +456,7 @@ ChannelMetrics metrics = details.Status.Occupancy.Metrics;
   var jsonPayload = JsonConvert.SerializeObject(objectPayload);
   var paginatedResponse = await ablyRest.RequestV2(HttpMethod.Post, "/messages", null, jsonPayload, null);
 ```
-- Follow official [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
-
-### Increase Transport send and receive buffers
-
-In .NET Framework projects, we discovered issues with the .NET implementation of the web socket protocol during times of high load with large payloads (over 50kb). This is better described in `https://github.com/ably/ably-dotnet/issues/446`
-To work around the problem, you need to adjust websocket library's buffer to it's maximum size of 64kb. Here is an example of how to do it.
-
-```csharp
-var maxBufferSize = 64 * 1024;
-var options = new ClientOptions();
-var websocketOptions = new MsWebSocketOptions() { SendBufferInBytes = maxBufferSize, ReceiveBufferInBytes = maxBufferSize };
-options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOptions);
-var realtime = new AblyRealtime(options);
-```
+- See the [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
 
 ### MAUI configuration
 - Since `ably-dotnet` makes use of the reflection API, MAUI assembly trimming may cause issues.
@@ -468,12 +470,12 @@ var realtime = new AblyRealtime(options);
 - For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
 - To resolve issues related to iOS signed release, [update csproj config](https://github.com/ably/ably-dotnet/issues/1259#issuecomment-1723307985)
 
-### Examples
+## Examples
 
 * More Examples can be found under ```examples``` directory.
 * While working with console app, make sure to put explicit await for async methods.
 
-#### Sample .NET Core implementation
+### Sample .NET Core implementation
 
 ```csharp
 using System;
@@ -496,7 +498,7 @@ namespace testing_ably_console
 }
 ```
 
-#### Sample .NET Framework implementation (when you don't have async main method)*
+### Sample .NET Framework implementation (when you don't have async main method)*
 
 ```csharp
 using System;
@@ -524,6 +526,7 @@ namespace testing_ably_console
 ```
 
 ## Push notification
+
 The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
 
 The [Push Notifications Readme](PushNotifications.md) describes:
