@@ -271,7 +271,7 @@ options.TransportFactory = new MsWebSocketTransport.TransportFactory(websocketOp
 var realtime = new AblyRealtime(options);
 ```
 
-### Enable logging
+## Enable logging
 
 Define a new class that implements `ILoggerSink` interface.
 
