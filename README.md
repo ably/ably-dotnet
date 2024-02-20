@@ -458,18 +458,6 @@ ChannelMetrics metrics = details.Status.Occupancy.Metrics;
 ```
 - See the [ably rest endpoint doc](https://ably.com/docs/api/rest-api) for more information on other endpoints.
 
-### MAUI configuration
-- Since `ably-dotnet` makes use of the reflection API, MAUI assembly trimming may cause issues.
-- When using MAUI, we recommend adding the following to your `.csproj` file to disable assembly trimming.
-
-```xml
-<ItemGroup>
-  <TrimmerRootAssembly Include="IO.Ably" />
-</ItemGroup>
-```
-- For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
-- To resolve issues related to iOS signed release, [update csproj config](https://github.com/ably/ably-dotnet/issues/1259#issuecomment-1723307985)
-
 ## Examples
 
 * More Examples can be found under ```examples``` directory.
@@ -525,6 +513,18 @@ namespace testing_ably_console
 }
 ```
 
+## MAUI configuration
+- Since `ably-dotnet` makes use of the reflection API, MAUI assembly trimming may cause issues.
+- When using MAUI, we recommend adding the following to your `.csproj` file to disable assembly trimming.
+
+```xml
+<ItemGroup>
+  <TrimmerRootAssembly Include="IO.Ably" />
+</ItemGroup>
+```
+- For more information related to assembly trimming, check [MAUI trimming doc](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
+- To resolve issues related to iOS signed release, [update csproj config](https://github.com/ably/ably-dotnet/issues/1259#issuecomment-1723307985)
+
 ## Push notification
 
 The Ably.net library fully supports Ably's push notifications. The feature set consists of two distinct areas: [Push Admin](https://ably.com/docs/general/push/admin), [Device Push Notifications](https://ably.com/docs/realtime/push).
@@ -536,7 +536,7 @@ The [Push Notifications Readme](PushNotifications.md) describes:
 * How to subscribe to channels that support push notification.
 * How to send Ably messages that include a notification.
 
-## Known Limitations
+### Known Limitations
 * Browser push notifications in [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) are not supported.
 
 
