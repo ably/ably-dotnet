@@ -427,7 +427,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP17f")]
             public async Task OnAttach_ShouldEnterMembersFromInternalMap(Protocol protocol)
             {
-                var channelName = "RTP17c2".AddRandomSuffix();
+                var channelName = "RTP17f".AddRandomSuffix();
                 var setupClient = await GetRealtimeClient(protocol);
                 var setupChannel = setupClient.Channels.Get(channelName);
 
