@@ -647,7 +647,7 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data);
+                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data, item.Id);
                     UpdatePresence(itemToSend, (success, info) =>
                     {
                         if (!success)
@@ -721,24 +721,15 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isAttachWithoutMessageLoss = true)
+        internal void ChannelAttached(ProtocolMessage attachedMessage)
         {
+            // RTP1
+            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+
             // RTP19
             StartSync();
 
-            // RTP1
-            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
-            if (hasPresence)
-            {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachedMessage.Flags}");
-                }
-
-                StartSync();
-            }
-            else
+            if (!hasPresence)
             {
                 EndSync(); // RTP19
             }
@@ -747,10 +738,7 @@ namespace IO.Ably.Realtime
             SendQueuedMessages();
 
             // RTP17f
-            if (isAttachWithoutMessageLoss)
-            {
-                EnterMembersFromInternalPresenceMap();
-            }
+            EnterMembersFromInternalPresenceMap();
         }
 
         private void SendQueuedMessages()

@@ -406,7 +406,6 @@ namespace IO.Ably.Tests.Realtime
 
                     // let the library know the transport is really dead
                     testTransport.Listener?.OnTransportEvent(testTransport.Id, TransportState.Closed);
-
                     await realtimeClient.WaitForState(ConnectionState.Disconnected);
                     await realtimeClient.WaitForState(ConnectionState.Connected);
                     await realtimeChannel.WaitForAttachedState();
@@ -452,43 +451,35 @@ namespace IO.Ably.Tests.Realtime
                 presence.InternalMembersMap.Members.Should().HaveCount(1);
 
                 List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
-                PresenceMessage updateMessage = null;
-                PresenceMessage enterMessage = null;
+                PresenceMessage enteredMember = null;
                 await WaitForMultiple(2, partialDone =>
                 {
                     presence.Subscribe(PresenceAction.Leave, message =>
                     {
                         leaveMessages.Add(message);
                     });
-                    presence.Subscribe(PresenceAction.Update, message =>
+                    client.GetTestTransport().BeforeMessageSend = message =>
                     {
-                        updateMessage = message;
-                        partialDone(); // 1 call
-                    });
-                    presence.Subscribe(PresenceAction.Enter, message =>
-                    {
-                        enterMessage = message; // not expected to hit
-                    });
+                        enteredMember = message.Presence.First();
+                        client.GetTestTransport().BeforeMessageSend = _ => { };
+                        partialDone();
+                    };
                     client.GetTestTransport().AfterDataReceived = message =>
                     {
                         if (message.Action == ProtocolMessage.MessageAction.Attached)
                         {
                             bool hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
                             hasPresence.Should().BeFalse();
-                            bool resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
-                            resumed.Should().BeTrue();
                             client.GetTestTransport().AfterDataReceived = _ => { };
                             partialDone(); // 1 call
                         }
                     };
-                    // inject duplicate attached message with resume flag ( no RTL12 message loss event)
+                    // inject duplicate attached message without resume flag
                     var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                     {
                         Channel = channelName,
                         Flags = 0,
                     };
-                    protocolMessage.SetFlag(ProtocolMessage.Flag.Resumed);
-                    protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed).Should().BeTrue();
                     client.GetTestTransport().FakeReceivedMessage(protocolMessage);
                 });
 
@@ -498,15 +489,12 @@ namespace IO.Ably.Tests.Realtime
                     msg.ClientId.Should().BeOneOf("member_0", "member_1", "member_2", "local");
                 }
 
-                updateMessage.Should().NotBeNull();
-                updateMessage.ClientId.Should().Be("local");
-                enterMessage.Should().BeNull();
-
+                enteredMember.Should().NotBeNull();
+                enteredMember.Action.Should().Be(PresenceAction.Enter);
+                enteredMember.ClientId.Should().Be("local");
                 presence.Unsubscribe();
-                var remainingMembers = await presence.GetAsync();
 
-                remainingMembers.Should().HaveCount(1);
-                remainingMembers.First().ClientId.Should().Be("local");
+                client.Close();
             }
 
             [Theory]
