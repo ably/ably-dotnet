@@ -723,22 +723,13 @@ namespace IO.Ably.Realtime
 
         internal void ChannelAttached(ProtocolMessage attachedMessage)
         {
+            // RTP1
+            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+
             // RTP19
             StartSync();
 
-            // RTP1
-            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
-            if (hasPresence)
-            {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachedMessage.Flags}");
-                }
-
-                StartSync();
-            }
-            else
+            if (!hasPresence)
             {
                 EndSync(); // RTP19
             }
