@@ -152,7 +152,7 @@ namespace IO.Ably
             }
             while (currentTry < numberOfRetries);
 
-            throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request"), ErrorCodes.InternalError));
+            throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request, exceeded max no. of retries"), ErrorCodes.InternalError));
 
             List<string> GetFallbackHosts()
             {
