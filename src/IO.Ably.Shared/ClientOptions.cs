@@ -159,20 +159,17 @@ namespace IO.Ably
         /// <returns>RestHost.</returns>
         public string FullRestHost()
         {
-            var restHost = _restHost;
-            if (restHost.IsEmpty())
+            if (_restHost.IsNotEmpty())
             {
-                restHost = Defaults.RestHost;
+                return _restHost;
             }
 
-            if (restHost == Defaults.RestHost)
+            if (!IsProductionEnvironment)
             {
-                return IsProductionEnvironment
-                    ? restHost
-                    : $"{Environment}-{restHost}";
+                return $"{Environment}-{Defaults.RestHost}";
             }
 
-            return restHost;
+            return Defaults.RestHost;
         }
 
         /// <summary>
@@ -181,27 +178,26 @@ namespace IO.Ably
         /// <returns>RealtimeHost.</returns>
         public string FullRealtimeHost()
         {
-            var realtimeHost = _realtimeHost;
-            if (realtimeHost.IsEmpty())
+            if (_realtimeHost.IsNotEmpty())
             {
-                if (_restHost.IsNotEmpty())
-                {
-                    Logger.Warning(
-                        $@"restHost is set to {_restHost} but realtimeHost is not set,
-                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
-                                     please set realtimeHost explicitly.");
-                    return _restHost;
-                }
-
-                realtimeHost = Defaults.RealtimeHost;
+                return _realtimeHost;
             }
 
-            if (realtimeHost == Defaults.RealtimeHost)
+            if (_restHost.IsNotEmpty())
             {
-                return IsProductionEnvironment ? realtimeHost : $"{Environment}{'-'}{realtimeHost}";
+                Logger.Warning(
+                    $@"restHost is set to {_restHost} but realtimeHost is not set,
+                    so setting realtimeHost to {_restHost} too. If this is not what you want,
+                    please set realtimeHost explicitly.");
+                return _restHost;
             }
 
-            return realtimeHost;
+            if (!IsProductionEnvironment)
+            {
+                return $"{Environment}-{Defaults.RealtimeHost}";
+            }
+
+            return Defaults.RealtimeHost;
         }
 
         /// <summary>
