@@ -52,8 +52,6 @@ namespace IO.Ably
 
         private DateTimeOffset? FallbackHostUsedFrom { get; set; }
 
-        private bool CanRetry => Options.IsDefaultHost || Options.FallbackHostsUseDefault;
-
         internal void SetPreferredHost(string currentHost)
         {
             // If we are retrying the default host we need to clear the preferred one
@@ -115,7 +113,7 @@ namespace IO.Ably
                         break;
                     }
 
-                    if (CanRetry && response.CanRetry)
+                    if (response.CanRetry)
                     {
                         currentTry++;
 
@@ -130,7 +128,7 @@ namespace IO.Ably
                         }
                     }
 
-                    // We only return the request if there is no exception
+                    // We only return the response if there is no exception
                     if (request.NoExceptionOnHttpError && response.Exception == null)
                     {
                         return response.AblyResponse;
