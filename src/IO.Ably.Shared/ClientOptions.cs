@@ -226,7 +226,7 @@ namespace IO.Ably
                 {
                     Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
                 }
-                
+
                 Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
                 return Defaults.FallbackHosts;
             }

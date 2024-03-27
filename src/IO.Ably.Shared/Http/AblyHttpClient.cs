@@ -88,7 +88,7 @@ namespace IO.Ably
             int currentTry = 0;
             var startTime = Now();
 
-            var numberOfRetries = Options.HttpMaxRetryCount; // One for the first request
+            var maxNumberOfRetries = Options.HttpMaxRetryCount; // One for the first request
             var host = GetHost();
 
             request.Headers.TryGetValue("request_id", out var requestId);
@@ -115,8 +115,6 @@ namespace IO.Ably
 
                     if (response.CanRetry)
                     {
-                        currentTry++;
-
                         Logger.Warning(WrapWithRequestId("Failed response. " + response.GetFailedMessage() + ". Retrying..."));
                         var (success, newHost) = HandleHostChangeForRetryableFailure();
                         if (success)
@@ -124,6 +122,7 @@ namespace IO.Ably
                             Logger.Debug(WrapWithRequestId($"Retrying using host: {newHost}"));
 
                             host = newHost;
+                            currentTry++;
                             continue;
                         }
                     }
@@ -148,7 +147,7 @@ namespace IO.Ably
                     throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request. " + ex.Message), ErrorCodes.InternalError), ex);
                 }
             }
-            while (currentTry < numberOfRetries);
+            while (currentTry <= maxNumberOfRetries);
 
             throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request, exceeded max no. of retries"), ErrorCodes.InternalError));
 
