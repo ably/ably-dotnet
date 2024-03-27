@@ -28,6 +28,7 @@
     <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DocumentationFile>bin\Debug\IO.Ably.xml</DocumentationFile>
+    <NoWarn>NU1903</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
