@@ -216,7 +216,7 @@ namespace IO.Ably
                     throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
                 }
 
-                if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
+                if (!IsDefaultPort)
                 {
                     const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
                     throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
@@ -226,15 +226,12 @@ namespace IO.Ably
                 {
                     Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
                 }
-                else
-                {
-                    Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
-                }
-
+                
+                Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
                 return Defaults.FallbackHosts;
             }
 
-            if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
+            if (_fallbackHosts is null && _restHost.IsEmpty() && _realtimeHost.IsEmpty() && IsDefaultPort)
             {
                 return IsProductionEnvironment
                     ? Defaults.FallbackHosts
