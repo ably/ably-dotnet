@@ -69,7 +69,7 @@ namespace IO.Ably
             SuspendedRetryTimeout = options.SuspendedRetryTimeout;
             HttpOpenTimeout = options.HttpOpenTimeout;
             HttpRequestTimeout = options.HttpRequestTimeout;
-            HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
+            HttpMaxRetryCount = options.HttpMaxRetryCount;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
             FallbackRetryTimeOut = options.FallbackRetryTimeout;
             FallbackHosts = options.GetFallbackHosts();
