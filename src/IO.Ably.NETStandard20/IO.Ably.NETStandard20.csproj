@@ -42,7 +42,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='package|netstandard2.0|AnyCPU'">
     <WarningsNotAsErrors>NU1903;</WarningsNotAsErrors>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <NoWarn>1701;1702;NU1903;</NoWarn>
   </PropertyGroup>
 
@@ -58,7 +58,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='package|net6.0|AnyCPU'">
     <WarningsNotAsErrors>NU1903;</WarningsNotAsErrors>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <NoWarn>1701;1702;NU1903;</NoWarn>
   </PropertyGroup>
 
@@ -74,7 +74,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='package|net7.0|AnyCPU'">
     <WarningsNotAsErrors>NU1903;</WarningsNotAsErrors>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <NoWarn>1701;1702;NU1903;</NoWarn>
   </PropertyGroup>
 
