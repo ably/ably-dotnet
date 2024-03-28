@@ -6,8 +6,8 @@ nuget Fake.Core.Target
 nuget Fake.DotNet.AssemblyInfoFile
 nuget Fake.DotNet.Cli
 nuget Fake.DotNet.Testing.XUnit2
-nuget MSBuild.StructuredLogger 2.1.669
-nuget Microsoft.Build 17.3.2
-nuget Microsoft.Build.Framework 17.3.2
-nuget Microsoft.Build.Tasks.Core 17.3.2
-nuget Microsoft.Build.Utilities.Core 17.3.2
+nuget MSBuild.StructuredLogger 2.2.206
+nuget Microsoft.Build 
+nuget Microsoft.Build.Framework
+nuget Microsoft.Build.Tasks.Core
+nuget Microsoft.Build.Utilities.Core
