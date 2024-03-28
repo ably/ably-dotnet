@@ -17,7 +17,7 @@
       "_link": "https://github.com/fsprojects/FAKE"
     },
     "fsdocs-tool": {
-      "version": "17.2.0",
+      "version": "14.0.1",
       "commands": [
         "fsdocs"
       ],
