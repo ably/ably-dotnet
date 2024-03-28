@@ -283,6 +283,7 @@ let initTargets (argv) =
             testDll
             |> xUnit2 (fun p ->
                 { p with
+                    DisableInternalBinLog = true
                     NUnitXmlOutputPath = Some(logsPath)
                     Method = Some(trimTestMethod testMethodName)
                     ErrorLevel = errorLevel })
@@ -294,6 +295,7 @@ let initTargets (argv) =
             testDll
             |> xUnit2 (fun p ->
                 { p with
+                    DisableInternalBinLog = true
                     NUnitXmlOutputPath = Some logsPath
                     ExcludeTraits = [ ("type", "integration") ]
                     ErrorLevel = errorLevel })
@@ -305,6 +307,7 @@ let initTargets (argv) =
             testDll
             |> xUnit2 (fun p ->
                 { p with
+                    DisableInternalBinLog = true
                     NUnitXmlOutputPath = Some logsPath
                     IncludeTraits = [ ("type", "integration") ]
                     TimeOut = TimeSpan.FromMinutes(20.)
