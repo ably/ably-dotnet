@@ -368,8 +368,8 @@ let initTargets (argv) =
                     Configuration = configuration
                     MSBuildParams =
                         { opts.MSBuildParams with
-                            Properties = [ "DefineConstants", compilationConstant ]
-                            DisableInternalBinLog = true } })
+                            DisableInternalBinLog = true
+                            Properties = [ "DefineConstants", compilationConstant; "DisableInProcNode", "True" ] } })
             NetStandardSolution)
 
     Target.create "NetStandard - Unit Tests" (fun _ -> runStandardTests UnitTests |> ignore)
