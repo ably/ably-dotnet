@@ -1,5 +1,7 @@
 Microsoft.Build
+Microsoft.Build.Framework
 Microsoft.Build.Tasks.Core
+Microsoft.Build.Utilities.Core
 Fake.Core.Target
 Fake.DotNet.AssemblyInfoFile
 Fake.DotNet.Cli
