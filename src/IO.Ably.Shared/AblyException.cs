@@ -78,12 +78,5 @@ namespace IO.Ably
         {
             return new AblyException(ErrorInfo.Parse(response));
         }
-
-        internal static AblyException FromResponse(AblyResponse response, Func<string, string> wrapMsgFunc)
-        {
-            var errorInfo = ErrorInfo.Parse(response);
-            errorInfo.Message = wrapMsgFunc(errorInfo.Message);
-            return new AblyException(errorInfo);
-        }
     }
 }
