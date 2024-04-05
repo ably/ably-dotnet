@@ -134,7 +134,7 @@ namespace IO.Ably
 
                     // there is a case where the user has disabled fallback and there is no exception.
                     // in that case we need to create a new AblyException
-                    throw response.Exception ?? AblyException.FromResponse(response.AblyResponse);
+                    throw response.Exception ?? AblyException.FromResponse(response.AblyResponse, WrapWithRequestId);
                 }
                 catch (AblyException)
                 {

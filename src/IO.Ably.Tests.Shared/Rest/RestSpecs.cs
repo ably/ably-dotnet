@@ -490,7 +490,7 @@ namespace IO.Ably.Tests
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                handler.NumberOfRequests.Should().Be(5);
+                handler.NumberOfRequests.Should().Be(6); // 1 primary host and remaining fallback hosts
                 var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
                 ex.Message.Should().Contain(uniqueRequestId);
                 ex.ErrorInfo.Message.Should().Contain(uniqueRequestId);
@@ -523,7 +523,7 @@ namespace IO.Ably.Tests
 
                 _ = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
-                _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount);
+                _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount + 1); // 1 primary host and remaining fallback hosts
             }
 
             [Fact]
@@ -638,11 +638,9 @@ namespace IO.Ably.Tests
                 await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 attemptedList.AddRange(handler.Requests.Select(x => x.RequestUri.Host).ToList());
 
-                attemptedList.Count.Should().Be(3); // HttpMaxRetryCount defaults to 3
-                attemptedList[0].Should().Be("rest.ably.io");
-                attemptedList[1].Should().EndWith("ably-realtime.com");
-                attemptedList[2].Should().EndWith("ably-realtime.com");
-                attemptedList[1].Should().NotBe(attemptedList[2]);
+                attemptedList.Count.Should().Be(4); // 1 primary host + 3 fallback hosts
+                attemptedList[0].Should().Be("rest.ably.io"); // primary host
+                attemptedList.Skip(1).IsSubsetOf(Defaults.FallbackHosts).Should().BeTrue();
             }
 
             /// <summary>
