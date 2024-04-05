@@ -115,14 +115,13 @@ namespace IO.Ably
 
                     if (response.CanRetry)
                     {
+                        currentTry++;
                         Logger.Warning(WrapWithRequestId("Failed response. " + response.GetFailedMessage() + ". Retrying..."));
-                        var (success, newHost) = HandleHostChangeForRetryableFailure();
+                        var (success, newHost) = HandleHostChangeForRetryableFailure(currentTry);
                         if (success)
                         {
                             Logger.Debug(WrapWithRequestId($"Retrying using host: {newHost}"));
-
                             host = newHost;
-                            currentTry++;
                             continue;
                         }
                     }
@@ -248,7 +247,7 @@ namespace IO.Ably
                 }
             }
 
-            (bool success, string host) HandleHostChangeForRetryableFailure()
+            (bool success, string host) HandleHostChangeForRetryableFailure(int attempt)
             {
                 if (fallbackHosts.Count == 0)
                 {
@@ -256,7 +255,7 @@ namespace IO.Ably
                     return (false, null);
                 }
 
-                bool isFirstTryForRequest = currentTry == 1;
+                bool isFirstTryForRequest = attempt == 1;
 
                 // If there is a Preferred fallback host already set
                 // and it failed we should try the RealtimeConnected fallback host first
