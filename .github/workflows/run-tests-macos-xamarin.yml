@@ -21,7 +21,7 @@ jobs:
         with:
           dotnet-version: |
             3.1.x
-            7.0.100
+            7.0.408
 
       - name: Download dotnet build-script tools
         run:  dotnet tool restore
