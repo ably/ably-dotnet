@@ -302,31 +302,33 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (authOptions.AuthCallback != null)
             {
-                var shouldCatch = true;
+                bool shouldCatch = true;
                 try
                 {
                     var callbackResult = await authOptions.AuthCallback(tokenParams);
 
-                    switch (callbackResult)
+                    if (callbackResult == null)
                     {
-                        case null:
-                            throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
-                        case string token:
-                            if (string.IsNullOrEmpty(token))
-                            {
-                                throw new AblyException("AuthCallback returned empty string", ErrorCodes.ClientAuthProviderRequestFailed);
-                            }
+                        throw new AblyException("AuthCallback returned null", ErrorCodes.ClientAuthProviderRequestFailed);
+                    }
 
-                            return new TokenDetails(token);
-                        case TokenDetails details:
-                            return details;
-                        case TokenRequest tokenRequest:
-                            postData = tokenRequest;
-                            request.Url = $"/keys/{tokenRequest.KeyName}/requestToken";
-                            break;
-                        default:
-                            shouldCatch = false;
-                            throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", ErrorCodes.ClientAuthProviderRequestFailed, HttpStatusCode.BadRequest);
+                    if (callbackResult is TokenDetails)
+                    {
+                        return callbackResult as TokenDetails;
+                    }
+
+                    if (callbackResult is TokenRequest || callbackResult is string)
+                    {
+                        postData = GetTokenRequest(callbackResult);
+                        request.Url = $"/keys/{postData.KeyName}/requestToken";
+                    }
+                    else
+                    {
+                        shouldCatch = false;
+                        throw new AblyException(
+                            $"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest",
+                            ErrorCodes.ClientAuthProviderRequestFailed,
+                            HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
@@ -450,6 +452,31 @@ namespace IO.Ably
             if (newClientId.IsNotEmpty() && oldClientId.EqualsTo(newClientId) == false)
             {
                 OnClientIdChanged((oldClientId, newClientId));
+            }
+        }
+
+#pragma warning disable SA1204 // Static elements should appear before instance elements
+        private static TokenRequest GetTokenRequest(object callbackResult)
+#pragma warning restore SA1204 // Static elements should appear before instance elements
+        {
+            if (callbackResult is TokenRequest)
+            {
+                return callbackResult as TokenRequest;
+            }
+
+            try
+            {
+                var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
+                if (result == null)
+                {
+                    throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."));
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."), e);
             }
         }
 
