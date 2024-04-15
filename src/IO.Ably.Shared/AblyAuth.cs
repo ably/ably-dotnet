@@ -557,11 +557,23 @@ namespace IO.Ably
             return CurrentToken;
         }
 
+        public TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
+        }
+
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             Logger.Warning("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
             return await AuthorizeAsync(tokenParams, options);
+        }
+
+        [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
+        public TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            Logger.Warning("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize.");
+            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
         private void SetCurrentTokenParams(TokenParams authTokenParams)
@@ -576,31 +588,6 @@ namespace IO.Ably
             {
                 CurrentAuthOptions = options;
             }
-        }
-
-        /// <summary>
-        /// Create a signed token request based on known credentials
-        /// and the given token params. This would typically be used if creating
-        /// signed requests for submission by another client.
-        /// </summary>
-        /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
-        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
-        /// <returns>signed token request.</returns>
-        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestObject instead")]
-        public async Task<TokenRequest> CreateTokenRequestObjectAsync(TokenParams tokenParams, AuthOptions authOptions)
-        {
-            authOptions = authOptions ?? CurrentAuthOptions ?? Options;
-            tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
-
-            if (string.IsNullOrEmpty(authOptions.Key))
-            {
-                throw new AblyException("No key specified", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
-            }
-
-            await SetTokenParamsTimestamp(authOptions, tokenParams);
-
-            var apiKey = authOptions.ParseKey();
-            return new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);
         }
 
         private TokenAuthMethod GetTokenAuthMethod()
@@ -685,34 +672,49 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
         }
 
-        public TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null)
-        {
-            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
-        }
-
-        [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
-        public TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null)
-        {
-            Logger.Warning("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize.");
-            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
-        }
-
-        [Obsolete("This method will be removed in a future version, please use CreateTokenRequest instead")]
-        public TokenRequest CreateTokenRequestObject(TokenParams tokenParams = null, AuthOptions authOptions = null)
-        {
-            Logger.Warning("CreateTokenRequest is deprecated and will be removed in the future, please use CreateTokenRequest instead");
-            return AsyncHelper.RunSync(() => CreateTokenRequestObjectAsync(tokenParams, authOptions));
-        }
-
+        /// <summary>
+        /// Create a signed token request based on known credentials
+        /// and the given token params. This would typically be used if creating
+        /// signed requests for submission by another client.
+        /// </summary>
+        /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
+        /// <returns>signed token request.</returns>
         public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
-            var tokenRequest = await CreateTokenRequestObjectAsync(tokenParams, authOptions);
+            authOptions = authOptions ?? CurrentAuthOptions ?? Options;
+            tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
+
+            if (string.IsNullOrEmpty(authOptions.Key))
+            {
+                throw new AblyException("No key specified", ErrorCodes.InvalidCredentials, HttpStatusCode.Unauthorized);
+            }
+
+            await SetTokenParamsTimestamp(authOptions, tokenParams);
+
+            var apiKey = authOptions.ParseKey();
+            var tokenRequest = new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);
+
             return JsonHelper.Serialize(tokenRequest);
         }
 
         public string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
+        }
+
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestAsync instead")]
+        public async Task<TokenRequest> CreateTokenRequestObjectAsync(TokenParams tokenParams, AuthOptions authOptions)
+        {
+            Logger.Warning("CreateTokenRequestObject is deprecated and will be removed in the future, please use CreateTokenRequest instead");
+            var tokenRequest = await CreateTokenRequestAsync(tokenParams, authOptions);
+            return JsonHelper.Deserialize<TokenRequest>(tokenRequest);
+        }
+
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequest instead")]
+        public TokenRequest CreateTokenRequestObject(TokenParams tokenParams = null, AuthOptions authOptions = null)
+        {
+            return AsyncHelper.RunSync(() => CreateTokenRequestObjectAsync(tokenParams, authOptions));
         }
     }
 }
