@@ -815,9 +815,19 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
-            public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetailsOrStringToken_ThrowsAblyException()
+            public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new[] { new object(), string.Empty, new Uri("http://test") };
+                var signedTokenRequest = await new AblyRest("fake.key:fakeid").Auth.CreateTokenRequestAsync();
+                // do not throw exceptions
+                var objects = new object[] { new TokenDetails(), new TokenRequest() };
+                foreach (var obj in objects)
+                {
+                    var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult<object>(obj)).StatsAsync());
+                    Assert.Null(exception);
+                }
+
+                // throw exceptions
+                objects = new[] { new object(), string.Empty, new Uri("http://test"), "jwtToken" };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>
@@ -825,9 +835,6 @@ namespace IO.Ably.Tests
                         return GetClient(_ => Task.FromResult(obj)).StatsAsync();
                     });
                 }
-
-                var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult<object>("jwtToken")).StatsAsync());
-                Assert.Null(exception);
             }
 
             private static AblyRest GetClient(Func<TokenParams, Task<object>> authCallback)
