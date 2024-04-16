@@ -384,36 +384,56 @@ foreach (var presenceMessage in nextPage.Items)
 }
 ```
 
-### Using the AuthCallback
+### Authentication
+- It is recommended to use `ABLY_KEY` at server side. Check [official ably auth documentation](https://ably.com/docs/auth) for more info.
+- `ABLY_KEY` should not be exposed at client side where it can be used for unintentional purposes.
+- Server can use `ABLY_KEY` for initializing the `AblyRest` instance.
 
-A callback to obtain a `IO.Ably.TokenDetails`/`IO.Ably.TokenRequest` instance or serialized `TokenRequest` string.
+```csharp
+var rest = new AblyRest("API_KEY");
+```
+- Token requests are issued by your servers and signed using your private API key. 
+- This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
+- Tokens issued using `tokenRequest` can only be used once by the client.
+e.g. ASP.Net server app
+```csharp
+app.MapGet("/token", async() => {
+    string tokenRequest = await rest.Auth.CreateTokenRequestAsync();
+    return Content(tokenRequest, "application/json"); // make sure to set `contentType` as json.
+});
+```
+- You can also return JWT string token signed using `ABLY_KEY` as per [official ably JWT doc](https://ably.com/tutorials/jwt-authentication). 
+- Unline tokenrequests, JWT token can be used by the client multiple times till it's 'expiry.
 
-To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
+### Using the Token auth at client side
+
+- To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
 
 ```csharp
 var options = new ClientOptions
 {
     AuthCallback = async tokenParams =>
     {
-        // Return a 'IO.Ably.TokenDetails'/'IO.Ably.TokenRequest' object or a serialized tokenRequest string .
-        // Typically this method would wrap a request to your web server.
-        return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
+        // Return serialized tokenRequest string or 'IO.Ably.TokenRequest' object
+        return await TokenRequestStringFromYourServer(tokenParams); // tokenRequest will be used to obtain token from ably server.
     }
 };
 var client = new AblyRealtime(options);
 ```
-
-### Generate a TokenRequest
-
-Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
-
-e.g.
+- If JWT token is returned by server 
 ```csharp
-app.MapGet("/token", async() => {
-    var tokenRequest = await rest.Auth.CreateTokenRequestAsync();
-    return Content(tokenRequest, "application/json"); // make sure to set `contentType` as json.
-});
+var options = new ClientOptions
+{
+    AuthCallback = async tokenParams =>
+    {
+        // Return serialized jwttokenstring returned from server
+        string jwtToken = await getJwtTokenFromServer(tokenParams);
+        return await new TokenDetails(jwtToken); // jwt token will directly be used to authenticate with server.
+    }
+};
 ```
+- Please note that there is no intermediate step to obtain token from server, jwt will directly be used to authenticate with ably.
+- Do check [official token auth documentation](https://ably.com/docs/auth/token?lang=csharp) for more information.
 
 ### Fetching your application's stats
 
