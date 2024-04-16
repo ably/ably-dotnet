@@ -386,7 +386,7 @@ foreach (var presenceMessage in nextPage.Items)
 
 ### Using the AuthCallback
 
-A callback to obtain a signed `TokenRequest` string or a `TokenDetails` instance.
+A callback to obtain a `IO.Ably.TokenDetails`/`IO.Ably.TokenRequest` instance or serialized `TokenRequest` string.
 
 To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
 
@@ -395,7 +395,7 @@ var options = new ClientOptions
 {
     AuthCallback = async tokenParams =>
     {
-        // Return a 'TokenDetails'/'TokenRequest' object or a token string .
+        // Return a 'IO.Ably.TokenDetails'/'IO.Ably.TokenRequest' object or a serialized tokenRequest string .
         // Typically this method would wrap a request to your web server.
         return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
     }
@@ -408,7 +408,13 @@ var client = new AblyRealtime(options);
 Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
 
 ```csharp
-TokenRequest tokenRequest = await client.Auth.CreateTokenRequestObjectAsync();
+string tokenRequest = await client.Auth.CreateTokenRequestAsync();
+```
+
+While returning tokenRequest string to the client, make sure to set `contentType` as json.
+e.g.
+```
+return Content(tokenRequest, "application/json");
 ```
 
 ### Fetching your application's stats
