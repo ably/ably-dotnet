@@ -394,7 +394,6 @@ var rest = new AblyRest("API_KEY");
 ```
 - Token requests are issued by your servers and signed using your private API key. 
 - This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
-- Tokens issued using `tokenRequest` can only be used once by the client.
 e.g. ASP.Net server app
 ```csharp
 app.MapGet("/token", async() => {
@@ -403,7 +402,6 @@ app.MapGet("/token", async() => {
 });
 ```
 - You can also return JWT string token signed using `ABLY_KEY` as per [official ably JWT doc](https://ably.com/tutorials/jwt-authentication). 
-- Unline tokenrequests, JWT token can be used by the client multiple times till it's 'expiry.
 
 ### Using the Token auth at client side
 
