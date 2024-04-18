@@ -931,6 +931,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await channel.PublishAsync("byte", bytes);
 
+                await new ConditionalAwaiter(() => LastCreatedTransport.LastMessageSend.Messages.Length > 0);
                 var sentMessage = LastCreatedTransport.LastMessageSend.Messages.First();
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
                 sentMessage.Encoding.Should().Be("base64");

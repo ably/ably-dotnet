@@ -14,8 +14,9 @@ namespace IO.Ably.Tests.Infrastructure
         private readonly Timer _timer;
         private readonly TaskCompletionSource<bool> _completionSource;
         private int _tickCount;
+        private readonly int _timeout;
 
-        public ConditionalAwaiter(Func<bool> condition, Func<string> getError = null)
+        public ConditionalAwaiter(Func<bool> condition, Func<string> getError = null, int timeout = 10)
         {
             _condition = condition;
             _getError = getError;
@@ -26,6 +27,7 @@ namespace IO.Ably.Tests.Infrastructure
             };
             _timer.Elapsed += TimerOnElapsed;
             _completionSource = new TaskCompletionSource<bool>();
+            _timeout = timeout;
         }
 
         public TaskAwaiter<bool> GetAwaiter()
@@ -36,9 +38,9 @@ namespace IO.Ably.Tests.Infrastructure
         private void TimerOnElapsed(object sender, ElapsedEventArgs e)
         {
             Interlocked.Increment(ref _tickCount);
-            if (_tickCount > 100)
+            if (_tickCount > _timeout * 10)
             {
-                string message = "10 seconds elapsed. Giving up.";
+                string message = $"{_timeout} seconds elapsed. Giving up.";
                 if (_getError != null)
                 {
                     message += " Error: " + _getError();

@@ -283,7 +283,7 @@ namespace IO.Ably.Tests
             });
             await Task.Delay(2000);
             // This makes sure we get server time
-            _ = ((AblyAuth)mainClient.Auth).CreateTokenRequestObject();
+            _ = ((AblyAuth)mainClient.Auth).CreateTokenRequest();
 
             await mainClient.StatsAsync();
             ((AblyAuth)mainClient.Auth).CurrentToken.Should().NotBeSameAs(token);
@@ -321,7 +321,7 @@ namespace IO.Ably.Tests
             };
             await Task.Delay(2000);
             // This makes sure we get server time
-            ((AblyAuth)mainClient.Auth).SetServerTime();
+            await ((AblyAuth)mainClient.Auth).SetServerTime();
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => mainClient.StatsAsync());
             ex.ErrorInfo.Should().BeSameAs(ErrorInfo.NonRenewableToken);
@@ -338,7 +338,7 @@ namespace IO.Ably.Tests
         {
             async Task TestConnectingBecomesDisconnected(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
                 realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
@@ -373,7 +373,7 @@ namespace IO.Ably.Tests
             static void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
-                options.AuthCallback = (tokenParams) => Task.FromResult<object>(string.Empty);
+                options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
             }
 
             await TestConnectingBecomesDisconnected("With invalid AuthUrl connection becomes Disconnected", AuthUrlOptions);
@@ -387,7 +387,7 @@ namespace IO.Ably.Tests
                 var authRestClient = await GetRestClient(protocol);
                 var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
                 {
-                    Ttl = TimeSpan.FromMilliseconds(2000)
+                    Ttl = TimeSpan.FromMilliseconds(10000)
                 });
                 return token;
             }
@@ -869,7 +869,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestObjectAsync(new TokenParams { ClientId = "*" });
+                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
