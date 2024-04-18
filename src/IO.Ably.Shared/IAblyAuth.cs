@@ -67,7 +67,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestObjectAsync instead")]
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestAsync instead")]
         Task<TokenRequest> CreateTokenRequestObjectAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns>signed token request.</returns>
-        [Obsolete("This method will be removed in a future version, please use CreateTokenRequestObject instead")]
+        [Obsolete("This method will be removed in a future version, please use CreateTokenRequest instead")]
         TokenRequest CreateTokenRequestObject(TokenParams tokenParams = null, AuthOptions authOptions = null);
     }
 }
