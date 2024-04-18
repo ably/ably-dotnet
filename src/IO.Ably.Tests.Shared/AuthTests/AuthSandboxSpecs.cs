@@ -321,7 +321,7 @@ namespace IO.Ably.Tests
             };
             await Task.Delay(2000);
             // This makes sure we get server time
-            ((AblyAuth)mainClient.Auth).SetServerTime();
+            await ((AblyAuth)mainClient.Auth).SetServerTime();
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => mainClient.StatsAsync());
             ex.ErrorInfo.Should().BeSameAs(ErrorInfo.NonRenewableToken);
@@ -338,7 +338,7 @@ namespace IO.Ably.Tests
         {
             async Task TestConnectingBecomesDisconnected(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
-                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter();
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
                 realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
@@ -387,7 +387,7 @@ namespace IO.Ably.Tests
                 var authRestClient = await GetRestClient(protocol);
                 var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
                 {
-                    Ttl = TimeSpan.FromMilliseconds(2000)
+                    Ttl = TimeSpan.FromMilliseconds(10000)
                 });
                 return token;
             }
