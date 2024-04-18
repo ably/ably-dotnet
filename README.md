@@ -426,11 +426,13 @@ var options = new ClientOptions
     {
         // Return serialized jwttokenstring returned from server
         string jwtToken = await getJwtTokenFromServer(tokenParams);
-        return await new TokenDetails(jwtToken); // jwt token will directly be used to authenticate with server.
+        int expiresIn = 3600; // assuming jwtToken has 1 hr expiry
+        return new TokenDetails(jwtToken) { 
+            Expires = DateTimeOffset.UtcNow.AddSeconds(expiresIn) 
+        }; // jwt token will directly be used to authenticate with server.
     }
 };
 ```
-- Please note that there is no intermediate step to obtain token from server, jwt will directly be used to authenticate with ably.
 - Do check [official token auth documentation](https://ably.com/docs/auth/token?lang=csharp) for more information.
 
 ### Fetching your application's stats
