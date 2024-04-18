@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using FluentAssertions;
@@ -148,9 +149,9 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void IntervalIDHasCorrectValue()
+        public void IntervalIdHasCorrectValue()
         {
-            _stats.Interval.Should().Be(DateHelper.CreateDate(2014, 01, 01, 16, 24));
+            _stats.Interval.Should().Be(new DateTime(2014, 01, 01, 16, 24, 0));
         }
     }
 }
