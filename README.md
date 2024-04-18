@@ -386,7 +386,7 @@ foreach (var presenceMessage in nextPage.Items)
 
 ### Authentication
 - It is recommended to use `ABLY_KEY` at server side. Check [official ably auth documentation](https://ably.com/docs/auth) for more info.
-- `ABLY_KEY` should not be exposed at client side where it can be used for unintentional purposes.
+- `ABLY_KEY` should not be exposed at client side where it can be used for malicious purposes.
 - Server can use `ABLY_KEY` for initializing the `AblyRest` instance.
 
 ```csharp
@@ -394,8 +394,8 @@ var rest = new AblyRest("API_KEY");
 ```
 - Token requests are issued by your servers and signed using your private API key. 
 - This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
-e.g. ASP.Net server app
 ```csharp
+// e.g. ASP.Net server endpoint
 app.MapGet("/token", async() => {
     string tokenRequest = await rest.Auth.CreateTokenRequestAsync();
     return Content(tokenRequest, "application/json"); // make sure to set `contentType` as json.
@@ -405,7 +405,7 @@ app.MapGet("/token", async() => {
 
 ### Using the Token auth at client side
 
-- To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
+- Create `ClientOptions` instance with `AuthCallback` property
 
 ```csharp
 var options = new ClientOptions
@@ -429,11 +429,11 @@ var options = new ClientOptions
         int expiresIn = 3600; // assuming jwtToken has 1 hr expiry
         return new TokenDetails(jwtToken) { 
             Expires = DateTimeOffset.UtcNow.AddSeconds(expiresIn) 
-        }; // jwt token will directly be used to authenticate with server.
+        }; // jwt token will directly be used to authenticate with ably server.
     }
 };
 ```
-- Do check [official token auth documentation](https://ably.com/docs/auth/token?lang=csharp) for more information.
+- Check [official token auth documentation](https://ably.com/docs/auth/token?lang=csharp) for more information.
 
 ### Fetching your application's stats
 
