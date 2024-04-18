@@ -25,8 +25,6 @@ namespace IO.Ably
 
         internal TimeSpan FallbackRetryTimeOut { get; set; }
 
-        public bool IsDefaultHost { get; set; } = true;
-
         internal string[] FallbackHosts { get; set; }
 
         internal bool FallbackHostsUseDefault { get; set; }
@@ -64,7 +62,6 @@ namespace IO.Ably
             IsSecure = options.Tls;
             Port = options.Tls ? options.TlsPort : options.Port;
             Host = options.FullRestHost();
-            IsDefaultHost = options.IsDefaultRestHost;
             DisconnectedRetryTimeout = options.DisconnectedRetryTimeout;
             SuspendedRetryTimeout = options.SuspendedRetryTimeout;
             HttpOpenTimeout = options.HttpOpenTimeout;
