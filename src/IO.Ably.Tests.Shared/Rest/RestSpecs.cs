@@ -815,9 +815,19 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
-            public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetailsOrStringToken_ThrowsAblyException()
+            public async Task WhenAuthCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new[] { new object(), string.Empty, new Uri("http://test") };
+                string serializedTokenRequest = await new AblyRest("fake.key:fakeid").Auth.CreateTokenRequestAsync();
+                // do not throw exceptions for valid values in authCallback
+                var objects = new object[] { new TokenDetails(), new TokenRequest(), serializedTokenRequest };
+                foreach (var obj in objects)
+                {
+                    var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult(obj)).StatsAsync());
+                    Assert.Null(exception);
+                }
+
+                // throw exceptions for invalid values in authCallback
+                objects = new[] { new object(), string.Empty, new Uri("http://test"), "jwtToken" };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>
@@ -825,9 +835,6 @@ namespace IO.Ably.Tests
                         return GetClient(_ => Task.FromResult(obj)).StatsAsync();
                     });
                 }
-
-                var exception = await Record.ExceptionAsync(async () => await GetClient(_ => Task.FromResult<object>("jwtToken")).StatsAsync());
-                Assert.Null(exception);
             }
 
             private static AblyRest GetClient(Func<TokenParams, Task<object>> authCallback)
@@ -839,7 +846,10 @@ namespace IO.Ably.Tests
                 };
 
                 var rest = new AblyRest(options);
-                rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
+                rest.ExecuteHttpRequest = arg => arg.Url.Contains("requestToken") ?
+                    JsonHelper.Serialize(new TokenDetails()).ToAblyResponse() :
+                    "[{}]".ToAblyResponse();
+
                 return rest;
             }
         }

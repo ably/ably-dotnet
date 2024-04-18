@@ -371,7 +371,6 @@ namespace IO.Ably.Tests
             {
                 options.HttpMaxRetryCount = 1;
                 options.HttpOpenTimeout = TimeSpan.FromSeconds(1);
-                options.HttpRequestTimeout = TimeSpan.FromSeconds(1);
             }));
 
             client.HttpClient.SetPreferredHost("echo.ably.io/respondwith?status=400");
