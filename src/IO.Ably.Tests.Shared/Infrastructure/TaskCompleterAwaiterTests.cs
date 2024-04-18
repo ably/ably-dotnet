@@ -16,8 +16,8 @@ namespace IO.Ably.Tests.Infrastructure
         [Fact]
         public async void TimeoutElapsedSignalsOnTimeout()
         {
-            var sut = new TaskCompletionAwaiter(10);
-            await Task.Delay(1000);
+            var sut = new TaskCompletionAwaiter(500);
+            await Task.Delay(2000);
             sut.TimeoutExpired.Should().BeTrue();
         }
     }
