@@ -6,9 +6,9 @@
 
 **Merged pull requests:**
 
-- Fix readme and capabilities by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1274
+- Refactored documentation and SDK supported capabilities by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1274
 - Fix Create token request by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1282
-- Fix spec RTL12 by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1275
+- Fix entering internal presence members by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1275
 - Fix broken REST host fallbacks by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1278
 
 ## [1.2.14](https://github.com/ably/ably-dotnet/tree/1.2.14) (2023-10-21)
