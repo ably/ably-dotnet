@@ -13,7 +13,7 @@ This is a .NET client library for Ably which targets the 2.0 client library spec
 ## Supported platforms
 
 * [.NET Standard 2.0+](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
-* .NET 6.x, 7.x, MAUI, check [MAUI config](#maui-configuration).
+* .NET 6.0+, MAUI, check [MAUI config](#maui-configuration).
 * .NET Framework 4.6.2+
 * .NET (Core) 2.0+
 * Mono 5.4+
@@ -424,7 +424,6 @@ var options = new ClientOptions
 {
     AuthCallback = async tokenParams =>
     {
-        // Return serialized jwttokenstring returned from server
         string jwtToken = await getJwtTokenFromServer(tokenParams);
         int expiresIn = 3600; // assuming jwtToken has 1 hr expiry
         return new TokenDetails(jwtToken) { 

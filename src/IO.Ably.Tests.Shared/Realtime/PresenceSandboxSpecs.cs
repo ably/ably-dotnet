@@ -81,7 +81,7 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForAttachedState();
                 channel.State.Should().Be(ChannelState.Attached);
 
-                channel.Presence.IsSyncComplete.Should().BeTrue();
+                channel.Presence.SyncComplete.Should().BeTrue();
             }
 
             [Theory]
@@ -109,8 +109,8 @@ namespace IO.Ably.Tests.Realtime
                     if (args.Current == ChannelState.Attached)
                     {
                         Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.SyncInProgress);
-                        syncInProgress = channel2.Presence.IsSyncInProgress;
-                        syncComplete = channel2.Presence.IsSyncComplete;
+                        syncInProgress = channel2.Presence.SyncInProgress;
+                        syncComplete = channel2.Presence.SyncComplete;
                         awaiter.SetCompleted();
                     }
                 };
@@ -406,7 +406,6 @@ namespace IO.Ably.Tests.Realtime
 
                     // let the library know the transport is really dead
                     testTransport.Listener?.OnTransportEvent(testTransport.Id, TransportState.Closed);
-
                     await realtimeClient.WaitForState(ConnectionState.Disconnected);
                     await realtimeClient.WaitForState(ConnectionState.Connected);
                     await realtimeChannel.WaitForAttachedState();
@@ -450,45 +449,38 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(250);
                 presence.MembersMap.Members.Should().HaveCount(4);
                 presence.InternalMembersMap.Members.Should().HaveCount(1);
+                var internalMemberId = presence.InternalMembersMap.Members.Values.First().Id;
 
                 List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
-                PresenceMessage updateMessage = null;
-                PresenceMessage enterMessage = null;
+                PresenceMessage enteredMember = null;
                 await WaitForMultiple(2, partialDone =>
                 {
                     presence.Subscribe(PresenceAction.Leave, message =>
                     {
                         leaveMessages.Add(message);
                     });
-                    presence.Subscribe(PresenceAction.Update, message =>
+                    client.GetTestTransport().BeforeMessageSend = message =>
                     {
-                        updateMessage = message;
-                        partialDone(); // 1 call
-                    });
-                    presence.Subscribe(PresenceAction.Enter, message =>
-                    {
-                        enterMessage = message; // not expected to hit
-                    });
+                        enteredMember = message.Presence.First();
+                        client.GetTestTransport().BeforeMessageSend = _ => { };
+                        partialDone();
+                    };
                     client.GetTestTransport().AfterDataReceived = message =>
                     {
                         if (message.Action == ProtocolMessage.MessageAction.Attached)
                         {
                             bool hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
                             hasPresence.Should().BeFalse();
-                            bool resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
-                            resumed.Should().BeTrue();
                             client.GetTestTransport().AfterDataReceived = _ => { };
                             partialDone(); // 1 call
                         }
                     };
-                    // inject duplicate attached message with resume flag ( no RTL12 message loss event)
+                    // inject duplicate attached message without resume flag
                     var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                     {
                         Channel = channelName,
                         Flags = 0,
                     };
-                    protocolMessage.SetFlag(ProtocolMessage.Flag.Resumed);
-                    protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed).Should().BeTrue();
                     client.GetTestTransport().FakeReceivedMessage(protocolMessage);
                 });
 
@@ -498,15 +490,13 @@ namespace IO.Ably.Tests.Realtime
                     msg.ClientId.Should().BeOneOf("member_0", "member_1", "member_2", "local");
                 }
 
-                updateMessage.Should().NotBeNull();
-                updateMessage.ClientId.Should().Be("local");
-                enterMessage.Should().BeNull();
-
+                enteredMember.Should().NotBeNull();
+                enteredMember.Id.Should().Be(internalMemberId);
+                enteredMember.Action.Should().Be(PresenceAction.Enter);
+                enteredMember.ClientId.Should().Be("local");
                 presence.Unsubscribe();
-                var remainingMembers = await presence.GetAsync();
 
-                remainingMembers.Should().HaveCount(1);
-                remainingMembers.First().ClientId.Should().Be("local");
+                client.Close();
             }
 
             [Theory]
@@ -646,7 +636,7 @@ namespace IO.Ably.Tests.Realtime
                 msgA = null;
                 msgB = null;
                 var synthesizedMsg = new PresenceMessage(PresenceAction.Leave, clientB.ClientId) { ConnectionId = null };
-                synthesizedMsg.IsSynthesized().Should().BeTrue();
+                synthesizedMsg.IsServerSynthesized().Should().BeTrue();
                 channelB.Presence.OnPresence(new[] { synthesizedMsg });
 
                 msgB.Should().BeNull();
@@ -750,8 +740,8 @@ namespace IO.Ably.Tests.Realtime
                 members.Should().HaveCount(20);
 
                 // sync should not be in progress and initial an sync should have completed
-                channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
-                channel.Presence.IsSyncComplete.Should().BeTrue();
+                channel.Presence.SyncInProgress.Should().BeFalse("sync should have completed");
+                channel.Presence.SyncComplete.Should().BeTrue();
 
                 // pull a random member key from the presence map
                 var memberNumber = new Random().Next(0, 19);
@@ -1514,19 +1504,19 @@ namespace IO.Ably.Tests.Realtime
 
                         presence2.Subscribe(PresenceAction.Enter, msg =>
                         {
-                            presence2.MembersMap.Members.Should().HaveCount(presence2.IsSyncComplete ? 2 : 1);
+                            presence2.MembersMap.Members.Should().HaveCount(presence2.SyncComplete ? 2 : 1);
                             presence2.Unsubscribe();
                             partialDone();
                         });
 
                         presence2.PendingPresenceQueue.Should().HaveCount(1);
-                        presence2.IsSyncComplete.Should().BeFalse();
+                        presence2.SyncComplete.Should().BeFalse();
                         presence2.MembersMap.Members.Should().HaveCount(0);
                         taskCountWaiter.Tick();
                     });
 
                     var transport = client2.GetTestTransport();
-                    await new ConditionalAwaiter(() => presence2.IsSyncComplete);
+                    await new ConditionalAwaiter(() => presence2.SyncComplete);
                     transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).
                         Should().BeTrue("Should receive sync message");
                     presence2.MembersMap.Members.Should().HaveCount(2);

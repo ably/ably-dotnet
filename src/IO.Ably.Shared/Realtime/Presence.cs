@@ -39,14 +39,28 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         /// <summary>
-        /// Has the sync completed.
+        /// Checks if presence sync has ended.
         /// </summary>
-        public bool IsSyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
+        ///
+        [Obsolete("This property is deprecated, use SyncComplete instead")]
+        public bool IsSyncComplete => SyncComplete; // RTP13.
+
+        /// <summary>
+        /// Checks if presence sync has ended.
+        /// </summary>
+        ///
+        public bool SyncComplete => MembersMap.SyncCompleted && !SyncInProgress; // RTP13
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
         /// </summary>
-        public bool IsSyncInProgress => MembersMap.SyncInProgress;
+        [Obsolete("This property is internal, will be removed in the future")]
+        public bool IsSyncInProgress => SyncInProgress;
+
+        /// <summary>
+        /// Indicates whether there is currently a sync in progress.
+        /// </summary>
+        internal bool SyncInProgress => MembersMap.SyncInProgress;
 
         /// <summary>
         /// Indicates all members present on the channel.
@@ -153,7 +167,7 @@ namespace IO.Ably.Realtime
             // The InternalSync should be completed and the channels Attached or Attaching
             void CheckAndSet()
             {
-                if (IsSyncComplete
+                if (SyncComplete
                     && (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
                 {
                     tsc.TrySetResult(true);
@@ -532,7 +546,7 @@ namespace IO.Ably.Realtime
                 /* If a new sequence identifier is sent from Ably, then the client library
                  * must consider that to be the start of a new sync sequence
                  * and any previous in-flight sync should be discarded. (part of RTP18)*/
-                if (IsSyncInProgress && _currentSyncChannelSerial.IsNotEmpty() && _currentSyncChannelSerial != syncSequenceId)
+                if (SyncInProgress && _currentSyncChannelSerial.IsNotEmpty() && _currentSyncChannelSerial != syncSequenceId)
                 {
                     EndSync();
                 }
@@ -582,7 +596,7 @@ namespace IO.Ably.Realtime
                             // RTP2e
                             case PresenceAction.Leave:
                                 broadcast &= MembersMap.Remove(message);
-                                if (updateInternalPresence && !message.IsSynthesized())
+                                if (updateInternalPresence && !message.IsServerSynthesized())
                                 {
                                     InternalMembersMap.Remove(message);
                                 }
@@ -613,7 +627,7 @@ namespace IO.Ably.Realtime
 
         internal void StartSync()
         {
-            if (!IsSyncInProgress)
+            if (!SyncInProgress)
             {
                 MembersMap.StartSync();
             }
@@ -621,7 +635,7 @@ namespace IO.Ably.Realtime
 
         private void EndSync()
         {
-            if (!IsSyncInProgress)
+            if (!SyncInProgress)
             {
                 return;
             }
@@ -647,7 +661,7 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data);
+                    var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data, item.Id);
                     UpdatePresence(itemToSend, (success, info) =>
                     {
                         if (!success)
@@ -721,24 +735,15 @@ namespace IO.Ably.Realtime
             FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ProtocolMessage attachedMessage, bool isAttachWithoutMessageLoss = true)
+        internal void ChannelAttached(ProtocolMessage attachedMessage)
         {
+            // RTP1
+            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+
             // RTP19
             StartSync();
 
-            // RTP1
-            var hasPresence = attachedMessage != null && attachedMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
-            if (hasPresence)
-            {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachedMessage.Flags}");
-                }
-
-                StartSync();
-            }
-            else
+            if (!hasPresence)
             {
                 EndSync(); // RTP19
             }
@@ -747,10 +752,7 @@ namespace IO.Ably.Realtime
             SendQueuedMessages();
 
             // RTP17f
-            if (isAttachWithoutMessageLoss)
-            {
-                EnterMembersFromInternalPresenceMap();
-            }
+            EnterMembersFromInternalPresenceMap();
         }
 
         private void SendQueuedMessages()

@@ -264,7 +264,10 @@ namespace IO.Ably.Realtime
             var channelSerials = new Dictionary<string, string>();
             foreach (var realtimeChannel in this)
             {
-                channelSerials[realtimeChannel.Name] = realtimeChannel.Properties.ChannelSerial;
+                if (realtimeChannel.State == ChannelState.Attached)
+                {
+                    channelSerials[realtimeChannel.Name] = realtimeChannel.Properties.ChannelSerial;
+                }
             }
 
             return channelSerials;
