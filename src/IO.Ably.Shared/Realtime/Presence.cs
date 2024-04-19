@@ -40,8 +40,18 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// Has the sync completed.
+        /// RTP13
         /// </summary>
-        public bool IsSyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
+        ///
+        [Obsolete("This property is deprecated, use SyncComplete instead")]
+        public bool IsSyncComplete => SyncComplete;
+
+        /// <summary>
+        /// Checks if sync has completed
+        /// RTP13
+        /// </summary>
+        ///
+        public bool SyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
@@ -153,7 +163,7 @@ namespace IO.Ably.Realtime
             // The InternalSync should be completed and the channels Attached or Attaching
             void CheckAndSet()
             {
-                if (IsSyncComplete
+                if (SyncComplete
                     && (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
                 {
                     tsc.TrySetResult(true);
