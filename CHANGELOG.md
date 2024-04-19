@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.2.15](https://github.com/ably/ably-dotnet/tree/1.2.15) (2023-04-19)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.14...1.2.15)
+
+**Merged pull requests:**
+
+- Refactored documentation and SDK supported capabilities by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1274
+- Fix Create token request by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1282
+- Fix entering internal presence members by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1275
+- Fix broken REST host fallbacks by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1278
+
 ## [1.2.14](https://github.com/ably/ably-dotnet/tree/1.2.14) (2023-10-21)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.13...1.2.14)
