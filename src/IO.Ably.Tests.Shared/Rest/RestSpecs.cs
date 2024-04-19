@@ -607,10 +607,9 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC15a")]
             [Trait("spec", "TO3k6")]
-            public async Task ShouldUseProvidedCustomFallbackHostWhenDefaultHostIsDifferent()
+            public async Task ShouldUseProvidedCustomFallbackHostsIrrespectiveOfPrimaryHost()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                var attemptedList = new List<string>();
                 var fallbackHosts = new[]
                 {
                     "www.example1.com",
@@ -619,18 +618,33 @@ namespace IO.Ably.Tests
                     "www.example4.com",
                     "www.example5.com"
                 };
-                var client = CreateClient(options =>
+
+                async Task CheckForAttemptedFallbackHosts(AblyRest client, string primaryHost)
+                {
+                    var attemptedList = new List<string>();
+                    _handler.Requests.Clear();
+                    await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                    attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                    attemptedList.Count.Should().Be(6);
+                    attemptedList[0].Should().Be(primaryHost);
+                    attemptedList.Skip(1).Should().BeEquivalentTo(fallbackHosts);
+                }
+
+                var clientWithDefaultPrimaryHost = CreateClient(options =>
+                {
+                    options.FallbackHosts = fallbackHosts;
+                    options.HttpMaxRetryCount = 5;
+                });
+                await CheckForAttemptedFallbackHosts(clientWithDefaultPrimaryHost, "rest.ably.io");
+
+                var clientWithCustomPrimaryHost = CreateClient(options =>
                 {
                     options.RestHost = "www.primaryhost.com";
                     options.FallbackHosts = fallbackHosts;
                     options.HttpMaxRetryCount = 5;
                 });
-                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
-
-                attemptedList.Count.Should().Be(6);
-                attemptedList[0].Should().Be("www.primaryhost.com");
-                attemptedList.Skip(1).Should().BeEquivalentTo(fallbackHosts);
+                await CheckForAttemptedFallbackHosts(clientWithCustomPrimaryHost, "www.primaryhost.com");
             }
 
             [Fact]
