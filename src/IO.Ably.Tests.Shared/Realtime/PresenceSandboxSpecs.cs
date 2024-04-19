@@ -636,7 +636,7 @@ namespace IO.Ably.Tests.Realtime
                 msgA = null;
                 msgB = null;
                 var synthesizedMsg = new PresenceMessage(PresenceAction.Leave, clientB.ClientId) { ConnectionId = null };
-                synthesizedMsg.IsSynthesized().Should().BeTrue();
+                synthesizedMsg.IsServerSynthesized().Should().BeTrue();
                 channelB.Presence.OnPresence(new[] { synthesizedMsg });
 
                 msgB.Should().BeNull();

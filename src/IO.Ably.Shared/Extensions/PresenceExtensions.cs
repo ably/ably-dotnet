@@ -2,7 +2,7 @@
 {
     internal static class PresenceExtensions
     {
-        public static bool IsSynthesized(this PresenceMessage msg)
+        public static bool IsServerSynthesized(this PresenceMessage msg)
         {
             return msg.Id == null || !msg.Id.StartsWith(msg.ConnectionId);
         }
@@ -11,7 +11,7 @@
         public static bool IsNewerThan(this PresenceMessage existingMsg, PresenceMessage incomingMsg)
         {
             // RTP2b1
-            if (existingMsg.IsSynthesized() || incomingMsg.IsSynthesized())
+            if (existingMsg.IsServerSynthesized() || incomingMsg.IsServerSynthesized())
             {
                 return existingMsg.Timestamp > incomingMsg.Timestamp;
             }

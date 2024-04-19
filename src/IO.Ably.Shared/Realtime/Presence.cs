@@ -596,7 +596,7 @@ namespace IO.Ably.Realtime
                             // RTP2e
                             case PresenceAction.Leave:
                                 broadcast &= MembersMap.Remove(message);
-                                if (updateInternalPresence && !message.IsSynthesized())
+                                if (updateInternalPresence && !message.IsServerSynthesized())
                                 {
                                     InternalMembersMap.Remove(message);
                                 }
