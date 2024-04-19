@@ -46,7 +46,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
         /// </summary>
-        public bool IsSyncInProgress => MembersMap.SyncInProgress;
+        internal bool IsSyncInProgress => MembersMap.SyncInProgress;
 
         /// <summary>
         /// Indicates all members present on the channel.
