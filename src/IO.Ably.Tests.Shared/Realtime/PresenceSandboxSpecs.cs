@@ -449,6 +449,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(250);
                 presence.MembersMap.Members.Should().HaveCount(4);
                 presence.InternalMembersMap.Members.Should().HaveCount(1);
+                var internalMemberId = presence.InternalMembersMap.Members.Values.First().Id;
 
                 List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
                 PresenceMessage enteredMember = null;
@@ -490,6 +491,7 @@ namespace IO.Ably.Tests.Realtime
                 }
 
                 enteredMember.Should().NotBeNull();
+                enteredMember.Id.Should().Be(internalMemberId);
                 enteredMember.Action.Should().Be(PresenceAction.Enter);
                 enteredMember.ClientId.Should().Be("local");
                 presence.Unsubscribe();
