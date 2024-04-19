@@ -607,6 +607,35 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC15a")]
             [Trait("spec", "TO3k6")]
+            public async Task ShouldUseCustomFallbackHostIfProvidedAndDefaultHostIsDifferent()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var attemptedList = new List<string>();
+                var fallbackHosts = new[]
+                {
+                    "www.example1.com",
+                    "www.example2.com",
+                    "www.example3.com",
+                    "www.example4.com",
+                    "www.example5.com"
+                };
+                var client = CreateClient(options =>
+                {
+                    options.RestHost = "www.primaryhost.com";
+                    options.FallbackHosts = fallbackHosts;
+                    options.HttpMaxRetryCount = 5;
+                });
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                attemptedList.Count.Should().Be(6);
+                attemptedList[0].Should().Be("www.primaryhost.com");
+                attemptedList.Skip(1).Should().BeEquivalentTo(fallbackHosts);
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            [Trait("spec", "TO3k6")]
             public async Task ShouldNotUseAnyFallbackHostsIfEmptyArrayProvided()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
