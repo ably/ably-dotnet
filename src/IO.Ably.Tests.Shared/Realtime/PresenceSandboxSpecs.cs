@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
                     if (args.Current == ChannelState.Attached)
                     {
                         Logger.Debug("Test: Setting inSync to - " + channel2.Presence.MembersMap.SyncInProgress);
-                        syncInProgress = channel2.Presence.IsSyncInProgress;
+                        syncInProgress = channel2.Presence.SyncInProgress;
                         syncComplete = channel2.Presence.SyncComplete;
                         awaiter.SetCompleted();
                     }
@@ -740,7 +740,7 @@ namespace IO.Ably.Tests.Realtime
                 members.Should().HaveCount(20);
 
                 // sync should not be in progress and initial an sync should have completed
-                channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
+                channel.Presence.SyncInProgress.Should().BeFalse("sync should have completed");
                 channel.Presence.SyncComplete.Should().BeTrue();
 
                 // pull a random member key from the presence map

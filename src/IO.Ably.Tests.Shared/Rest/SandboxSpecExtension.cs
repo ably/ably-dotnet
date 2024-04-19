@@ -47,7 +47,7 @@ namespace IO.Ably.Tests
         internal static async Task<bool> WaitSync(this Presence presence, TimeSpan? waitSpan = null)
         {
             TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-            var inProgress = presence.IsSyncInProgress;
+            var inProgress = presence.SyncInProgress;
             if (inProgress == false)
             {
                 return true;
