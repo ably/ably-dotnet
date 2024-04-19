@@ -490,7 +490,7 @@ namespace IO.Ably.Tests
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                handler.NumberOfRequests.Should().Be(5);
+                handler.NumberOfRequests.Should().Be(6); // 1 primary host and remaining fallback hosts
                 var uniqueRequestId = handler.LastRequest.Headers.GetValues("request_id").First();
                 ex.Message.Should().Contain(uniqueRequestId);
                 ex.ErrorInfo.Message.Should().Contain(uniqueRequestId);
@@ -523,7 +523,7 @@ namespace IO.Ably.Tests
 
                 _ = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
-                _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount);
+                _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount + 1); // 1 primary host and remaining fallback hosts
             }
 
             [Fact]
@@ -607,6 +607,49 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC15a")]
             [Trait("spec", "TO3k6")]
+            public async Task ShouldUseProvidedCustomFallbackHostsIrrespectiveOfPrimaryHost()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var fallbackHosts = new[]
+                {
+                    "www.example1.com",
+                    "www.example2.com",
+                    "www.example3.com",
+                    "www.example4.com",
+                    "www.example5.com"
+                };
+
+                async Task CheckForAttemptedFallbackHosts(AblyRest client, string primaryHost)
+                {
+                    var attemptedList = new List<string>();
+                    _handler.Requests.Clear();
+                    await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                    attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                    attemptedList.Count.Should().Be(6);
+                    attemptedList[0].Should().Be(primaryHost);
+                    attemptedList.Skip(1).Should().BeEquivalentTo(fallbackHosts);
+                }
+
+                var clientWithDefaultPrimaryHost = CreateClient(options =>
+                {
+                    options.FallbackHosts = fallbackHosts;
+                    options.HttpMaxRetryCount = 5;
+                });
+                await CheckForAttemptedFallbackHosts(clientWithDefaultPrimaryHost, "rest.ably.io");
+
+                var clientWithCustomPrimaryHost = CreateClient(options =>
+                {
+                    options.RestHost = "www.primaryhost.com";
+                    options.FallbackHosts = fallbackHosts;
+                    options.HttpMaxRetryCount = 5;
+                });
+                await CheckForAttemptedFallbackHosts(clientWithCustomPrimaryHost, "www.primaryhost.com");
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            [Trait("spec", "TO3k6")]
             public async Task ShouldNotUseAnyFallbackHostsIfEmptyArrayProvided()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
@@ -638,11 +681,9 @@ namespace IO.Ably.Tests
                 await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 attemptedList.AddRange(handler.Requests.Select(x => x.RequestUri.Host).ToList());
 
-                attemptedList.Count.Should().Be(3); // HttpMaxRetryCount defaults to 3
-                attemptedList[0].Should().Be("rest.ably.io");
-                attemptedList[1].Should().EndWith("ably-realtime.com");
-                attemptedList[2].Should().EndWith("ably-realtime.com");
-                attemptedList[1].Should().NotBe(attemptedList[2]);
+                attemptedList.Count.Should().Be(4); // 1 primary host + 3 fallback hosts
+                attemptedList[0].Should().Be("rest.ably.io"); // primary host
+                attemptedList.Skip(1).IsSubsetOf(Defaults.FallbackHosts).Should().BeTrue();
             }
 
             /// <summary>

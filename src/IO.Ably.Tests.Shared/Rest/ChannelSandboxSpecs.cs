@@ -244,7 +244,6 @@ namespace IO.Ably.Tests.Rest
                 {
                     // setting IsDefaultHost and raising a TaskCanceledException
                     // will cause the request to retry
-                    client.HttpClient.Options.IsDefaultHost = true;
                     throw new TaskCanceledException("faked exception to cause retry");
                 }
 
@@ -301,7 +300,6 @@ namespace IO.Ably.Tests.Rest
                 {
                     // setting IsDefaultHost and raising a TaskCanceledException
                     // will cause the request to retry
-                    client.HttpClient.Options.IsDefaultHost = true;
                     throw new TaskCanceledException("faked exception to cause retry");
                 }
 

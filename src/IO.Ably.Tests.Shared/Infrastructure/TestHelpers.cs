@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Tests.Infrastructure;
 using Xunit;
@@ -7,6 +9,11 @@ namespace IO.Ably.Tests
 {
     internal static class TestHelpers
     {
+        public static bool IsSubsetOf<T>(this IEnumerable<T> a, IEnumerable<T> b)
+        {
+            return !a.Except(b).Any();
+        }
+
         public static void AssertContainsParameter(this AblyRequest request, string key, string value)
         {
             Assert.True(

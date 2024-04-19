@@ -57,15 +57,6 @@ namespace IO.Ably.Tests.Realtime
             state.ShouldSuspend(now.ValueFn).Should().BeTrue("When time is greater than"); // >
         }
 
-        [Fact]
-        public async Task CanAttemptFallback_ShouldBeFalseWithNonDefaultHost()
-        {
-            var client = GetRealtime(opts => opts.RealtimeHost = "test.test.com");
-
-            var result = await client.RestClient.CanFallback(null);
-            result.Should().BeFalse();
-        }
-
         [Theory]
         [InlineData(500)]
         [InlineData(501)]
@@ -84,7 +75,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CanAttemptFallback_WhenInternetCheckFails_ShouldBeFalse()
         {
             var client = GetRealtime(internetCheckOk: false);
-            var result = await client.RestClient.CanFallback(null);
+            var result = await client.RestClient.CanFallback(ErrorInfo.ReasonUnknown);
             result.Should().BeFalse();
         }
 

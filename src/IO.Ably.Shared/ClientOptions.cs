@@ -147,10 +147,6 @@ namespace IO.Ably
 
         internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => FullRestHost() == Defaults.RestHost;
-
-        internal bool IsDefaultRealtimeHost => FullRealtimeHost() == Defaults.RealtimeHost;
-
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
         /// <summary>
@@ -159,20 +155,17 @@ namespace IO.Ably
         /// <returns>RestHost.</returns>
         public string FullRestHost()
         {
-            var restHost = _restHost;
-            if (restHost.IsEmpty())
+            if (_restHost.IsNotEmpty())
             {
-                restHost = Defaults.RestHost;
+                return _restHost;
             }
 
-            if (restHost == Defaults.RestHost)
+            if (!IsProductionEnvironment)
             {
-                return IsProductionEnvironment
-                    ? restHost
-                    : $"{Environment}-{restHost}";
+                return $"{Environment}-{Defaults.RestHost}";
             }
 
-            return restHost;
+            return Defaults.RestHost;
         }
 
         /// <summary>
@@ -181,27 +174,26 @@ namespace IO.Ably
         /// <returns>RealtimeHost.</returns>
         public string FullRealtimeHost()
         {
-            var realtimeHost = _realtimeHost;
-            if (realtimeHost.IsEmpty())
+            if (_realtimeHost.IsNotEmpty())
             {
-                if (_restHost.IsNotEmpty())
-                {
-                    Logger.Warning(
-                        $@"restHost is set to {_restHost} but realtimeHost is not set,
-                                     so setting realtimeHost to {_restHost} too. If this is not what you want,
-                                     please set realtimeHost explicitly.");
-                    return _restHost;
-                }
-
-                realtimeHost = Defaults.RealtimeHost;
+                return _realtimeHost;
             }
 
-            if (realtimeHost == Defaults.RealtimeHost)
+            if (_restHost.IsNotEmpty())
             {
-                return IsProductionEnvironment ? realtimeHost : $"{Environment}{'-'}{realtimeHost}";
+                Logger.Warning(
+                    $@"restHost is set to {_restHost} but realtimeHost is not set,
+                    so setting realtimeHost to {_restHost} too. If this is not what you want,
+                    please set realtimeHost explicitly.");
+                return _restHost;
             }
 
-            return realtimeHost;
+            if (!IsProductionEnvironment)
+            {
+                return $"{Environment}-{Defaults.RealtimeHost}";
+            }
+
+            return Defaults.RealtimeHost;
         }
 
         /// <summary>
@@ -220,7 +212,7 @@ namespace IO.Ably
                     throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
                 }
 
-                if (Port != Defaults.Port || TlsPort != Defaults.TlsPort)
+                if (!IsDefaultPort)
                 {
                     const string msg = "fallbackHostsUseDefault cannot be set when port or tlsPort are set";
                     throw new AblyException(new ErrorInfo(msg, ErrorCodes.BadRequest));
@@ -230,15 +222,12 @@ namespace IO.Ably
                 {
                     Logger.Warning("Deprecated fallbackHostsUseDefault : There is no longer a need to set this when the environment option is also set since the library will now generate the correct fallback hosts using the environment option.");
                 }
-                else
-                {
-                    Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
-                }
 
+                Logger.Warning("Deprecated fallbackHostsUseDefault : fallbackHosts: Ably.Defaults.FALLBACK_HOSTS");
                 return Defaults.FallbackHosts;
             }
 
-            if (_fallbackHosts is null && _restHost is null && _realtimeHost is null && IsDefaultPort)
+            if (_fallbackHosts is null && _restHost.IsEmpty() && _realtimeHost.IsEmpty() && IsDefaultPort)
             {
                 return IsProductionEnvironment
                     ? Defaults.FallbackHosts
