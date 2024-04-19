@@ -13,7 +13,7 @@
             // RTP2b1
             if (thisMessage.IsSynthesized() || thatMessage.IsSynthesized())
             {
-                return thisMessage.Timestamp > thatMessage.Timestamp;
+                return thisMessage.Timestamp >= thatMessage.Timestamp;
             }
 
             // RTP2b2
@@ -35,7 +35,7 @@
 
             if (msgSerialThis == msgSerialThat)
             {
-                return indexThis > indexThat;
+                return indexThis >= indexThat;
             }
 
             return msgSerialThis > msgSerialThat;

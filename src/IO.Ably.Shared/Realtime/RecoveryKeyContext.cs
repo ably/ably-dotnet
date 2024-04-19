@@ -26,9 +26,9 @@ namespace IO.Ably.Shared.Realtime
             {
                 return JsonHelper.Deserialize<RecoveryKeyContext>(recover);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                logger?.Warning($"Error deserializing recover - {recover}, setting it as null");
+                logger?.Warning($"Error deserializing recover - {recover}, setting it as null", e);
                 return null;
             }
         }
