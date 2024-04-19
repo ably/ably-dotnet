@@ -39,19 +39,17 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         /// <summary>
-        /// Has the sync completed.
-        /// RTP13
+        /// Checks if presence sync has ended.
         /// </summary>
         ///
         [Obsolete("This property is deprecated, use SyncComplete instead")]
-        public bool IsSyncComplete => SyncComplete;
+        public bool IsSyncComplete => SyncComplete; // RTP13
 
         /// <summary>
-        /// Checks if sync has completed
-        /// RTP13
+        /// Checks if presence sync has ended.
         /// </summary>
         ///
-        public bool SyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress;
+        public bool SyncComplete => MembersMap.SyncCompleted && !IsSyncInProgress; // RTP13
 
         /// <summary>
         /// Indicates whether there is currently a sync in progress.
