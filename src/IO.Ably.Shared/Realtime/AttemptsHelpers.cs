@@ -9,14 +9,7 @@ namespace IO.Ably.Realtime
     {
         public static async Task<bool> CanFallback(this AblyRest restClient, ErrorInfo error)
         {
-            return IsDefaultHost() &&
-                   error != null && error.IsRetryableStatusCode() &&
-                   await restClient.CanConnectToAbly();
-
-            bool IsDefaultHost()
-            {
-                return restClient.Options.IsDefaultRealtimeHost;
-            }
+            return error != null && error.IsRetryableStatusCode() && await restClient.CanConnectToAbly();
         }
 
         public static bool ShouldSuspend(this RealtimeState state, Func<DateTimeOffset> now = null)

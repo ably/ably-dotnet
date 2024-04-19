@@ -147,10 +147,6 @@ namespace IO.Ably
 
         internal bool IsProductionEnvironment => Environment.IsEmpty() || Environment.Equals("production", StringComparison.OrdinalIgnoreCase);
 
-        internal bool IsDefaultRestHost => FullRestHost() == Defaults.RestHost;
-
-        internal bool IsDefaultRealtimeHost => FullRealtimeHost() == Defaults.RealtimeHost;
-
         internal bool IsDefaultPort => Tls ? TlsPort == Defaults.TlsPort : Port == Defaults.Port;
 
         /// <summary>

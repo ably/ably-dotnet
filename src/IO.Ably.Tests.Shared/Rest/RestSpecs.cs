@@ -607,7 +607,7 @@ namespace IO.Ably.Tests
             [Fact]
             [Trait("spec", "RSC15a")]
             [Trait("spec", "TO3k6")]
-            public async Task ShouldUseCustomFallbackHostIfProvidedAndDefaultHostIsDifferent()
+            public async Task ShouldUseProvidedCustomFallbackHostWhenDefaultHostIsDifferent()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var attemptedList = new List<string>();
