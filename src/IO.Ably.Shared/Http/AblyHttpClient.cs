@@ -88,7 +88,7 @@ namespace IO.Ably
             int currentTry = 0;
             var startTime = Now();
 
-            var maxNumberOfRetries = Options.HttpMaxRetryCount; // One for the first request
+            var maxNumberOfRetries = Options.HttpMaxRetryCount;
             var host = GetHost();
 
             request.Headers.TryGetValue("request_id", out var requestId);
@@ -148,7 +148,7 @@ namespace IO.Ably
                     throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request. " + ex.Message), ErrorCodes.InternalError), ex);
                 }
             }
-            while (currentTry <= maxNumberOfRetries);
+            while (currentTry <= maxNumberOfRetries); // 1 primary host and remaining fallback hosts
 
             throw new AblyException(new ErrorInfo(WrapWithRequestId("Error executing request, exceeded max no. of retries"), ErrorCodes.InternalError));
 
