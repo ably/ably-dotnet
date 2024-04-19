@@ -8,37 +8,37 @@
         }
 
         // RTP2b, RTP2c
-        public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
+        public static bool IsNewerThan(this PresenceMessage existingMsg, PresenceMessage incomingMsg)
         {
             // RTP2b1
-            if (thisMessage.IsSynthesized() || thatMessage.IsSynthesized())
+            if (existingMsg.IsSynthesized() || incomingMsg.IsSynthesized())
             {
-                return thisMessage.Timestamp >= thatMessage.Timestamp;
+                return existingMsg.Timestamp > incomingMsg.Timestamp;
             }
 
             // RTP2b2
-            var thisValues = thisMessage.Id.Split(':');
-            var thatValues = thatMessage.Id.Split(':');
+            var thisValues = existingMsg.Id.Split(':');
+            var thatValues = incomingMsg.Id.Split(':');
 
             // if any part of the message serial fails to parse then throw an exception
             if (thisValues.Length != 3 ||
-                !(int.TryParse(thisValues[1], out int msgSerialThis) | int.TryParse(thisValues[2], out int indexThis)))
+                !(int.TryParse(thisValues[1], out int existingMsgSerial) | int.TryParse(thisValues[2], out int existingMsgIndex)))
             {
-                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{thisMessage.Id}'.");
+                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{existingMsg.Id}'.");
             }
 
             if (thatValues.Length != 3 ||
-                !(int.TryParse(thatValues[1], out int msgSerialThat) | int.TryParse(thatValues[2], out int indexThat)))
+                !(int.TryParse(thatValues[1], out int incomingMsgSerial) | int.TryParse(thatValues[2], out int incomingMsgIndex)))
             {
-                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{thatMessage.Id}'.");
+                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{incomingMsg.Id}'.");
             }
 
-            if (msgSerialThis == msgSerialThat)
+            if (existingMsgSerial == incomingMsgSerial)
             {
-                return indexThis >= indexThat;
+                return existingMsgIndex > incomingMsgIndex;
             }
 
-            return msgSerialThis > msgSerialThat;
+            return existingMsgSerial > incomingMsgSerial;
         }
     }
 }
