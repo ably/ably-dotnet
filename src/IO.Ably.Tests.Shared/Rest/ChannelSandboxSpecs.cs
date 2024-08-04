@@ -219,7 +219,7 @@ namespace IO.Ably.Tests.Rest
             const int numberOfRetries = 2;
             var client = await GetRestClient(protocol, opts =>
             {
-                opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
+                opts.FallbackHosts = new[] { "lmars-dev-rest.ably.io" };
                 opts.IdempotentRestPublishing = true;
             });
 
@@ -278,7 +278,7 @@ namespace IO.Ably.Tests.Rest
             const int numberOfRetries = 2;
             var client = await GetRestClient(protocol, opts =>
             {
-                opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
+                opts.FallbackHosts = new[] { "lmars-dev-rest.ably.io" };
                 opts.IdempotentRestPublishing = true;
             });
 

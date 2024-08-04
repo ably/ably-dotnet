@@ -27,13 +27,13 @@ namespace IO.Ably.Tests.Shared
         {
             var expectedFallBackHosts = new[]
             {
-                "sandbox-a-fallback.ably-realtime.com",
-                "sandbox-b-fallback.ably-realtime.com",
-                "sandbox-c-fallback.ably-realtime.com",
-                "sandbox-d-fallback.ably-realtime.com",
-                "sandbox-e-fallback.ably-realtime.com",
+                "lmars-dev-a-fallback.ably-realtime.com",
+                "lmars-dev-b-fallback.ably-realtime.com",
+                "lmars-dev-c-fallback.ably-realtime.com",
+                "lmars-dev-d-fallback.ably-realtime.com",
+                "lmars-dev-e-fallback.ably-realtime.com",
             };
-            var fallbackHosts = Defaults.GetEnvironmentFallbackHosts("sandbox");
+            var fallbackHosts = Defaults.GetEnvironmentFallbackHosts("lmars-dev");
             Assert.Equal(expectedFallBackHosts, fallbackHosts);
         }
 

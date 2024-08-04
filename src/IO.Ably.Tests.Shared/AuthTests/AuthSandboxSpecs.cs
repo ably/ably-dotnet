@@ -598,7 +598,7 @@ namespace IO.Ably.Tests
 
             var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability)).Result;
 
-            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
+            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "lmars-dev" });
 
             var error =
                 await

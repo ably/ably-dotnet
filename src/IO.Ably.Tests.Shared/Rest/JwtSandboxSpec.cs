@@ -128,7 +128,7 @@ namespace IO.Ably.Tests.Rest
 
             var authParams = new Dictionary<string, string>
             {
-                ["environment"] = "sandbox",
+                ["environment"] = "lmars-dev",
                 ["keyName"] = key,
                 ["keySecret"] = secret,
                 ["returnType"] = "jwt"
@@ -209,7 +209,7 @@ namespace IO.Ably.Tests.Rest
             query["capability"] = capability;
             query["jwtType"] = jwtType;
             query["encrypted"] = encrypted.ToString();
-            query["environment"] = "sandbox";
+            query["environment"] = "lmars-dev";
             builder.Query = query.ToQueryString();
 
             var jwtStr = await _httpClient.GetStringAsync(builder.Uri);

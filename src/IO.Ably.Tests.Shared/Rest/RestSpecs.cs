@@ -326,7 +326,7 @@ namespace IO.Ably.Tests
             {
                 var client = CreateClient(options =>
                 {
-                    options.Environment = "sandbox";
+                    options.Environment = "lmars-dev";
                     options.RestHost = "www.test.com";
                 });
                 await MakeAnyRequest(client);

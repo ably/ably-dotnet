@@ -51,7 +51,7 @@ namespace IO.Ably.Tests
 
         public bool Tls { get; set; }
 
-        public string Environment { get; set; } = "sandbox";
+        public string Environment { get; set; } = "lmars-dev";
 
         public CipherParams CipherParams { get; set; }
 

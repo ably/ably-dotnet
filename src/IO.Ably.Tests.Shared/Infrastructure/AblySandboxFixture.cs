@@ -15,7 +15,7 @@ namespace IO.Ably.Tests
 
         public static async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
-            environment = environment ?? "sandbox";
+            environment = environment ?? "lmars-dev";
             if (Settings.ContainsKey(environment))
             {
                 return Settings[environment];
@@ -25,7 +25,7 @@ namespace IO.Ably.Tests
             return Settings[environment];
         }
 
-        private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")
+        private static async Task<TestEnvironmentSettings> Initialise(string environment = "lmars-dev")
         {
             var settings = new TestEnvironmentSettings
             {

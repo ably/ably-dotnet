@@ -16,13 +16,13 @@ namespace Assets.Tests.AblySandbox
 
         public async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
-            environment = environment ?? "sandbox";
+            environment = environment ?? "lmars-dev";
             if (_settings.ContainsKey(environment))
             {
                 return _settings[environment];
             }
 
-            _settings[environment] = await Initialise("sandbox");
+            _settings[environment] = await Initialise("lmars-dev");
             return _settings[environment];
         }
 

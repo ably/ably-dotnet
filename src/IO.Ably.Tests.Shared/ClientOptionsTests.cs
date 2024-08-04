@@ -42,13 +42,13 @@ namespace IO.Ably.Tests.Shared
         {
             var options = new ClientOptions
             {
-                Environment = "sandbox"
+                Environment = "lmars-dev"
             };
-            options.FullRealtimeHost().Should().Be("sandbox-realtime.ably.io");
-            options.FullRestHost().Should().Be("sandbox-rest.ably.io");
+            options.FullRealtimeHost().Should().Be("lmars-dev-realtime.ably.io");
+            options.FullRestHost().Should().Be("lmars-dev-rest.ably.io");
             options.Port.Should().Be(80);
             options.TlsPort.Should().Be(443);
-            Assert.Equal(Defaults.GetEnvironmentFallbackHosts("sandbox"), options.GetFallbackHosts());
+            Assert.Equal(Defaults.GetEnvironmentFallbackHosts("lmars-dev"), options.GetFallbackHosts());
             options.Tls.Should().BeTrue();
         }
 

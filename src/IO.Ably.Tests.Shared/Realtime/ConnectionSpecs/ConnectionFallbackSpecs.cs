@@ -62,7 +62,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17b")]
         public async Task WithCustomEnvironmentAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            var client = await GetConnectedClient(opts => opts.Environment = "sandbox");
+            var client = await GetConnectedClient(opts => opts.Environment = "lmars-dev");
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {

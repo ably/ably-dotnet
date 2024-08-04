@@ -672,7 +672,7 @@ namespace Assets.Tests.PlayMode
 
                 var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null).Result;
 
-                var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
+                var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "lmars-dev" });
 
                 var error =
                     await E7Assert.ThrowsAsync<AblyException>(tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
