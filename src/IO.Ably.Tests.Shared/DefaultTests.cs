@@ -27,11 +27,11 @@ namespace IO.Ably.Tests.Shared
         {
             var expectedFallBackHosts = new[]
             {
-                "lmars-dev-a-fallback.ably-realtime.com",
-                "lmars-dev-b-fallback.ably-realtime.com",
-                "lmars-dev-c-fallback.ably-realtime.com",
-                "lmars-dev-d-fallback.ably-realtime.com",
-                "lmars-dev-e-fallback.ably-realtime.com",
+                "lmars-dev-a-fallback.ably-realtime-nonprod.com",
+                "lmars-dev-b-fallback.ably-realtime-nonprod.com",
+                "lmars-dev-c-fallback.ably-realtime-nonprod.com",
+                "lmars-dev-d-fallback.ably-realtime-nonprod.com",
+                "lmars-dev-e-fallback.ably-realtime-nonprod.com",
             };
             var fallbackHosts = Defaults.GetEnvironmentFallbackHosts("lmars-dev");
             Assert.Equal(expectedFallBackHosts, fallbackHosts);

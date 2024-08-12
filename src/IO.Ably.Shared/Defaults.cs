@@ -87,11 +87,11 @@ namespace IO.Ably
         {
             return new[]
             {
-                $"{environment}-a-fallback.ably-realtime.com",
-                $"{environment}-b-fallback.ably-realtime.com",
-                $"{environment}-c-fallback.ably-realtime.com",
-                $"{environment}-d-fallback.ably-realtime.com",
-                $"{environment}-e-fallback.ably-realtime.com",
+                $"{environment}-a-fallback.ably-realtime-nonprod.com",
+                $"{environment}-b-fallback.ably-realtime-nonprod.com",
+                $"{environment}-c-fallback.ably-realtime-nonprod.com",
+                $"{environment}-d-fallback.ably-realtime-nonprod.com",
+                $"{environment}-e-fallback.ably-realtime-nonprod.com",
             };
         }
     }
