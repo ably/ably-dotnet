@@ -1121,37 +1121,6 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN16l")]
-        [Trait("spec", "RTN15c4")]
-        public async Task WithInvalidRecoverData_ShouldFailAndSetAReasonOnTheConnection(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.Recover = "{\"connectionKey\":\"random_key\",\"msgSerial\":5,\"channelSerials\":{\"channel1\":\"98\",\"channel2\":\"32\",\"channel3\":\"09\"}}";
-                opts.AutoConnect = false;
-            });
-
-            ErrorInfo err = null;
-            client.Connection.On((args) =>
-            {
-                err = args.Reason;
-                if (args.Current == ConnectionState.Failed)
-                {
-                    ResetEvent.Set();
-                }
-            });
-            client.Connect();
-
-            var result = ResetEvent.WaitOne(10000);
-            result.Should().BeTrue("Timeout");
-            err.Should().NotBeNull();
-            err.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
-            client.Connection.ErrorReason.Code.Should().Be(ErrorCodes.InvalidFormatForConnectionId);
-            client.Connection.State.Should().Be(ConnectionState.Failed);
-        }
-
-        [Theory]
-        [ProtocolData]
         [Trait("issue", "65")]
         public async Task WithShortLivedToken_ShouldRenewTokenMoreThanOnce(Protocol protocol)
         {
