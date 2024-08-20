@@ -1,5 +1,6 @@
 name: "Unit and Integration Test: Linux"
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:

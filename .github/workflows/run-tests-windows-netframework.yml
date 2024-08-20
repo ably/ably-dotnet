@@ -1,5 +1,6 @@
 name: "Unit and Integration Test: Windows (NetFramework)"
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
