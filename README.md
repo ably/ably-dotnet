@@ -20,7 +20,7 @@ Find out more:
 Everything you need to get started with Ably:
 
 * [Quickstart in Pub/Sub using C# .NET.](https://ably.com/docs/getting-started/quickstart?lang=csharp)
-* * [SDK Setup for C# .NET.](https://ably.com/docs/getting-started/setup?lang=ruby)
+* [SDK Setup for C# .NET.](https://ably.com/docs/getting-started/setup?lang=csharp)
 
 ---
 
@@ -102,7 +102,7 @@ await channel.PublishAsync("test-event", "Hello World!");
 
 ## Releases
 
-The [CHANGELOG.md](./CONTRIBUTING.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
+The [CHANGELOG.md](./CHANGELOG.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
 
 ---
 
@@ -118,7 +118,7 @@ For help or technical support, visit Ably's [support page](https://ably.com/supp
 
 ### Increasing transport send and receive buffers for .NET framework
 
-In high-throughput scenarios , for example, sending messages >50KB, the default WebSocket buffer in the .NET Framework can cause instability or errors. This issue is discussed in [GitHub issue #446](https://github.com/ably/ably-dotnet/issues/446).
+In high-throughput scenarios, for example, sending messages >50KB, the default WebSocket buffer in the .NET Framework can cause instability or errors. This issue is discussed in [GitHub issue #446](https://github.com/ably/ably-dotnet/issues/446).
 
 To mitigate this, increase the WebSocket buffer size to the maximum allowed (64KB):
 
