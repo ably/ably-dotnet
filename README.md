@@ -1,6 +1,6 @@
 ![Ably Pub/Sub Dotnet Header](images/NETSDK-github.png)
 [![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://www.nuget.org/packages/ably.io)
-[![License](https://badgen.net/github/license/ably/ably-dotnet)](https://github.com/ably/ably-dotnet/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/ably/ably-dotnet)](https://github.com/ably/ably-dotnet/blob/main/LICENSE)
 
 # Ably Pub/Sub .NET SDK
 
@@ -18,9 +18,8 @@ Find out more:
 ## Getting started
 
 Everything you need to get started with Ably:
-
-* [Quickstart in Pub/Sub using C# .NET.](https://ably.com/docs/getting-started/quickstart?lang=csharp)
-* [SDK Setup for C# .NET.](https://ably.com/docs/getting-started/setup?lang=csharp)
+* [Getting started with Pub/Sub using .NET.](https://ably.com/docs/getting-started/dotnet)
+* [SDK Setup for .NET.](https://ably.com/docs/getting-started/setup?lang=csharp)
 
 ---
 
