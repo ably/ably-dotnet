@@ -210,7 +210,11 @@ Task("NetStandard-Unit-Tests")
     {
         Configuration = configuration,
         Filter = string.Join("&", filters),
-        Loggers = new[] { $"trx;logfilename={resultsPath.FullPath}" },
+        Loggers = new[] {
+            $"trx;logfilename={resultsPath.FullPath}",
+            "console;verbosity=detailed"
+        },
+        Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
         NoRestore = true
     };
@@ -249,7 +253,11 @@ Task("NetStandard-Unit-Tests-WithRetry")
     {
         Configuration = configuration,
         Filter = string.Join("&", filters),
-        Loggers = new[] { $"trx;logfilename={resultsPath.FullPath}" },
+        Loggers = new[] {
+            $"trx;logfilename={resultsPath.FullPath}",
+            "console;verbosity=detailed"
+        },
+        Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
         NoRestore = true
     };
@@ -281,7 +289,11 @@ Task("NetStandard-Unit-Tests-WithRetry")
         {
             Configuration = configuration,
             Filter = test,
-            Loggers = new[] { $"trx;logfilename={retryResultsPath.FullPath}" },
+            Loggers = new[] {
+                $"trx;logfilename={retryResultsPath.FullPath}",
+                "console;verbosity=detailed"
+            },
+            Verbosity = DotNetVerbosity.Normal,
             NoBuild = true,
             NoRestore = true
         };
@@ -321,7 +333,11 @@ Task("NetStandard-Integration-Tests")
     {
         Configuration = configuration,
         Filter = "type=integration",
-        Loggers = new[] { $"trx;logfilename={resultsPath.FullPath}" },
+        Loggers = new[] {
+            $"trx;logfilename={resultsPath.FullPath}",
+            "console;verbosity=detailed"
+        },
+        Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
         NoRestore = true
     };
@@ -353,7 +369,11 @@ Task("NetStandard-Integration-Tests-WithRetry")
     {
         Configuration = configuration,
         Filter = "type=integration",
-        Loggers = new[] { $"trx;logfilename={resultsPath.FullPath}" },
+        Loggers = new[] {
+            $"trx;logfilename={resultsPath.FullPath}",
+            "console;verbosity=detailed"
+        },
+        Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
         NoRestore = true
     };
@@ -385,7 +405,11 @@ Task("NetStandard-Integration-Tests-WithRetry")
         {
             Configuration = configuration,
             Filter = test,
-            Loggers = new[] { $"trx;logfilename={retryResultsPath.FullPath}" },
+            Loggers = new[] {
+                $"trx;logfilename={retryResultsPath.FullPath}",
+                "console;verbosity=detailed"
+            },
+            Verbosity = DotNetVerbosity.Normal,
             NoBuild = true,
             NoRestore = true
         };
