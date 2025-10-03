@@ -31,10 +31,10 @@ jobs:
           ./tools/mono-install.sh
 
       - name: Build Xamarin projects
-        run: ./build.sh Build.Xamarin
+        run: ./build-cake.sh --target=Build.Xamarin
 
       - name: Run Unit tests using mono
-        run: ./build.sh Test.NetFramework.Unit.WithRetry
+        run: ./build-cake.sh --target=Test.NetFramework.Unit.WithRetry
 
       - name: Run Integration tests using mono
-        run: ./build.sh Test.NetFramework.Integration.WithRetry
+        run: ./build-cake.sh --target=Test.NetFramework.Integration.WithRetry
