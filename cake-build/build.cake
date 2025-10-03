@@ -1,6 +1,3 @@
-#addin nuget:?package=Cake.Git&version=4.0.0
-#addin nuget:?package=Cake.Compression&version=0.3.0
-
 #load "helpers/paths.cake"
 #load "helpers/tools.cake"
 #load "helpers/test-retry.cake"

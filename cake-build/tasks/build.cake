@@ -20,19 +20,31 @@ Task("Restore")
     // FAKE restores the main IO.Ably.sln solution, not IO.Ably.NetStandard.sln
     var mainSolution = paths.Src.CombineWithFilePath("IO.Ably.sln");
     
-    if (IsRunningOnWindows())
+    // Use NuGet CLI for .NET Framework projects (packages.config)
+    // This is critical for both Windows and macOS/Linux with Mono
+    Information("Running NuGet restore...");
+    try
     {
-        // Use local nuget.exe for Windows
-        var nugetPath = "./tools/nuget.exe";
-        if (FileExists(nugetPath))
+        if (IsRunningOnWindows())
         {
-            NuGetRestore(mainSolution.FullPath, new NuGetRestoreSettings
+            NuGetRestore(mainSolution.FullPath);
+        }
+        else
+        {
+            // On macOS/Linux, use nuget command (installed via mono)
+            StartProcess("nuget", new ProcessSettings
             {
-                ToolPath = nugetPath
+                Arguments = $"restore {mainSolution.FullPath}"
             });
         }
     }
+    catch (Exception ex)
+    {
+        Warning($"NuGet restore failed: {ex.Message}");
+        // Continue anyway as dotnet restore might handle it
+    }
     
+    Information("Running dotnet restore...");
     DotNetRestore(mainSolution.FullPath);
 });
 
@@ -97,13 +109,22 @@ Task("Restore-Xamarin")
 {
     Information("Restoring Xamarin packages...");
     
-    if (FileExists(paths.XamarinSolution))
-    {
-        NuGetRestore(paths.XamarinSolution.FullPath);
-    }
-    else
+    if (!FileExists(paths.XamarinSolution))
     {
         Warning("Xamarin solution not found, skipping restore");
+        return;
+    }
+    
+    // Use NuGet CLI for Xamarin restore (matches FAKE behavior)
+    try
+    {
+        Information($"Running NuGet restore for {paths.XamarinSolution.FullPath}...");
+        NuGetRestore(paths.XamarinSolution.FullPath);
+    }
+    catch (Exception ex)
+    {
+        Warning($"NuGet restore for Xamarin failed: {ex.Message}");
+        throw;
     }
 });
 

@@ -16,8 +16,8 @@ jobs:
         targetframework: [ "net6.0", "net7.0" ]
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
+      - uses: actions/checkout@v4
+        with:
           submodules: 'recursive'
 
       - name: Download dotnet framework

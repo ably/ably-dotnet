@@ -8,22 +8,25 @@ Task("NetFramework-Unit-Tests")
 {
     Information("Running .NET Framework unit tests...");
     
-    var testAssemblies = GetFiles("src/IO.Ably.Tests.NETFramework/bin/Release/*.Tests.*.dll");
+    // Match test assembly: IO.Ably.Tests.NETFramework.dll
+    var testAssemblies = GetFiles(paths.Src.Combine("IO.Ably.Tests.NETFramework/bin/Release").FullPath + "/IO.Ably.Tests.*.dll");
     
     if (!testAssemblies.Any())
     {
-        Warning("No test assemblies found for .NET Framework");
+        Warning($"No test assemblies found matching pattern: {paths.Src}/IO.Ably.Tests.NETFramework/bin/Release/IO.Ably.Tests.*.dll");
         return;
     }
     
     XUnit2(testAssemblies, new XUnit2Settings
     {
+        ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
         OutputDirectory = paths.TestResults,
         XmlReport = true,
         ReportName = "xunit-netframework-unit",
         ArgumentCustomization = args => args
             .Append("-notrait")
             .AppendQuoted("type=integration")
+            .Append("-verbose")
     });
 });
 
@@ -33,12 +36,12 @@ Task("NetFramework-Unit-Tests-WithRetry")
 {
     Information("Running .NET Framework unit tests with retry...");
     
-    var testAssemblies = GetFiles("src/IO.Ably.Tests.NETFramework/bin/Release/*.Tests.*.dll");
+    var testAssemblies = GetFiles(paths.Src.Combine("IO.Ably.Tests.NETFramework/bin/Release").FullPath + "/IO.Ably.Tests.*.dll");
     var resultsPath = paths.TestResults.CombineWithFilePath("xunit-netframework-unit.xml");
     
     if (!testAssemblies.Any())
     {
-        Warning("No test assemblies found for .NET Framework");
+        Warning($"No test assemblies found matching pattern: {paths.Src}/IO.Ably.Tests.NETFramework/bin/Release/IO.Ably.Tests.*.dll");
         return;
     }
     
@@ -46,12 +49,14 @@ Task("NetFramework-Unit-Tests-WithRetry")
     {
         XUnit2(testAssemblies, new XUnit2Settings
         {
+            ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
             OutputDirectory = paths.TestResults,
             XmlReport = true,
             ReportName = "xunit-netframework-unit",
             ArgumentCustomization = args => args
                 .Append("-notrait")
                 .AppendQuoted("type=integration")
+                .Append("-verbose")
         });
     }
     catch
@@ -72,12 +77,14 @@ Task("NetFramework-Unit-Tests-WithRetry")
         {
             XUnit2(testAssemblies, new XUnit2Settings
             {
+                ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
                 OutputDirectory = paths.TestResults,
                 XmlReport = true,
                 ReportName = retryResultsPath.GetFilenameWithoutExtension().FullPath,
                 ArgumentCustomization = args => args
                     .Append("-method")
                     .AppendQuoted(test)
+                    .Append("-verbose")
             });
         }
         catch
@@ -93,26 +100,27 @@ Task("NetFramework-Integration-Tests")
 {
     Information("Running .NET Framework integration tests...");
     
-    var testAssemblies = GetFiles("src/IO.Ably.Tests.NETFramework/bin/Release/*.Tests.*.dll");
+    var testAssemblies = GetFiles(paths.Src.Combine("IO.Ably.Tests.NETFramework/bin/Release").FullPath + "/IO.Ably.Tests.*.dll");
     
     if (!testAssemblies.Any())
     {
-        Warning("No test assemblies found for .NET Framework");
+        Warning($"No test assemblies found matching pattern: {paths.Src}/IO.Ably.Tests.NETFramework/bin/Release/IO.Ably.Tests.*.dll");
         return;
     }
     
     XUnit2(testAssemblies, new XUnit2Settings
     {
+        ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
         OutputDirectory = paths.TestResults,
         XmlReport = true,
         ReportName = "xunit-netframework-integration",
-        MaxThreads = 0,
         Parallelism = ParallelismOption.Collections,
         ArgumentCustomization = args => args
             .Append("-trait")
             .AppendQuoted("type=integration")
             .Append("-maxthreads")
-            .Append("0")
+            .Append("unlimited")
+            .Append("-verbose")
     });
 });
 
@@ -122,12 +130,12 @@ Task("NetFramework-Integration-Tests-WithRetry")
 {
     Information("Running .NET Framework integration tests with retry...");
     
-    var testAssemblies = GetFiles("src/IO.Ably.Tests.NETFramework/bin/Release/*.Tests.*.dll");
+    var testAssemblies = GetFiles(paths.Src.Combine("IO.Ably.Tests.NETFramework/bin/Release").FullPath + "/IO.Ably.Tests.*.dll");
     var resultsPath = paths.TestResults.CombineWithFilePath("xunit-netframework-integration.xml");
     
     if (!testAssemblies.Any())
     {
-        Warning("No test assemblies found for .NET Framework");
+        Warning($"No test assemblies found matching pattern: {paths.Src}/IO.Ably.Tests.NETFramework/bin/Release/IO.Ably.Tests.*.dll");
         return;
     }
     
@@ -135,16 +143,17 @@ Task("NetFramework-Integration-Tests-WithRetry")
     {
         XUnit2(testAssemblies, new XUnit2Settings
         {
+            ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
             OutputDirectory = paths.TestResults,
             XmlReport = true,
             ReportName = "xunit-netframework-integration",
-            MaxThreads = 0,
             Parallelism = ParallelismOption.Collections,
             ArgumentCustomization = args => args
                 .Append("-trait")
                 .AppendQuoted("type=integration")
                 .Append("-maxthreads")
-                .Append("0")
+                .Append("unlimited")
+                .Append("-verbose")
         });
     }
     catch
@@ -165,12 +174,14 @@ Task("NetFramework-Integration-Tests-WithRetry")
         {
             XUnit2(testAssemblies, new XUnit2Settings
             {
+                ToolPath = paths.Root.CombineWithFilePath("tools/xunit/xunit.console.exe"),
                 OutputDirectory = paths.TestResults,
                 XmlReport = true,
                 ReportName = retryResultsPath.GetFilenameWithoutExtension().FullPath,
                 ArgumentCustomization = args => args
                     .Append("-method")
                     .AppendQuoted(test)
+                    .Append("-verbose")
             });
         }
         catch

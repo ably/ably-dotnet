@@ -12,8 +12,8 @@ jobs:
       DOTNET_NOLOGO: true
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
+      - uses: actions/checkout@v4
+        with:
           submodules: 'recursive'
 
       - name: Download dotnet framework
