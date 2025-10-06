@@ -3,6 +3,7 @@
 #load "helpers/test-retry.cake"
 #load "helpers/build-config.cake"
 #load "helpers/frameworks.cake"
+#load "helpers/test-execution.cake"
 #load "tasks/build.cake"
 #load "tasks/test.cake"
 #load "tasks/package.cake"
