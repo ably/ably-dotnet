@@ -227,11 +227,22 @@ Task("NetStandard-Unit-Tests")
         },
         Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
-        NoRestore = true
+        NoRestore = true,
+        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+        MSBuildSettings = new DotNetMSBuildSettings()
+            .WithProperty("WarningsNotAsErrors", "NU1903")
+            .WithProperty("NoWarn", "NU1903")
     };
     
     if (!string.IsNullOrEmpty(framework))
     {
+        // Validate framework availability before running tests
+        if (!frameworkDetector.IsFrameworkAvailable(framework))
+        {
+            var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+            Warning($"Framework '{framework}' may not be available. Available frameworks: {available}");
+            Warning("Attempting to run tests anyway...");
+        }
         settings.Framework = framework;
     }
     
@@ -270,11 +281,22 @@ Task("NetStandard-Unit-Tests-WithRetry")
         },
         Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
-        NoRestore = true
+        NoRestore = true,
+        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+        MSBuildSettings = new DotNetMSBuildSettings()
+            .WithProperty("WarningsNotAsErrors", "NU1903")
+            .WithProperty("NoWarn", "NU1903")
     };
     
     if (!string.IsNullOrEmpty(framework))
     {
+        // Validate framework availability before running tests
+        if (!frameworkDetector.IsFrameworkAvailable(framework))
+        {
+            var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+            Warning($"Framework '{framework}' may not be available. Available frameworks: {available}");
+            Warning("Attempting to run tests anyway...");
+        }
         settings.Framework = framework;
     }
     
@@ -306,11 +328,16 @@ Task("NetStandard-Unit-Tests-WithRetry")
             },
             Verbosity = DotNetVerbosity.Normal,
             NoBuild = true,
-            NoRestore = true
+            NoRestore = true,
+            // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+            MSBuildSettings = new DotNetMSBuildSettings()
+                .WithProperty("WarningsNotAsErrors", "NU1903")
+                .WithProperty("NoWarn", "NU1903")
         };
         
         if (!string.IsNullOrEmpty(framework))
         {
+            // Framework already validated in initial run
             retrySettings.Framework = framework;
         }
         
@@ -350,11 +377,22 @@ Task("NetStandard-Integration-Tests")
         },
         Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
-        NoRestore = true
+        NoRestore = true,
+        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+        MSBuildSettings = new DotNetMSBuildSettings()
+            .WithProperty("WarningsNotAsErrors", "NU1903")
+            .WithProperty("NoWarn", "NU1903")
     };
     
     if (!string.IsNullOrEmpty(framework))
     {
+        // Validate framework availability before running tests
+        if (!frameworkDetector.IsFrameworkAvailable(framework))
+        {
+            var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+            Warning($"Framework '{framework}' may not be available. Available frameworks: {available}");
+            Warning("Attempting to run tests anyway...");
+        }
         settings.Framework = framework;
     }
     
@@ -386,11 +424,22 @@ Task("NetStandard-Integration-Tests-WithRetry")
         },
         Verbosity = DotNetVerbosity.Normal,
         NoBuild = true,
-        NoRestore = true
+        NoRestore = true,
+        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+        MSBuildSettings = new DotNetMSBuildSettings()
+            .WithProperty("WarningsNotAsErrors", "NU1903")
+            .WithProperty("NoWarn", "NU1903")
     };
     
     if (!string.IsNullOrEmpty(framework))
     {
+        // Validate framework availability before running tests
+        if (!frameworkDetector.IsFrameworkAvailable(framework))
+        {
+            var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+            Warning($"Framework '{framework}' may not be available. Available frameworks: {available}");
+            Warning("Attempting to run tests anyway...");
+        }
         settings.Framework = framework;
     }
     
@@ -422,11 +471,16 @@ Task("NetStandard-Integration-Tests-WithRetry")
             },
             Verbosity = DotNetVerbosity.Normal,
             NoBuild = true,
-            NoRestore = true
+            NoRestore = true,
+            // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+            MSBuildSettings = new DotNetMSBuildSettings()
+                .WithProperty("WarningsNotAsErrors", "NU1903")
+                .WithProperty("NoWarn", "NU1903")
         };
         
         if (!string.IsNullOrEmpty(framework))
         {
+            // Framework already validated in initial run
             retrySettings.Framework = framework;
         }
         

@@ -43,16 +43,13 @@ public class BuildConfiguration
         
         // Deterministic builds: Ensures byte-for-byte identical binaries from same source
         // Benefits: Reproducible builds, better caching, security verification
-        // Requires: Full Git history and SourceLink packages
+        // Requires: Full Git history (fetch-depth: 0 in workflows) and SourceLink packages
         result = result.WithProperty("Deterministic", "true");
         
         // ContinuousIntegrationBuild: Enables source link and embeds Git commit info
         // Benefits: Better debugging (step into library code), traceability
         // Required for: Proper source link functionality in NuGet packages
         result = result.WithProperty("ContinuousIntegrationBuild", isCI ? "true" : "false");
-        
-        // Workaround for MSBuild issue (same as FAKE)
-        result = result.WithProperty("dummy", "property");
         
         return result;
     }

@@ -45,7 +45,14 @@ Task("Restore")
     }
     
     Information("Running dotnet restore...");
-    DotNetRestore(mainSolution.FullPath);
+    // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+    var restoreSettings = new DotNetRestoreSettings
+    {
+        MSBuildSettings = new DotNetMSBuildSettings()
+            .WithProperty("WarningsNotAsErrors", "NU1903")
+            .WithProperty("NoWarn", "NU1903")
+    };
+    DotNetRestore(mainSolution.FullPath, restoreSettings);
 });
 
 Task("Version")
@@ -95,11 +102,17 @@ Task("NetStandard-Build")
         NoRestore = true
     };
     
+    // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+    var msbuildSettings = new DotNetMSBuildSettings()
+        .WithProperty("WarningsNotAsErrors", "NU1903")
+        .WithProperty("NoWarn", "NU1903");
+    
     if (!string.IsNullOrEmpty(defineConstants))
     {
-        settings.MSBuildSettings = new DotNetMSBuildSettings()
-            .WithProperty("DefineConstants", defineConstants);
+        msbuildSettings.WithProperty("DefineConstants", defineConstants);
     }
+    
+    settings.MSBuildSettings = msbuildSettings;
     
     DotNetBuild(paths.NetStandardSolution.FullPath, settings);
 });

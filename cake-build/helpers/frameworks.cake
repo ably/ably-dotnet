@@ -33,6 +33,10 @@ public class FrameworkDetector
                     frameworks.Add("net7.0");
                 if (line.Contains("8.0") && !frameworks.Contains("net8.0"))
                     frameworks.Add("net8.0");
+                if (line.Contains("9.0") && !frameworks.Contains("net9.0"))
+                    frameworks.Add("net9.0");
+                if (line.Contains("10.0") && !frameworks.Contains("net10.0"))
+                    frameworks.Add("net10.0");
             }
         }
         catch (Exception ex)

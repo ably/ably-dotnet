@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        targetframework: [ "net6.0", "net7.0" ]
+        targetframework: [ "net6.0", "net7.0", "net8.0", "net9.0" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -24,8 +24,10 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
-            6.0.403
-            7.0.408
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
 
       - name: Download dotnet build-script tools
         run: dotnet tool restore

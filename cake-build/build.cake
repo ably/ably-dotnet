@@ -31,7 +31,22 @@ Setup(ctx =>
     if (!string.IsNullOrEmpty(version))
         Information($"Version: {version}");
     if (!string.IsNullOrEmpty(framework))
+    {
         Information($"Framework: {framework}");
+        // Validate framework availability
+        if (!frameworkDetector.IsFrameworkAvailable(framework))
+        {
+            var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+            Warning($"Framework '{framework}' may not be available on this system.");
+            Information($"Available frameworks: {available}");
+        }
+    }
+    else
+    {
+        // Show available frameworks when none specified
+        var available = string.Join(", ", frameworkDetector.GetTargetFrameworks());
+        Information($"Available frameworks: {available}");
+    }
     Information($"Platform: {(IsRunningOnWindows() ? "Windows" : IsRunningOnUnix() ? "Unix" : "macOS")}");
 });
 
