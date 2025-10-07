@@ -11,6 +11,7 @@ public class BuildPaths
     public DirectoryPath Package { get; }
     public DirectoryPath Lib { get; }
     
+    public FilePath MainSolution { get; }
     public FilePath NetStandardSolution { get; }
     public FilePath NetFrameworkSolution { get; }
     public FilePath XamarinSolution { get; }
@@ -30,6 +31,7 @@ public class BuildPaths
         TestResults = BuildOutput.Combine("tests");
         Package = BuildOutput.Combine("package");
         
+        MainSolution = Src.CombineWithFilePath("IO.Ably.sln");
         NetStandardSolution = Src.CombineWithFilePath("IO.Ably.NetStandard.sln");
         NetFrameworkSolution = Src.CombineWithFilePath("IO.Ably.NetFramework.sln");
         XamarinSolution = Src.CombineWithFilePath("IO.Ably.Xamarin.sln");

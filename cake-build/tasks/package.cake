@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 Task("Package-Build-All")
-    .IsDependentOn("Prepare")
+    .IsDependentOn("Clean")
     .IsDependentOn("Version")
     .Does(() =>
 {
@@ -14,6 +14,9 @@ Task("Package-Build-All")
         Warning($"Package solution not found: {paths.PackageSolution}");
         return;
     }
+    
+    // Restore the package solution (not the main solution)
+    RestoreSolution(paths.PackageSolution);
     
     var settings = buildConfig.ApplyStandardSettings(
         new MSBuildSettings(),
@@ -107,7 +110,7 @@ Task("Package-Create-NuGet")
 });
 
 Task("PushPackage-Build-All")
-    .IsDependentOn("Prepare")
+    .IsDependentOn("Clean")
     .IsDependentOn("Version")
     .Does(() =>
 {
@@ -118,6 +121,9 @@ Task("PushPackage-Build-All")
         Warning($"Push package solution not found: {paths.PushPackageSolution}");
         return;
     }
+    
+    // Restore the push package solution (not the main solution)
+    RestoreSolution(paths.PushPackageSolution);
     
     var settings = buildConfig.ApplyStandardSettings(
         new MSBuildSettings(),

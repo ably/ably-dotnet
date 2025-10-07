@@ -12,47 +12,63 @@ Task("Clean")
     EnsureDirectoryExists(paths.Package);
 });
 
-Task("Restore")
-    .Does(() =>
+// Helper method to restore a solution, try both nuget restore and dotnet restore
+void RestoreSolution(FilePath solutionPath)
 {
-    Information("Restoring NuGet packages...");
-    
-    // FAKE restores the main IO.Ably.sln solution, not IO.Ably.NetStandard.sln
-    var mainSolution = paths.Src.CombineWithFilePath("IO.Ably.sln");
-    
-    // Use NuGet CLI for .NET Framework projects (packages.config)
-    // This is critical for both Windows and macOS/Linux with Mono
+    Information($"Restoring NuGet packages for {solutionPath.GetFilename()}...");
+
+    // This is needed to restore deprecated Xamarin projects on Windows and macOS/Linux.
+    // Needed for projects using old packages.config format for maintaining dependencies.
+    // This will not be needed once deprecated projects are removed.
     Information("Running NuGet restore...");
     try
     {
         if (IsRunningOnWindows())
         {
-            NuGetRestore(mainSolution.FullPath);
+            Information("Windows system detected, running direct NuGetRestore command");
+            NuGetRestore(solutionPath.FullPath);
         }
         else
         {
+            Information("macOS/Linux system detected, running nuget restore from CLI");
             // On macOS/Linux, use nuget command (installed via mono)
             StartProcess("nuget", new ProcessSettings
             {
-                Arguments = $"restore {mainSolution.FullPath}"
+                Arguments = $"restore {solutionPath.FullPath}"
             });
         }
     }
     catch (Exception ex)
     {
         Warning($"NuGet restore failed: {ex.Message}");
-        // Continue anyway as dotnet restore might handle it
     }
-    
-    Information("Running dotnet restore...");
-    // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
-    var restoreSettings = new DotNetRestoreSettings
+
+    // dotnet restore (all platforms, for SDK-style projects)
+    try
     {
-        MSBuildSettings = new DotNetMSBuildSettings()
-            .WithProperty("WarningsNotAsErrors", "NU1903")
-            .WithProperty("NoWarn", "NU1903")
-    };
-    DotNetRestore(mainSolution.FullPath, restoreSettings);
+        Information("Running dotnet restore...");
+        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
+        // Also supress restore warning as errors NU1503 for xamarin/old style projects
+        var restoreSettings = new DotNetRestoreSettings
+        {
+            MSBuildSettings = new DotNetMSBuildSettings()
+                .WithProperty("WarningsNotAsErrors", "NU1903;NU1503")
+                .WithProperty("NoWarn", "NU1903;NU1503")
+        };
+        DotNetRestore(solutionPath.FullPath, restoreSettings);
+        Information($"✓ dotnet restore completed");
+    }
+    catch (Exception e)
+    {
+        Warning($"dotnet restore failed: {e.Message}");
+    }
+}
+
+Task("Restore")
+    .Does(() =>
+{
+    // FAKE restores the main IO.Ably.sln solution, not IO.Ably.NetStandard.sln
+    RestoreSolution(paths.MainSolution);
 });
 
 Task("Version")
@@ -132,7 +148,16 @@ Task("Restore-Xamarin")
     try
     {
         Information($"Running NuGet restore for {paths.XamarinSolution.FullPath}...");
-        NuGetRestore(paths.XamarinSolution.FullPath);
+        var nugetSettings = new NuGetRestoreSettings();
+        
+        // Use local nuget.exe if available
+        var nugetPath = paths.Root.CombineWithFilePath("tools/nuget.exe");
+        if (FileExists(nugetPath))
+        {
+            nugetSettings.ToolPath = nugetPath;
+        }
+        
+        NuGetRestore(paths.XamarinSolution.FullPath, nugetSettings);
     }
     catch (Exception ex)
     {
