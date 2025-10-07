@@ -2,4 +2,4 @@
 dotnet tool restore
 
 # Pass all arguments directly to Cake
-dotnet cake cake-build/build.cake "$@"
+dotnet cake cake-build/build.cake -- "$@"

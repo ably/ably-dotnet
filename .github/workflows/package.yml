@@ -29,7 +29,7 @@ jobs:
         run: ./package-cake.cmd ${{ github.event.inputs.version }}
         
       - name: Archive package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: output-package
           path: |
@@ -60,7 +60,7 @@ jobs:
         run: ./package-push-cake.sh ${{ github.event.inputs.version }}
 
       - name: Archive package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: output-package
           path: |
@@ -87,7 +87,7 @@ jobs:
         run: ./package-unity-cake.sh ${{ github.event.inputs.version }}
         
       - name: Archive package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: output-package
           path: |

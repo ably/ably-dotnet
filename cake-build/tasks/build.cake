@@ -81,11 +81,11 @@ Task("NetFramework-Build")
     Information("Building .NET Framework solution...");
     
     var settings = buildConfig.ApplyStandardSettings(
-        new MSBuildSettings(), 
+        new MSBuildSettings(),
         configuration
     );
     
-    settings.WithTarget("Build");
+    settings = settings.WithTarget("Build");
     
     MSBuild(paths.NetFrameworkSolution, settings);
 });
@@ -109,7 +109,7 @@ Task("NetStandard-Build")
     
     if (!string.IsNullOrEmpty(defineConstants))
     {
-        msbuildSettings.WithProperty("DefineConstants", defineConstants);
+        msbuildSettings = msbuildSettings.WithProperty("DefineConstants", defineConstants);
     }
     
     settings.MSBuildSettings = msbuildSettings;
@@ -154,11 +154,11 @@ Task("Xamarin-Build")
     }
     
     var settings = buildConfig.ApplyStandardSettings(
-        new MSBuildSettings(), 
+        new MSBuildSettings(),
         configuration
     );
     
-    settings.WithTarget("Build");
+    settings = settings.WithTarget("Build");
     
     MSBuild(paths.XamarinSolution, settings);
 });

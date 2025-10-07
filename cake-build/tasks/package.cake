@@ -16,12 +16,12 @@ Task("Package-Build-All")
     }
     
     var settings = buildConfig.ApplyStandardSettings(
-        new MSBuildSettings(), 
+        new MSBuildSettings(),
         "Release"
     );
     
     settings = buildConfig.ApplyPackageSettings(settings);
-    settings.WithTarget("Build");
+    settings = settings.WithTarget("Build");
     
     MSBuild(paths.PackageSolution, settings);
 });
@@ -77,7 +77,7 @@ Task("Package-Create-NuGet")
 {
     Information($"Creating NuGet package version {version}...");
     
-    var nuspecFile = "./nuget/io.ably.nuspec";
+    var nuspecFile = paths.Root.CombineWithFilePath("nuget/io.ably.nuspec");
     
     if (!FileExists(nuspecFile))
     {
@@ -95,7 +95,7 @@ Task("Package-Create-NuGet")
     };
     
     // Use local nuget.exe if available
-    var nugetPath = "./tools/nuget.exe";
+    var nugetPath = paths.Root.CombineWithFilePath("tools/nuget.exe");
     if (FileExists(nugetPath))
     {
         nugetSettings.ToolPath = nugetPath;
@@ -106,8 +106,80 @@ Task("Package-Create-NuGet")
     Information($"✓ Package created: ably.io.{version}.nupkg");
 });
 
+Task("PushPackage-Build-All")
+    .IsDependentOn("Prepare")
+    .IsDependentOn("Version")
+    .Does(() =>
+{
+    Information("Building push notification packages...");
+    
+    if (!FileExists(paths.PushPackageSolution))
+    {
+        Warning($"Push package solution not found: {paths.PushPackageSolution}");
+        return;
+    }
+    
+    var settings = buildConfig.ApplyStandardSettings(
+        new MSBuildSettings(),
+        "Package"
+    );
+    
+    settings = buildConfig.ApplyPackageSettings(settings);
+    settings = settings.WithTarget("Build");
+    
+    MSBuild(paths.PushPackageSolution, settings);
+});
+
+Task("PushPackage-Create-NuGet")
+    .IsDependentOn("PushPackage-Build-All")
+    .WithCriteria(() => !string.IsNullOrEmpty(version))
+    .Does(() =>
+{
+    Information($"Creating push notification packages version {version}...");
+    
+    var nugetSettings = new NuGetPackSettings
+    {
+        Version = version,
+        Properties = new Dictionary<string, string>
+        {
+            { "Configuration", "Release" }
+        },
+        OutputDirectory = paths.Root
+    };
+    
+    // Use local nuget.exe if available
+    var nugetPath = paths.Root.CombineWithFilePath("tools/nuget.exe");
+    if (FileExists(nugetPath))
+    {
+        nugetSettings.ToolPath = nugetPath;
+    }
+    
+    // Android package
+    var androidNuspec = paths.Root.CombineWithFilePath("nuget/io.ably.push.android.nuspec");
+    if (FileExists(androidNuspec))
+    {
+        NuGetPack(androidNuspec, nugetSettings);
+        Information($"✓ Package created: ably.io.push.android.{version}.nupkg");
+    }
+    else
+    {
+        Warning($"Android nuspec not found: {androidNuspec}");
+    }
+    
+    // iOS package
+    var iosNuspec = paths.Root.CombineWithFilePath("nuget/io.ably.push.ios.nuspec");
+    if (FileExists(iosNuspec))
+    {
+        NuGetPack(iosNuspec, nugetSettings);
+        Information($"✓ Package created: ably.io.push.ios.{version}.nupkg");
+    }
+    else
+    {
+        Warning($"iOS nuspec not found: {iosNuspec}");
+    }
+});
+
 Task("Package-Unity")
-    .IsDependentOn("Build.NetStandard")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -153,79 +225,6 @@ Task("Package-Unity")
     }
 });
 
-Task("PushPackage-Build-All")
-    .IsDependentOn("Prepare")
-    .IsDependentOn("Version")
-    .Does(() =>
-{
-    Information("Building push notification packages...");
-    
-    if (!FileExists(paths.PushPackageSolution))
-    {
-        Warning($"Push package solution not found: {paths.PushPackageSolution}");
-        return;
-    }
-    
-    var settings = buildConfig.ApplyStandardSettings(
-        new MSBuildSettings(), 
-        "Package"
-    );
-    
-    settings = buildConfig.ApplyPackageSettings(settings);
-    settings.WithTarget("Build");
-    
-    MSBuild(paths.PushPackageSolution, settings);
-});
-
-Task("PushPackage-Create-NuGet")
-    .IsDependentOn("PushPackage-Build-All")
-    .WithCriteria(() => !string.IsNullOrEmpty(version))
-    .Does(() =>
-{
-    Information($"Creating push notification packages version {version}...");
-    
-    var nugetSettings = new NuGetPackSettings
-    {
-        Version = version,
-        Properties = new Dictionary<string, string>
-        {
-            { "Configuration", "Release" }
-        },
-        OutputDirectory = paths.Root
-    };
-    
-    // Use local nuget.exe if available
-    var nugetPath = "./tools/nuget.exe";
-    if (FileExists(nugetPath))
-    {
-        nugetSettings.ToolPath = nugetPath;
-    }
-    
-    // Android package
-    var androidNuspec = "./nuget/io.ably.push.android.nuspec";
-    if (FileExists(androidNuspec))
-    {
-        NuGetPack(androidNuspec, nugetSettings);
-        Information($"✓ Package created: ably.io.push.android.{version}.nupkg");
-    }
-    else
-    {
-        Warning($"Android nuspec not found: {androidNuspec}");
-    }
-    
-    // iOS package
-    var iosNuspec = "./nuget/io.ably.push.ios.nuspec";
-    if (FileExists(iosNuspec))
-    {
-        NuGetPack(iosNuspec, nugetSettings);
-        Information($"✓ Package created: ably.io.push.ios.{version}.nupkg");
-    }
-    else
-    {
-        Warning($"iOS nuspec not found: {iosNuspec}");
-    }
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,9 +232,8 @@ Task("PushPackage-Create-NuGet")
 Task("Package")
     .IsDependentOn("Package-Create-NuGet");
 
-Task("Package.WithUnity")
-    .IsDependentOn("Package-Create-NuGet")
-    .IsDependentOn("Package-Unity");
-
 Task("PushPackage")
     .IsDependentOn("PushPackage-Create-NuGet");
+
+Task("UnityPackage")
+    .IsDependentOn("Package-Unity");

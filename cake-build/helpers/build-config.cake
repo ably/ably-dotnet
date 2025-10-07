@@ -24,10 +24,9 @@ public class BuildConfiguration
     public MSBuildSettings ApplyPackageSettings(MSBuildSettings settings)
     {
         return settings
-            .WithProperty("StyleCopEnabled", "True")
-            .WithProperty("Package", "True")
-            .WithProperty("DefineConstants", "PACKAGE")
-            .WithProperty("GenerateDocumentationFile", "true");
+            .WithProperty("StyleCopEnabled", "true")
+            .WithProperty("Package", "true")
+            .WithProperty("DefineConstants", "PACKAGE");
     }
     
     public MSBuildSettings ApplyStandardSettings(MSBuildSettings settings, string config)
@@ -37,8 +36,8 @@ public class BuildConfiguration
         var result = settings
             .SetConfiguration(config)
             .SetVerbosity(Verbosity.Quiet)
-            .WithProperty("Optimize", "True")
-            .WithProperty("DebugSymbols", "True")
+            .WithProperty("Optimize", "true")
+            .WithProperty("DebugSymbols", "true")
             .WithProperty("GenerateDocumentationFile", "true");
         
         // Deterministic builds: Ensures byte-for-byte identical binaries from same source

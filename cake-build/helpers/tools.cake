@@ -22,15 +22,19 @@ public class ILRepackHelper
         
         _context.Information($"Merging {jsonNetDll.GetFilename()} into {targetDll.GetFilename()}...");
         
+        // Get the root directory (parent of cake-build)
+        var rootDir = _context.MakeAbsolute(_context.Directory("../"));
+        var ilRepackPath = rootDir.CombineWithFilePath("tools/ilrepack.exe");
+        
         // Use ILRepack directly like FAKE does
-        var exitCode = _context.StartProcess("./tools/ilrepack.exe", new ProcessSettings
+        var exitCode = _context.StartProcess(ilRepackPath.FullPath, new ProcessSettings
         {
             Arguments = new ProcessArgumentBuilder()
                 .Append($"/lib:{sourcePath.FullPath}")
                 .Append("/targetplatform:v4")
                 .Append("/internalize")
                 .Append($"/attr:{targetDll.FullPath}")
-                .Append("/keyfile:IO.Ably.snk")
+                .Append($"/keyfile:{rootDir.CombineWithFilePath("IO.Ably.snk").FullPath}")
                 .Append("/parallel")
                 .Append($"/out:{outputDll.FullPath}")
                 .Append(targetDll.FullPath)
