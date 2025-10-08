@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// TEST TASKS - NETFRAMEWORK
+// TEST TASKS - NETFRAMEWORK (Internal)
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("NetFramework-Unit-Tests")
-    .IsDependentOn("NetFramework-Build")
+Task("_NetFramework_Unit_Tests")
+    .IsDependentOn("Build.NetFramework")
     .Does(() =>
 {
     Information("Running .NET Framework unit tests...");
@@ -15,8 +15,8 @@ Task("NetFramework-Unit-Tests")
     testExecutionHelper.RunXUnitTests(testAssemblies, settings);
 });
 
-Task("NetFramework-Unit-Tests-WithRetry")
-    .IsDependentOn("NetFramework-Build")
+Task("_NetFramework_Unit_Tests_WithRetry")
+    .IsDependentOn("Build.NetFramework")
     .Does(() =>
 {
     Information("Running .NET Framework unit tests with retry...");
@@ -44,8 +44,8 @@ Task("NetFramework-Unit-Tests-WithRetry")
     );
 });
 
-Task("NetFramework-Integration-Tests")
-    .IsDependentOn("NetFramework-Build")
+Task("_NetFramework_Integration_Tests")
+    .IsDependentOn("Build.NetFramework")
     .Does(() =>
 {
     Information("Running .NET Framework integration tests...");
@@ -57,8 +57,8 @@ Task("NetFramework-Integration-Tests")
     testExecutionHelper.RunXUnitTests(testAssemblies, settings);
 });
 
-Task("NetFramework-Integration-Tests-WithRetry")
-    .IsDependentOn("NetFramework-Build")
+Task("_NetFramework_Integration_Tests_WithRetry")
+    .IsDependentOn("Build.NetFramework")
     .Does(() =>
 {
     Information("Running .NET Framework integration tests with retry...");
@@ -87,11 +87,11 @@ Task("NetFramework-Integration-Tests-WithRetry")
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// TEST TASKS - NETSTANDARD
+// TEST TASKS - NETSTANDARD (Internal)
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("NetStandard-Unit-Tests")
-    .IsDependentOn("NetStandard-Build")
+Task("_NetStandard_Unit_Tests")
+    .IsDependentOn("Build.NetStandard")
     .Does(() =>
 {
     Information("Running .NET Standard unit tests...");
@@ -105,8 +105,8 @@ Task("NetStandard-Unit-Tests")
     testExecutionHelper.RunDotNetTests(project, settings);
 });
 
-Task("NetStandard-Unit-Tests-WithRetry")
-    .IsDependentOn("NetStandard-Build")
+Task("_NetStandard_Unit_Tests_WithRetry")
+    .IsDependentOn("Build.NetStandard")
     .Does(() =>
 {
     Information("Running .NET Standard unit tests with retry...");
@@ -129,8 +129,8 @@ Task("NetStandard-Unit-Tests-WithRetry")
     testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
 });
 
-Task("NetStandard-Integration-Tests")
-    .IsDependentOn("NetStandard-Build")
+Task("_NetStandard_Integration_Tests")
+    .IsDependentOn("Build.NetStandard")
     .Does(() =>
 {
     Information("Running .NET Standard integration tests...");
@@ -144,8 +144,8 @@ Task("NetStandard-Integration-Tests")
     testExecutionHelper.RunDotNetTests(project, settings);
 });
 
-Task("NetStandard-Integration-Tests-WithRetry")
-    .IsDependentOn("NetStandard-Build")
+Task("_NetStandard_Integration_Tests_WithRetry")
+    .IsDependentOn("Build.NetStandard")
     .Does(() =>
 {
     Information("Running .NET Standard integration tests with retry...");
@@ -173,25 +173,33 @@ Task("NetStandard-Integration-Tests-WithRetry")
 ///////////////////////////////////////////////////////////////////////////////
 
 Task("Test.NetFramework.Unit")
-    .IsDependentOn("NetFramework-Unit-Tests");
+    .Description("Run .NET Framework unit tests")
+    .IsDependentOn("_NetFramework_Unit_Tests");
 
 Task("Test.NetFramework.Unit.WithRetry")
-    .IsDependentOn("NetFramework-Unit-Tests-WithRetry");
+    .Description("Run .NET Framework unit tests with retry on failure")
+    .IsDependentOn("_NetFramework_Unit_Tests_WithRetry");
 
 Task("Test.NetFramework.Integration")
-    .IsDependentOn("NetFramework-Integration-Tests");
+    .Description("Run .NET Framework integration tests")
+    .IsDependentOn("_NetFramework_Integration_Tests");
 
 Task("Test.NetFramework.Integration.WithRetry")
-    .IsDependentOn("NetFramework-Integration-Tests-WithRetry");
+    .Description("Run .NET Framework integration tests with retry on failure")
+    .IsDependentOn("_NetFramework_Integration_Tests_WithRetry");
 
 Task("Test.NetStandard.Unit")
-    .IsDependentOn("NetStandard-Unit-Tests");
+    .Description("Run .NET Standard unit tests")
+    .IsDependentOn("_NetStandard_Unit_Tests");
 
 Task("Test.NetStandard.Unit.WithRetry")
-    .IsDependentOn("NetStandard-Unit-Tests-WithRetry");
+    .Description("Run .NET Standard unit tests with retry on failure")
+    .IsDependentOn("_NetStandard_Unit_Tests_WithRetry");
 
 Task("Test.NetStandard.Integration")
-    .IsDependentOn("NetStandard-Integration-Tests");
+    .Description("Run .NET Standard integration tests")
+    .IsDependentOn("_NetStandard_Integration_Tests");
 
 Task("Test.NetStandard.Integration.WithRetry")
-    .IsDependentOn("NetStandard-Integration-Tests-WithRetry");
+    .Description("Run .NET Standard integration tests with retry on failure")
+    .IsDependentOn("_NetStandard_Integration_Tests_WithRetry");

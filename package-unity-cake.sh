@@ -6,5 +6,6 @@ echo " "
 if [ $# -eq 0 ]; then
     echo "Provide version number like: package-unity-cake.sh 1.2.8"
 else
-    ./build-cake.sh --target=UnityPackage --version=$1
+    dotnet tool restore
+    dotnet cake cake-build/build.cake -- --target=UnityPackage --version="$1"
 fi

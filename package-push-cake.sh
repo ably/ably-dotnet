@@ -9,5 +9,6 @@ echo " "
 if [ $# -eq 0 ]; then
     echo "Provide version number like: package-push-cake.sh 1.2.8"
 else
-    ./build-cake.sh --target=PushPackage --version=$1
+    dotnet tool restore
+    dotnet cake cake-build/build.cake -- --target=PushPackage --version="$1"
 fi

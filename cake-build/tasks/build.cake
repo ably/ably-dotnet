@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// BUILD TASKS
+// BUILD TASKS (Internal)
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Clean")
+Task("_Clean")
     .Does(() =>
 {
     Information("Cleaning build directories...");
@@ -12,66 +12,13 @@ Task("Clean")
     EnsureDirectoryExists(paths.Package);
 });
 
-// Helper method to restore a solution, try both nuget restore and dotnet restore
-void RestoreSolution(FilePath solutionPath)
-{
-    Information($"Restoring NuGet packages for {solutionPath.GetFilename()}...");
-
-    // This is needed to restore deprecated Xamarin projects on Windows and macOS/Linux.
-    // Needed for projects using old packages.config format for maintaining dependencies.
-    // This will not be needed once deprecated projects are removed.
-    Information("Running NuGet restore...");
-    try
-    {
-        if (IsRunningOnWindows())
-        {
-            Information("Windows system detected, running direct NuGetRestore command");
-            NuGetRestore(solutionPath.FullPath);
-        }
-        else
-        {
-            Information("macOS/Linux system detected, running nuget restore from CLI");
-            // On macOS/Linux, use nuget command (installed via mono)
-            StartProcess("nuget", new ProcessSettings
-            {
-                Arguments = $"restore {solutionPath.FullPath}"
-            });
-        }
-    }
-    catch (Exception ex)
-    {
-        Warning($"NuGet restore failed: {ex.Message}");
-    }
-
-    // dotnet restore (all platforms, for SDK-style projects)
-    try
-    {
-        Information("Running dotnet restore...");
-        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
-        // Also supress restore warning as errors NU1503 for xamarin/old style projects
-        var restoreSettings = new DotNetRestoreSettings
-        {
-            MSBuildSettings = new DotNetMSBuildSettings()
-                .WithProperty("WarningsNotAsErrors", "NU1903;NU1503")
-                .WithProperty("NoWarn", "NU1903;NU1503")
-        };
-        DotNetRestore(solutionPath.FullPath, restoreSettings);
-        Information($"✓ dotnet restore completed");
-    }
-    catch (Exception e)
-    {
-        Warning($"dotnet restore failed: {e.Message}");
-    }
-}
-
-Task("Restore")
+Task("_Restore_Main")
     .Does(() =>
 {
-    // FAKE restores the main IO.Ably.sln solution, not IO.Ably.NetStandard.sln
     RestoreSolution(paths.MainSolution);
 });
 
-Task("Version")
+Task("_Version")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -90,8 +37,7 @@ Task("Version")
     });
 });
 
-Task("NetFramework-Build")
-    .IsDependentOn("Restore")
+Task("_NetFramework_Build")
     .Does(() =>
 {
     Information("Building .NET Framework solution...");
@@ -106,8 +52,7 @@ Task("NetFramework-Build")
     MSBuild(paths.NetFrameworkSolution, settings);
 });
 
-Task("NetStandard-Build")
-    .IsDependentOn("Restore")
+Task("_NetStandard_Build")
     .Does(() =>
 {
     Information("Building .NET Standard solution...");
@@ -133,41 +78,13 @@ Task("NetStandard-Build")
     DotNetBuild(paths.NetStandardSolution.FullPath, settings);
 });
 
-Task("Restore-Xamarin")
+Task("_Restore_Xamarin")
     .Does(() =>
 {
-    Information("Restoring Xamarin packages...");
-    
-    if (!FileExists(paths.XamarinSolution))
-    {
-        Warning("Xamarin solution not found, skipping restore");
-        return;
-    }
-    
-    // Use NuGet CLI for Xamarin restore (matches FAKE behavior)
-    try
-    {
-        Information($"Running NuGet restore for {paths.XamarinSolution.FullPath}...");
-        var nugetSettings = new NuGetRestoreSettings();
-        
-        // Use local nuget.exe if available
-        var nugetPath = paths.Root.CombineWithFilePath("tools/nuget.exe");
-        if (FileExists(nugetPath))
-        {
-            nugetSettings.ToolPath = nugetPath;
-        }
-        
-        NuGetRestore(paths.XamarinSolution.FullPath, nugetSettings);
-    }
-    catch (Exception ex)
-    {
-        Warning($"NuGet restore for Xamarin failed: {ex.Message}");
-        throw;
-    }
+    RestoreSolution(paths.XamarinSolution);
 });
 
-Task("Xamarin-Build")
-    .IsDependentOn("Restore-Xamarin")
+Task("_Xamarin_Build")
     .Does(() =>
 {
     Information("Building Xamarin solution...");
@@ -191,19 +108,25 @@ Task("Xamarin-Build")
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC TARGETS
 ///////////////////////////////////////////////////////////////////////////////
+// These are the tasks that should be called directly by users or CI/CD
 
-Task("Prepare")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Restore");
-
+// Public task: Build .NET Framework projects
 Task("Build.NetFramework")
-    .IsDependentOn("Prepare")
-    .IsDependentOn("NetFramework-Build");
+    .Description("Build .NET Framework solution")
+    .IsDependentOn("_Clean")
+    .IsDependentOn("_Restore_Main")
+    .IsDependentOn("_NetFramework_Build");
 
+// Public task: Build .NET Standard projects
 Task("Build.NetStandard")
-    .IsDependentOn("Prepare")
-    .IsDependentOn("NetStandard-Build");
+    .Description("Build .NET Standard solution")
+    .IsDependentOn("_Clean")
+    .IsDependentOn("_Restore_Main")
+    .IsDependentOn("_NetStandard_Build");
 
+// Public task: Build Xamarin projects
 Task("Build.Xamarin")
-    .IsDependentOn("Prepare")
-    .IsDependentOn("Xamarin-Build");
+    .Description("Build Xamarin solution (iOS & Android)")
+    .IsDependentOn("_Clean")
+    .IsDependentOn("_Restore_Xamarin")
+    .IsDependentOn("_Xamarin_Build");

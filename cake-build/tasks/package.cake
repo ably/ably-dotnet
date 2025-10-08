@@ -1,22 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////////
-// PACKAGE TASKS
+// PACKAGE TASKS (Internal)
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Package-Build-All")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Version")
+Task("_Restore_Package")
+    .Does(() =>
+{
+    RestoreSolution(paths.PackageSolution);
+});
+
+Task("_Package_Build_All")
+    .IsDependentOn("_Clean")
+    .IsDependentOn("_Version")
+    .IsDependentOn("_Restore_Package")
     .Does(() =>
 {
     Information("Building all projects for packaging...");
-    
-    if (!FileExists(paths.PackageSolution))
-    {
-        Warning($"Package solution not found: {paths.PackageSolution}");
-        return;
-    }
-    
-    // Restore the package solution (not the main solution)
-    RestoreSolution(paths.PackageSolution);
     
     var settings = buildConfig.ApplyStandardSettings(
         new MSBuildSettings(),
@@ -29,8 +27,8 @@ Task("Package-Build-All")
     MSBuild(paths.PackageSolution, settings);
 });
 
-Task("Package-Merge-JsonNet")
-    .IsDependentOn("Package-Build-All")
+Task("_Package_Merge_JsonNet")
+    .IsDependentOn("_Package_Build_All")
     .Does(() =>
 {
     Information("Merging Newtonsoft.Json into Ably assemblies...");
@@ -73,8 +71,8 @@ Task("Package-Merge-JsonNet")
     }
 });
 
-Task("Package-Create-NuGet")
-    .IsDependentOn("Package-Merge-JsonNet")
+Task("_Package_Create_NuGet")
+    .IsDependentOn("_Package_Merge_JsonNet")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -109,21 +107,19 @@ Task("Package-Create-NuGet")
     Information($"✓ Package created: ably.io.{version}.nupkg");
 });
 
-Task("PushPackage-Build-All")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Version")
+Task("_Restore_Push_Package")
+    .Does(() =>
+{
+    RestoreSolution(paths.PushPackageSolution);
+});
+
+Task("_PushPackage_Build_All")
+    .IsDependentOn("_Clean")
+    .IsDependentOn("_Version")
+    .IsDependentOn("_Restore_Push_Package")
     .Does(() =>
 {
     Information("Building push notification packages...");
-    
-    if (!FileExists(paths.PushPackageSolution))
-    {
-        Warning($"Push package solution not found: {paths.PushPackageSolution}");
-        return;
-    }
-    
-    // Restore the push package solution (not the main solution)
-    RestoreSolution(paths.PushPackageSolution);
     
     var settings = buildConfig.ApplyStandardSettings(
         new MSBuildSettings(),
@@ -136,8 +132,8 @@ Task("PushPackage-Build-All")
     MSBuild(paths.PushPackageSolution, settings);
 });
 
-Task("PushPackage-Create-NuGet")
-    .IsDependentOn("PushPackage-Build-All")
+Task("_PushPackage_Create_NuGet")
+    .IsDependentOn("_PushPackage_Build_All")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -185,7 +181,7 @@ Task("PushPackage-Create-NuGet")
     }
 });
 
-Task("Package-Unity")
+Task("_Package_Unity")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -236,10 +232,13 @@ Task("Package-Unity")
 ///////////////////////////////////////////////////////////////////////////////
 
 Task("Package")
-    .IsDependentOn("Package-Create-NuGet");
+    .Description("Create main NuGet package (ably.io)")
+    .IsDependentOn("_Package_Create_NuGet");
 
 Task("PushPackage")
-    .IsDependentOn("PushPackage-Create-NuGet");
+    .Description("Create push notification packages (Android & iOS)")
+    .IsDependentOn("_PushPackage_Create_NuGet");
 
 Task("UnityPackage")
-    .IsDependentOn("Package-Unity");
+    .Description("Create Unity package")
+    .IsDependentOn("_Package_Unity");

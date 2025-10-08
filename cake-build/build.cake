@@ -1,4 +1,5 @@
 #load "helpers/paths.cake"
+#load "helpers/utils.cake"
 #load "helpers/tools.cake"
 #load "helpers/test-retry.cake"
 #load "helpers/build-config.cake"
