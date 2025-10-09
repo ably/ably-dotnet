@@ -9,6 +9,11 @@ Migrated from FAKE (F#) to Cake (C#) to:
 - Improve maintainability with better IDE support and debugging
 - Leverage larger community and better documentation
 
+## Prerequisites
+- .NET SDK 6.0+ (for building)
+- Cake.Tool (installed via `dotnet tool restore`)
+- NuGet CLI (for package creation)
+
 ## Getting Started
 
 Clone the project and download Cake tools by running the following command at root:
@@ -165,62 +170,7 @@ During release process, these packages are hosted on:
 .\build-cake.cmd --target=Build.NetStandard --dryrun
 ```
 
-## Project Structure
-
-```
-cake-build/
-├── build.cake              # Main entry point
-├── tasks/
-│   ├── build.cake          # Build tasks (NetFramework, NetStandard, Xamarin)
-│   ├── test.cake           # Test tasks (Unit, Integration, with retry)
-│   └── package.cake        # Package tasks (NuGet creation, Unity)
-├── helpers/
-│   ├── paths.cake          # Path definitions and constants
-│   ├── tools.cake          # Tool helpers (ILRepack, etc.)
-│   ├── test-retry.cake     # Test retry logic for flaky tests
-│   ├── test-execution.cake # Test execution helpers
-│   ├── build-config.cake   # Build configuration helpers
-│   ├── frameworks.cake     # Framework detection helpers
-│   └── utils.cake          # Utility functions
-└── README.md               # This file
-```
-
-## Prerequisites
-
-### Required Tools
-- .NET SDK 6.0+ (for building)
-- Cake.Tool (installed via `dotnet tool restore`)
-- NuGet CLI (for package creation)
-
-### Platform-Specific Requirements
-
-**Windows:**
-- Visual Studio 2022 or Build Tools
-- Windows SDK (for .NET Framework builds)
-
-**macOS:**
-- Xcode (for iOS builds)
-- Xamarin workload
-
-**Linux:**
-- .NET SDK only (limited to .NET Standard builds)
-
-## Development
-
-- Please refer to [Cake Build Documentation](https://cakebuild.net/docs/) for detailed information.
-- The build system uses Cake 4.0.0 with modern .NET practices.
-
 ## Resources
 
 - [Cake Build Official Documentation](https://cakebuild.net/docs/)
 - [Cake Build API Reference](https://cakebuild.net/api/)
-- [Migration Plan](../build-migration-plan.md)
-- [Migration Review](../build-migration-review.md)
-
-## Support
-
-For issues or questions:
-1. Check this README
-2. Review the migration documentation
-3. Check Cake documentation: https://cakebuild.net/docs/
-4. Ask in team chat or create a GitHub issue
