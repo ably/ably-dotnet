@@ -25,7 +25,10 @@ public void RestoreSolution(FilePath solutionPath)
         if (IsRunningOnWindows())
         {
             Information("Windows system detected, running direct NuGetRestore command");
-            NuGetRestore(solutionPath.FullPath);
+            NuGetRestore(solutionPath.FullPath, new NuGetRestoreSettings
+            {
+                Verbosity = NuGetVerbosity.Quiet
+            });
         }
         else
         {
@@ -33,7 +36,7 @@ public void RestoreSolution(FilePath solutionPath)
             // On macOS/Linux, use nuget command (installed via mono)
             StartProcess("nuget", new ProcessSettings
             {
-                Arguments = $"restore {solutionPath.FullPath}"
+                Arguments = $"restore {solutionPath.FullPath} -Verbosity quiet"
             });
         }
     }

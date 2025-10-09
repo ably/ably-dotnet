@@ -82,7 +82,7 @@ Task("_NetFramework_Integration_Tests_WithRetry")
         testAssemblies, 
         resultsPath,
         testRetryHelper,
-        (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: false, isRetry: true)
+        (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: true, isRetry: true)
     );
 });
 
