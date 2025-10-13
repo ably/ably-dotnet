@@ -71,8 +71,69 @@ Task("_Package_Merge_JsonNet")
     }
 });
 
-Task("_Package_Create_NuGet")
+Task("_Package_Merge_DeltaCodec")
     .IsDependentOn("_Package_Merge_JsonNet")
+    .Does(() =>
+{
+    Information("Merging DeltaCodec into Ably assemblies for all platforms...");
+    
+    // Legacy platforms (already in packaged folder after JsonNet merge)
+    var legacyProjects = new[]
+    {
+        "IO.Ably.Android",
+        "IO.Ably.iOS",
+        "IO.Ably.NETFramework"
+    };
+    
+    foreach (var project in legacyProjects)
+    {
+        var projectPath = paths.Src.Combine(project);
+        
+        if (!DirectoryExists(projectPath))
+        {
+            Warning($"Project directory not found: {project}, skipping...");
+            continue;
+        }
+        
+        var binPath = projectPath.Combine("bin/Release");
+        var packagedPath = binPath.Combine("packaged");
+        
+        if (!DirectoryExists(packagedPath))
+        {
+            Warning($"Packaged directory not found for {project}, skipping...");
+            continue;
+        }
+        
+        Information($"Merging DeltaCodec for {project}...");
+        ilRepackHelper.MergeDeltaCodec(binPath, packagedPath);
+    }
+    
+    // Modern platforms (.NET Standard, .NET 6, .NET 7)
+    var netStandardProject = paths.Src.Combine("IO.Ably.NETStandard20");
+    
+    if (DirectoryExists(netStandardProject))
+    {
+        var targetFrameworks = new[] { "netstandard2.0", "net6.0", "net7.0" };
+        
+        foreach (var framework in targetFrameworks)
+        {
+            var binPath = netStandardProject.Combine($"bin/Release/{framework}");
+            
+            if (!DirectoryExists(binPath))
+            {
+                Warning($"Bin directory not found for {framework}, skipping...");
+                continue;
+            }
+            
+            Information($"Merging DeltaCodec for {framework}...");
+            // For .NET Standard, merge in-place (no separate packaged folder)
+            ilRepackHelper.MergeDeltaCodec(binPath, binPath);
+        }
+    }
+});
+
+Task("_Package_Create_NuGet")
+    .IsDependentOn("_Package_Merge_DeltaCodec")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {

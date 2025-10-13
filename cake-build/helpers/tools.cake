@@ -54,6 +54,59 @@ public class ILRepackHelper
         
         _context.Information($"✓ Merged assembly created at {outputDll}");
     }
+    
+    public void MergeDeltaCodec(DirectoryPath sourcePath, DirectoryPath outputPath)
+    {
+        var targetDll = outputPath.CombineWithFilePath("IO.Ably.dll");
+        var docsFile = outputPath.CombineWithFilePath("IO.Ably.xml");
+        var deltaCodecDll = sourcePath.CombineWithFilePath("IO.Ably.DeltaCodec.dll");
+        var tempOutputDll = outputPath.CombineWithFilePath("IO.Ably.merged.dll");
+        
+        if (!_context.FileExists(deltaCodecDll))
+        {
+            _context.Warning($"DeltaCodec DLL not found at {deltaCodecDll}, skipping merge...");
+            return;
+        }
+        
+        if (!_context.FileExists(targetDll))
+        {
+            _context.Warning($"Target DLL not found at {targetDll}, skipping merge...");
+            return;
+        }
+        
+        _context.Information($"Merging {deltaCodecDll.GetFilename()} into {targetDll.GetFilename()}...");
+        
+        // Get the root directory (parent of cake-build)
+        var rootDir = _context.MakeAbsolute(_context.Directory("../"));
+        var ilRepackPath = rootDir.CombineWithFilePath("tools/ilrepack.exe");
+        
+        // Merge DeltaCodec into the existing IO.Ably.dll
+        var exitCode = _context.StartProcess(ilRepackPath.FullPath, new ProcessSettings
+        {
+            Arguments = new ProcessArgumentBuilder()
+                .Append($"/lib:{sourcePath.FullPath}")
+                .Append($"/lib:{outputPath.FullPath}")
+                .Append("/targetplatform:v4")
+                .Append("/internalize")
+                .Append($"/attr:{targetDll.FullPath}")
+                .Append($"/keyfile:{rootDir.CombineWithFilePath("IO.Ably.snk").FullPath}")
+                .Append("/parallel")
+                .Append($"/out:{tempOutputDll.FullPath}")
+                .Append(targetDll.FullPath)
+                .Append(deltaCodecDll.FullPath)
+        });
+        
+        if (exitCode != 0)
+        {
+            throw new Exception($"ILRepack failed with exit code {exitCode}");
+        }
+        
+        // Replace original with merged version
+        _context.DeleteFile(targetDll);
+        _context.MoveFile(tempOutputDll, targetDll);
+        
+        _context.Information($"✓ DeltaCodec merged into {targetDll}");
+    }
 }
 
 var ilRepackHelper = new ILRepackHelper(Context);
