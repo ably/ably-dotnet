@@ -11,8 +11,8 @@
 
 ## Building and Packaging
 
-- The build scripts are written using [fake build project](https://fake.build/guide/getting-started.html#Run-FAKE-using-a-dedicated-build-project).
-- For more information on building, testing and packaging, take a look at [FAKE build scripts](./build-script/README.md).
+- The build scripts are written using [Cake Build](https://cakebuild.net/docs/), a C# build automation system.
+- For more information on building, testing and packaging, take a look at [Cake build scripts](./cake-build/README.md).
 
 ## Working from source
 
@@ -38,7 +38,7 @@ You need to have .NET Core 3.1 installed. It works on Mac, Linux and Windows. Ru
 
 ## Development, Debugging and Testing
 
-The Ably .NET SDK is written primarily in C# with some F# used for build orchestration. In terms of platform support the Ably .NET SDK is broader than most. We explicitly support Windows, Linux and macOS as well as the Unity runtime, eventually, everywhere that Unity runs.
+The Ably .NET SDK is written primarily in C#. In terms of platform support the Ably .NET SDK is broader than most. We explicitly support Windows, Linux and macOS as well as the Unity runtime, eventually, everywhere that Unity runs.
 
 The Ably .NET SDK is available in two configurations: .NET Framework for legacy Windows clients and .NET (Core) for contemporary Windows clients, Linux and macOS. The bulk of the code for both the ‘Framework and ‘Core configurations is packaged in a shared assembly built against the .NET Standard 2.0 specification, while this allows for sharing it does limit the version of C# we are able to use to within the shared library to C# 8.
 

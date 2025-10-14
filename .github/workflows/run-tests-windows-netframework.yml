@@ -12,12 +12,12 @@ jobs:
       DOTNET_NOLOGO: true
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
+      - uses: actions/checkout@v4
+        with:
           submodules: 'recursive'
 
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             7.0.408
@@ -26,7 +26,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build.cmd Test.NetFramework.Unit.WithRetry
+        run: ./build-cake.cmd --target=Test.NetFramework.Unit.WithRetry
 
       - name: Integration tests
-        run: ./build.cmd Test.NetFramework.Integration.WithRetry
+        run: ./build-cake.cmd --target=Test.NetFramework.Integration.WithRetry

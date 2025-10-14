@@ -1,4 +1,4 @@
-name: "Unit and Integration Test: macOS (Xamarin)"
+name: "Unit and Integration Test: macOS (Mono)"
 on:
   pull_request:
   push:
@@ -12,12 +12,12 @@ jobs:
       DOTNET_NOLOGO: true
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
+      - uses: actions/checkout@v4
+        with:
           submodules: 'recursive'
 
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             3.1.x
@@ -30,11 +30,8 @@ jobs:
         run: |
           ./tools/mono-install.sh
 
-      - name: Build Xamarin projects
-        run: ./build.sh Build.Xamarin
-
       - name: Run Unit tests using mono
-        run: ./build.sh Test.NetFramework.Unit.WithRetry
+        run: ./build-cake.sh --target=Test.NetFramework.Unit.WithRetry
 
       - name: Run Integration tests using mono
-        run: ./build.sh Test.NetFramework.Integration.WithRetry
+        run: ./build-cake.sh --target=Test.NetFramework.Integration.WithRetry

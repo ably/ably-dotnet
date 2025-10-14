@@ -42,6 +42,11 @@
     <PropertyGroup>
         <AssemblyOriginatorKeyFile>IO.Ably.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
+    <!-- Fix for DeterministicSourcePaths in CI environments -->
+    <!-- See: https://github.com/dotnet/sourcelink/issues/572 -->
+    <ItemGroup>
+        <SourceRoot Include="$(MSBuildThisFileDirectory)..\..\"/>
+    </ItemGroup>
     <ItemGroup>
         <Reference Include="OpenTK-1.0" />
         <Reference Include="System" />

@@ -23,7 +23,7 @@
 	//		}
 	// }
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// Used for downloading all submodules and restoring fake tool as a part of dotnet CLI
+	// Used for downloading all submodules and restoring dotnet tools as a part of dotnet CLI
 	"postCreateCommand": "git submodule init && git submodule update && dotnet tool restore"
 	// Configure tool-specific properties.
 	// "customizations": {},

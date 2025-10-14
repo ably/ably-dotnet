@@ -2,33 +2,12 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "paket": {
-      "version": "7.2.0",
+    "cake.tool": {
+      "version": "4.0.0",
       "commands": [
-        "paket"
+        "dotnet-cake"
       ],
-      "_link": "https://github.com/fsprojects/Paket"
-    },
-    "fake-cli": {
-      "version": "5.23.1",
-      "commands": [
-        "fake"
-      ],
-      "_link": "https://github.com/fsprojects/FAKE"
-    },
-    "fsdocs-tool": {
-      "version": "17.2.0",
-      "commands": [
-        "fsdocs"
-      ],
-      "_link": "https://github.com/fsprojects/FSharp.Formatting"
-    },
-    "fantomas": {
-      "version": "5.1.5",
-      "commands": [
-        "fantomas"
-      ],
-      "_link": "https://github.com/fsprojects/fantomas"
+      "_link": "https://cakebuild.net/"
     }
   }
 }

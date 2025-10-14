@@ -1,6 +1,0 @@
-Microsoft.Build
-Microsoft.Build.Tasks.Core
-Fake.Core.Target
-Fake.DotNet.AssemblyInfoFile
-Fake.DotNet.Cli
-Fake.DotNet.Testing.XUnit2

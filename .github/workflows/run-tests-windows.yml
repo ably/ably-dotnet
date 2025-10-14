@@ -12,26 +12,29 @@ jobs:
       DOTNET_NOLOGO: true
 
     strategy:
+      fail-fast: false
       matrix:
-        targetframework: [ "net6.0", "net7.0" ]
+        targetframework: [ "net6.0", "net7.0", "net8.0", "net9.0" ]
 
     steps:
-      - uses: actions/checkout@v2
-        with: 
+      - uses: actions/checkout@v4
+        with:
           submodules: 'recursive'
 
       - name: Download framework
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.0.403
-            7.0.408
+            6.0.428
+            7.0.410
+            8.0.404
+            9.0.100
 
       - name: Download dotnet build-script tools
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build.cmd Test.NetStandard.Unit.WithRetry -f ${{ matrix.targetframework }}
+        run: ./build-cake.cmd --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build.cmd Test.NetStandard.Integration.WithRetry -f ${{ matrix.targetframework }}
+        run: ./build-cake.cmd --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}
