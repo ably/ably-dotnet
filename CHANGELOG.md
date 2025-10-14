@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.16](https://github.com/ably/ably-dotnet/tree/1.2.16) (2025-10-15)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.15...1.2.16)
+
+**Merged pull requests:**
+
+- [ECO-4285] Fix build system by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1300
+- [ECO-4285] Fix delta compression by @sacOO7 in https://github.com/ably/ably-dotnet/pull/1304
+
 ## [1.2.15](https://github.com/ably/ably-dotnet/tree/1.2.15) (2023-04-19)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.14...1.2.15)
