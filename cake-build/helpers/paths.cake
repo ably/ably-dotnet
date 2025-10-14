@@ -6,10 +6,8 @@ public class BuildPaths
 {
     public DirectoryPath Root { get; }
     public DirectoryPath Src { get; }
-    public DirectoryPath BuildOutput { get; }  // Renamed to avoid confusion with .NET's build/
-    public DirectoryPath TestResults { get; }
-    public DirectoryPath Package { get; }
     public DirectoryPath Lib { get; }
+    public DirectoryPath TestResults { get; }
     
     public FilePath MainSolution { get; }
     public FilePath NetStandardSolution { get; }
@@ -25,11 +23,7 @@ public class BuildPaths
         Root = context.MakeAbsolute(context.Directory("../"));
         Src = Root.Combine("src");
         Lib = Root.Combine("lib");
-        
-        // Use 'build-output' to avoid conflict with .NET's 'build' directory
-        BuildOutput = Root.Combine("build-output");
-        TestResults = BuildOutput.Combine("tests");
-        Package = BuildOutput.Combine("package");
+        TestResults = Root.Combine("test-results");
         
         MainSolution = Src.CombineWithFilePath("IO.Ably.sln");
         NetStandardSolution = Src.CombineWithFilePath("IO.Ably.NetStandard.sln");
