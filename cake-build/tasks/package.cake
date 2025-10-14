@@ -51,7 +51,7 @@ Task("_Package_Merge_JsonNet")
         }
         
         var binPath = projectPath.Combine("bin/Release");
-        var packagedPath = binPath.Combine("packaged");
+        var packagedPath = binPath.Combine("Packaged");
         
         if (!DirectoryExists(binPath))
         {
@@ -61,8 +61,8 @@ Task("_Package_Merge_JsonNet")
         
         Information($"Processing {project}...");
         
-        // Copy all IO.Ably* files to packaged folder
-        var ablyFiles = GetFiles(binPath.FullPath + "/IO.Ably*");
+        // Copy all IO.Ably* files to Packaged folder
+        var ablyFiles = GetFiles(binPath.Combine("IO.Ably*").FullPath);
         EnsureDirectoryExists(packagedPath);
         CopyFiles(ablyFiles, packagedPath);
         
@@ -96,7 +96,7 @@ Task("_Package_Merge_DeltaCodec")
         }
         
         var binPath = projectPath.Combine("bin/Release");
-        var packagedPath = binPath.Combine("packaged");
+        var packagedPath = binPath.Combine("Packaged");
         
         if (!DirectoryExists(packagedPath))
         {
@@ -106,29 +106,6 @@ Task("_Package_Merge_DeltaCodec")
         
         Information($"Merging DeltaCodec for {project}...");
         ilRepackHelper.MergeDeltaCodec(binPath, packagedPath);
-    }
-    
-    // Modern platforms (.NET Standard, .NET 6, .NET 7)
-    var netStandardProject = paths.Src.Combine("IO.Ably.NETStandard20");
-    
-    if (DirectoryExists(netStandardProject))
-    {
-        var targetFrameworks = new[] { "netstandard2.0", "net6.0", "net7.0" };
-        
-        foreach (var framework in targetFrameworks)
-        {
-            var binPath = netStandardProject.Combine($"bin/Release/{framework}");
-            
-            if (!DirectoryExists(binPath))
-            {
-                Warning($"Bin directory not found for {framework}, skipping...");
-                continue;
-            }
-            
-            Information($"Merging DeltaCodec for {framework}...");
-            // For .NET Standard, merge in-place (no separate packaged folder)
-            ilRepackHelper.MergeDeltaCodec(binPath, binPath);
-        }
     }
 });
 
@@ -257,7 +234,7 @@ Task("_Package_Unity")
         Information("Cloning unity-packager repository...");
         StartProcess("git", new ProcessSettings
         {
-            Arguments = "clone https://github.com/ably-forks/unity-packager.git -b v1.0.0 unity-packager",
+            Arguments = $"clone https://github.com/ably-forks/unity-packager.git -b v1.0.0 \"{unityPackagerPath.FullPath}\"",
             WorkingDirectory = paths.Root
         });
     }
@@ -273,8 +250,8 @@ Task("_Package_Unity")
     Information("Building Unity package...");
     StartProcess("dotnet", new ProcessSettings
     {
-        Arguments = $"run --project {unityPackagerProject.FullPath} " +
-                   $"-project unity -output {outputPath.FullPath} -dir Assets/Ably",
+        Arguments = $"run --project \"{unityPackagerProject.FullPath}\" " +
+                   $"-project \"{paths.Root.Combine("unity").FullPath}\" -output \"{outputPath.FullPath}\" -dir Assets/Ably",
         WorkingDirectory = paths.Root
     });
     

@@ -106,7 +106,7 @@ public class TestExecutionHelper
     public FilePathCollection FindTestAssemblies(string projectRelativePath, string pattern = "IO.Ably.Tests.*.dll")
     {
         var projectPath = _paths.Src.Combine(projectRelativePath);
-        var searchPath = projectPath.Combine("bin/Release").FullPath + "/" + pattern;
+        var searchPath = projectPath.Combine("bin/Release").Combine(pattern).FullPath;
         var testAssemblies = _context.GetFiles(searchPath);
         
         if (!testAssemblies.Any())

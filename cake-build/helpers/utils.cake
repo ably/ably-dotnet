@@ -36,7 +36,7 @@ public void RestoreSolution(FilePath solutionPath)
             // On macOS/Linux, use nuget command (installed via mono)
             StartProcess("nuget", new ProcessSettings
             {
-                Arguments = $"restore {solutionPath.FullPath} -Verbosity quiet"
+                Arguments = $"restore \"{solutionPath.FullPath}\" -Verbosity quiet"
             });
         }
     }
