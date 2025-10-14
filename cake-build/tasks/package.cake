@@ -51,7 +51,7 @@ Task("_Package_Merge_JsonNet")
         }
         
         var binPath = projectPath.Combine("bin/Release");
-        var packagedPath = binPath.Combine("packaged");
+        var packagedPath = binPath.Combine("Packaged");
         
         if (!DirectoryExists(binPath))
         {
@@ -61,8 +61,8 @@ Task("_Package_Merge_JsonNet")
         
         Information($"Processing {project}...");
         
-        // Copy all IO.Ably* files to packaged folder
-        var ablyFiles = GetFiles(binPath.FullPath + "/IO.Ably*");
+        // Copy all IO.Ably* files to Packaged folder
+        var ablyFiles = GetFiles(binPath.Combine("IO.Ably*").FullPath);
         EnsureDirectoryExists(packagedPath);
         CopyFiles(ablyFiles, packagedPath);
         
@@ -71,8 +71,46 @@ Task("_Package_Merge_JsonNet")
     }
 });
 
-Task("_Package_Create_NuGet")
+Task("_Package_Merge_DeltaCodec")
     .IsDependentOn("_Package_Merge_JsonNet")
+    .Does(() =>
+{
+    Information("Merging DeltaCodec into Ably assemblies for all platforms...");
+    
+    // Legacy platforms (already in packaged folder after JsonNet merge)
+    var legacyProjects = new[]
+    {
+        "IO.Ably.Android",
+        "IO.Ably.iOS",
+        "IO.Ably.NETFramework"
+    };
+    
+    foreach (var project in legacyProjects)
+    {
+        var projectPath = paths.Src.Combine(project);
+        
+        if (!DirectoryExists(projectPath))
+        {
+            Warning($"Project directory not found: {project}, skipping...");
+            continue;
+        }
+        
+        var binPath = projectPath.Combine("bin/Release");
+        var packagedPath = binPath.Combine("Packaged");
+        
+        if (!DirectoryExists(packagedPath))
+        {
+            Warning($"Packaged directory not found for {project}, skipping...");
+            continue;
+        }
+        
+        Information($"Merging DeltaCodec for {project}...");
+        ilRepackHelper.MergeDeltaCodec(binPath, packagedPath);
+    }
+});
+
+Task("_Package_Create_NuGet")
+    .IsDependentOn("_Package_Merge_DeltaCodec")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
@@ -196,7 +234,7 @@ Task("_Package_Unity")
         Information("Cloning unity-packager repository...");
         StartProcess("git", new ProcessSettings
         {
-            Arguments = "clone https://github.com/ably-forks/unity-packager.git -b v1.0.0 unity-packager",
+            Arguments = $"clone https://github.com/ably-forks/unity-packager.git -b v1.0.0 \"{unityPackagerPath.FullPath}\"",
             WorkingDirectory = paths.Root
         });
     }
@@ -212,8 +250,8 @@ Task("_Package_Unity")
     Information("Building Unity package...");
     StartProcess("dotnet", new ProcessSettings
     {
-        Arguments = $"run --project {unityPackagerProject.FullPath} " +
-                   $"-project unity -output {outputPath.FullPath} -dir Assets/Ably",
+        Arguments = $"run --project \"{unityPackagerProject.FullPath}\" " +
+                   $"-project \"{paths.Root.Combine("unity").FullPath}\" -output \"{outputPath.FullPath}\" -dir Assets/Ably",
         WorkingDirectory = paths.Root
     });
     

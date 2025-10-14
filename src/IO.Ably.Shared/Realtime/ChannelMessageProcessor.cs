@@ -95,10 +95,10 @@ namespace IO.Ably.Realtime
                     break;
                 case ProtocolMessage.MessageAction.Message:
 
-                    if (channel.State == ChannelState.Attaching)
+                    if (channel.State != ChannelState.Attached)
                     {
                         Logger.Warning(
-                            $"Channel #{channel.Name} is currently in Attaching state. Messages received in this state are ignored. Ignoring ${protocolMessage.Messages?.Length ?? 0} messages");
+                            $"Channel #{channel.Name} is currently in #{channel.State} state. Messages received in this state are ignored. Ignoring {protocolMessage.Messages?.Length ?? 0} messages");
                         return TaskConstants.BooleanTrue;
                     }
 

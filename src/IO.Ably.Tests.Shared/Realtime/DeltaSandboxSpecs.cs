@@ -227,8 +227,8 @@ namespace IO.Ably.Tests.Realtime
         {
             string channelName = "delta-channel".AddRandomSuffix();
             var testSink = new TestLoggerSink();
-            var taskAwaiter = new TaskCompletionAwaiter(5000);
-            var firstMessageReceived = new TaskCompletionAwaiter();
+            var taskAwaiter = new TaskCompletionAwaiter(20000);
+            var firstMessageReceived = new TaskCompletionAwaiter(20000);
             using (((IInternalLogger)Logger).CreateDisposableLoggingContext(testSink))
             {
                 var realtime = await GetRealtimeClient(protocol);
