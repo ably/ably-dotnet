@@ -34,7 +34,7 @@ jobs:
           dotnet-version: |
             3.1.426
             6.0.428
-            7.0.410
+            7.0.
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3

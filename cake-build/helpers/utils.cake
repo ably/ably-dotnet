@@ -50,7 +50,7 @@ public void RestoreSolution(FilePath solutionPath)
     {
         Information("Running dotnet restore...");
         // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
-        // Also supress restore warning as errors NU1503 for xamarin/old style projects
+        // Also suppress restore warning as errors NU1503 for xamarin/old style projects
         var restoreSettings = new DotNetRestoreSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -64,4 +64,67 @@ public void RestoreSolution(FilePath solutionPath)
     {
         Warning($"dotnet restore failed: {e.Message}");
     }
+}
+
+/// <summary>
+/// Cleans build outputs for all projects by deleting bin and obj directories.
+/// Searches for all .csproj files in the src directory and cleans each one.
+/// </summary>
+public void CleanSolution()
+{
+    Information("Cleaning all build outputs...");
+    
+    // Get all project files in the main src directory
+    var projectFiles = GetFiles($"{paths.Src}/**/*.csproj")
+        .Where(f => !f.FullPath.Contains("node_modules") &&
+                    !f.FullPath.Contains(".git") &&
+                    !f.FullPath.Contains("packages"))
+        .ToList();
+    
+    Information($"Found {projectFiles.Count} project(s) to clean");
+    
+    foreach (var projectFile in projectFiles)
+    {
+        Information($"Cleaning project: {projectFile.GetFilename()}");
+        
+        var projectDir = projectFile.GetDirectory();
+        
+        // Clean bin directory
+        var binDir = projectDir.Combine("bin");
+        if (DirectoryExists(binDir))
+        {
+            try
+            {
+                DeleteDirectory(binDir, new DeleteDirectorySettings {
+                    Recursive = true,
+                    Force = true
+                });
+                Information($"  ✓ Cleaned {binDir}");
+            }
+            catch (Exception ex)
+            {
+                Warning($"  Failed to clean {binDir}: {ex.Message}");
+            }
+        }
+        
+        // Clean obj directory
+        var objDir = projectDir.Combine("obj");
+        if (DirectoryExists(objDir))
+        {
+            try
+            {
+                DeleteDirectory(objDir, new DeleteDirectorySettings {
+                    Recursive = true,
+                    Force = true
+                });
+                Information($"  ✓ Cleaned {objDir}");
+            }
+            catch (Exception ex)
+            {
+                Warning($"  Failed to clean {objDir}: {ex.Message}");
+            }
+        }
+    }
+    
+    Information($"✓ Completed cleaning all projects");
 }

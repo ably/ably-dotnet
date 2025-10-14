@@ -6,10 +6,12 @@ Task("_Clean")
     .Does(() =>
 {
     Information("Cleaning build directories...");
-    CleanDirectory(paths.BuildOutput);
-    CleanDirectory(paths.Package);
-    EnsureDirectoryExists(paths.TestResults);
-    EnsureDirectoryExists(paths.Package);
+    
+    // Clean the main solution which includes all core projects (NetFramework, NetStandard, iOS, Android, Tests, etc.)
+    CleanSolution();
+    
+    // Clean custom output directories that are not part of standard project outputs
+    CleanDirectory(paths.TestResults);    
 });
 
 Task("_Restore_Main")
