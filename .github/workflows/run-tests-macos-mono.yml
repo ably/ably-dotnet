@@ -20,8 +20,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            3.1.x
-            7.0.408
+            3.1.426
+            7.0.410
 
       - name: Download dotnet build-script tools
         run:  dotnet tool restore
