@@ -26,7 +26,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build-cake.cmd --target=Test.NetFramework.Unit.WithRetry
+        run: ./build.cmd --target=Test.NetFramework.Unit.WithRetry
 
       - name: Integration tests
-        run: ./build-cake.cmd --target=Test.NetFramework.Integration.WithRetry
+        run: ./build.cmd --target=Test.NetFramework.Integration.WithRetry

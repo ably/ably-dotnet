@@ -34,7 +34,7 @@ jobs:
         run:  dotnet tool restore
 
       - name: Unit tests
-        run: ./build-cake.sh --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.sh --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build-cake.sh --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.sh --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}

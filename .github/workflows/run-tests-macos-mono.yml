@@ -31,7 +31,7 @@ jobs:
           ./tools/mono-install.sh
 
       - name: Run Unit tests using mono
-        run: ./build-cake.sh --target=Test.NetFramework.Unit.WithRetry
+        run: ./build.sh --target=Test.NetFramework.Unit.WithRetry
 
       - name: Run Integration tests using mono
-        run: ./build-cake.sh --target=Test.NetFramework.Integration.WithRetry
+        run: ./build.sh --target=Test.NetFramework.Integration.WithRetry

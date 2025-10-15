@@ -79,7 +79,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package
-        run: ./package-cake.cmd ${{ github.event.inputs.version }}
+        run: ./package.cmd ${{ github.event.inputs.version }}
         
       - name: Archive package
         uses: actions/upload-artifact@v4
@@ -137,7 +137,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Push (iOS & Android)
-        run: ./package-push-cake.sh ${{ github.event.inputs.version }}
+        run: ./package-push.sh ${{ github.event.inputs.version }}
 
       - name: Archive push packages
         uses: actions/upload-artifact@v4
@@ -164,7 +164,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Unity
-        run: ./package-unity-cake.sh ${{ github.event.inputs.version }}
+        run: ./package-unity.sh ${{ github.event.inputs.version }}
         
       - name: Archive Unity package
         uses: actions/upload-artifact@v4
