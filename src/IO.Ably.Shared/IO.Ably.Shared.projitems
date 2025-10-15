@@ -186,8 +186,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utils\StringUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TaskUtils.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)app.config" />
-    <None Include="$(MSBuildThisFileDirectory)packages.config" />
-  </ItemGroup>
 </Project>
