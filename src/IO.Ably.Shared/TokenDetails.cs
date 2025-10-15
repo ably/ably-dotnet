@@ -48,6 +48,7 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="TokenDetails"/> class.
         /// </summary>
+        [JsonConstructor]
         public TokenDetails()
         {
         }

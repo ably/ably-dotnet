@@ -64,11 +64,8 @@ Task("_NetStandard_Build")
         Configuration = configuration,
         NoRestore = true
     };
+    var msbuildSettings = new DotNetMSBuildSettings();
     
-    // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
-    var msbuildSettings = new DotNetMSBuildSettings()
-        .WithProperty("WarningsNotAsErrors", "NU1903")
-        .WithProperty("NoWarn", "NU1903");
     
     if (!string.IsNullOrEmpty(defineConstants))
     {

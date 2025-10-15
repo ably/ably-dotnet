@@ -28,6 +28,7 @@ namespace IO.Ably
                 },
                 DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
                 NullValueHandling = NullValueHandling.Ignore,
+                MaxDepth = null, // Maintain unlimited depth behavior for backward compatibility
             };
             return res;
         }
@@ -106,8 +107,6 @@ namespace IO.Ably
         private static object DeserializeObject(string value, Type type)
         {
             JsonSerializer jsonSerializer = GetSerializer();
-            jsonSerializer.CheckAdditionalContent = true;
-
             using (JsonTextReader jsonTextReader = new JsonTextReader(new StringReader(value)))
             {
                 return jsonSerializer.Deserialize(jsonTextReader, type);

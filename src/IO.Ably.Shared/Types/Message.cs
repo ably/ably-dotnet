@@ -17,6 +17,7 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="Message"/> class.
         /// </summary>
+        [JsonConstructor]
         public Message()
         {
         }

@@ -49,13 +49,12 @@ public void RestoreSolution(FilePath solutionPath)
     try
     {
         Information("Running dotnet restore...");
-        // Suppress NU1903 vulnerability warning for Newtonsoft.Json 9.0.1 (known issue, accepted risk)
-        // Also suppress restore warning as errors NU1503 for xamarin/old style projects
+        // Suppress restore warning as errors NU1503 for xamarin/old style projects
         var restoreSettings = new DotNetRestoreSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
-                .WithProperty("WarningsNotAsErrors", "NU1903;NU1503")
-                .WithProperty("NoWarn", "NU1903;NU1503")
+                .WithProperty("WarningsNotAsErrors", "NU1503")
+                .WithProperty("NoWarn", "NU1503")
         };
         DotNetRestore(solutionPath.FullPath, restoreSettings);
         Information($"✓ dotnet restore completed");
