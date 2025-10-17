@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AblyInsecureRequestExceptionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyResponseTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AgentTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthOptionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizationTests.cs" />
