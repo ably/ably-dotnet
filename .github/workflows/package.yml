@@ -147,7 +147,7 @@ jobs:
             ${{ github.workspace }}/*.nupkg
 
   package-unity:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -174,7 +174,7 @@ jobs:
             ${{ github.workspace }}/*.unitypackage
 
   merge-artifacts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [package-library, package-push, package-unity]
     steps:
       - name: Download all artifacts

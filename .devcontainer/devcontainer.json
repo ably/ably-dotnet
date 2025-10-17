@@ -1,0 +1,43 @@
+{
+	"name": "C# (.NET) - Linux with Mono",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
+	"onCreateCommand": "git submodule update --init --recursive",
+	"postAttachCommand": "bash .devcontainer/install-dependencies.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit"
+			],
+			"settings": {
+				"dotnet.server.useOmnisharp": false,
+				"files.watcherExclude": {
+					"**/bin/**": true,
+					"**/obj/**": true,
+					"**/.git/**": true,
+					"**/node_modules/**": true,
+					"**/.vs/**": true
+				},
+				"search.exclude": {
+					"**/bin": true,
+					"**/obj": true,
+					"**/node_modules": true
+				},
+				"files.eol": "\n"
+			}
+		}
+	},
+	"containerEnv": {
+		"DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+		"DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+		"DOTNET_NOLOGO": "1",
+		"NUGET_XMLDOC_MODE": "skip",
+		"DOTNET_CLI_UI_LANGUAGE": "en",
+		"NUGET_PACKAGES": "${containerWorkspaceFolder}/.nuget/packages"
+	},
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/.dotnet/tools"
+	},
+	"mounts": [
+		"source=ably-dotnet-nuget-cache,target=${containerWorkspaceFolder}/.nuget/packages,type=volume"
+	]
+}
