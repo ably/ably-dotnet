@@ -4,14 +4,18 @@
         <id>ably.io</id>
         <version>$version$</version>
         <title>ably.io</title>
-        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green, Sachin Shinde</authors>
-        <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
+        <authors>Martin Georgiev, Sachin Shinde, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green</authors>
+        <owners>Ably Real-time Ltd</owners>
+        <license type="expression">Apache-2.0</license>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
-        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
-        <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
+        <icon>icon.png</icon>
+        <readme>README.md</readme>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Ably is realtime data delivery platform for internet-enabled devices. See https://www.ably.io for more info.</description>
-        <copyright>©2022 Ably</copyright>
+        <description>Ably is a realtime data delivery platform for internet-enabled devices. This SDK provides pub-sub messaging, presence, message history, and push notifications across multiple platforms including .NET, Xamarin, Unity, and MAUI. See https://www.ably.io for more info.</description>
+        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
+        <copyright>©2025 Ably Real-time Ltd</copyright>
+        <tags>ably realtime messaging websocket pubsub presence dotnet csharp maui netstandard xamarin unity</tags>
+        <repository type="git" url="https://github.com/ably/ably-dotnet.git" branch="main" />
         <language />
         <dependencies>
           <group targetFramework="net46">
@@ -48,5 +52,7 @@
         <file src="..\src\IO.Ably.NETStandard20\bin\$configuration$\netstandard2.0\IO.Ably.*" target="lib\netstandard2.0" />
         <file src="..\src\IO.Ably.NETStandard20\bin\$configuration$\net6.0\IO.Ably.*" target="lib\net6.0" />
         <file src="..\src\IO.Ably.NETStandard20\bin\$configuration$\net7.0\IO.Ably.*" target="lib\net7.0" />
+        <file src="..\README.md" target="" />
+        <file src="..\images\logo.png" target="icon.png" />
     </files>
 </package>
