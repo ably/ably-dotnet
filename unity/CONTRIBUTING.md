@@ -99,12 +99,6 @@
 ![](doc_images/unity_custom_layout.PNG)  
 - We now have a test runner window in the bottom-left along with a user-friendly editor layout.
 
-### **Disable assembly validation error**
-- Unity has a [`NewtonSoftJson`](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) package used by default, which conflicts with the [`NewtonSoftJson.JSON.dll`](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) included with the Ably plugin, resulting in assembly validation errors. To resolve this, we need to disable `Assembly Validation`.
-- Go to `Edit -> Project Settings -> Player -> Assembly Version Validation`, uncheck the box, then click `Apply`.
-
-![](doc_images/assembly_version_validation.PNG)
-
 ## **[Running tests](https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/index.html)**
 
 ### Running EditMode tests
@@ -157,7 +151,4 @@ Unity.exe -batchmode -nographics -quit -projectPath 'C:\Users\${UserName}\UnityP
 ## Updating the Ably Unity Package
 - Currently, the latest Ably source code is imported as DLLs in Unity using [Unity Plug-ins](https://docs.unity3d.com/Manual/Plugins.html).
 - This is done as part of the [release process](../CONTRIBUTING.md/#release-process) by running `./unity-plugins-updater.sh 1.2.3` (linux/mac) / `.\unity-plugins-updater.cmd 1.2.3` (windows) at the root.
-- This script is responsible for copying the latest `ably` and `deltacodec` release DLLs into `unity/Assets/Ably/Plugins/`.
-- Other DLLs available under `unity/Assets/Ably/Plugins/` are dependencies of `ably` and `deltacodec`. 
-- Those plugins need to be updated manually if the copies of  `ably` or `deltacodec` DLLs become incompatible with them.
- i.e. If versions of those dependencies are changed/updated using Nuget Package Manager.
+- This script is responsible for merging all dependencies into `IO.Ably.dll` and copying it to `unity/Assets/Ably/Plugins/`.

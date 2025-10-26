@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Assets.Ably.Examples.Chat
 {
-    internal class AblyChannelUiConsole
+    internal class AblyChannel
     {
         private readonly AblyRealtime _ably;
         private readonly IUiConsole _uiConsole;
@@ -19,15 +19,15 @@ namespace Assets.Ably.Examples.Chat
         private InputField _eventName;
         private InputField _payload;
 
-        private AblyChannelUiConsole(AblyRealtime ably, IUiConsole uiConsole)
+        private AblyChannel(AblyRealtime ably, IUiConsole uiConsole)
         {
             _ably = ably;
             _uiConsole = uiConsole;
         }
 
-        internal static AblyChannelUiConsole CreateInstance(AblyRealtime ably, IUiConsole uiConsole)
+        internal static AblyChannel CreateInstance(AblyRealtime ably, IUiConsole uiConsole)
         {
-            return new AblyChannelUiConsole(ably, uiConsole);
+            return new AblyChannel(ably, uiConsole);
         }
 
         internal void RegisterUiComponents()
