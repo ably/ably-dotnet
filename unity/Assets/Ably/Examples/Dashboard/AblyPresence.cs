@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Assets.Ably.Examples.Chat
 {
-    public class AblyPresenceUiConsole
+    public class AblyPresence
     {
         private readonly AblyRealtime _ably;
         private readonly IUiConsole _uiConsole;
@@ -18,15 +18,15 @@ namespace Assets.Ably.Examples.Chat
         private InputField _channelName;
         private InputField _payload;
 
-        private AblyPresenceUiConsole(AblyRealtime ably, IUiConsole uiConsole)
+        private AblyPresence(AblyRealtime ably, IUiConsole uiConsole)
         {
             _ably = ably;
             _uiConsole = uiConsole;
         }
 
-        internal static AblyPresenceUiConsole CreateInstance(AblyRealtime ably, IUiConsole uiConsole)
+        internal static AblyPresence CreateInstance(AblyRealtime ably, IUiConsole uiConsole)
         {
-            return new AblyPresenceUiConsole(ably, uiConsole);
+            return new AblyPresence(ably, uiConsole);
         }
 
         internal void RegisterUiComponents()

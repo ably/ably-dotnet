@@ -61,8 +61,14 @@
 
   <ItemGroup>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\lib\UnityEngine.dll</HintPath>
+      <HintPath>..\..\lib\unity\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <!-- Copy all NuGet dependencies to output directory when building for unity package -->
+  <!-- This ensures ILRepack can find all referenced assemblies via the /lib argument -->
+  <PropertyGroup Condition=" $(DefineConstants.Contains('UNITY_PACKAGE')) ">
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
 
 </Project>
