@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
 using IO.Ably;
@@ -10,10 +13,10 @@ using IO.Ably.Realtime;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
-namespace Assets.Tests.PlayMode
+namespace Assets.Tests.EditMode
 {
     [TestFixture]
-    public class AblyInterfaceSpecs
+    public class AblyRealtimeSpecs
     {
         private AblySandboxFixture _sandboxFixture;
 
