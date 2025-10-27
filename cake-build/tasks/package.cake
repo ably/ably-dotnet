@@ -27,17 +27,17 @@ Task("_Package_Build_All")
     MSBuild(paths.PackageSolution, settings);
 });
 
-Task("_Package_Merge_JsonNet")
+Task("_Package_Merge_All")
     .IsDependentOn("_Package_Build_All")
     .Does(() =>
 {
-    Information("Merging Newtonsoft.Json into Ably assemblies...");
+    Information("Merging dependencies (Newtonsoft.Json and DeltaCodec) into Ably assemblies...");
     
-    var projectsToMerge = new[] 
-    { 
-        "IO.Ably.Android", 
-        "IO.Ably.iOS", 
-        "IO.Ably.NETFramework" 
+    var projectsToMerge = new[]
+    {
+        "IO.Ably.Android",
+        "IO.Ably.iOS",
+        "IO.Ably.NETFramework"
     };
     
     foreach (var project in projectsToMerge)
@@ -51,7 +51,6 @@ Task("_Package_Merge_JsonNet")
         }
         
         var binPath = projectPath.Combine("bin/Release");
-        var packagedPath = binPath.Combine("Packaged");
         
         if (!DirectoryExists(binPath))
         {
@@ -61,56 +60,29 @@ Task("_Package_Merge_JsonNet")
         
         Information($"Processing {project}...");
         
-        // Copy all IO.Ably* files to Packaged folder
-        var ablyFiles = GetFiles(binPath.Combine("IO.Ably*").FullPath);
-        EnsureDirectoryExists(packagedPath);
-        CopyFiles(ablyFiles, packagedPath);
-        
-        // Merge Newtonsoft.Json
-        ilRepackHelper.MergeJsonNet(binPath, packagedPath);
-    }
-});
-
-Task("_Package_Merge_DeltaCodec")
-    .IsDependentOn("_Package_Merge_JsonNet")
-    .Does(() =>
-{
-    Information("Merging DeltaCodec into Ably assemblies for all platforms...");
-    
-    // Legacy platforms (already in packaged folder after JsonNet merge)
-    var legacyProjects = new[]
-    {
-        "IO.Ably.Android",
-        "IO.Ably.iOS",
-        "IO.Ably.NETFramework"
-    };
-    
-    foreach (var project in legacyProjects)
-    {
-        var projectPath = paths.Src.Combine(project);
-        
-        if (!DirectoryExists(projectPath))
+        var primaryDll = binPath.CombineWithFilePath("IO.Ably.dll");
+        var dllsToMerge = new[]
         {
-            Warning($"Project directory not found: {project}, skipping...");
-            continue;
-        }
-        
-        var binPath = projectPath.Combine("bin/Release");
+            binPath.CombineWithFilePath("Newtonsoft.Json.dll"),
+            binPath.CombineWithFilePath("IO.Ably.DeltaCodec.dll")
+        };
         var packagedPath = binPath.Combine("Packaged");
+        var outputDll = packagedPath.CombineWithFilePath("IO.Ably.dll");
         
-        if (!DirectoryExists(packagedPath))
+        // Merge all dependencies into primary DLL in one go
+        ilRepackHelper.MergeDLLs(primaryDll, dllsToMerge, outputDll);
+        
+        // Copy XML documentation if it exists
+        var docsFile = binPath.CombineWithFilePath("IO.Ably.xml");
+        if (FileExists(docsFile))
         {
-            Warning($"Packaged directory not found for {project}, skipping...");
-            continue;
+            CopyFile(docsFile, packagedPath.CombineWithFilePath("IO.Ably.xml"));
         }
-        
-        Information($"Merging DeltaCodec for {project}...");
-        ilRepackHelper.MergeDeltaCodec(binPath, packagedPath);
     }
 });
 
 Task("_Package_Create_NuGet")
-    .IsDependentOn("_Package_Merge_DeltaCodec")
+    .IsDependentOn("_Package_Merge_All")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
