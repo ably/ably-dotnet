@@ -28,7 +28,6 @@ MonoBehaviour:
     m_Name: package.openupm.com
     m_Url: https://package.openupm.com
     m_Scopes:
-    - com.boundfoxstudios.fluentassertions
     - com.cysharp.unitask
     - com.openupm
     m_IsDefault: 0
@@ -42,7 +41,6 @@ MonoBehaviour:
       m_Name: package.openupm.com
       m_Url: https://package.openupm.com
       m_Scopes:
-      - com.boundfoxstudios.fluentassertions
       - com.cysharp.unitask
       - com.openupm
       m_IsDefault: 0
@@ -51,7 +49,6 @@ MonoBehaviour:
     m_Name: package.openupm.com
     m_Url: https://package.openupm.com
     m_Scopes:
-    - com.boundfoxstudios.fluentassertions
     - com.cysharp.unitask
     - com.openupm
     m_SelectedScopeIndex: 0
