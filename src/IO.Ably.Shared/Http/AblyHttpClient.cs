@@ -392,13 +392,18 @@ namespace IO.Ably
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-#if MSGPACK
-            if(request.Protocol == Protocol.MsgPack)
-                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
-#endif
-
-            // Always accept JSON
-            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
+            // Set Accept headers based on protocol preference
+            if (request.Protocol == Protocol.MsgPack)
+            {
+                // Prefer msgpack but accept JSON as fallback
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.MsgPack), 1.0));
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json), 0.9));
+            }
+            else
+            {
+                // Prefer JSON
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
+            }
             if (message.Method == HttpMethod.Post || message.Method == HttpMethod.Put)
             {
                 if (request.PostParameters.Any() && request.RequestBody.Length == 0)

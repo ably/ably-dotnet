@@ -8,7 +8,7 @@ namespace IO.Ably
     {
         private ChannelOptions _channelOptions;
 
-        public AblyRequest(string path, HttpMethod method, Protocol protocol = Defaults.Protocol)
+        public AblyRequest(string path, HttpMethod method, Protocol protocol = Defaults.DefaultProtocol)
         {
             Url = path;
             QueryParameters = new Dictionary<string, string>();

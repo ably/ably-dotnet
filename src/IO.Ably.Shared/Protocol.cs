@@ -5,15 +5,13 @@ namespace IO.Ably
     /// </summary>
     public enum Protocol
     {
-#if MSGPACK
         /// <summary>
-        /// Msg packg binary protocol.
+        /// MessagePack binary protocol (default for better performance).
         /// </summary>
         MsgPack = 0,
-#endif
 
         /// <summary>
-        /// Json text protocol.
+        /// JSON text protocol.
         /// </summary>
         Json = 1
     }

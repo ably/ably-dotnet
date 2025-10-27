@@ -5,37 +5,22 @@ namespace IO.Ably.Tests
 {
     public class RestProtocolTests
     {
-#if MSGPACK
         [Fact]
-        public void WhenProtocolIsNotDefined_AndMsgPackEnabled_DefaultsToMsgPack()
+        public void WhenProtocolIsNotDefined_DefaultsToMsgPack()
         {
             var rest = new AblyRest(new ClientOptions());
             rest.Protocol.Should().Be(Protocol.MsgPack);
-            Defaults.Protocol.Should().Be(Protocol.MsgPack);
+            Defaults.DefaultProtocol.Should().Be(Protocol.MsgPack);
         }
 
-        [Fact]
-        public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
+        [Theory]
+        [InlineData(true, Protocol.MsgPack)]
+        [InlineData(false, Protocol.Json)]
+        public void WhenUseBinaryProtocolIsSet_ProtocolIsSetCorrectly(bool useBinaryProtocol, Protocol expectedProtocol)
         {
-            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = true});
-            rest.Protocol.Should().Be(Defaults.Protocol);
+            var rest = new AblyRest(new ClientOptions { UseBinaryProtocol = useBinaryProtocol, Key = "best.test:key" });
+            rest.Protocol.Should().Be(expectedProtocol);
         }
-#else
-        [Fact]
-        public void WhenProtocolIsNotDefined_AndMsgPackDisabled_DefaultsToJson()
-        {
-            Defaults.Protocol.Should().Be(Protocol.Json);
-            var rest = new AblyRest(new ClientOptions { Key = "best.test:key" });
-            rest.Protocol.Should().Be(Protocol.Json);
-        }
-
-        [Fact]
-        public void WhenMsgPackIsDisabled_AndUseBinaryIsTrue_ProtocolIsSetToJson()
-        {
-            var rest = new AblyRest(new ClientOptions { UseBinaryProtocol = true, Key = "best.test:key" });
-            rest.Protocol.Should().Be(Protocol.Json);
-        }
-#endif
 
         [Fact]
         public void WhenProtocolIsJson_RestProtocolIsSetToJson()
@@ -49,6 +34,12 @@ namespace IO.Ably.Tests
         {
             var rest = new AblyRest(new ClientOptions { UseBinaryProtocol = false, Key = "best.test:key" });
             rest.Protocol.Should().Be(Protocol.Json);
+        }
+
+        [Fact]
+        public void MsgPackIsAlwaysEnabled()
+        {
+            Defaults.MsgPackEnabled.Should().BeTrue();
         }
     }
 }

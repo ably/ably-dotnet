@@ -206,7 +206,6 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-#if MSGPACK
         [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
@@ -222,11 +221,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Act
                 _client.Channels.Get("Test").PublishAsync("test", "test");
 
@@ -240,11 +235,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Act
                 var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
@@ -259,11 +250,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Arrange
                 var obj = new { Test = "test", name = "name" };
 
@@ -304,11 +291,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Arrange
                 var bytes = new byte[] { 1, 2, 3 };
 
@@ -325,11 +308,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Act
                 _client.Channels.Get("test", _options).PublishAsync("test", "test");
 
@@ -343,11 +322,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
+                // MsgPack is always enabled now
                 // Act
                 var obj = new { Test = "test", Name = "name" };
                 _client.Channels.Get("test", _options).PublishAsync("test", obj);
@@ -360,6 +335,5 @@ namespace IO.Ably.AcceptanceTests
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }
-#endif
     }
 }

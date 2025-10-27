@@ -1,5 +1,4 @@
-﻿#if MSGPACK
-using FluentAssertions;
+﻿using FluentAssertions;
 
 namespace IO.Ably.Tests
 {
@@ -471,4 +470,3 @@ namespace IO.Ably.Tests
         }
     }
 }
-#endif

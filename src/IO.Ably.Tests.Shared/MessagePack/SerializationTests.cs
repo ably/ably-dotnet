@@ -1,5 +1,4 @@
-﻿#if MSGPACK
-namespace IO.Ably.Tests.MessagePack
+﻿namespace IO.Ably.Tests.MessagePack
 {
     public class MessagePackSerializationTests : AblySpecs
     {
@@ -166,4 +165,3 @@ namespace IO.Ably.Tests.MessagePack
         }
     }
 }
-#endif
