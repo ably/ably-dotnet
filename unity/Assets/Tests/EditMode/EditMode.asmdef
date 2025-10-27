@@ -4,7 +4,6 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "BoundfoxStudios.FluentAssertions",
         "UniTask",
         "Unity.Assets.Tests.AblySandbox"
     ],

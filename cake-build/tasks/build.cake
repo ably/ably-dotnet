@@ -147,6 +147,13 @@ Task("_Build_Ably_Unity_Dll")
     var unityOutputPath = paths.Root.Combine("unity/Assets/Ably/Plugins");
     var outputDll = unityOutputPath.CombineWithFilePath("IO.Ably.dll");
     
+    // Delete existing output DLL if it exists
+    if (FileExists(outputDll))
+    {
+        DeleteFile(outputDll);
+        Information($"Deleted existing DLL: {outputDll}");
+    }
+    
     // Merge all dependencies into primary DLL in one go
     ilRepackHelper.MergeDLLs(primaryDll, dllsToMerge, outputDll);
     

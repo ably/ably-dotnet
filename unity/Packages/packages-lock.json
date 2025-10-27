@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.boundfoxstudios.fluentassertions": {
-      "version": "5.10.3-r5",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
-    },
     "com.cysharp.unitask": {
       "version": "2.2.5",
       "depth": 0,
