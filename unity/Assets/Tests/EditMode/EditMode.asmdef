@@ -4,7 +4,6 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "BoundfoxStudios.FluentAssertions",
         "UniTask",
         "Unity.Assets.Tests.AblySandbox"
     ],
@@ -16,11 +15,7 @@
     "overrideReferences": false,
     "precompiledReferences": [
         "nunit.framework.dll",
-        "IO.Ably.DeltaCodec.dll",
-        "IO.Ably.dll",
-        "System.Threading.Tasks.Extensions.dll",
-        "System.Runtime.CompilerServices.Unsafe.dll",
-        "System.Threading.Channels.dll"
+        "IO.Ably.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

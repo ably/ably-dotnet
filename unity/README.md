@@ -4,18 +4,13 @@
 
 ### System Requirements
 * Unity 2019.x.x or newer
-* The following Unity Player settings must be applied:
-  * Scripting Runtime Version should be '.NET 4.x Equivalent'
-  * API Compatibility Level should be '.NET Standard 2.0'
+* API Compatibility Level should be '.NET Standard 2.0'
 
 ### Downloading Unity Package
 - Please download the latest Unity package from the [GitHub releases page](https://github.com/ably/ably-dotnet/releases/latest). All releases from 1.2.4 have `.unitypackage` included.
 
 ### Importing Unity Package
 - You can import the package by going to Assets -> Import Package -> Custom Package in the Unity UI. For more detailed information on importing packages, visit https://docs.unity3d.com/Manual/AssetPackagesImport.html.
-- Make sure to [disable assembly validation](CONTRIBUTING.md#disable-assembly-validation-error) if your project fails to build due to conflicts with Unity's internal newtonsoft json library.
-- Please set `ClientOptions.AutomaticNetworkStateMonitoring` to `false` when instantiating the Ably Client Library, since this feature is not supported and will throw a runtime exception.
-- Custom [NewtonSoft JSON DLLs](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) under `Plugins` can be removed, in the case of conflict with other NewtonSoft DLLs in the project, or if the use of [inbuilt Newtonsoft](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) is preferred.
 - [Configure SynchronizationContext](../README.md#executing-callbacks-on-mainui-thread) to execute callbacks on Main/UI thread.
 - Sample code :
 
@@ -48,8 +43,6 @@ namespace Example.ChatApp
             _clientOptions = new ClientOptions
             {
                 Key = _apiKey,
-                // this will disable the library trying to subscribe to network state notifications
-                AutomaticNetworkStateMonitoring = false,
                 AutoConnect = false,
                 // this will make sure to post callbacks on UnitySynchronization Context Main Thread
                 CustomContext = SynchronizationContext.Current
@@ -63,7 +56,8 @@ namespace Example.ChatApp
         }
     }
 ```
-- Please take a look at [Unity demo chat app](./Assets/Ably/Examples/Chat/) to see a functioning Ably SDK setup.
+
+- Check out the [Unity demo Dashboard app](./Assets/Ably/Examples/Dashboard/) for a complete Ably SDK setup, showcasing channel usage, presence, and pub-sub functionality—all integrated with a console view.
 - Also check blog on [Multiplayer game in unity with ably](https://ably.com/blog/multiplayer-game-in-unity-with-ably).
 
 ### Unsupported Platforms
