@@ -40,7 +40,7 @@ public class ILRepackHelper
             }
             else
             {
-                _context.Warning($"DLL not found: {dllPath}, skipping...");
+                throw new Exception($"Merge dll not found at path \"{dllPath.FullPath}\"");
             }
         }
         
