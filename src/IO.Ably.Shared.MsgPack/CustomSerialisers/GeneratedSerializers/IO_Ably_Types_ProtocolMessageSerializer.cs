@@ -86,7 +86,6 @@ namespace IO.Ably.CustomSerialisers {
                 objectTree.ChannelSerial.IsNotEmpty(),
                 objectTree.ConnectionDetails != null,
                 objectTree.ConnectionId.IsNotEmpty(),
-                objectTree.ConnectionSerial != null,
                 objectTree.Count != null,
                 objectTree.Error != null,
                 objectTree.Flags != null,
@@ -118,11 +117,6 @@ namespace IO.Ably.CustomSerialisers {
             {
                 this._serializer0.PackTo(packer, "connectionId");
                 this._serializer0.PackTo(packer, objectTree.ConnectionId);
-            }
-            if (objectTree.ConnectionSerial != null)
-            {
-                this._serializer0.PackTo(packer, "connectionSerial");
-                this._serializer3.PackTo(packer, objectTree.ConnectionSerial);
             }
             if (objectTree.Count != null)
             {
@@ -409,15 +403,9 @@ namespace IO.Ably.CustomSerialisers {
                                             {
                                                 if ((key == "connectionSerial"))
                                                 {
-                                                    System.Nullable<long> nullable21 = default(System.Nullable<long>);
-                                                    nullable21 =
-                                                        MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(
-                                                            unpacker, typeof(IO.Ably.Types.ProtocolMessage),
-                                                            "System.Nullable`1[System.Int64] connectionSerial");
-                                                    if (nullable21.HasValue)
-                                                    {
-                                                        result.ConnectionSerial = nullable21;
-                                                    }
+                                                    // ConnectionSerial was removed in PR #1199
+                                                    // Skip this field if present in older messages
+                                                    unpacker.Skip();
                                                 }
                                                 else
                                                 {
@@ -569,7 +557,6 @@ namespace IO.Ably.CustomSerialisers {
                                                             }
                                                         }
                                                     }
-                                                    
                                                 }
                                             }
                                         }

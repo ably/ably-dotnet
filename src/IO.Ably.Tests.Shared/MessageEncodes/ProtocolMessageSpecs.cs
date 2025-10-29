@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using System.Linq;
 using Xunit;
+using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {

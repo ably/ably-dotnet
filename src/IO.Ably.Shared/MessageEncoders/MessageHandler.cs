@@ -78,6 +78,22 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
+        private void LogRequestBody(byte[] requestBody)
+        {
+            if (Logger.IsDebug && requestBody != null)
+            {
+                try
+                {
+                    var msgPackObject = MsgPackHelper.DeserialiseMsgPackObject(requestBody);
+                    Logger.Debug("Request body (MsgPack): " + msgPackObject.ToString());
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Error logging request body", ex);
+                }
+            }
+        }
+
         private byte[] GetRequestBody(AblyRequest request)
         {
             if (request.PostData == null)
@@ -101,6 +117,7 @@ namespace IO.Ably.MessageEncoders
             {
                 result = MsgPackHelper.Serialise(request.PostData);
             }
+
             if (Logger.IsDebug)
             {
                 Logger.Debug("Request body: " + result.GetText());
@@ -116,6 +133,7 @@ namespace IO.Ably.MessageEncoders
             {
                 return MsgPackHelper.Serialise(payloads);
             }
+
             return JsonHelper.Serialize(payloads).GetBytes();
         }
 
@@ -293,7 +311,7 @@ namespace IO.Ably.MessageEncoders
             }
             else
             {
-                result?.Items.AddRange(ParseOther<T>(response));
+                result?.Items.AddRange(ParseOther<T>(response, _protocol));
             }
 
             return result;
@@ -314,6 +332,7 @@ namespace IO.Ably.MessageEncoders
             {
                 return (T)MsgPackHelper.Deserialise(response.Body, typeof(T));
             }
+
             return JsonHelper.Deserialize<T>(responseText);
         }
 
@@ -346,6 +365,7 @@ namespace IO.Ably.MessageEncoders
                     {
                         responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
                     }
+
                     Logger.Debug($"Response: {responseBody}");
                 }
                 catch (Exception ex)
@@ -355,13 +375,14 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private static IEnumerable<T> ParseOther<T>(AblyResponse response)
+        private static IEnumerable<T> ParseOther<T>(AblyResponse response, Protocol protocol)
         {
             var body = response.TextResponse;
-            if (_protocol == Protocol.MsgPack)
+            if (protocol == Protocol.MsgPack)
             {
                 return (List<T>)MsgPackHelper.Deserialise(response.Body, typeof(List<T>));
             }
+
             return JsonHelper.Deserialize<List<T>>(body) ?? new List<T>();
         }
 

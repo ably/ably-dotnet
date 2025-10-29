@@ -63,7 +63,7 @@ namespace IO.Ably
         }
 
         // MsgPack is always available - protocol selection is runtime-based via ClientOptions.UseBinaryProtocol
-        internal const Protocol DefaultProtocol = IO.Ably.Protocol.MsgPack;
+        internal const Protocol Protocol = IO.Ably.Protocol.MsgPack;
         internal const bool MsgPackEnabled = true;
 
         static Defaults()

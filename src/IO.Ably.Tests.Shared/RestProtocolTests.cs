@@ -10,7 +10,7 @@ namespace IO.Ably.Tests
         {
             var rest = new AblyRest(new ClientOptions());
             rest.Protocol.Should().Be(Protocol.MsgPack);
-            Defaults.DefaultProtocol.Should().Be(Protocol.MsgPack);
+            Defaults.Protocol.Should().Be(Protocol.MsgPack);
         }
 
         [Theory]

@@ -216,12 +216,15 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{1609f12c-8216-4e7c-ade0-240bfe160242}*SharedItemsImports = 13
+		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{4805a9da-3412-4be8-8b95-5a0efda1ac01}*SharedItemsImports = 5
+		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{48ea337f-ae7b-4001-bd8c-da1668fc6cbd}*SharedItemsImports = 5
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{48ea337f-ae7b-4001-bd8c-da1668fc6cbd}*SharedItemsImports = 5
 		IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems*{567feef7-41af-42f2-ad34-546a278355b1}*SharedItemsImports = 4
+		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
 		IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems*{eebf3249-3ca3-4078-a188-f8b916c3f4c2}*SharedItemsImports = 13
 	EndGlobalSection

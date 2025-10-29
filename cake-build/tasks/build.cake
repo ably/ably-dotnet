@@ -160,6 +160,30 @@ Task("_Build_Ably_Unity_Dll")
     Information($"✓ Unity DLL created at: {outputDll}");
 });
 
+Task("_Format_Code")
+    .Description("Format C#, XML and other files")
+    .Does(() =>
+{
+    Information("Formatting code with dotnet-format...");
+    
+    // Using 'whitespace' mode for fast formatting without building the project
+    // This applies .editorconfig rules for whitespace, indentation, etc. without semantic analysis
+    // Much faster than default mode which requires compilation
+    var exitCode = StartProcess("dotnet", new ProcessSettings
+    {
+        Arguments = $"format {paths.MainSolution.FullPath} whitespace --no-restore"
+    });
+    
+    if (exitCode == 0)
+    {
+        Information("✓ Code formatted successfully");
+    }
+    else
+    {
+        throw new Exception($"dotnet format failed with exit code {exitCode}");
+    }
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -190,3 +214,8 @@ Task("Build.Xamarin")
 Task("Update.AblyUnity")
     .Description("Update Ably DLLs inside unity project")
     .IsDependentOn("_Build_Ably_Unity_Dll");
+
+// Public task: Format code using dotnet-format
+Task("Format.Code")
+    .Description("Format code using dotnet-format")
+    .IsDependentOn("_Format_Code");

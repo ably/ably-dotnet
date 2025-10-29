@@ -185,7 +185,7 @@ public AblyRequest(string path, HttpMethod method, Protocol protocol = Defaults.
 
 **Fix required:**
 ```csharp
-public AblyRequest(string path, HttpMethod method, Protocol protocol = Defaults.DefaultProtocol)
+public AblyRequest(string path, HttpMethod method, Protocol protocol = Defaults.Protocol)
 ```
 
 #### 3.2 Update AblyHttpClient.cs

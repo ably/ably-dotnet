@@ -404,6 +404,7 @@ namespace IO.Ably
                 // Prefer JSON
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             }
+
             if (message.Method == HttpMethod.Post || message.Method == HttpMethod.Put)
             {
                 if (request.PostParameters.Any() && request.RequestBody.Length == 0)

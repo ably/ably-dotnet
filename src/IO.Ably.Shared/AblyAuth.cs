@@ -483,7 +483,7 @@ namespace IO.Ably
         private async Task<AblyResponse> CallAuthUrl(AuthOptions mergedOptions, TokenParams @params)
         {
             var url = mergedOptions.AuthUrl;
-            var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+            var protocol = Options.UseBinaryProtocol ? Protocol.MsgPack : Defaults.Protocol;
             var authRequest = new AblyRequest(url.ToString(), mergedOptions.AuthMethod, protocol);
 
             if (mergedOptions.AuthMethod == HttpMethod.Get)
