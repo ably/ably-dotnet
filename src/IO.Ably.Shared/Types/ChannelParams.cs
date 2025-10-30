@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using MsgPack.Serialization;
 
 namespace IO.Ably
 {
@@ -7,6 +8,7 @@ namespace IO.Ably
     /// Channel params is a "Dictionary&lt;string, string&gt;" used for passing extra parameters when
     /// attaching to an Ably Realtime channel.
     /// </summary>
+    [MessagePackObject]
     public class ChannelParams : Dictionary<string, string>
     {
     }

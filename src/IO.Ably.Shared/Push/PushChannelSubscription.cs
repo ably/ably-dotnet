@@ -1,27 +1,32 @@
-﻿using Newtonsoft.Json;
+﻿using MsgPack.Serialization;
+using Newtonsoft.Json;
 
 namespace IO.Ably.Push
 {
     /// <summary>
     /// Represents a push channel subscription.
     /// </summary>
+    [MessagePackObject]
     public class PushChannelSubscription
     {
         /// <summary>
         /// Name of the channel.
         /// </summary>
+        [Key(0)]
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
         /// <summary>
         /// Device id attached to the subscription.
         /// </summary>
+        [Key(1)]
         [JsonProperty("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// Client id attached to the channel.
         /// </summary>
+        [Key(2)]
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 

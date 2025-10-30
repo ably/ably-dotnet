@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using MsgPack.Serialization;
 using Newtonsoft.Json;
 
 namespace IO.Ably.Types
@@ -15,11 +16,13 @@ namespace IO.Ably.Types
     ///  See the Ably client library developer documentation for further
     ///  details on the members of a ProtocolMessage.
     /// </summary>
+    [MessagePackObject]
     public class ProtocolMessage
     {
         /// <summary>
         /// Action associated with the message.
         /// </summary>
+        [MessagePackObject]
         public enum MessageAction
         {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -92,6 +95,7 @@ namespace IO.Ably.Types
         /// ATTACHED message.
         /// For more information https://ably.com/docs/realtime/channels/channel-parameters/overview.
         /// </summary>
+        [Key(0)]
         [JsonProperty("params")]
         public ChannelParams Params { get; set; }
 
@@ -119,87 +123,102 @@ namespace IO.Ably.Types
         /// <summary>
         /// Current message action.
         /// </summary>
+        [Key(1)]
         [JsonProperty("action")]
         public MessageAction Action { get; set; }
 
         /// <summary>
         /// <see cref="AuthDetails"/> for the current message.
         /// </summary>
+        [Key(2)]
         [JsonProperty("auth")]
         public AuthDetails Auth { get; set; }
 
         /// <summary>
         /// Current message flags.
         /// </summary>
+        [Key(3)]
         [JsonProperty("flags")]
         public int? Flags { get; set; }
 
         /// <summary>
         /// Count.
         /// </summary>
+        [Key(4)]
         [JsonProperty("count")]
         public int? Count { get; set; }
 
         /// <summary>
         /// Error associated with the message.
         /// </summary>
+        [Key(5)]
         [JsonProperty("error")]
         public ErrorInfo Error { get; set; }
 
         /// <summary>
         /// Ably generated message id.
         /// </summary>
+        [Key(6)]
         [JsonProperty("id")]
         public string Id { get; set; }
 
         /// <summary>
         /// Optional channel for which the message belongs to.
         /// </summary>
+        [Key(7)]
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
         /// <summary>
         /// Current channel serial.
         /// </summary>
+        [Key(8)]
         [JsonProperty("channelSerial")]
         public string ChannelSerial { get; set; }
 
         /// <summary>
         /// Current connectionId.
         /// </summary>
+        [Key(9)]
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
         /// <summary>
         /// Current message serial.
         /// </summary>
+        [Key(10)]
         [JsonProperty("msgSerial")]
         public long MsgSerial { get; set; }
 
         /// <summary>
         /// Timestamp of the message.
         /// </summary>
+        [Key(11)]
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
         /// List of messages contained in this protocol message.
         /// </summary>
+        [Key(12)]
         [JsonProperty("messages")]
         public Message[] Messages { get; set; }
 
         /// <summary>
         /// List of presence messages contained in this protocol message.
         /// </summary>
+        [Key(13)]
         [JsonProperty("presence")]
         public PresenceMessage[] Presence { get; set; }
 
         /// <summary>
         /// Connection details received. <see cref="IO.Ably.ConnectionDetails"/>.
         /// </summary>
+        [Key(14)]
         [JsonProperty("connectionDetails")]
         public ConnectionDetails ConnectionDetails { get; set; }
 
+        [IgnoreMember]
         [JsonIgnore]
         internal bool AckRequired => Action == MessageAction.Message || Action == MessageAction.Presence;
 

@@ -151,6 +151,8 @@ Add after line 13:
 
 ### 2.1 Create MsgPack Generator Tool Project
 
+**Overview:** The generator tool uses reflection to automatically discover all types annotated with `[MessagePackObject]` in the Ably assembly. This eliminates the need to manually maintain a list of types in the generator code. Simply annotate your model classes with `[MessagePackObject]`, and they will be automatically included in serializer generation.
+
 **Directory:** `tools/MsgPackSerializerGenerator/`
 
 **File:** `tools/MsgPackSerializerGenerator/MsgPackSerializerGenerator.csproj`
@@ -177,15 +179,14 @@ Add after line 13:
 
 ```csharp
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using IO.Ably;
 using IO.Ably.Types;
-using IO.Ably.Push;
-using IO.Ably.Rest;
-using IO.Ably.Realtime;
 using MsgPack.Serialization;
+using Newtonsoft.Json;
 
 namespace MsgPackSerializerGenerator
 {
@@ -207,51 +208,38 @@ namespace MsgPackSerializerGenerator
 
             var applicationLibraryAssembly = typeof(ProtocolMessage).Assembly;
             
-            // Types to generate serializers for
-            var typesToGenerate = new[]
+            // Validate: Check for types with JsonProperty but missing MessagePackObject
+            Console.WriteLine("\n=== Validation: Checking for missing MessagePackObject annotations ===");
+            var missingAnnotations = FindTypesWithJsonPropertyButNoMessagePack(applicationLibraryAssembly);
+            if (missingAnnotations.Any())
             {
-                // Core message types
-                typeof(Message),
-                typeof(PresenceMessage),
-                typeof(ProtocolMessage),
-                typeof(ProtocolMessage.MessageAction),
-                typeof(PresenceAction),
-                
-                // Auth and connection types
-                typeof(TokenRequest),
-                typeof(TokenDetails),
-                typeof(ConnectionDetails),
-                typeof(ErrorInfo),
-                typeof(Capability),
-                typeof(AuthDetails),
-                
-                // Statistics types
-                typeof(Stats),
-                typeof(MessageCount),
-                typeof(MessageTypes),
-                typeof(RequestCount),
-                typeof(ResourceCount),
-                typeof(ConnectionTypes),
-                typeof(OutboundMessageTraffic),
-                typeof(InboundMessageTraffic),
-                
-                // Additional types
-                typeof(ChannelParams),
-                typeof(MessageExtras.DeltaExtras), // Note: DeltaExtras is a nested class
-                typeof(RecoveryKeyContext),
-                typeof(System.Net.HttpStatusCode),
-                
-                // Channel metadata types
-                typeof(ChannelDetails),
-                typeof(ChannelStatus),
-                typeof(ChannelOccupancy),
-                typeof(ChannelMetrics),
-                
-                // Push-related types (include if push is used)
-                typeof(DeviceDetails),
-                typeof(DeviceDetails.PushData),
-                typeof(PushChannelSubscription),
+                Console.WriteLine("WARNING: Found types with [JsonProperty] but missing [MessagePackObject]:");
+                foreach (var type in missingAnnotations.OrderBy(t => t.FullName))
+                {
+                    Console.WriteLine($"  ⚠️  {type.FullName}");
+                }
+                Console.WriteLine("\nThese types are serialized by Newtonsoft.Json but will NOT have MsgPack serializers!");
+                Console.WriteLine("Please add [MessagePackObject] and [Key] attributes to these types.\n");
+            }
+            else
+            {
+                Console.WriteLine("✓ All types with [JsonProperty] have [MessagePackObject] annotations\n");
+            }
+            
+            // Automatically discover types annotated with [MessagePackObject]
+            var typesToGenerate = DiscoverMessagePackTypes(applicationLibraryAssembly);
+            
+            // Add System.Net.HttpStatusCode enum (from external assembly)
+            var additionalTypes = new List<Type>(typesToGenerate)
+            {
+                typeof(System.Net.HttpStatusCode)
             };
+
+            Console.WriteLine($"Found {additionalTypes.Count} types to generate serializers for:");
+            foreach (var type in additionalTypes.OrderBy(t => t.FullName))
+            {
+                Console.WriteLine($"  ✓ {type.FullName}");
+            }
 
             SerializerGenerator.GenerateCode(
                 new SerializerCodeGenerationConfiguration
@@ -263,9 +251,139 @@ namespace MsgPackSerializerGenerator
                     PreferReflectionBasedSerializer = false,
                     SerializationMethod = SerializationMethod.Map
                 },
-                typesToGenerate);
+                additionalTypes.ToArray());
 
-            Console.WriteLine("Serializer generation complete!");
+            Console.WriteLine("\n✓ Serializer generation complete!");
+            
+            if (missingAnnotations.Any())
+            {
+                Console.WriteLine("\n⚠️  WARNING: Some types are missing MessagePackObject annotations (see above)");
+                // Don't fail the build, but make it visible
+            }
+        }
+
+        /// <summary>
+        /// Finds types that have JsonProperty attributes but are missing MessagePackObject annotation.
+        /// This helps identify types that are serialized by Newtonsoft but might be missed for MsgPack.
+        /// </summary>
+        private static List<Type> FindTypesWithJsonPropertyButNoMessagePack(Assembly assembly)
+        {
+            var missingTypes = new List<Type>();
+            
+            // Types that have custom serializers and don't need MessagePackObject
+            var customSerializerTypes = new HashSet<string>
+            {
+                "IO.Ably.Types.MessageExtras",  // Has MessageExtrasMessagePackSerializer
+                "IO.Ably.Capability",           // Has CapabilityMessagePackSerializer
+            };
+
+            try
+            {
+                var allTypes = assembly.GetTypes();
+
+                foreach (var type in allTypes)
+                {
+                    // Skip if it has a custom serializer
+                    if (customSerializerTypes.Contains(type.FullName))
+                        continue;
+
+                    // Skip compiler-generated and special types
+                    if (type.FullName?.Contains("<>") == true ||
+                        type.FullName?.Contains("+<") == true ||
+                        type.IsSpecialName)
+                        continue;
+
+                    // Check if type has MessagePackObject
+                    var hasMessagePackObject = type.GetCustomAttribute<MessagePackObjectAttribute>() != null;
+                    
+                    if (!hasMessagePackObject)
+                    {
+                        // Check if any properties have JsonProperty attribute
+                        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                        var hasJsonProperty = properties.Any(p =>
+                            p.GetCustomAttribute<JsonPropertyAttribute>() != null);
+
+                        if (hasJsonProperty)
+                        {
+                            missingTypes.Add(type);
+                        }
+                    }
+                }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // Handle types that couldn't be loaded
+                var loadedTypes = ex.Types.Where(t => t != null);
+                foreach (var type in loadedTypes)
+                {
+                    if (customSerializerTypes.Contains(type.FullName))
+                        continue;
+
+                    var hasMessagePackObject = type.GetCustomAttribute<MessagePackObjectAttribute>() != null;
+                    if (!hasMessagePackObject)
+                    {
+                        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                        var hasJsonProperty = properties.Any(p =>
+                            p.GetCustomAttribute<JsonPropertyAttribute>() != null);
+
+                        if (hasJsonProperty)
+                        {
+                            missingTypes.Add(type);
+                        }
+                    }
+                }
+            }
+
+            return missingTypes;
+        }
+
+        /// <summary>
+        /// Discovers all types in the assembly that are annotated with [MessagePackObject]
+        /// </summary>
+        private static List<Type> DiscoverMessagePackTypes(Assembly assembly)
+        {
+            var messagePackTypes = new List<Type>();
+
+            try
+            {
+                // Get all types from the assembly
+                var allTypes = assembly.GetTypes();
+
+                foreach (var type in allTypes)
+                {
+                    // Check if type has [MessagePackObject] attribute
+                    if (type.GetCustomAttribute<MessagePackObjectAttribute>() != null)
+                    {
+                        messagePackTypes.Add(type);
+                        
+                        // Also check for nested types with [MessagePackObject]
+                        var nestedTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
+                        foreach (var nestedType in nestedTypes)
+                        {
+                            if (nestedType.GetCustomAttribute<MessagePackObjectAttribute>() != null)
+                            {
+                                messagePackTypes.Add(nestedType);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Console.WriteLine("Warning: Some types could not be loaded:");
+                foreach (var loaderException in ex.LoaderExceptions)
+                {
+                    Console.WriteLine($"  - {loaderException?.Message}");
+                }
+                
+                // Use the types that were successfully loaded
+                messagePackTypes.AddRange(
+                    ex.Types
+                        .Where(t => t != null && t.GetCustomAttribute<MessagePackObjectAttribute>() != null)
+                );
+            }
+
+            return messagePackTypes;
         }
     }
 }
@@ -437,56 +555,75 @@ public class Message : IMessage
 
 ### 3.5 Implementation Strategy
 
-**Phase 3A: Core Models** (Priority: HIGH)
-- Add `[MessagePackObject]` to class
-- Add `[Key(index)]` to each serializable property
+**Phase 3A: Annotate ALL Types for Auto-Discovery** (Priority: CRITICAL)
+
+**IMPORTANT:** Since the generator now uses reflection to discover types, ALL types that need serializers MUST be annotated with `[MessagePackObject]` and `[Key]` attributes. Missing annotations will result in types being excluded from serializer generation.
+
+**Built-in Validation:** The generator tool includes automatic validation that checks for types with `[JsonProperty]` attributes but missing `[MessagePackObject]` annotations. During build, it will:
+- ✅ List all types that will have serializers generated
+- ⚠️ Warn about types with `[JsonProperty]` that are missing `[MessagePackObject]`
+- 📋 Help identify any types that might have been overlooked
+
+This ensures that any type serialized by Newtonsoft.Json will also be covered by MsgPack serialization.
+
+**Annotation Requirements:**
+- Add `[MessagePackObject]` to each class/struct
+- Add `[Key(index)]` to each serializable property (sequential numbering starting from 0)
 - Add `[IgnoreMember]` to computed/ignored properties
-- Keep all existing `[JsonProperty]` and `[JsonIgnore]` attributes
+- Keep all existing `[JsonProperty]` and `[JsonIgnore]` attributes for dual compatibility
 
-**Models to Annotate:**
+**Complete List of Types to Annotate:**
 
-**Core Message Types:**
-1. `Message` - 9 properties (id, clientId, connectionId, connectionKey, name, timestamp, data, extras, encoding)
-2. `PresenceMessage` - 8 properties (id, action, clientId, connectionId, connectionKey, data, encoding, timestamp)
-3. `ProtocolMessage` - 14 properties (action, auth, flags, count, error, id, channel, channelSerial, connectionId, msgSerial, timestamp, messages, presence, connectionDetails, params)
-4. `MessageExtras` - Custom serializer (no attributes needed - uses JToken internally)
-5. `DeltaExtras` - 2 properties (format, from) - nested class in MessageExtras
+**Core Message Types (REQUIRED):**
+- [ ] `Message` - 9 properties (id, clientId, connectionId, connectionKey, name, timestamp, data, extras, encoding)
+- [ ] `PresenceMessage` - 8 properties (id, action, clientId, connectionId, connectionKey, data, encoding, timestamp)
+- [ ] `ProtocolMessage` - 14 properties (action, auth, flags, count, error, id, channel, channelSerial, connectionId, msgSerial, timestamp, messages, presence, connectionDetails, params)
+- [ ] `ProtocolMessage.MessageAction` - Enum (nested in ProtocolMessage)
+- [ ] `PresenceAction` - Enum
+- [ ] `MessageExtras.DeltaExtras` - 2 properties (format, from) - nested class in MessageExtras
 
-**Auth & Connection Types:**
-6. `ErrorInfo` - 5 properties (code, statusCode, message, cause, href)
-7. `ConnectionDetails` - 7 properties (clientId, connectionKey, maxFrameSize, maxInboundRate, maxMessageSize, serverId, connectionStateTtl)
-8. `TokenRequest` - Properties need verification (file not found in Types folder, likely in root Shared folder)
-9. `TokenDetails` - Properties need verification (file not found in Types folder, likely in root Shared folder)
-10. `Capability` - Has custom serializer already
-11. `AuthDetails` - 1 property (accessToken)
+**Auth & Connection Types (REQUIRED):**
+- [ ] `TokenRequest` - All properties with [JsonProperty]
+- [ ] `TokenDetails` - All properties with [JsonProperty]
+- [ ] `ConnectionDetails` - 7 properties (clientId, connectionKey, maxFrameSize, maxInboundRate, maxMessageSize, serverId, connectionStateTtl)
+- [ ] `ErrorInfo` - 5 properties (code, statusCode, message, cause, href)
+- [ ] `Capability` - Has custom serializer, but annotate for consistency
+- [ ] `AuthDetails` - 1 property (accessToken)
 
-**Statistics Types:**
-12. `Stats` - 3 properties + nested types
-13. `MessageCount` - 2 properties
-14. `MessageTypes` - 3 properties
-15. `RequestCount` - 3 properties
-16. `ResourceCount` - 7 properties
-17. `ConnectionTypes` - 3 properties
-18. `InboundMessageTraffic` - 3 properties
-19. `OutboundMessageTraffic` - 3 properties
+**Statistics Types (REQUIRED):**
+- [ ] `Stats` - 3 properties + nested types
+- [ ] `MessageCount` - 2 properties
+- [ ] `MessageTypes` - 3 properties
+- [ ] `RequestCount` - 3 properties
+- [ ] `ResourceCount` - 7 properties
+- [ ] `ConnectionTypes` - 3 properties
+- [ ] `InboundMessageTraffic` - 3 properties
+- [ ] `OutboundMessageTraffic` - 3 properties
 
-**Additional Types:**
-20. `ChannelParams` - Dictionary-based (extends Dictionary<string, string>, may need custom serializer)
-21. `RecoveryKeyContext` - Properties need verification (internal class)
-22. `ChannelDetails` - Properties need verification
-23. `ChannelStatus` - Properties need verification
-24. `ChannelOccupancy` - Properties need verification
-25. `ChannelMetrics` - Properties need verification
+**Additional Types (REQUIRED):**
+- [ ] `ChannelParams` - Dictionary-based (extends Dictionary<string, string>, may need custom serializer)
+- [ ] `RecoveryKeyContext` - Internal class for connection recovery
+- [ ] `ChannelDetails` - Channel metadata
+- [ ] `ChannelStatus` - Channel status information
+- [ ] `ChannelOccupancy` - Channel occupancy metrics
+- [ ] `ChannelMetrics` - Channel metrics
 
-**Push Types (if used):**
-26. `DeviceDetails` - 7 properties (id, platform, formFactor, clientId, metadata, push, deviceSecret)
-27. `DeviceDetails.PushData` - 3 properties (recipient, state, errorReason)
-28. `PushChannelSubscription` - Properties need verification
+**Push Types (REQUIRED if Push is used):**
+- [ ] `DeviceDetails` - 7 properties (id, platform, formFactor, clientId, metadata, push, deviceSecret)
+- [ ] `DeviceDetails.PushData` - 3 properties (recipient, state, errorReason) - nested class
+- [ ] `PushChannelSubscription` - Push subscription details
 
-**Phase 3B: Validation** (Priority: MEDIUM)
-- Verify generated serializers still work
-- Confirm no breaking changes
-- Test serialization output matches
+**Special Cases:**
+- `MessageExtras` - Uses custom serializer (MessageExtrasMessagePackSerializer), NO attributes needed
+- `System.Net.HttpStatusCode` - External enum, added separately in generator code
+
+**Phase 3B: Validation** (Priority: HIGH)
+- [ ] Build the generator tool and verify it discovers all annotated types
+- [ ] Check generator output lists all expected types
+- [ ] Verify generated serializers still work
+- [ ] Confirm no breaking changes
+- [ ] Test serialization output matches previous version
+- [ ] Ensure no types are missing from auto-discovery
 
 ---
 

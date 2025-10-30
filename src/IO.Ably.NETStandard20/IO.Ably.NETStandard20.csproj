@@ -72,4 +72,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <!-- Import MsgPack serializer generation targets -->
+  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.targets" Condition="Exists('..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.targets')" />
+
 </Project>

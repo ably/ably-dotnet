@@ -1,4 +1,5 @@
 ﻿using System;
+using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -7,41 +8,48 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata.
     /// </summary>
+    [MessagePackObject]
     public sealed class TokenDetails
     {
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>.
         /// </summary>
+        [Key(0)]
         [JsonProperty("capability")]
         public Capability Capability { get; set; }
 
         /// <summary>
         /// The clientId associated with the token.
         /// </summary>
+        [Key(1)]
         [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientId { get; set; }
 
         /// <summary>
         /// Absolute token expiry date in UTC.
         /// </summary>
+        [Key(2)]
         [JsonProperty("expires")]
         public DateTimeOffset Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC.
         /// </summary>
+        [Key(3)]
         [JsonProperty("issued")]
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
         /// The token itself.
         /// </summary>
+        [Key(4)]
         [JsonProperty("token")]
         public string Token { get; set; }
 
         /// <summary>
         /// API key name used to create this token.
         /// </summary>
+        [Key(5)]
         [JsonProperty("keyName")]
         public string KeyName { get; set; }
 
@@ -62,6 +70,7 @@ namespace IO.Ably
             Token = token;
         }
 
+        [IgnoreMember]
         internal bool CanBeUsedToCheckExpiry => Expires != DateTimeOffset.MinValue;
 
         /// <summary>

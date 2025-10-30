@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_Auth_TokenDetailsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_CapabilitySerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_ConnectionDetailsMessageSerializer.cs" />
