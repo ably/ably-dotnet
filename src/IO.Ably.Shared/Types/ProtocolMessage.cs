@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably.Types
@@ -16,13 +16,12 @@ namespace IO.Ably.Types
     ///  See the Ably client library developer documentation for further
     ///  details on the members of a ProtocolMessage.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(AllowPrivate = true)]
     public class ProtocolMessage
     {
         /// <summary>
         /// Action associated with the message.
         /// </summary>
-        [MessagePackObject]
         public enum MessageAction
         {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

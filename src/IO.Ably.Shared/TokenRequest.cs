@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using IO.Ably.Encryption;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably
@@ -9,7 +9,7 @@ namespace IO.Ably
     /// <summary>
     /// A class providing parameters of a token request.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(AllowPrivate = true)]
     public class TokenRequest
     {
         [IgnoreMember]

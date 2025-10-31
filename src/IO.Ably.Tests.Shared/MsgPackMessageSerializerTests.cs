@@ -4,35 +4,15 @@ using System.Linq;
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Types;
-using MsgPack.Serialization;
+using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class GenerateMsgPackSerializers
-    {
-        [Fact(Skip = "true")]
-        public void Generate()
-        {
-            var applicationLibraryAssembly = typeof(ProtocolMessage).Assembly;
-            SerializerGenerator.GenerateCode(
-                new SerializerCodeGenerationConfiguration
-                {
-                    Namespace = "IO.Ably.CustomSerialisers",
-                    OutputDirectory = "../../../IO.Ably/CustomSerialisers/GeneratedSerializers",
-                    EnumSerializationMethod = EnumSerializationMethod.ByName, // You can tweak it to use ByUnderlyingValue as you like.
-                    IsRecursive = true, // Set dependent serializers are also generated.
-                    PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
-                    SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
-                },
-                applicationLibraryAssembly.GetTypes().Where(type =>
-                    type == typeof(TokenRequest)));
-            // type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
-            // type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
-            // * ...you can filter types to be serialized by their namespace, custom attributes, etc... */
-        }
-    }
+    // NOTE: The old GenerateMsgPackSerializers class has been removed.
+    // MessagePack-CSharp v3.x uses automatic source generation during build.
+    // No manual serializer generation is needed - the source generator handles it automatically.
 
     public class MsgPackMessageSerializerTests : AblySpecs
     {

@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably

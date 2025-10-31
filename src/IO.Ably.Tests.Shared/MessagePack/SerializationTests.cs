@@ -5,7 +5,7 @@ using FluentAssertions;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using IO.Ably.Types;
-using MsgPack;
+using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -121,9 +121,11 @@ namespace IO.Ably.Tests.MessagePack
             var value =
                 "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2YhnNFg2UVEuRHlCYzlMZUdvdy1saWVEcG4zTXRsd09uUEhoN2VtN3MyQ3JTZ1pLM2NUNkRvZUo1dlQxWXRwNDFvaTVWUUtNUkxuSVdDckFadHVOb3F5Q0lvVFphQjFfb1FFX0Utb3c2Y3hKX1EwcFUyZ3lpb2xRNGp1VDM1TjI0Qzgzd0p6aUI5p2tleU5hbWWtZzRYNlFRLnV0ekdsZ6Zpc3N1ZWTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
 
-            var decodedMessagePack = MsgPackHelper.Deserialise(value.FromBase64(), typeof(MessagePackObject)).ToString();
-
-            var response = JsonHelper.Deserialize<TokenResponse>(decodedMessagePack);
+            // MessagePackObject doesn't exist in MessagePack-CSharp v3.x
+            // Deserialize to a dictionary instead and convert to JSON
+            var decodedMessagePack = MsgPackHelper.Deserialise(value.FromBase64(), typeof(System.Collections.Generic.Dictionary<string, object>));
+            var jsonString = JsonHelper.Serialize(decodedMessagePack);
+            var response = JsonHelper.Deserialize<TokenResponse>(jsonString);
 
             response.AccessToken.Should().NotBeNull();
             response.AccessToken.Capability.ToJson().Should().Be("{\"*\":[\"*\"]}");

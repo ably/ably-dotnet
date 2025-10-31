@@ -1,5 +1,5 @@
 ﻿using System;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably

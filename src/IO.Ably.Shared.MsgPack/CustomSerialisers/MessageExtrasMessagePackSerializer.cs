@@ -1,47 +1,44 @@
 using IO.Ably.Types;
-using MsgPack;
-using MsgPack.Serialization;
+using MessagePack;
+using MessagePack.Formatters;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.CustomSerialisers
 {
 #pragma warning disable SA1600 // Elements should be documented
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public class MessageExtrasMessagePackSerializer : MessagePackSerializer<MessageExtras>
+    public class MessageExtrasFormatter : IMessagePackFormatter<MessageExtras>
     {
-        public MessageExtrasMessagePackSerializer(SerializationContext ownerContext)
-            : base(ownerContext)
+        /// <inheritdoc/>
+        public void Serialize(ref MessagePackWriter writer, MessageExtras value, MessagePackSerializerOptions options)
         {
-        }
-
-        protected override void PackToCore(Packer packer, MessageExtras objectTree)
-        {
-            if (objectTree == null)
+            if (value == null)
             {
-                packer.PackNull();
+                writer.WriteNil();
                 return;
             }
 
-            var json = objectTree.ToJson();
+            var json = value.ToJson();
             if (json == null)
             {
-                packer.PackNull();
+                writer.WriteNil();
             }
             else
             {
                 // Serialize as JSON string for compatibility
-                packer.Pack(json.ToString(Newtonsoft.Json.Formatting.None));
+                writer.Write(json.ToString(Newtonsoft.Json.Formatting.None));
             }
         }
 
-        protected override MessageExtras UnpackFromCore(Unpacker unpacker)
+        /// <inheritdoc/>
+        public MessageExtras Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (unpacker.LastReadData.IsNil)
+            if (reader.TryReadNil())
             {
                 return null;
             }
 
-            var jsonString = unpacker.LastReadData.AsString();
+            var jsonString = reader.ReadString();
             if (string.IsNullOrEmpty(jsonString))
             {
                 return null;

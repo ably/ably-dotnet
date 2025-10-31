@@ -1,5 +1,5 @@
 ﻿using System;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,7 +8,7 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(AllowPrivate = true)]
     public sealed class TokenDetails
     {
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿using System;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably
@@ -7,7 +7,6 @@ namespace IO.Ably
     /// <summary>
     /// Presence Action: the event signified by a PresenceMessage.
     /// </summary>
-    [MessagePackObject]
     public enum PresenceAction : byte
     {
         /// <summary>

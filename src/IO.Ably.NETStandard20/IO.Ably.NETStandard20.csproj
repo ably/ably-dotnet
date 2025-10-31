@@ -45,15 +45,21 @@
     <AdditionalFiles Include="..\stylecop.json" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Configure MessagePack Source Generator -->
+    <MessagePackGenerator_ResolverName>AblyGeneratedResolver</MessagePackGenerator_ResolverName>
+    <MessagePackGenerator_Namespace>IO.Ably.CustomSerialisers</MessagePackGenerator_Namespace>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
+    <PackageReference Include="MessagePack" Version="3.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Threading.Channels" Version="4.5.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.3" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,8 +77,5 @@
   <PropertyGroup Condition=" $(DefineConstants.Contains('UNITY_PACKAGE')) ">
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-
-  <!-- Import MsgPack serializer generation targets -->
-  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.targets" Condition="Exists('..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.targets')" />
 
 </Project>

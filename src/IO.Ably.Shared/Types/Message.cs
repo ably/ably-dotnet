@@ -4,7 +4,7 @@ using System.Diagnostics;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Shared.CustomSerialisers;
 using IO.Ably.Types;
-using MsgPack.Serialization;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace IO.Ably
