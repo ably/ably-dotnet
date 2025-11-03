@@ -16,7 +16,7 @@ namespace IO.Ably.Types
     ///  See the Ably client library developer documentation for further
     ///  details on the members of a ProtocolMessage.
     /// </summary>
-    [MessagePackObject(AllowPrivate = true)]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class ProtocolMessage
     {
         /// <summary>
@@ -94,7 +94,7 @@ namespace IO.Ably.Types
         /// ATTACHED message.
         /// For more information https://ably.com/docs/realtime/channels/channel-parameters/overview.
         /// </summary>
-        [Key(0)]
+        [Key("params")]
         [JsonProperty("params")]
         public ChannelParams Params { get; set; }
 
@@ -122,98 +122,98 @@ namespace IO.Ably.Types
         /// <summary>
         /// Current message action.
         /// </summary>
-        [Key(1)]
+        [Key("action")]
         [JsonProperty("action")]
         public MessageAction Action { get; set; }
 
         /// <summary>
         /// <see cref="AuthDetails"/> for the current message.
         /// </summary>
-        [Key(2)]
+        [Key("auth")]
         [JsonProperty("auth")]
         public AuthDetails Auth { get; set; }
 
         /// <summary>
         /// Current message flags.
         /// </summary>
-        [Key(3)]
+        [Key("flags")]
         [JsonProperty("flags")]
         public int? Flags { get; set; }
 
         /// <summary>
         /// Count.
         /// </summary>
-        [Key(4)]
+        [Key("count")]
         [JsonProperty("count")]
         public int? Count { get; set; }
 
         /// <summary>
         /// Error associated with the message.
         /// </summary>
-        [Key(5)]
+        [Key("error")]
         [JsonProperty("error")]
         public ErrorInfo Error { get; set; }
 
         /// <summary>
         /// Ably generated message id.
         /// </summary>
-        [Key(6)]
+        [Key("id")]
         [JsonProperty("id")]
         public string Id { get; set; }
 
         /// <summary>
         /// Optional channel for which the message belongs to.
         /// </summary>
-        [Key(7)]
+        [Key("channel")]
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
         /// <summary>
         /// Current channel serial.
         /// </summary>
-        [Key(8)]
+        [Key("channelSerial")]
         [JsonProperty("channelSerial")]
         public string ChannelSerial { get; set; }
 
         /// <summary>
         /// Current connectionId.
         /// </summary>
-        [Key(9)]
+        [Key("connectionId")]
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
         /// <summary>
         /// Current message serial.
         /// </summary>
-        [Key(10)]
+        [Key("msgSerial")]
         [JsonProperty("msgSerial")]
         public long MsgSerial { get; set; }
 
         /// <summary>
         /// Timestamp of the message.
         /// </summary>
-        [Key(11)]
+        [Key("timestamp")]
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
         /// List of messages contained in this protocol message.
         /// </summary>
-        [Key(12)]
+        [Key("messages")]
         [JsonProperty("messages")]
         public Message[] Messages { get; set; }
 
         /// <summary>
         /// List of presence messages contained in this protocol message.
         /// </summary>
-        [Key(13)]
+        [Key("presence")]
         [JsonProperty("presence")]
         public PresenceMessage[] Presence { get; set; }
 
         /// <summary>
         /// Connection details received. <see cref="IO.Ably.ConnectionDetails"/>.
         /// </summary>
-        [Key(14)]
+        [Key("connectionDetails")]
         [JsonProperty("connectionDetails")]
         public ConnectionDetails ConnectionDetails { get; set; }
 

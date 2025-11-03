@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,6 +11,7 @@ namespace IO.Ably
     /// <summary>
     /// An exception type encapsulating error information containing an Ably specific error code and generic status code.
     /// </summary>
+    [MessagePackObject(keyAsPropertyName: true)]
     public class ErrorInfo
     {
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
@@ -31,30 +33,35 @@ namespace IO.Ably
         /// <summary>
         /// Ably error code (see https://github.com/ably/ably-common/blob/main/protocol/errors.json).
         /// </summary>
+        [Key("code")]
         [JsonProperty("code")]
         public int Code { get; set; }
 
         /// <summary>
         /// The http status code corresponding to this error.
         /// </summary>
+        [Key("statusCode")]
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
 
         /// <summary>
         /// Additional reason information, where available.
         /// </summary>
+        [Key("message")]
         [JsonProperty("message")]
         public string Message { get; set; }
 
         /// <summary>
         /// Link to specification detail for this error code, where available. Spec TI4.
         /// </summary>
+        [Key("href")]
         [JsonProperty("href")]
         public string Href { get; set; }
 
         /// <summary>
         /// Additional cause information, where available.
         /// </summary>
+        [Key("cause")]
         [JsonProperty("cause")]
         public ErrorInfo Cause { get; set; }
 

@@ -11,7 +11,7 @@ namespace IO.Ably
 {
     /// <summary>A class representing an individual message to be sent or received via the Ably realtime service.</summary>
     [DebuggerDisplay("{ToString()}")]
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class Message : IMessage
     {
         private static readonly Message DefaultInstance = new Message();
@@ -44,37 +44,37 @@ namespace IO.Ably
         }
 
         /// <summary>A globally unique message id.</summary>
-        [Key(0)]
+        [Key("id")]
         [JsonProperty("id")]
         public string Id { get; set; }
 
         /// <summary>The id of the publisher of this message.</summary>
-        [Key(1)]
+        [Key("clientId")]
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
         /// <summary>The connection id of the publisher of the message.</summary>
-        [Key(2)]
+        [Key("connectionId")]
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
         /// <summary>The connection key of the publisher of the message. Used for impersonation.</summary>
-        [Key(3)]
+        [Key("connectionKey")]
         [JsonProperty("connectionKey")]
         public string ConnectionKey { get; set; }
 
         /// <summary>The event name, if available.</summary>
-        [Key(4)]
+        [Key("name")]
         [JsonProperty("name")]
         public string Name { get; set; }
 
         /// <summary>Timestamp when the message was received by the Ably real-time service.</summary>
-        [Key(5)]
+        [Key("timestamp")]
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>The message payload. Supported data types are objects, byte[] and strings.</summary>
-        [Key(6)]
+        [Key("data")]
         [JsonProperty("data")]
         [JsonConverter(typeof(MessageDataConverter))]
         public object Data { get; set; }
@@ -82,7 +82,7 @@ namespace IO.Ably
         /// <summary>
         /// Extra properties associated with the message.
         /// </summary>
-        [Key(7)]
+        [Key("extras")]
         [JsonProperty("extras")]
         public MessageExtras Extras { get; set; }
 
@@ -91,7 +91,7 @@ namespace IO.Ably
         ///     library.
         ///     Therefore, the `encoding` attribute should always be nil unless an Ably library decoding error has occurred.
         /// </summary>
-        [Key(8)]
+        [Key("encoding")]
         [JsonProperty("encoding")]
         public string Encoding { get; set; }
 

@@ -9,7 +9,7 @@ namespace IO.Ably
     /// <summary>
     /// A class providing parameters of a token request.
     /// </summary>
-    [MessagePackObject(AllowPrivate = true)]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class TokenRequest
     {
         [IgnoreMember]
@@ -35,7 +35,7 @@ namespace IO.Ably
         /// <summary>
         /// The Id against which the request is made.
         /// </summary>
-        [Key(0)]
+        [Key("keyName")]
         [JsonProperty("keyName")]
         public string KeyName { get; set; }
 
@@ -45,7 +45,7 @@ namespace IO.Ably
         /// than or equal to this value depending on application settings
         /// and the attributes of the issuing key.
         /// </summary>
-        [Key(1)]
+        [Key("ttl")]
         [JsonProperty("ttl")]
         public TimeSpan? Ttl { get; set; }
 
@@ -54,14 +54,14 @@ namespace IO.Ably
         /// the capability of the returned token will be the intersection of
         /// this capability with the capability of the issuing key.
         /// </summary>
-        [Key(2)]
+        [Key("capability")]
         [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
         public Capability Capability { get; set; }
 
         /// <summary>
         /// ClientId to associate with the current token. The generated token may be to authenticate as this tokenId.
         /// </summary>
-        [Key(3)]
+        [Key("clientId")]
         [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientId { get; set; }
 
@@ -70,7 +70,7 @@ namespace IO.Ably
         /// Timestamps, in conjunction with the nonce, are used to prevent
         /// token requests from being replayed.
         /// </summary>
-        [Key(4)]
+        [Key("timestamp")]
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp
         {
@@ -91,7 +91,7 @@ namespace IO.Ably
         /// same nonce will be rejected.
         /// </summary>
         ///
-        [Key(5)]
+        [Key("nonce")]
         [JsonProperty("nonce")]
         public string Nonce { get; set; }
 
@@ -99,7 +99,7 @@ namespace IO.Ably
         /// The Message Authentication Code for this request. See the Ably
         /// Authentication documentation for more details.
         /// </summary>
-        [Key(6)]
+        [Key("mac")]
         [JsonProperty("mac")]
         public string Mac { get; set; }
 

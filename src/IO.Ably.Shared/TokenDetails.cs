@@ -8,48 +8,48 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata.
     /// </summary>
-    [MessagePackObject(AllowPrivate = true)]
+    [MessagePackObject(keyAsPropertyName: true)]
     public sealed class TokenDetails
     {
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>.
         /// </summary>
-        [Key(0)]
+        [Key("capability")]
         [JsonProperty("capability")]
         public Capability Capability { get; set; }
 
         /// <summary>
         /// The clientId associated with the token.
         /// </summary>
-        [Key(1)]
+        [Key("clientId")]
         [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientId { get; set; }
 
         /// <summary>
         /// Absolute token expiry date in UTC.
         /// </summary>
-        [Key(2)]
+        [Key("expires")]
         [JsonProperty("expires")]
         public DateTimeOffset Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC.
         /// </summary>
-        [Key(3)]
+        [Key("issued")]
         [JsonProperty("issued")]
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
         /// The token itself.
         /// </summary>
-        [Key(4)]
+        [Key("token")]
         [JsonProperty("token")]
         public string Token { get; set; }
 
         /// <summary>
         /// API key name used to create this token.
         /// </summary>
-        [Key(5)]
+        [Key("keyName")]
         [JsonProperty("keyName")]
         public string KeyName { get; set; }
 

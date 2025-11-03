@@ -7,55 +7,55 @@ namespace IO.Ably
     /// <summary>
     /// provides details on the constraints or defaults for the connection such as max message size, client ID or connection state TTL.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class ConnectionDetails
     {
         /// <summary>
         /// Client id associated with the current connection.
         /// </summary>
-        [Key(0)]
+        [Key("clientId")]
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
         /// <summary>
         /// Connection key.
         /// </summary>
-        [Key(1)]
+        [Key("connectionKey")]
         [JsonProperty("connectionKey")]
         public string ConnectionKey { get; set; }
 
         /// <summary>
         /// Optional Connection state time to live.
         /// </summary>
-        [Key(2)]
+        [Key("connectionStateTtl")]
         [JsonProperty("connectionStateTtl")]
         public TimeSpan? ConnectionStateTtl { get; set; }
 
         /// <summary>
         /// Max frame size.
         /// </summary>
-        [Key(3)]
+        [Key("maxFrameSize")]
         [JsonProperty("maxFrameSize")]
         public long MaxFrameSize { get; set; }
 
         /// <summary>
         /// Max inbound rate.
         /// </summary>
-        [Key(4)]
+        [Key("maxInboundRate")]
         [JsonProperty("maxInboundRate")]
         public long MaxInboundRate { get; set; }
 
         /// <summary>
         /// Max message size.
         /// </summary>
-        [Key(5)]
+        [Key("maxMessageSize")]
         [JsonProperty("maxMessageSize")]
         public long MaxMessageSize { get; set; }
 
         /// <summary>
         /// Server id associated with the current connection.
         /// </summary>
-        [Key(6)]
+        [Key("serverId")]
         [JsonProperty("serverId")]
         public string ServerId { get; set; }
     }

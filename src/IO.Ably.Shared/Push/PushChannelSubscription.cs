@@ -6,27 +6,27 @@ namespace IO.Ably.Push
     /// <summary>
     /// Represents a push channel subscription.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class PushChannelSubscription
     {
         /// <summary>
         /// Name of the channel.
         /// </summary>
-        [Key(0)]
+        [Key("channel")]
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
         /// <summary>
         /// Device id attached to the subscription.
         /// </summary>
-        [Key(1)]
+        [Key("deviceId")]
         [JsonProperty("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// Client id attached to the channel.
         /// </summary>
-        [Key(2)]
+        [Key("clientId")]
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 

@@ -39,7 +39,7 @@ namespace IO.Ably
     /// A class representing an individual presence update to be sent or received
     /// via the Ably Realtime service.
     /// </summary>
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class PresenceMessage : IMessage
     {
         /// <summary>
@@ -77,54 +77,54 @@ namespace IO.Ably
         /// <summary>
         /// Ably message id.
         /// </summary>
-        [Key(0)]
+        [Key("id")]
         [JsonProperty("id")]
         public string Id { get; set; }
 
         /// <summary>
         /// Presence action associated with the presence message.
         /// </summary>
-        [Key(1)]
+        [Key("action")]
         [JsonProperty("action")]
         public PresenceAction Action { get; set; }
 
         /// <summary>
         /// Id of the client associate.
         /// </summary>
-        [Key(2)]
+        [Key("clientId")]
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
         /// <summary>
         /// Id of the current connection.
         /// </summary>
-        [Key(3)]
+        [Key("connectionId")]
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
         /// <summary>The connection key of the publisher of the message. Used for impersonation.</summary>
-        [Key(4)]
+        [Key("connectionKey")]
         [JsonProperty("connectionKey")]
         public string ConnectionKey { get; set; }
 
         /// <summary>
         /// Custom data object associated with the message.
         /// </summary>
-        [Key(5)]
+        [Key("data")]
         [JsonProperty("data")]
         public object Data { get; set; }
 
         /// <summary>
         /// Encoding for the message.
         /// </summary>
-        [Key(6)]
+        [Key("encoding")]
         [JsonProperty("encoding")]
         public string Encoding { get; set; }
 
         /// <summary>
         /// Server timestamp for the message.
         /// </summary>
-        [Key(7)]
+        [Key("timestamp")]
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
