@@ -115,7 +115,7 @@ namespace IO.Ably
             internal set => _device = value; // The setting is only for testing purposes
         }
 
-        internal Protocol Protocol => Options.UseBinaryProtocol ? Protocol.MsgPack : Defaults.Protocol;
+        internal Protocol Protocol => Options.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json;
 
         internal ClientOptions Options { get; }
 
@@ -452,7 +452,7 @@ namespace IO.Ably
             try
             {
                 // We don't want to retry the internet check url.
-                var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get) { SkipRetry = true };
+                var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get, Protocol) { SkipRetry = true };
                 var response = await ExecuteHttpRequest(request).TimeoutAfter(Defaults.MaxHttpOpenTimeout, AblyResponse.EmptyResponse);
                 var success = response.TextResponse.SafeTrim().EqualsTo(Defaults.InternetCheckOkMessage);
                 if (success == false)

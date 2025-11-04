@@ -11,7 +11,8 @@ namespace IO.Ably
             MessagePackSerializerOptions.Standard
                 .WithResolver(CompositeResolver.Create(
                     AblyResolver.Instance,
-                    AblyGeneratedResolver.Instance));
+                    AblyGeneratedResolver.Instance,
+                    StandardResolver.Instance));
 
         public static byte[] Serialise(object obj)
         {

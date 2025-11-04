@@ -13,6 +13,8 @@ namespace IO.Ably.Tests
 
         private static readonly Dictionary<string, TestEnvironmentSettings> Settings = new Dictionary<string, TestEnvironmentSettings>();
 
+        private static Protocol sandboxJsonProtocol = Protocol.Json;
+
         public static async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
             environment = environment ?? "sandbox";
@@ -47,11 +49,11 @@ namespace IO.Ably.Tests
                 ((string)cipher["iv"]).FromBase64());
 
             AblyHttpClient client = settings.GetHttpClient(environment);
-            AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
+            AblyRequest request = new AblyRequest("/apps", HttpMethod.Post, sandboxJsonProtocol);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
-            request.Protocol = Protocol.Json;
+            request.Protocol = sandboxJsonProtocol;
 
             var response = await RetryExecute(() => client.Execute(request));
 
@@ -114,8 +116,8 @@ namespace IO.Ably.Tests
 
             AblyRest ablyRest = new AblyRest(settings.FirstValidKey);
             AblyHttpClient client = settings.GetHttpClient();
-            var request = new AblyRequest("/stats", HttpMethod.Post);
-            request.Protocol = Protocol.Json;
+            var request = new AblyRequest("/stats", HttpMethod.Post, sandboxJsonProtocol);
+            request.Protocol = sandboxJsonProtocol;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             await ablyRest.AblyAuth.AddAuthHeader(request);

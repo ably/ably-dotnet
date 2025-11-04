@@ -40,9 +40,19 @@ namespace IO.Ably.CustomSerialisers
                     return new DateTimeOffsetFormatter();
                 }
 
+                if (t == typeof(DateTimeOffset?))
+                {
+                    return new MessagePack.Formatters.NullableFormatter<DateTimeOffset>();
+                }
+
                 if (t == typeof(TimeSpan))
                 {
                     return new TimespanFormatter();
+                }
+
+                if (t == typeof(TimeSpan?))
+                {
+                    return new MessagePack.Formatters.NullableFormatter<TimeSpan>();
                 }
 
                 if (t == typeof(Capability))

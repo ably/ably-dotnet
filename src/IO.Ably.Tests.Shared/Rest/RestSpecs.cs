@@ -389,15 +389,16 @@ namespace IO.Ably.Tests
             client.HttpClient.Client.Timeout.Should().Be(httpRequestTimeout);
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC14a")]
         [Trait("spec", "RSA11")]
-        public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorizationHeader()
+        public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorizationHeader(Protocol protocol)
         {
             // Arrange
             var rest = new AblyRest(ValidKey);
             ApiKey key = ApiKey.Parse(ValidKey);
-            var request = new AblyRequest("/test", HttpMethod.Get);
+            var request = new AblyRequest("/test", HttpMethod.Get, protocol);
             var expectedValue = "Basic " + key.ToString().ToBase64();
 
             // Act
@@ -409,14 +410,15 @@ namespace IO.Ably.Tests
             authHeader.Value.Should().Be(expectedValue);
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSA3b")]
-        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorizationHeader()
+        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorizationHeader(Protocol protocol)
         {
             // Arrange
             const string tokenValue = "TokenValue";
             var rest = new AblyRest(opts => opts.Token = tokenValue);
-            var request = new AblyRequest("/test", HttpMethod.Get);
+            var request = new AblyRequest("/test", HttpMethod.Get, protocol);
             var expectedValue = "Bearer " + tokenValue.ToBase64();
 
             // Act
@@ -429,10 +431,10 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [ProtocolData(true)]
+        [ProtocolData(false)]
         [Trait("spec", "RSA3a")]
-        public async Task TokenAuthCanBeUsedOverHttpAndHttps(bool tls)
+        public async Task TokenAuthCanBeUsedOverHttpAndHttps(Protocol protocol, bool tls)
         {
             // Arrange
             const string tokenValue = "TokenValue";
@@ -441,7 +443,7 @@ namespace IO.Ably.Tests
                 opts.Token = tokenValue;
                 opts.Tls = tls;
             });
-            var request = new AblyRequest("/test", HttpMethod.Get);
+            var request = new AblyRequest("/test", HttpMethod.Get, protocol);
 
             // Act
             await rest.AblyAuth.AddAuthHeader(request);
