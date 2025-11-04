@@ -7,6 +7,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>IO.Ably</AssemblyName>
     <RootNamespace>IO.Ably</RootNamespace>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(MSBuildRuntimeType)'=='Mono'">
@@ -44,12 +46,6 @@
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <!-- Configure MessagePack Source Generator -->
-    <MessagePackGenerator_ResolverName>AblyGeneratedResolver</MessagePackGenerator_ResolverName>
-    <MessagePackGenerator_Namespace>IO.Ably.CustomSerialisers</MessagePackGenerator_Namespace>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="3.1.4" />

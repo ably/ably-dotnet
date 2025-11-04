@@ -143,11 +143,6 @@ namespace IO.Ably.Tests
 
         public void ShouldUseBinaryProtocolByDefault()
         {
-            if (!Defaults.MsgPackEnabled)
-            {
-                return;
-            }
-
 #pragma warning disable 162
             var client = new AblyRest(ValidKey);
             client.Options.UseBinaryProtocol.Should().BeTrue();

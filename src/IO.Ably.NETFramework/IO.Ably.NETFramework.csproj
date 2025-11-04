@@ -15,6 +15,8 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -124,6 +126,8 @@
     <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <Analyzer Include="..\packages\MessagePackAnalyzer.3.1.4\analyzers\roslyn4.3\cs\MessagePack.SourceGenerator.dll" />
+    <Analyzer Include="..\packages\MessagePackAnalyzer.3.1.4\analyzers\roslyn4.3\cs\MessagePack.Analyzers.CodeFixes.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj">

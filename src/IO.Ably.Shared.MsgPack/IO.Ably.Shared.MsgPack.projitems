@@ -9,6 +9,7 @@
     <Import_RootNamespace>IO.Ably.Shared.MsgPack</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\AblyGeneratedResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\AblyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\ChannelParamsFormatter.cs" />
