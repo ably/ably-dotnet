@@ -143,11 +143,8 @@ namespace IO.Ably.Tests
 
         public void ShouldUseBinaryProtocolByDefault()
         {
-#pragma warning disable 162
             var client = new AblyRest(ValidKey);
             client.Options.UseBinaryProtocol.Should().BeTrue();
-            client.Protocol.Should().Be(Defaults.Protocol);
-#pragma warning restore 162
         }
 
         [Fact]

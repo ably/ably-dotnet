@@ -68,7 +68,7 @@ namespace Assets.Tests.AblySandbox
         {
             var settings = await Fixture.GetSettings(environment);
             var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
+            defaultOptions.UseBinaryProtocol = protocol.IsBinary();
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);
         }
@@ -77,7 +77,7 @@ namespace Assets.Tests.AblySandbox
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
+            defaultOptions.UseBinaryProtocol = protocol.IsBinary();
             defaultOptions.TransportFactory = new TestTransportFactory();
 
             optionsAction?.Invoke(defaultOptions, settings);

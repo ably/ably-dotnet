@@ -829,7 +829,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 AuthUrl = new Uri(authUrl),
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));

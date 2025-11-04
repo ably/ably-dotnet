@@ -871,8 +871,8 @@ namespace IO.Ably.Tests.Realtime
                 if (Defaults.MsgPackEnabled)
 #pragma warning disable 162
                 {
-                    yield return new object[] { Defaults.Protocol, GetAes128FixtureData() };
-                    yield return new object[] { Defaults.Protocol, GetAes256FixtureData() };
+                    yield return new object[] { Protocol.MsgPack, GetAes128FixtureData() };
+                    yield return new object[] { Protocol.MsgPack, GetAes256FixtureData() };
                 }
 #pragma warning restore 162
 
@@ -928,13 +928,13 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        [InlineData(ChannelState.Detached)]
-        [InlineData(ChannelState.Failed)]
-        [InlineData(ChannelState.Suspended)]
+        [ProtocolData(ChannelState.Detached)]
+        [ProtocolData(ChannelState.Failed)]
+        [ProtocolData(ChannelState.Suspended)]
         [Trait("spec", "RTL11")]
-        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedPresenceMessageAndCallbackShouldIndicateError(ChannelState state)
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedPresenceMessageAndCallbackShouldIndicateError(Protocol protocol, ChannelState state)
         {
-            var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
                 {
                     // A bogus AuthUrl will cause connection to become disconnected
                     options.AuthUrl = new Uri("http://235424c24.fake:49999");
@@ -969,13 +969,13 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        [InlineData(ChannelState.Detached)]
-        [InlineData(ChannelState.Failed)]
-        [InlineData(ChannelState.Suspended)]
+        [ProtocolData(ChannelState.Detached)]
+        [ProtocolData(ChannelState.Failed)]
+        [ProtocolData(ChannelState.Suspended)]
         [Trait("spec", "RTL11a")]
-        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(Protocol protocol, ChannelState state)
         {
-            var client = await GetRealtimeClient(Defaults.Protocol);
+            var client = await GetRealtimeClient(protocol);
             var channel = client.Channels.Get("test".AddRandomSuffix());
             var tsc = new TaskCompletionAwaiter(5000);
 

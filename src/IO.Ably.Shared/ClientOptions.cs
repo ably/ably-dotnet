@@ -15,7 +15,7 @@ namespace IO.Ably
         private string _realtimeHost;
         private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
-        private bool _useBinaryProtocol = true; // Default to true for better performance
+        private bool _useBinaryProtocol = Defaults.MsgPackEnabled; // Default to true for better performance
         private string[] _fallbackHosts;
 
         /// <summary>
