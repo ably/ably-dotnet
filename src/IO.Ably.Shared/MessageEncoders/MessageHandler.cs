@@ -84,8 +84,8 @@ namespace IO.Ably.MessageEncoders
             {
                 try
                 {
-                    var msgPackObject = MsgPackHelper.DeserialiseMsgPackObject(requestBody);
-                    Logger.Debug("Request body (MsgPack): " + msgPackObject.ToString());
+                    var msgPackObject = MsgPackHelper.DecodeMsgPackObject(requestBody);
+                    Logger.Debug("Request body (MsgPack): " + msgPackObject);
                 }
                 catch (Exception ex)
                 {
@@ -363,7 +363,7 @@ namespace IO.Ably.MessageEncoders
                     var responseBody = response.TextResponse;
                     if (_protocol == Protocol.MsgPack && response.Body != null)
                     {
-                        responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
+                        responseBody = MsgPackHelper.DecodeMsgPackObject(response.Body);
                     }
 
                     Logger.Debug($"Response: {responseBody}");

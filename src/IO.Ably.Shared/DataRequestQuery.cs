@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace IO.Ably
 {
@@ -10,21 +12,25 @@ namespace IO.Ably
         /// <summary>
         /// Minute
         /// </summary>
+        [EnumMember(Value = "minute")]
         Minute,
 
         /// <summary>
         /// Hour.
         /// </summary>
+        [EnumMember(Value = "hour")]
         Hour,
 
         /// <summary>
         /// Day.
         /// </summary>
+        [EnumMember(Value = "day")]
         Day,
 
         /// <summary>
         /// Month
         /// </summary>
+        [EnumMember(Value = "month")]
         Month,
     }
 

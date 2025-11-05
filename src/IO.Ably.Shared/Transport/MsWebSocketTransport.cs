@@ -170,7 +170,7 @@ namespace IO.Ably.Transport
                     try
                     {
                         // Always available - no conditional compilation
-                        var message = MsgPackHelper.DeserialiseMsgPackObject(data.Data).ToString();
+                        var message = MsgPackHelper.DecodeMsgPackObject(data.Data);
                         Logger.Debug("Websocket data message received. Raw: " + message);
                     }
                     catch (Exception)

@@ -317,13 +317,13 @@ namespace IO.Ably
             logMessage.AppendLine($"Type: {ablyResponse.Type}");
 
             logMessage.AppendLine("---- Response Body ----");
-            if (ablyResponse.Type != ResponseType.Binary)
+            if (ablyResponse.Type == ResponseType.Binary)
+            {
+                logMessage.AppendLine(MsgPackHelper.DecodeMsgPackObject(ablyResponse.Body));
+            }
+            else
             {
                 logMessage.AppendLine(ablyResponse.TextResponse);
-            }
-            else if (ablyResponse.Body != null)
-            {
-                logMessage.AppendLine(ablyResponse.Body.GetText());
             }
 
             Logger.Debug(logMessage.ToString());
@@ -395,9 +395,8 @@ namespace IO.Ably
             // Set Accept headers based on protocol preference
             if (request.Protocol == Protocol.MsgPack)
             {
-                // Prefer msgpack but accept JSON as fallback
-                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.MsgPack), 1.0));
-                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json), 0.9));
+                // Prefer msgpack
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.MsgPack)));
             }
             else
             {
