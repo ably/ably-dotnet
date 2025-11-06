@@ -86,17 +86,20 @@ namespace IO.Ably
                 jsonData = response.TextResponse;
             }
 
-            var data = JToken.Parse(jsonData);
-            if (data is JArray arr)
+            if (jsonData.IsNotEmpty())
             {
-                foreach (var token in arr)
+                var data = JToken.Parse(jsonData);
+                if (data is JArray arr)
                 {
-                    Items.Add(token);
+                    foreach (var token in arr)
+                    {
+                        Items.Add(token);
+                    }
                 }
-            }
-            else
-            {
-                Items.Add(data);
+                else
+                {
+                    Items.Add(data);
+                }
             }
 
             InitializeQuery(CurrentQueryParams, requestParams);

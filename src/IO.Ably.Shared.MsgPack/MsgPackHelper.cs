@@ -24,6 +24,11 @@ namespace IO.Ably
                 return null;
             }
 
+            if (obj is JToken value)
+            {
+                return MessagePackSerializer.ConvertFromJson(value.ToString());
+            }
+
             return MessagePackSerializer.Serialize(obj.GetType(), obj, Options);
         }
 
@@ -32,6 +37,12 @@ namespace IO.Ably
             if (byteArray == null || byteArray.Length == 0)
             {
                 return null;
+            }
+
+            // Checks if given type is subset of JToken
+            if (typeof(JToken).IsAssignableFrom(objectType))
+            {
+                return JToken.Parse(ToJsonString(byteArray));
             }
 
             return MessagePackSerializer.Deserialize(objectType, byteArray, Options);
@@ -50,6 +61,11 @@ namespace IO.Ably
         // This uses MessagePack's built-in JSON conversion which handles all MessagePack types
         public static string ToJsonString(byte[] byteArray)
         {
+            if (byteArray == null || byteArray.Length == 0)
+            {
+                return null;
+            }
+
             return MessagePackSerializer.ConvertToJson(byteArray, Options);
         }
 
