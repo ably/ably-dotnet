@@ -29,55 +29,55 @@ namespace IO.Ably.Unity
         public const string Xbox = "unity-xbox";
 
         /// <summary>
-        /// Constants representing UnityEngine.RuntimePlatform enum values.
-        /// These integer values map to the RuntimePlatform enum without requiring a compile-time reference.
-        /// Values are stable across Unity versions and documented in Unity's API reference.
+        /// Constants representing UnityEngine.RuntimePlatform enum string values.
+        /// These string values map to the RuntimePlatform enum names without requiring a compile-time reference.
+        /// Using string values instead of integers provides stability across Unity versions.
         /// </summary>
         public static class RuntimePlatform
         {
             /// <summary>In the Unity editor on macOS.</summary>
-            public const int OSXEditor = 0;
+            public const string OSXEditor = "OSXEditor";
 
             /// <summary>In the player on macOS.</summary>
-            public const int OSXPlayer = 1;
+            public const string OSXPlayer = "OSXPlayer";
 
             /// <summary>In the player on Windows.</summary>
-            public const int WindowsPlayer = 2;
+            public const string WindowsPlayer = "WindowsPlayer";
 
             /// <summary>In the Unity editor on Windows.</summary>
-            public const int WindowsEditor = 7;
+            public const string WindowsEditor = "WindowsEditor";
 
             /// <summary>In the player on iPhone.</summary>
-            public const int IPhonePlayer = 8;
+            public const string IPhonePlayer = "IPhonePlayer";
 
             /// <summary>In the player on Android.</summary>
-            public const int Android = 11;
+            public const string Android = "Android";
 
             /// <summary>In the player on Linux.</summary>
-            public const int LinuxPlayer = 13;
+            public const string LinuxPlayer = "LinuxPlayer";
 
             /// <summary>In the Unity editor on Linux.</summary>
-            public const int LinuxEditor = 16;
+            public const string LinuxEditor = "LinuxEditor";
 
             /// <summary>In the player on WebGL.</summary>
-            public const int WebGLPlayer = 17;
+            public const string WebGLPlayer = "WebGLPlayer";
 
             /// <summary>In the player on PS4.</summary>
-            public const int PS4 = 19;
+            public const string PS4 = "PS4";
 
             /// <summary>In the player on Xbox One.</summary>
-            public const int XboxOne = 21;
+            public const string XboxOne = "XboxOne";
 
             /// <summary>In the player on Apple TV.</summary>
-            public const int tvOS = 31;
+            public const string TvOS = "tvOS";
 
             /// <summary>In the player on Nintendo Switch.</summary>
-            public const int Switch = 32;
+            public const string Switch = "Switch";
 
             /// <summary>In the player on PS5.</summary>
-            public const int PS5 = 34;
+            public const string PS5 = "PS5";
         }
-    
+
         /// <summary>
         /// Gets the cached Unity OS identifier string.
         /// The value is computed once on first access and cached for subsequent calls.
@@ -89,7 +89,7 @@ namespace IO.Ably.Unity
         /// The value is computed once on first access and cached for subsequent calls.
         /// </summary>
         public static string UnityIdentifier => _unityIdentifier.Value;
-    
+
         /// <summary>
         /// Gets the Unity OS identifier string based on the current runtime platform.
         /// Uses reflection to detect Unity platform without compile-time dependency.
@@ -133,7 +133,7 @@ namespace IO.Ably.Unity
                         return PS4;
                     case RuntimePlatform.XboxOne:
                         return Xbox;
-                    case RuntimePlatform.tvOS:
+                    case RuntimePlatform.TvOS:
                         return TvOS;
                     case RuntimePlatform.Switch:
                         return Switch;
@@ -165,4 +165,3 @@ namespace IO.Ably.Unity
         }
     }
 }
-

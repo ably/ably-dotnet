@@ -20,37 +20,37 @@ namespace IO.Ably.Unity
     /// - No link.xml preservation directives needed for UnityEngine.Application (it's always preserved)
     /// - Works across all Unity scripting backends: Mono, IL2CPP (iOS/Android/WebGL/Console)
     /// - Gracefully degrades in non-Unity environments (returns empty/default values)
-    /// - Zero reflection overhead after first access due to Lazy<T> caching
-    /// - Safe for AOT platforms: no runtime code generation, only metadata queries
+    /// - Zero reflection overhead after first access due to Lazy caching
+    /// - Safe for AOT platforms: no runtime code generation, only metadata queries.
     /// </summary>
     internal static class UnityAdapter
     {
         private static readonly Lazy<Type> _unityApplication =
             new Lazy<Type>(() => GetUnityApplication());
-    
+
         private static readonly Lazy<string> _unityVersion =
             new Lazy<string>(() => GetUnityVersion());
-    
-        private static readonly Lazy<int> _runtimePlatform =
-            new Lazy<int>(() => GetRuntimePlatform());
+
+        private static readonly Lazy<string> _runtimePlatform =
+            new Lazy<string>(() => GetRuntimePlatform());
 
         /// <summary>
         /// Indicates whether Unity runtime is available.
         /// </summary>
         public static bool IsAvailable => _unityApplication.Value != null;
-    
+
         /// <summary>
         /// Gets the cached Unity version string.
         /// The value is computed once on first access and cached for subsequent calls.
         /// </summary>
         public static string UnityVersion => _unityVersion.Value;
-    
+
         /// <summary>
-        /// Gets the cached runtime platform value.
+        /// Gets the cached runtime platform string value.
         /// The value is computed once on first access and cached for subsequent calls.
         /// </summary>
-        public static int RuntimePlatform => _runtimePlatform.Value;
-    
+        public static string RuntimePlatform => _runtimePlatform.Value;
+
         /// <summary>
         /// Gets the UnityEngine.Application type using reflection.
         /// </summary>
@@ -60,15 +60,13 @@ namespace IO.Ably.Unity
             try
             {
                 // Attempt to load UnityEngine.Application type at runtime
-                // This will succeed if UnityEngine.dll is available in the runtime
-                return Type.GetType(
-                    "UnityEngine.Application, UnityEngine",
-                    throwOnError: false);
+                // The UnityEngine.Application class has been located in the UnityEngine.CoreModule assembly since Unity 2017.1
+                // Returns null if the class is not found in UnityEngine.CoreModule
+                return Type.GetType("UnityEngine.Application, UnityEngine.CoreModule", throwOnError: false);
             }
             catch
             {
                 // Silently fail - Unity is not available
-                // This is expected in non-Unity environments
                 return null;
             }
         }
@@ -88,17 +86,11 @@ namespace IO.Ably.Unity
             try
             {
                 // Get property info for unityVersion
-                var unityVersionProperty = applicationType.GetProperty(
+                var version = applicationType.GetProperty(
                     "unityVersion",
-                    BindingFlags.Public | BindingFlags.Static);
+                    BindingFlags.Public | BindingFlags.Static)
+                    ?.GetValue(null) as string;
 
-                if (unityVersionProperty == null)
-                {
-                    return string.Empty;
-                }
-
-                // Get static property value via reflection
-                var version = unityVersionProperty.GetValue(null) as string;
                 return version ?? string.Empty;
             }
             catch
@@ -109,43 +101,33 @@ namespace IO.Ably.Unity
         }
 
         /// <summary>
-        /// Gets the runtime platform as an integer value using reflection.
+        /// Gets the runtime platform as a string value using reflection.
         /// </summary>
-        /// <returns>Platform integer value (maps to RuntimePlatform enum) or -1 if unavailable.</returns>
-        private static int GetRuntimePlatform()
+        /// <returns>Platform string value (e.g., "OSXEditor", "WindowsPlayer") or empty string if unavailable.</returns>
+        private static string GetRuntimePlatform()
         {
             var applicationType = _unityApplication.Value;
             if (applicationType == null)
             {
-                return -1;
+                return string.Empty;
             }
 
             try
             {
-                // Get property info for platform
-                var platformProperty = applicationType.GetProperty(
+                // Get property info for platform and convert enum to string (e.g., "OSXEditor", "WindowsPlayer")
+                var platform = applicationType.GetProperty(
                     "platform",
-                    BindingFlags.Public | BindingFlags.Static);
+                    BindingFlags.Public | BindingFlags.Static)
+                    ?.GetValue(null)
+                    ?.ToString();
 
-                if (platformProperty == null)
-                {
-                    return -1;
-                }
-
-                // Get static property value via reflection
-                var platformValue = platformProperty.GetValue(null);
-                if (platformValue != null)
-                {
-                    // RuntimePlatform is an enum, convert to int
-                    return (int)platformValue;
-                }
+                return platform ?? string.Empty;
             }
             catch
             {
                 // Ignore reflection errors
+                return string.Empty;
             }
-
-            return -1;
         }
     }
 }

@@ -1,15 +1,13 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
+using IO.Ably.Unity;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
@@ -224,18 +222,18 @@ namespace Assets.Tests.EditMode
                 Assert.AreEqual(1, values.Length);
                 string[] agentValues = values[0].Split(' ');
 
-                Assert.IsTrue(Agent.OsIdentifier().StartsWith("unity-"));
-                Assert.IsTrue(Agent.UnityPlayerIdentifier().StartsWith("unity/"));
+                Assert.IsTrue(Agent.OsIdentifier.StartsWith("unity-"));
+                Assert.IsTrue(UnityHelper.UnityIdentifier.StartsWith("unity/"));
 
                 var keys = new List<string>()
                 {
                     "ably-dotnet/",
-                    Agent.DotnetRuntimeIdentifier(),
-                    Agent.UnityPlayerIdentifier(),
-                    Agent.OsIdentifier()
+                    Agent.DotnetRuntimeIdentifier,
+                    UnityHelper.UnityIdentifier,
+                    Agent.OsIdentifier
                 };
 
-                Assert.AreEqual(2, Agent.DotnetRuntimeIdentifier().Split('/').Length);
+                Assert.AreEqual(2, Agent.DotnetRuntimeIdentifier.Split('/').Length);
 
                 keys.RemoveAll(s => s.IsEmpty());
 
