@@ -6,13 +6,16 @@
         <title>Ably Push Android</title>
         <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green, Sachin Shinde</authors>
         <owners>Ably Real-time Ltd</owners>
-        <licenseUrl>https://github.com/ably/ably-dotnet/blob/main/LICENSE</licenseUrl>
+        <license type="expression">Apache-2.0</license>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
-        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
-        <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
+        <icon>icon.png</icon>
+        <readme>README.md</readme>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Ably .NET library to enable push notifications on Android devices.</description>
-        <copyright>©2022 Ably</copyright>
+        <description>Ably .NET library to enable push notifications on Android devices. This package provides Android-specific push notification functionality using Firebase Cloud Messaging for the Ably realtime messaging platform.</description>
+        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
+        <copyright>©2025 Ably Real-time Ltd</copyright>
+        <tags>ably realtime messaging push notifications android xamarin firebase fcm mobile websocket pubsub</tags>
+        <repository type="git" url="https://github.com/ably/ably-dotnet.git" branch="main" />
         <language />
         <dependencies>
 
@@ -32,5 +35,7 @@
     </metadata>
     <files>
         <file src="..\src\IO.Ably.Push.Android\bin\Package\IO.Ably.Push.*" target="lib\monoandroid" />
+        <file src="..\README.md" target="README.md" />
+        <file src="..\images\logo.png" target="icon.png" />
     </files>
 </package>

@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: macos-latest
+    runs-on: macos-13
     env:
       DOTNET_NOLOGO: true
 
@@ -34,7 +34,7 @@ jobs:
         run:  dotnet tool restore
 
       - name: Unit tests
-        run: ./build-cake.sh --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.sh --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build-cake.sh --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.sh --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}

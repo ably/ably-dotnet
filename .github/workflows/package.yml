@@ -34,7 +34,7 @@ jobs:
           dotnet-version: |
             3.1.426
             6.0.428
-            7.0.
+            7.0.410
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -79,7 +79,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package
-        run: ./package-cake.cmd ${{ github.event.inputs.version }}
+        run: ./package.cmd ${{ github.event.inputs.version }}
         
       - name: Archive package
         uses: actions/upload-artifact@v4
@@ -137,7 +137,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Push (iOS & Android)
-        run: ./package-push-cake.sh ${{ github.event.inputs.version }}
+        run: ./package-push.sh ${{ github.event.inputs.version }}
 
       - name: Archive push packages
         uses: actions/upload-artifact@v4
@@ -147,7 +147,7 @@ jobs:
             ${{ github.workspace }}/*.nupkg
 
   package-unity:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -164,7 +164,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Unity
-        run: ./package-unity-cake.sh ${{ github.event.inputs.version }}
+        run: ./package-unity.sh ${{ github.event.inputs.version }}
         
       - name: Archive Unity package
         uses: actions/upload-artifact@v4
@@ -174,7 +174,7 @@ jobs:
             ${{ github.workspace }}/*.unitypackage
 
   merge-artifacts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [package-library, package-push, package-unity]
     steps:
       - name: Download all artifacts

@@ -1,32 +1,43 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
-	"name": "C# (.NET)",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/dotnet:0-6.0",
-	"features": {
-		"ghcr.io/devcontainers/features/dotnet:1": {
-			"installUsingApt": true,
-			"version": "6.0"
-		},
-		"ghcr.io/devcontainers/features/ruby:1": {
-			"version": "3.1"
+	"name": "C# (.NET) - Linux with Mono",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
+	"onCreateCommand": "git submodule update --init --recursive",
+	"postAttachCommand": "bash .devcontainer/install-dependencies.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit"
+			],
+			"settings": {
+				"dotnet.server.useOmnisharp": false,
+				"files.watcherExclude": {
+					"**/bin/**": true,
+					"**/obj/**": true,
+					"**/.git/**": true,
+					"**/node_modules/**": true,
+					"**/.vs/**": true
+				},
+				"search.exclude": {
+					"**/bin": true,
+					"**/obj": true,
+					"**/node_modules": true
+				},
+				"files.eol": "\n"
+			}
 		}
 	},
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [5000, 5001],
-	// "portsAttributes": {
-	//		"5001": {
-	//			"protocol": "https"
-	//		}
-	// }
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// Used for downloading all submodules and restoring dotnet tools as a part of dotnet CLI
-	"postCreateCommand": "git submodule init && git submodule update && dotnet tool restore"
-	// Configure tool-specific properties.
-	// "customizations": {},
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"containerEnv": {
+		"DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+		"DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+		"DOTNET_NOLOGO": "1",
+		"NUGET_XMLDOC_MODE": "skip",
+		"DOTNET_CLI_UI_LANGUAGE": "en",
+		"NUGET_PACKAGES": "${containerWorkspaceFolder}/.nuget/packages"
+	},
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/.dotnet/tools"
+	},
+	"mounts": [
+		"source=ably-dotnet-nuget-cache,target=${containerWorkspaceFolder}/.nuget/packages,type=volume"
+	]
 }

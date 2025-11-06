@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       DOTNET_NOLOGO: true
 
@@ -34,7 +34,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build-cake.cmd --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.cmd --target=Test.NetStandard.Unit.WithRetry --framework=${{ matrix.targetframework }}
 
       - name: Integration tests
-        run: ./build-cake.cmd --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}
+        run: ./build.cmd --target=Test.NetStandard.Integration.WithRetry --framework=${{ matrix.targetframework }}

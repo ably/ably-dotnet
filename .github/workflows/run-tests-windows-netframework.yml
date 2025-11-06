@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       DOTNET_NOLOGO: true
 
@@ -20,13 +20,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            7.0.408
+            7.0.410
             
       - name: Download dotnet build-script tools
         run: dotnet tool restore
 
       - name: Unit tests
-        run: ./build-cake.cmd --target=Test.NetFramework.Unit.WithRetry
+        run: ./build.cmd --target=Test.NetFramework.Unit.WithRetry
 
       - name: Integration tests
-        run: ./build-cake.cmd --target=Test.NetFramework.Integration.WithRetry
+        run: ./build.cmd --target=Test.NetFramework.Integration.WithRetry
