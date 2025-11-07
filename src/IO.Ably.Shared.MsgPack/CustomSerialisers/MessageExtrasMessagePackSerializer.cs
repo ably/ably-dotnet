@@ -18,15 +18,15 @@ namespace IO.Ably.CustomSerialisers
                 return;
             }
 
-            var json = value.ToJson();
-            if (json == null)
+            var jToken = value.ToJson();
+            if (jToken == null)
             {
                 writer.WriteNil();
             }
             else
             {
-                // Serialize as JSON string for compatibility
-                writer.Write(json.ToString(Newtonsoft.Json.Formatting.None));
+                var bytes = MessagePackSerializer.ConvertFromJson(jToken.ToString());
+                writer.WriteRaw(bytes);
             }
         }
 
@@ -38,8 +38,14 @@ namespace IO.Ably.CustomSerialisers
                 return null;
             }
 
-            var jsonString = reader.ReadString();
-            if (string.IsNullOrEmpty(jsonString))
+            var bytes = reader.ReadRaw();
+            if (bytes.Length == 0)
+            {
+                return null;
+            }
+
+            var jsonString = MessagePackSerializer.ConvertToJson(bytes);
+            if (jsonString.IsEmpty())
             {
                 return null;
             }

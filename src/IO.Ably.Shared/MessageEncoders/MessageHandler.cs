@@ -72,7 +72,7 @@ namespace IO.Ably.MessageEncoders
         public void SetRequestBody(AblyRequest request)
         {
             request.RequestBody = GetRequestBody(request);
-            if (_protocol == Protocol.MsgPack && Logger.IsDebug)
+            if (IsMsgPack() && Logger.IsDebug)
             {
                 LogRequestBody(request.RequestBody);
             }
@@ -109,13 +109,13 @@ namespace IO.Ably.MessageEncoders
             }
 
             byte[] result;
-            if (_protocol == Protocol.Json)
+            if (IsMsgPack())
             {
-                result = JsonHelper.Serialize(request.PostData).GetBytes();
+                result = MsgPackHelper.Serialise(request.PostData);
             }
             else
             {
-                result = MsgPackHelper.Serialise(request.PostData);
+                result = JsonHelper.Serialize(request.PostData).GetBytes();
             }
 
             if (Logger.IsDebug)
@@ -129,12 +129,17 @@ namespace IO.Ably.MessageEncoders
         private byte[] GetMessagesRequestBody(IEnumerable<Message> payloads, ChannelOptions options)
         {
             EncodePayloads(new DecodingContext(options), payloads);
-            if (_protocol == Protocol.MsgPack)
+            byte[] result;
+            if (IsMsgPack())
             {
-                return MsgPackHelper.Serialise(payloads);
+                result = MsgPackHelper.Serialise(payloads);
+            }
+            else
+            {
+                result = JsonHelper.Serialize(payloads).GetBytes();
             }
 
-            return JsonHelper.Serialize(payloads).GetBytes();
+            return result;
         }
 
         internal static Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
@@ -327,13 +332,12 @@ namespace IO.Ably.MessageEncoders
         {
             LogResponse(response);
 
-            var responseText = response.TextResponse;
-            if (_protocol == Protocol.MsgPack)
+            if (IsMsgPack())
             {
                 return (T)MsgPackHelper.Deserialise(response.Body, typeof(T));
             }
 
-            return JsonHelper.Deserialize<T>(responseText);
+            return JsonHelper.Deserialize<T>(response.TextResponse);
         }
 
         private static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
@@ -361,7 +365,7 @@ namespace IO.Ably.MessageEncoders
                 try
                 {
                     var responseBody = response.TextResponse;
-                    if (_protocol == Protocol.MsgPack && response.Body != null)
+                    if (IsMsgPack() && response.Body != null)
                     {
                         responseBody = MsgPackHelper.DecodeMsgPackObject(response.Body);
                     }
@@ -404,7 +408,6 @@ namespace IO.Ably.MessageEncoders
         {
             ProtocolMessage protocolMessage;
 
-            // MsgPack is always available
             if (IsMsgPack())
             {
                 protocolMessage = (ProtocolMessage)MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
@@ -503,7 +506,6 @@ namespace IO.Ably.MessageEncoders
         {
             RealtimeTransportData data;
 
-            // MsgPack is always available
             if (IsMsgPack())
             {
                 var bytes = MsgPackHelper.Serialise(protocolMessage);

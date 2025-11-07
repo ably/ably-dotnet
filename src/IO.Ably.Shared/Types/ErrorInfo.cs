@@ -68,24 +68,28 @@ namespace IO.Ably
         /// <summary>
         /// Is this Error as result of a 401 Unauthorized HTTP response.
         /// </summary>
+        [IgnoreMember]
         public bool IsUnAuthorizedError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Unauthorized;
 
         /// <summary>
         /// Is this Error as result of a 403 Forbidden HTTP response.
         /// </summary>
+        [IgnoreMember]
         public bool IsForbiddenError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Forbidden;
 
         /// <summary>
         /// Is the error Code a token error code.
         /// </summary>
+        [IgnoreMember]
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
 
         /// <summary>
         /// Get or Sets the InnerException.
         /// </summary>
+        [IgnoreMember]
         public Exception InnerException { get; set; }
 
         /// <summary>

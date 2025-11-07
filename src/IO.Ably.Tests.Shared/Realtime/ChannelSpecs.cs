@@ -942,7 +942,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i2")]
             public async Task WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
             {
-                var (client, channel) = await GetClientAndChannel();
+                var (client, channel) = await GetClientAndChannel(opts => { opts.UseBinaryProtocol = false; });
                 SetState(channel, ChannelState.Attached);
 
                 var list = new List<Message>
@@ -963,7 +963,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i3")]
             public async Task WithMessageWithOutData_ShouldSendOnlyData()
             {
-                var (client, channel) = await GetClientAndChannel();
+                var (client, channel) = await GetClientAndChannel(opts => { opts.UseBinaryProtocol = false; });
                 SetState(channel, ChannelState.Attached);
 
                 channel.Publish(null, "data");
@@ -976,7 +976,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i3")]
             public async Task WithMessageWithOutName_ShouldSendOnlyData()
             {
-                var (client, channel) = await GetClientAndChannel();
+                var (client, channel) = await GetClientAndChannel(opts => { opts.UseBinaryProtocol = false; });
                 SetState(channel, ChannelState.Attached);
 
                 channel.Publish("name", null);
@@ -991,7 +991,7 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTL6c1")]
                 public async Task WhenConnectionIsConnected_ShouldSendMessagesDirectly()
                 {
-                    var (client, channel) = await GetClientAndChannel();
+                    var (client, channel) = await GetClientAndChannel(opts => { opts.UseBinaryProtocol = false; });
 
                     SetState(channel, ChannelState.Attached);
 
