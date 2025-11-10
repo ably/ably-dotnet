@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Assets.Ably.Examples.Chat
 {
-    public class AblyConsole : MonoBehaviour, IUiConsole
+    public class AblyMain : MonoBehaviour, IUiConsole
     {
         private AblyRealtime _ably;
         private ClientOptions _clientOptions;
@@ -19,8 +19,8 @@ namespace Assets.Ably.Examples.Chat
 
         private static string _apiKey = "Your_Api_Key_Here";
 
-        private AblyChannelUiConsole _ablyChannelUiConsole;
-        private AblyPresenceUiConsole _ablyPresenceUiConsole;
+        private AblyChannel _ablyChannelUiConsole;
+        private AblyPresence _ablyPresenceUiConsole;
 
         private bool _isConnected;
 
@@ -28,9 +28,9 @@ namespace Assets.Ably.Examples.Chat
         {
             InitializeAbly();
             RegisterUiComponents();
-            _ablyChannelUiConsole = AblyChannelUiConsole.CreateInstance(_ably, this);
+            _ablyChannelUiConsole = AblyChannel.CreateInstance(_ably, this);
             _ablyChannelUiConsole.RegisterUiComponents();
-            _ablyPresenceUiConsole = AblyPresenceUiConsole.CreateInstance(_ably, this);
+            _ablyPresenceUiConsole = AblyPresence.CreateInstance(_ably, this);
             _ablyPresenceUiConsole.RegisterUiComponents();
         }
 
@@ -49,8 +49,6 @@ namespace Assets.Ably.Examples.Chat
             _clientOptions = new ClientOptions
             {
                 Key = _apiKey,
-                // this will disable the library trying to subscribe to network state notifications
-                AutomaticNetworkStateMonitoring = false,
                 AutoConnect = false,
                 // this will make sure to post callbacks on UnitySynchronization Context Main Thread
                 CustomContext = SynchronizationContext.Current

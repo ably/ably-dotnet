@@ -6,18 +6,16 @@ using System.Net;
 using System.Threading.Tasks;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
-using FluentAssertions;
 using IO.Ably;
 using IO.Ably.Realtime;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Assets.Tests.PlayMode
+namespace Assets.Tests.EditMode
 {
     [TestFixture]
-    [Category("EditorPlayer")]
-    public class AuthSandboxSpecs
+    public class AuthSpecs
     {
         private AblySandboxFixture _sandboxFixture;
 
@@ -72,13 +70,13 @@ namespace Assets.Tests.PlayMode
                 var token = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123" });
                 var helper = new RSA4Helper(this);
                 var restClient = await helper.GetRestClientWithRequests(protocol, token, invalidateKey: true);
-                helper.Requests.Count.Should().Be(0);
+                Assert.AreEqual(0, helper.Requests.Count);
                 await restClient.TimeAsync();
-                helper.Requests.Count.Should().Be(1);
+                Assert.AreEqual(1, helper.Requests.Count);
                 var realtimeClient = await helper.GetRealTimeClientWithRequests(protocol, token, invalidateKey: true);
-                helper.Requests.Count.Should().Be(1);
+                Assert.AreEqual(1, helper.Requests.Count);
                 await realtimeClient.RestClient.TimeAsync();
-                helper.Requests.Count.Should().Be(2);
+                Assert.AreEqual(2, helper.Requests.Count);
             });
         }
 
@@ -109,7 +107,7 @@ namespace Assets.Tests.PlayMode
                 var now = DateTimeOffset.UtcNow;
 
                 // check the client thinks the token is valid
-                restClient.AblyAuth.CurrentToken.IsValidToken(now).Should().BeTrue();
+                Assert.IsTrue(restClient.AblyAuth.CurrentToken.IsValidToken(now));
 
                 var channelName = "RSA4a".AddRandomSuffix();
 
@@ -123,13 +121,13 @@ namespace Assets.Tests.PlayMode
                     // the server responds with a token error
                     // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                     // As the token is expired we can expect a specific code "40142": "token expired"
-                    e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                    e.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
+                    Assert.AreEqual(HttpStatusCode.Unauthorized, e.ErrorInfo.StatusCode);
+                    Assert.AreEqual(ErrorCodes.NoMeansProvidedToRenewAuthToken, e.ErrorInfo.Code);
                 }
 
                 // did not retry the request
-                helper.Requests.Count.Should().Be(1, "only one request should have been attempted");
-                helper.Requests[0].Url.Should().Be($"/channels/{channelName}/messages",
+                Assert.AreEqual(1, helper.Requests.Count, "only one request should have been attempted");
+                Assert.AreEqual($"/channels/{channelName}/messages", helper.Requests[0].Url,
                     "only the publish request should have been attempted");
             });
         }
@@ -160,14 +158,14 @@ namespace Assets.Tests.PlayMode
                 realtimeClient.Connection.Once(ConnectionEvent.Connected, (_) => { connected = true; });
 
                 // assert that there is no pre-existing error
-                realtimeClient.Connection.ErrorReason.Should().BeNull();
+                Assert.IsNull(realtimeClient.Connection.ErrorReason);
 
                 await realtimeClient.WaitForState(ConnectionState.Failed);
-                realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
-                connected.Should().BeFalse();
+                Assert.AreEqual(ConnectionState.Failed, realtimeClient.Connection.State);
+                Assert.IsFalse(connected);
 
-                realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
-                helper.Requests.Count.Should().Be(0);
+                Assert.AreEqual(ErrorCodes.NoMeansProvidedToRenewAuthToken, realtimeClient.Connection.ErrorReason.Code);
+                Assert.AreEqual(0, helper.Requests.Count);
             });
         }
 
@@ -175,32 +173,32 @@ namespace Assets.Tests.PlayMode
         public IEnumerator RealtimeClient_ConnectedWithExpiringToken_WhenTokenExpired_ShouldNotRetryAndHaveError([ValueSource(nameof(_protocols))] Protocol protocol)
         {
             return UniTask.ToCoroutine(async () =>
+            {
+                var helper = new RSA4Helper(this);
+
+                // Create a token that is valid long enough for a successful connection to occur
+                var authClient = await AblySandbox.GetRestClient(protocol);
+                var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
                 {
-                    var helper = new RSA4Helper(this);
-
-                    // Create a token that is valid long enough for a successful connection to occur
-                    var authClient = await AblySandbox.GetRestClient(protocol);
-                    var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
-                    {
-                        ClientId = "123",
-                        Ttl = TimeSpan.FromMilliseconds(8000),
-                    });
-
-                    // get a realtime client with no Key, AuthUrl, or authCallback
-                    var realtimeClient =
-                        await helper.GetRealTimeClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
-
-                    await realtimeClient.WaitForState(ConnectionState.Connected);
-
-                    // assert that there is no pre-existing error
-                    realtimeClient.Connection.ErrorReason.Should().BeNull();
-
-                    await realtimeClient.WaitForState(ConnectionState.Failed);
-                    realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
-
-                    realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
-                    helper.Requests.Count.Should().Be(0);
+                    ClientId = "123",
+                    Ttl = TimeSpan.FromMilliseconds(8000),
                 });
+
+                // get a realtime client with no Key, AuthUrl, or authCallback
+                var realtimeClient =
+                    await helper.GetRealTimeClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
+
+                await realtimeClient.WaitForState(ConnectionState.Connected);
+
+                // assert that there is no pre-existing error
+                Assert.IsNull(realtimeClient.Connection.ErrorReason);
+
+                await realtimeClient.WaitForState(ConnectionState.Failed);
+                Assert.AreEqual(ConnectionState.Failed, realtimeClient.Connection.State);
+
+                Assert.AreEqual(ErrorCodes.NoMeansProvidedToRenewAuthToken, realtimeClient.Connection.ErrorReason.Code);
+                Assert.AreEqual(0, helper.Requests.Count);
+            });
         }
 
         [UnityTest]
@@ -229,7 +227,7 @@ namespace Assets.Tests.PlayMode
 
                 realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
                 {
-                    state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                    Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, state.Reason.Code);
                     awaiter.SetCompleted();
                 });
 
@@ -237,9 +235,9 @@ namespace Assets.Tests.PlayMode
                 realtimeClient.Connect();
 
                 var result = await awaiter.Task;
-                result.Should().BeTrue();
-                helper.Requests.Count.Should().Be(1);
-                helper.Requests[0].Url.EndsWith("requestToken").Should().BeTrue();
+                Assert.IsTrue(result);
+                Assert.AreEqual(1, helper.Requests.Count);
+                Assert.IsTrue(helper.Requests[0].Url.EndsWith("requestToken"));
             });
         }
 
@@ -270,7 +268,7 @@ namespace Assets.Tests.PlayMode
                 var awaiter = new TaskCompletionAwaiter(5000);
                 realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
                 {
-                    state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                    Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, state.Reason.Code);
                     awaiter.SetCompleted();
                 });
 
@@ -278,8 +276,8 @@ namespace Assets.Tests.PlayMode
                 realtimeClient.Connect();
 
                 var result = await awaiter.Task;
-                result.Should().BeTrue();
-                didRetry.Should().BeTrue();
+                Assert.IsTrue(result);
+                Assert.IsTrue(didRetry);
             });
         }
 
@@ -305,7 +303,7 @@ namespace Assets.Tests.PlayMode
                 var awaiter = new TaskCompletionAwaiter(5000);
                 realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
                 {
-                    state.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                    Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, state.Reason.Code);
                     awaiter.SetCompleted();
                 });
 
@@ -313,7 +311,7 @@ namespace Assets.Tests.PlayMode
                 realtimeClient.Connect();
 
                 var result = await awaiter.Task;
-                result.Should().BeTrue();
+                Assert.IsTrue(result);
             });
         }
 
@@ -340,7 +338,7 @@ namespace Assets.Tests.PlayMode
                 ((AblyAuth) mainClient.Auth).CreateTokenRequest();
 
                 await mainClient.StatsAsync();
-                ((AblyAuth) mainClient.Auth).CurrentToken.Should().NotBeSameAs(token);
+                Assert.AreNotSame(token, ((AblyAuth) mainClient.Auth).CurrentToken);
             });
         }
 
@@ -379,8 +377,8 @@ namespace Assets.Tests.PlayMode
                 ((AblyAuth) mainClient.Auth).SetServerTime();
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(mainClient.StatsAsync());
-                ex.ErrorInfo.Should().BeSameAs(ErrorInfo.NonRenewableToken);
-                madeHttpCall.Should().BeFalse();
+                Assert.AreSame(ErrorInfo.NonRenewableToken, ex.ErrorInfo);
+                Assert.IsFalse(madeHttpCall);
             });
         }
 
@@ -396,15 +394,15 @@ namespace Assets.Tests.PlayMode
                     var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, optionsAction);
                     realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                     {
-                        change.Previous.Should().Be(ConnectionState.Connecting);
-                        change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
+                        Assert.AreEqual(ConnectionState.Connecting, change.Previous);
+                        Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, change.Reason.Code);
                         tca.SetCompleted();
                     });
 
                     realtimeClient.Connection.Connect();
                     await realtimeClient.ProcessCommands();
 
-                    (await tca.Task).Should().BeTrue(context);
+                    Assert.IsTrue(await tca.Task, context);
                 }
 
                 // authUrl fails
@@ -469,8 +467,8 @@ namespace Assets.Tests.PlayMode
 
                     _ = await E7Assert.ThrowsAsync<AblyException>(realtimeClient.Auth.AuthorizeAsync());
 
-                    realtimeClient.Connection.State.Should().Be(ConnectionState.Connected, because: context);
-                    stateChanged.Should().BeFalse(because: context);
+                    Assert.AreEqual(ConnectionState.Connected, realtimeClient.Connection.State, context);
+                    Assert.IsFalse(stateChanged, context);
                 }
 
                 await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
@@ -492,15 +490,15 @@ namespace Assets.Tests.PlayMode
 
                     realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
                     {
-                        change.Previous.Should().Be(ConnectionState.Connecting);
-                        change.Reason.Code.Should().Be(expectedCode);
-                        realtimeClient.Connection.ErrorReason.Code.Should().Be(expectedCode);
-                        realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
+                        Assert.AreEqual(ConnectionState.Connecting, change.Previous);
+                        Assert.AreEqual(expectedCode, change.Reason.Code);
+                        Assert.AreEqual(expectedCode, realtimeClient.Connection.ErrorReason.Code);
+                        Assert.AreEqual(HttpStatusCode.Forbidden, realtimeClient.Connection.ErrorReason.StatusCode); // 403
                         tca.SetCompleted();
                     });
 
                     realtimeClient.Connect();
-                    (await tca.Task).Should().BeTrue(context);
+                    Assert.IsTrue(await tca.Task, context);
                 }
 
                 // authUrl fails and returns no body
@@ -541,10 +539,10 @@ namespace Assets.Tests.PlayMode
                 TaskCompletionAwaiter failedAwaiter = new TaskCompletionAwaiter();
                 realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
                 {
-                    change.Previous.Should().Be(ConnectionState.Connected);
-                    change.Reason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
-                    realtimeClient.Connection.ErrorReason.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
-                    realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
+                    Assert.AreEqual(ConnectionState.Connected, change.Previous);
+                    Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, change.Reason.Code);
+                    Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, realtimeClient.Connection.ErrorReason.Code);
+                    Assert.AreEqual(HttpStatusCode.Forbidden, realtimeClient.Connection.ErrorReason.StatusCode); // 403
                     failedAwaiter.SetCompleted();
                 });
 
@@ -557,9 +555,9 @@ namespace Assets.Tests.PlayMode
                 var ex = await E7Assert.ThrowsAsync<AblyException>(
                     realtimeClient.Auth.AuthorizeAsync(null, authOptionsWhichFail));
 
-                ex.Should().BeOfType<AblyException>();
+                Assert.IsInstanceOf<AblyException>(ex);
 
-                (await failedAwaiter.Task).Should().BeTrue("With 403 response connection should become Failed");
+                Assert.IsTrue(await failedAwaiter.Task, "With 403 response connection should become Failed");
             });
         }
 
@@ -582,12 +580,12 @@ namespace Assets.Tests.PlayMode
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(
                     realtimeClient.Auth.RequestTokenAsync(null, authOptions));
-                ex.Should().BeOfType<AblyException>();
-                ex.ErrorInfo.Code.Should().Be(ErrorCodes.ClientAuthProviderRequestFailed);
-                ex.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+                Assert.IsInstanceOf<AblyException>(ex);
+                Assert.AreEqual(ErrorCodes.ClientAuthProviderRequestFailed, ex.ErrorInfo.Code);
+                Assert.AreEqual(HttpStatusCode.Forbidden, ex.ErrorInfo.StatusCode);
                 await Task.Delay(1000);
 
-                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
+                Assert.AreEqual(ConnectionState.Connected, realtimeClient.Connection.State);
             });
         }
 
@@ -608,9 +606,9 @@ namespace Assets.Tests.PlayMode
 
                 var key = options.ParseKey();
                 var appId = key.KeyName.Split('.').First();
-                token.Token.Should().MatchRegex($@"^{appId}\.[\w-]+$");
-                token.Issued.Should().BeWithin(TimeSpan.FromSeconds(30)).Before(DateTimeOffset.UtcNow);
-                token.Expires.Should().BeWithin(TimeSpan.FromSeconds(30)).Before(DateTimeOffset.UtcNow + ttl);
+                StringAssert.IsMatch($@"^{appId}\.[\w-]+$", token.Token);
+                Assert.That(token.Issued, Is.EqualTo(DateTimeOffset.UtcNow).Within(TimeSpan.FromSeconds(30)));
+                Assert.That(token.Expires, Is.EqualTo(DateTimeOffset.UtcNow + ttl).Within(TimeSpan.FromSeconds(30)));
             });
         }
 
@@ -655,7 +653,7 @@ namespace Assets.Tests.PlayMode
                 });
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(ably.StatsAsync());
-                ex.ErrorInfo.Code.Should().Be(ErrorCodes.NoMeansProvidedToRenewAuthToken);
+                Assert.AreEqual(ErrorCodes.NoMeansProvidedToRenewAuthToken, ex.ErrorInfo.Code);
             });
         }
 
@@ -676,8 +674,8 @@ namespace Assets.Tests.PlayMode
 
                 var error =
                     await E7Assert.ThrowsAsync<AblyException>(tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
-                error.ErrorInfo.Code.Should().Be(ErrorCodes.OperationNotPermittedWithCapability);
-                error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+                Assert.AreEqual(ErrorCodes.OperationNotPermittedWithCapability, error.ErrorInfo.Code);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, error.ErrorInfo.StatusCode);
             });
         }
 
@@ -693,8 +691,8 @@ namespace Assets.Tests.PlayMode
                 var error = await E7Assert.ThrowsAsync<AblyException>(ably.Auth.RequestTokenAsync(tokenParams,
                     AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions { QueryTime = false })));
 
-                error.ErrorInfo.Code.Should().Be(40104);
-                error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+                Assert.AreEqual(40104, error.ErrorInfo.Code);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, error.ErrorInfo.StatusCode);
             });
         }
 
@@ -707,15 +705,15 @@ namespace Assets.Tests.PlayMode
             {
                 var ably = await AblySandbox.GetRestClient(protocol);
                 var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
-                ably.AblyAuth.ClientId.Should().Be("123");
+                Assert.AreEqual("123", ably.AblyAuth.ClientId);
 
                 // uses Token Auth for all future requests (RSA10a)
-                ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+                Assert.AreEqual(AuthMethod.Token, ably.AblyAuth.AuthMethod);
 
                 // create a token immediately (RSA10a)
                 // regardless of whether the existing token is valid or not
                 var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = "123" });
-                tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
+                Assert.AreNotEqual(tokenDetails2.Token, tokenDetails1.Token);
             });
         }
 
@@ -735,12 +733,12 @@ namespace Assets.Tests.PlayMode
                     UseBinaryProtocol = protocol == Defaults.Protocol
                 });
 
-                tokenClient.AblyAuth.ClientId.Should().BeNullOrEmpty();
+                Assert.IsTrue(string.IsNullOrEmpty(tokenClient.AblyAuth.ClientId));
                 var channel = tokenClient.Channels["persisted:test".AddRandomSuffix()];
                 await channel.PublishAsync("test", "test");
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().BeNullOrEmpty();
-                message.Data.Should().Be("test");
+                Assert.IsTrue(string.IsNullOrEmpty(message.ClientId));
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -783,10 +781,10 @@ namespace Assets.Tests.PlayMode
 
                 var channel = tokenClient.Channels["pesisted:test"];
                 await channel.PublishAsync("test", "test");
-                tokenClient.AblyAuth.ClientId.Should().Be("*");
+                Assert.AreEqual("*", tokenClient.AblyAuth.ClientId);
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().BeNullOrEmpty();
-                message.Data.Should().Be("test");
+                Assert.IsTrue(string.IsNullOrEmpty(message.ClientId));
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -808,10 +806,10 @@ namespace Assets.Tests.PlayMode
 
                 var channel = tokenClient.Channels["pesisted:test"];
                 await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
-                tokenClient.AblyAuth.ClientId.Should().Be("*");
+                Assert.AreEqual("*", tokenClient.AblyAuth.ClientId);
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().Be("123");
-                message.Data.Should().Be("test");
+                Assert.AreEqual("123", message.ClientId);
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -836,8 +834,8 @@ namespace Assets.Tests.PlayMode
                 await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().Be("123");
-                message.Data.Should().Be("test");
+                Assert.AreEqual("123", message.ClientId);
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -863,8 +861,8 @@ namespace Assets.Tests.PlayMode
                 await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().Be("123");
-                message.Data.Should().Be("test");
+                Assert.AreEqual("123", message.ClientId);
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -889,7 +887,7 @@ namespace Assets.Tests.PlayMode
                 });
 
                 await client.WaitForState();
-                client.Connection.State.Should().Be(ConnectionState.Connected);
+                Assert.AreEqual(ConnectionState.Connected, client.Connection.State);
             });
         }
 
@@ -922,10 +920,10 @@ namespace Assets.Tests.PlayMode
                 });
 
                 var b = await tsc.Task;
-                b.Should().BeTrue();
-                err.Should().NotBeNull();
-                err.Message.Should().StartWith("Error parsing JSON response");
-                err.InnerException.Should().NotBeNull();
+                Assert.IsTrue(b);
+                Assert.IsNotNull(err);
+                Assert.IsTrue(err.Message.StartsWith("Error parsing JSON response"));
+                Assert.IsNotNull(err.InnerException);
             });
         }
 
@@ -950,8 +948,8 @@ namespace Assets.Tests.PlayMode
                 await Task.Delay(1000);
 
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().Be("123");
-                message.Data.Should().Be("test");
+                Assert.AreEqual("123", message.ClientId);
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -974,8 +972,8 @@ namespace Assets.Tests.PlayMode
                 await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
                 var message = (await channel.HistoryAsync()).Items.First();
-                message.ClientId.Should().Be("123");
-                message.Data.Should().Be("test");
+                Assert.AreEqual("123", message.ClientId);
+                Assert.AreEqual("test", message.Data);
             });
         }
 
@@ -1002,11 +1000,11 @@ namespace Assets.Tests.PlayMode
 
         private class RSA4Helper
         {
-            private AuthSandboxSpecs Specs { get; set; }
+            private AuthSpecs Specs { get; set; }
 
             public List<AblyRequest> Requests { get; set; }
 
-            public RSA4Helper(AuthSandboxSpecs specs)
+            public RSA4Helper(AuthSpecs specs)
             {
                 Requests = new List<AblyRequest>();
                 Specs = specs;

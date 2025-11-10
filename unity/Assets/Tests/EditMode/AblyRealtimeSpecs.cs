@@ -1,20 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
+using System.Net.Http;
 using Assets.Tests.AblySandbox;
 using Cysharp.Threading.Tasks;
-using FluentAssertions;
 using IO.Ably;
 using IO.Ably.Realtime;
+using IO.Ably.Unity;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
-namespace Assets.Tests.PlayMode
+namespace Assets.Tests.EditMode
 {
     [TestFixture]
-    public class AblyInterfaceSpecs
+    public class AblyRealtimeSpecs
     {
         private AblySandboxFixture _sandboxFixture;
 
@@ -219,28 +219,28 @@ namespace Assets.Tests.PlayMode
 
                 await client.Execute(new AblyRequest("/test", HttpMethod.Get));
                 string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
-                values.Should().HaveCount(1);
+                Assert.AreEqual(1, values.Length);
                 string[] agentValues = values[0].Split(' ');
 
-                Agent.OsIdentifier().Should().StartWith("unity-");
-                Agent.UnityPlayerIdentifier().Should().StartWith("unity/");
+                Assert.IsTrue(Agent.OsIdentifier.StartsWith("unity-"));
+                Assert.IsTrue(UnityHelper.UnityIdentifier.StartsWith("unity/"));
 
                 var keys = new List<string>()
                 {
                     "ably-dotnet/",
-                    Agent.DotnetRuntimeIdentifier(),
-                    Agent.UnityPlayerIdentifier(),
-                    Agent.OsIdentifier()
+                    Agent.DotnetRuntimeIdentifier,
+                    UnityHelper.UnityIdentifier,
+                    Agent.OsIdentifier
                 };
 
-                Agent.DotnetRuntimeIdentifier().Split('/').Length.Should().Be(2);
+                Assert.AreEqual(2, Agent.DotnetRuntimeIdentifier.Split('/').Length);
 
                 keys.RemoveAll(s => s.IsEmpty());
 
-                agentValues.Should().HaveCount(keys.Count);
+                Assert.AreEqual(keys.Count, agentValues.Length);
                 for (var i = 0; i < keys.Count; ++i)
                 {
-                    agentValues[i].StartsWith(keys[i]).Should().BeTrue($"'{agentValues[i]}' should start with '{keys[i]}'");
+                    Assert.IsTrue(agentValues[i].StartsWith(keys[i]), $"'{agentValues[i]}' should start with '{keys[i]}'");
                 }
             });
         }

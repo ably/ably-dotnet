@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.Shared
         public void DotnetRuntimeIdentifier_ShouldIncludeCorrectRuntimeName()
         {
             // Arrange & Act
-            var runtimeIdentifier = Agent.DotnetRuntimeIdentifier();
+            var runtimeIdentifier = Agent.DotnetRuntimeIdentifier;
 
             // Assert
             runtimeIdentifier.Should().NotBeNullOrEmpty();

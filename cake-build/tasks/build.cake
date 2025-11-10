@@ -104,6 +104,62 @@ Task("_Xamarin_Build")
     MSBuild(paths.XamarinSolution, settings);
 });
 
+Task("_Build_Ably_Unity_Dll")
+    .Description("Create merged Unity DLL with all dependencies")
+    .Does(() =>
+{
+    Information("Merging Unity dependencies into IO.Ably.dll...");
+    
+    var netStandard20BinPath = paths.Src
+        .Combine("IO.Ably.NETStandard20")
+        .Combine("bin/Release/netstandard2.0");
+    
+    if (!DirectoryExists(netStandard20BinPath))
+    {
+        throw new Exception($"NETStandard2.0 bin directory not found: {netStandard20BinPath}. Please build the project first.");
+    }
+    
+    var primaryDll = netStandard20BinPath.CombineWithFilePath("IO.Ably.dll");
+    
+    if (!FileExists(primaryDll))
+    {
+        throw new Exception($"Primary DLL not found: {primaryDll}. Please build the IO.Ably.NETStandard20 project first.");
+    }
+    
+    var newtonsoftDll = paths.Root
+        .Combine("lib/unity/AOT")
+        .CombineWithFilePath("Newtonsoft.Json.dll");
+    
+    if (!FileExists(newtonsoftDll))
+    {
+        throw new Exception($"Newtonsoft.Json.dll not found at: {newtonsoftDll}");
+    }
+    
+    var dllsToMerge = new[]
+    {
+        netStandard20BinPath.CombineWithFilePath("IO.Ably.DeltaCodec.dll"),
+        netStandard20BinPath.CombineWithFilePath("System.Runtime.CompilerServices.Unsafe.dll"),
+        netStandard20BinPath.CombineWithFilePath("System.Threading.Channels.dll"),
+        netStandard20BinPath.CombineWithFilePath("System.Threading.Tasks.Extensions.dll"),
+        newtonsoftDll
+    };
+    
+    var unityOutputPath = paths.Root.Combine("unity/Assets/Ably/Plugins");
+    var outputDll = unityOutputPath.CombineWithFilePath("IO.Ably.dll");
+    
+    // Delete existing output DLL if it exists
+    if (FileExists(outputDll))
+    {
+        DeleteFile(outputDll);
+        Information($"Deleted existing DLL: {outputDll}");
+    }
+    
+    // Merge all dependencies into primary DLL in one go
+    ilRepackHelper.MergeDLLs(primaryDll, dllsToMerge, outputDll);
+    
+    Information($"✓ Unity DLL created at: {outputDll}");
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,3 +185,8 @@ Task("Build.Xamarin")
     .IsDependentOn("_Clean")
     .IsDependentOn("_Restore_Xamarin")
     .IsDependentOn("_Xamarin_Build");
+
+// Public task: Update Ably DLLs inside unity project
+Task("Update.AblyUnity")
+    .Description("Update Ably DLLs inside unity project")
+    .IsDependentOn("_Build_Ably_Unity_Dll");
