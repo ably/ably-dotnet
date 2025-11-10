@@ -190,22 +190,29 @@ namespace IO.Ably
             int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : ErrorCodes.InternalError;
             string reason = string.Empty;
 
-            if (response.Type == ResponseType.Json)
+            string errorResponse;
+            if (response.Type == ResponseType.Binary)
             {
-                try
+                errorResponse = MsgPackHelper.ToJsonString(response.Body);
+            }
+            else
+            {
+                errorResponse = response.TextResponse;
+            }
+
+            try
+            {
+                var json = JObject.Parse(errorResponse);
+                if (json["error"] != null)
                 {
-                    var json = JObject.Parse(response.TextResponse);
-                    if (json["error"] != null)
-                    {
-                        reason = (string)json["error"]["message"];
-                        errorCode = (int)json["error"]["code"];
-                    }
+                    reason = (string)json["error"]["message"];
+                    errorCode = (int)json["error"]["code"];
                 }
-                catch (Exception ex)
-                {
-                    // If there is no json or there is something wrong we don't want to throw from here.
-                    Debug.WriteLine(ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                // If there is no json or there is something wrong we don't want to throw from here.
+                Debug.WriteLine(ex.Message);
             }
 
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
