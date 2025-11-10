@@ -84,6 +84,7 @@ namespace IO.Ably
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorInfo"/> class.
         /// </summary>
+        [JsonConstructor]
         public ErrorInfo()
         {
         }

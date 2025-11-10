@@ -1,4 +1,6 @@
-﻿using System.Net.NetworkInformation;
+﻿using System;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using IO.Ably.Push;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
@@ -8,31 +10,50 @@ namespace IO.Ably
     internal class Platform : IPlatform
     {
         private static readonly object Lock = new object();
+        private readonly Lazy<Agent.PlatformRuntime> _platformId;
 
-        static Platform()
+        public Platform()
         {
-            Initialize();
+            _platformId = new Lazy<Agent.PlatformRuntime>(DetectPlatformRuntime);
         }
 
-        internal static bool HookedUpToNetworkEvents { get; private set; }
+        internal static bool HookedUpToNetworkEvents { get; set; }
 
-        // Defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
-#if NET6_0
-        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net6;
-#elif NET7_0
-        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Net7;
-#else
-        public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Netstandard20;
-#endif
+        // Use runtime detection via RuntimeInformation.FrameworkDescription
+        // This detects the actual runtime version, not the compile-time target framework
+        // This is important because netstandard2.0 assemblies can run on .NET 6/7/8/9+
+        // and we want to report the actual runtime being used
+        public Agent.PlatformRuntime PlatformId => _platformId.Value;
+
+        private Agent.PlatformRuntime DetectPlatformRuntime()
+        {
+            // Default fallback for netstandard2.0 or unknown runtimes
+            var platformId = Agent.PlatformRuntime.Netstandard20;
+
+            try
+            {
+                var frameworkDescription = RuntimeInformation.FrameworkDescription;
+
+                if (frameworkDescription.StartsWith(".NET 6.", StringComparison.OrdinalIgnoreCase))
+                {
+                    platformId = Agent.PlatformRuntime.Net6;
+                }
+                else if (frameworkDescription.StartsWith(".NET 7.", StringComparison.OrdinalIgnoreCase))
+                {
+                    platformId = Agent.PlatformRuntime.Net7;
+                }
+            }
+            catch
+            {
+                // fall back to Netstandard20
+            }
+
+            return platformId;
+        }
 
         public ITransportFactory TransportFactory => null;
 
         public IMobileDevice MobileDevice { get; set; }
-
-        internal static void Initialize()
-        {
-            HookedUpToNetworkEvents = false;
-        }
 
         public void RegisterOsNetworkStateChanged()
         {
