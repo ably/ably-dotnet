@@ -88,7 +88,7 @@ namespace IO.Ably.AcceptanceTests
             public WithTextProtocolWithoutEncryption(ITestOutputHelper output)
                 : base(output)
             {
-                _client = GetRestClient();
+                _client = GetRestClient(null, opts => opts.UseBinaryProtocol = false);
             }
 
             private Message GetPayload()
@@ -151,7 +151,7 @@ namespace IO.Ably.AcceptanceTests
                 : base(output)
             {
                 _options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = GetRestClient();
+                _client = GetRestClient(null, opts => opts.UseBinaryProtocol = false);
             }
 
             [Fact]
@@ -214,6 +214,7 @@ namespace IO.Ably.AcceptanceTests
             public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output)
                 : base(output)
             {
+                // MsgPack is enabled now
                 _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
             }
 
@@ -221,7 +222,6 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
-                // MsgPack is always enabled now
                 // Act
                 _client.Channels.Get("Test").PublishAsync("test", "test");
 
@@ -235,7 +235,6 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
-                // MsgPack is always enabled now
                 // Act
                 var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
@@ -250,7 +249,6 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
-                // MsgPack is always enabled now
                 // Arrange
                 var obj = new { Test = "test", name = "name" };
 

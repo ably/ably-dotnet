@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using FluentAssertions;
 using IO.Ably.Encryption;
@@ -39,7 +40,7 @@ namespace IO.Ably.AcceptanceTests
             public void WhenBase64IsNotTheFirstEncoding_ShouldSaveTheOriginalPayloadInContext()
             {
                 var message = new Message { Data = new { Text = "Hello" } };
-                MessageHandler.EncodePayload(message, new DecodingContext());
+                new MessageHandler(DefaultLogger.LoggerInstance, Protocol.Json).EncodePayloads(new DecodingContext(), new List<Message> { message });
                 var payloadData = message.Data as string;
                 var payloadEncoding = message.Encoding;
 

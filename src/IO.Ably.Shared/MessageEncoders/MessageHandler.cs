@@ -20,10 +20,12 @@ namespace IO.Ably.MessageEncoders
 
         private readonly Protocol _protocol;
 
-        private static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
+        private static List<MessageEncoder> AllEncoders { get; } = new List<MessageEncoder>
         {
             new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
         };
+
+        private List<MessageEncoder> Encoders { get; }
 
         private ILogger Logger { get; }
 
@@ -31,6 +33,14 @@ namespace IO.Ably.MessageEncoders
         {
             Logger = logger;
             _protocol = protocol;
+            if (IsMsgPack())
+            {
+                Encoders = AllEncoders.Where(encoder => encoder != Base64Encoder).ToList(); // No need for Base64Encoder for MsgPack
+            }
+            else
+            {
+                Encoders = AllEncoders;
+            }
         }
 
         private IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
@@ -42,7 +52,6 @@ namespace IO.Ably.MessageEncoders
                 return messages;
             }
 
-            // MsgPack is always available
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
             ProcessMessages(payloads, context);
             return payloads;
@@ -57,16 +66,15 @@ namespace IO.Ably.MessageEncoders
                 return messages;
             }
 
-            // MsgPack is always available
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<Message>)) as List<Message>;
             ProcessMessages(payloads, context);
             return payloads;
         }
 
-        private static void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
-            _ = DecodePayloads(context, payloads as IEnumerable<IMessage>);
+            _ = DecodePayloads(context, payloads as IEnumerable<IMessage>, Encoders);
         }
 
         public void SetRequestBody(AblyRequest request)
@@ -142,22 +150,22 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        internal static Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
+        internal Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
-                result = Result.Combine(result, EncodePayload(payload, context));
+                result = Result.Combine(result, EncodePayload(payload, context, Encoders));
             }
 
             return result;
         }
 
-        internal static Result EncodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal Result EncodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
-            foreach (var encoder in encoders ?? DefaultEncoders)
+            foreach (var encoder in encoders)
             {
                 var encodeResult = encoder.Encode(payload, context);
                 if (encodeResult.IsSuccess)
@@ -204,7 +212,7 @@ namespace IO.Ably.MessageEncoders
 
         internal static Result DecodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null, ILogger logger = null)
         {
-            var actualEncoders = (encoders ?? DefaultEncoders).ToList();
+            var actualEncoders = (encoders ?? AllEncoders).ToList();
             var pp = context.PreviousPayload; // We take a chance that this will not be modified but replaced
 
             var (processResult, decodedPayload) = Decode();
@@ -340,7 +348,7 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Deserialize<T>(response.TextResponse);
         }
 
-        private static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
+        private Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
@@ -468,7 +476,7 @@ namespace IO.Ably.MessageEncoders
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(message, index);
-                var decodeResult = DecodePayload(message, context, DefaultEncoders)
+                var decodeResult = DecodePayload(message, context, Encoders)
                     .IfFailure(error => Logger.Warning($"Error decoding message with id: {message.Id}. Error: {error.Message}. Exception: {error.InnerException?.Message}"));
 
                 result = Result.Combine(result, decodeResult);
@@ -529,7 +537,7 @@ namespace IO.Ably.MessageEncoders
             where T : IMessage
         {
             var context = options.ToDecodingContext();
-            var result = DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
+            var result = DecodePayload(encoded, context, AllEncoders, DefaultLogger.LoggerInstance);
             if (result.IsFailure)
             {
                 throw new AblyException(result.Error);
@@ -544,7 +552,7 @@ namespace IO.Ably.MessageEncoders
             var context = options.ToDecodingContext();
             foreach (var encoded in encodedArray)
             {
-                DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
+                DecodePayload(encoded, context, AllEncoders, DefaultLogger.LoggerInstance);
             }
 
             return encodedArray;
