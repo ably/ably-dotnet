@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.17](https://github.com/ably/ably-dotnet/tree/1.2.17) (2025-11-10)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.16...1.2.17)
+
+**Merged pull requests:**
+
+- [ECO-5584] Upgrade NewtonSoft from 9.0.1 to 13.0.1 in https://github.com/ably/ably-dotnet/pull/1309
+- [ECO-5624] Fix unity newtonsoft dependency in https://github.com/ably/ably-dotnet/pull/1313
+
 ## [1.2.16](https://github.com/ably/ably-dotnet/tree/1.2.16) (2025-10-15)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.15...1.2.16)
