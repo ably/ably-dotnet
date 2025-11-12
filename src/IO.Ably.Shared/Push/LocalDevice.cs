@@ -1,5 +1,6 @@
 ﻿using System;
 using IO.Ably.Encryption;
+using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,6 +9,7 @@ namespace IO.Ably.Push
     /// <summary>
     /// LocalDevice represents the current state of the device in respect of it being a target for push notifications.
     /// </summary>
+    [MessagePackObject(keyAsPropertyName: true)]
     public class LocalDevice : DeviceDetails
     {
         private const string JsonTokenTypeParameterName = "transportType";
@@ -21,17 +23,22 @@ namespace IO.Ably.Push
         /// It can be used to authenticate Push Admin requests.
         /// </summary>
         [JsonIgnore]
+        [IgnoreMember]
         public string DeviceIdentityToken { get; set; }
 
+        [IgnoreMember]
         internal Action<string> ClientIdUpdated { get; set; } = (newClientId) => { };
 
         /// <summary>
         /// Checks if the device is registered to receive push notifications.
         /// </summary>
+        [IgnoreMember]
         public bool IsRegistered => DeviceIdentityToken.IsNotEmpty();
 
+        [IgnoreMember]
         internal bool IsCreated => Id.IsNotEmpty() && DeviceSecret.IsNotEmpty();
 
+        [IgnoreMember]
         internal RegistrationToken RegistrationToken
         {
             get => GetRegistrationToken(Push?.Recipient);

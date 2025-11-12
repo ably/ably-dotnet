@@ -184,6 +184,7 @@ namespace IO.Ably.Tests.Push
 
             _ = await ably.Auth.AuthorizeAsync(new TokenParams { ClientId = newClientId });
 
+            await new ConditionalAwaiter(() => localDevice.ClientId != null);
             localDevice.ClientId.Should().Be(newClientId);
             mobileDevice.GetPreference(PersistKeys.Device.ClientId, PersistKeys.Device.SharedName).Should().Be(newClientId);
         }

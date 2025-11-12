@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\MessageExtrasMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\TimespanMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\JObjectMessagePackSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackHelper.cs" />
   </ItemGroup>
 </Project>

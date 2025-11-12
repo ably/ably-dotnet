@@ -1,7 +1,9 @@
 using System;
 using MessagePack;
 using MessagePack.Formatters;
+using Newtonsoft.Json.Linq;
 using IO.Ably.Types;
+using IO.Ably.Shared.MsgPack;
 
 namespace IO.Ably.CustomSerialisers
 {
@@ -68,6 +70,11 @@ namespace IO.Ably.CustomSerialisers
                 if (t == typeof(ChannelParams))
                 {
                     return new ChannelParamsFormatter();
+                }
+
+                if (t == typeof(JObject))
+                {
+                    return new JObjectMessagePackSerializer();
                 }
 
                 return null;
