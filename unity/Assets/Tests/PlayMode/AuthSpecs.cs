@@ -16,7 +16,7 @@ namespace Assets.Tests.PlayMode
 {
     [TestFixture]
     [Category("EditorPlayer")]
-    public class AuthSandboxSpecs
+    public class AuthSpecs
     {
         private AblySandboxFixture _sandboxFixture;
 
@@ -1001,11 +1001,11 @@ namespace Assets.Tests.PlayMode
 
         private class RSA4Helper
         {
-            private AuthSandboxSpecs Specs { get; set; }
+            private AuthSpecs Specs { get; set; }
 
             public List<AblyRequest> Requests { get; set; }
 
-            public RSA4Helper(AuthSandboxSpecs specs)
+            public RSA4Helper(AuthSpecs specs)
             {
                 Requests = new List<AblyRequest>();
                 Specs = specs;

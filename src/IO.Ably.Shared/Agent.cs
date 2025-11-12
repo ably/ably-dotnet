@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 #if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
-using UnityEngine; // lib/UnityEngine.dll - 2019.4.40 LTS compile time, at runtime unity player version will be used.
+using IO.Ably.Unity;
 #endif
 
 namespace IO.Ably
@@ -36,6 +36,24 @@ namespace IO.Ably
         internal const string AblyAgentHeader = "Ably-Agent";
         private static readonly string AblySdkIdentifier = $"ably-dotnet/{Defaults.LibraryVersion}"; // RSC7d1
 
+        private static readonly Lazy<string> _dotnetRuntimeIdentifier =
+            new Lazy<string>(() => GetDotnetRuntimeIdentifier());
+
+        private static readonly Lazy<string> _osIdentifier =
+            new Lazy<string>(() => GetOsIdentifier());
+
+        /// <summary>
+        /// Gets the cached .NET runtime identifier string.
+        /// The value is computed once on first access and cached for subsequent calls.
+        /// </summary>
+        internal static string DotnetRuntimeIdentifier => _dotnetRuntimeIdentifier.Value;
+
+        /// <summary>
+        /// Gets the cached OS identifier string.
+        /// The value is computed once on first access and cached for subsequent calls.
+        /// </summary>
+        internal static string OsIdentifier => _osIdentifier.Value;
+
         /// <summary>
         /// This returns dotnet platform as per ably-lib mappings defined in agents.json.
         /// https://github.com/ably/ably-common/blob/main/protocol/agents.json.
@@ -43,7 +61,7 @@ namespace IO.Ably
         /// Please note that uwp platform is Deprecated and removed as a part of https://github.com/ably/ably-dotnet/pull/1101.
         /// </summary>
         /// <returns> Clean Platform Identifier. </returns>
-        internal static string DotnetRuntimeIdentifier()
+        private static string GetDotnetRuntimeIdentifier()
         {
             string DotnetRuntimeName()
             {
@@ -86,77 +104,7 @@ namespace IO.Ably
                 dotnetRuntimeName : $"{dotnetRuntimeName}/{dotnetRuntimeVersion}";
         }
 
-#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
-        internal static string UnityPlayerIdentifier()
-        {
-            return Application.unityVersion.IsEmpty() ?
-                "unity" : $"unity/{Application.unityVersion}";
-        }
-
-        public static class UnityOS
-        {
-            public const string Windows = "unity-windows";
-            public const string MacOS = "unity-macOS";
-            public const string Linux = "unity-linux";
-            public const string Android = "unity-android";
-            public const string IOS = "unity-iOS";
-            public const string TvOS = "unity-tvOS";
-            public const string WebGL = "unity-webGL";
-            public const string Switch = "unity-nintendo-switch";
-            public const string PS4 = "unity-PS4";
-            public const string PS5 = "unity-PS5";
-            public const string Xbox = "unity-xbox";
-        }
-
-        internal static string UnityOsIdentifier()
-        {
-            try
-            {
-                // lib/UnityEngine.dll - 2019.4.40 LTS compile time.
-                // Added cases for consistent platforms for future versions of unity.
-                // At runtime unity player version >= 2019.x.x will be used.
-                switch (Application.platform)
-                {
-                    case RuntimePlatform.OSXEditor:
-                        return UnityOS.MacOS;
-                    case RuntimePlatform.OSXPlayer:
-                        return UnityOS.MacOS;
-                    case RuntimePlatform.WindowsPlayer:
-                        return UnityOS.Windows;
-                    case RuntimePlatform.WindowsEditor:
-                        return UnityOS.Windows;
-                    case RuntimePlatform.IPhonePlayer:
-                        return UnityOS.IOS;
-                    case RuntimePlatform.Android:
-                        return UnityOS.Android;
-                    case RuntimePlatform.LinuxPlayer:
-                        return UnityOS.Linux;
-                    case RuntimePlatform.LinuxEditor:
-                        return UnityOS.Linux;
-                    case RuntimePlatform.WebGLPlayer:
-                        return UnityOS.WebGL;
-                    case RuntimePlatform.PS4:
-                        return UnityOS.PS4;
-                    case RuntimePlatform.XboxOne:
-                        return UnityOS.Xbox;
-                    case RuntimePlatform.tvOS:
-                        return UnityOS.TvOS;
-                    case RuntimePlatform.Switch:
-                        return UnityOS.Switch;
-                    case RuntimePlatform.PS5:
-                        return UnityOS.PS5;
-                }
-            }
-            catch
-            {
-                // ignored, If enum case is not found for future versions of unity
-            }
-
-            return string.Empty;
-        }
-#endif
-
-        internal static string OsIdentifier()
+        private static string GetOsIdentifier()
         {
             switch (IoC.PlatformId)
             {
@@ -165,6 +113,10 @@ namespace IO.Ably
                 case PlatformRuntime.XamarinIos:
                     return OS.IOS;
             }
+
+#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
+            return UnityHelper.OsIdentifier;
+#endif
 
             // Preprocessors defined as per https://learn.microsoft.com/en-us/dotnet/standard/frameworks#preprocessor-symbols
             // Get operating system as per https://stackoverflow.com/a/66618677 for .NET5 and greater
@@ -208,10 +160,6 @@ namespace IO.Ably
             {
                 return OS.Browser;
             }
-#endif
-
-#if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
-            return UnityOsIdentifier();
 #endif
 
 #pragma warning disable CS0162 // Disable code unreachable warning when above conditional statement is true
@@ -274,13 +222,13 @@ namespace IO.Ably
 
             var agentComponents = new List<string>();
             AddAgentIdentifier(agentComponents, AblySdkIdentifier);
-            AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier());
+            AddAgentIdentifier(agentComponents, DotnetRuntimeIdentifier);
 
 #if NETSTANDARD2_0_OR_GREATER && UNITY_PACKAGE
-            AddAgentIdentifier(agentComponents, UnityPlayerIdentifier());
+            AddAgentIdentifier(agentComponents, UnityHelper.UnityIdentifier);
 #endif
 
-            AddAgentIdentifier(agentComponents, OsIdentifier());
+            AddAgentIdentifier(agentComponents, OsIdentifier);
 
             if (additionalAgents == null)
             {

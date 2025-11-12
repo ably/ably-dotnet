@@ -136,9 +136,9 @@ namespace IO.Ably.Tests
         public void AutomaticNetworkDetectionCanBeDisabledByClientOption(bool enabled)
         {
             // Because this test depends on static state in the 'Platform' type we need
-            // to (re)Initialize the static 'Platform' state before each test run.
+            // to reset the static 'Platform' state before each test run.
 
-            Platform.Initialize();
+            Platform.HookedUpToNetworkEvents = false;
 
             _ = new AblyRealtime(new ClientOptions(ValidKey)
             {

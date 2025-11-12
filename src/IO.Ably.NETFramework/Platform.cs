@@ -9,23 +9,13 @@ namespace IO.Ably
     {
         private static readonly object _lock = new object();
 
-        static Platform()
-        {
-            Initialize();
-        }
-
-        internal static bool HookedUpToNetworkEvents { get; private set; }
+        internal static bool HookedUpToNetworkEvents { get; set; }
 
         public Agent.PlatformRuntime PlatformId => Agent.PlatformRuntime.Framework;
 
         public ITransportFactory TransportFactory => null;
 
         public IMobileDevice MobileDevice { get; set; }
-
-        internal static void Initialize()
-        {
-            HookedUpToNetworkEvents = false;
-        }
 
         public void RegisterOsNetworkStateChanged()
         {

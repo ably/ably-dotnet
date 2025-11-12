@@ -35,7 +35,7 @@
     </metadata>
     <files>
         <file src="..\src\IO.Ably.Push.Android\bin\Package\IO.Ably.Push.*" target="lib\monoandroid" />
-        <file src="..\README.md" target="" />
+        <file src="..\README.md" target="README.md" />
         <file src="..\images\logo.png" target="icon.png" />
     </files>
 </package>

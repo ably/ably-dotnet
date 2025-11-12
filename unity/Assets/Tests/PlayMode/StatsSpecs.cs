@@ -9,10 +9,11 @@ using IO.Ably;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
-namespace Assets.Tests.EditMode
+namespace Assets.Tests.PlayMode
 {
     [TestFixture]
-    public class StatsSandBoxSpecs
+    [Category("EditorPlayer")]
+    public class StatsSpecs
     {
         private AblySandboxFixture _sandboxFixture;
 

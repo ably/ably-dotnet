@@ -100,6 +100,30 @@ channel.Subscribe(message =>
 await channel.PublishAsync("test-event", "Hello World!");
 ```
 
+Enable logging using a new class that implements `ILoggerSink` interface.
+
+```csharp
+class CustomLogHandler : ILoggerSink
+{
+    public void LogEvent(LogLevel level, string message)
+    {
+        Console.WriteLine($"Handler LogLevel : {level}, Data :{message}");
+    }
+}
+```
+
+Update clientOptions for `LogLevel` and `LogHandler`.
+
+```csharp
+clientOpts.LogLevel = LogLevel.Debug;
+clientOpts.LogHandler = new CustomLogHandler();
+```
+
+### Unity usage
+
+- Download latest `ably.io.*.unitypackage` from [releases section](https://github.com/ably/ably-dotnet/releases) and include it in the unity project.
+- For more information, check [Unity README](./unity/README.md)
+
 ## Releases
 
 The [CHANGELOG.md](./CHANGELOG.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
