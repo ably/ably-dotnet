@@ -37,11 +37,18 @@ Task("_NetFramework_Unit_Tests_WithRetry")
     }
     
     testExecutionHelper.RetryFailedXUnitTests(
-        testAssemblies, 
+        testAssemblies,
         resultsPath,
         testRetryHelper,
         (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: false, isRetry: true)
     );
+    
+    // Check if any tests still failed after retry
+    var stillFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
+    if (stillFailedTests.Any())
+    {
+        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+    }
 });
 
 Task("_NetFramework_Integration_Tests")
@@ -79,11 +86,18 @@ Task("_NetFramework_Integration_Tests_WithRetry")
     }
     
     testExecutionHelper.RetryFailedXUnitTests(
-        testAssemblies, 
+        testAssemblies,
         resultsPath,
         testRetryHelper,
         (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: true, isRetry: true)
     );
+    
+    // Check if any tests still failed after retry
+    var stillFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
+    if (stillFailedTests.Any())
+    {
+        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+    }
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -127,6 +141,13 @@ Task("_NetStandard_Unit_Tests_WithRetry")
     }
     
     testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
+    
+    // Check if any tests still failed after retry
+    var stillFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
+    if (stillFailedTests.Any())
+    {
+        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+    }
 });
 
 Task("_NetStandard_Integration_Tests")
@@ -166,6 +187,13 @@ Task("_NetStandard_Integration_Tests_WithRetry")
     }
     
     testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
+    
+    // Check if any tests still failed after retry
+    var stillFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
+    if (stillFailedTests.Any())
+    {
+        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+    }
 });
 
 ///////////////////////////////////////////////////////////////////////////////
