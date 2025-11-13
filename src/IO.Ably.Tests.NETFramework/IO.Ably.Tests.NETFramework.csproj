@@ -67,6 +67,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\common\test-resources\msgpack_test_fixtures.json">
+      <Link>msgpack_test_fixtures.json</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="..\..\common\test-resources\test-app-setup.json">
       <Link>test-app-setup.json</Link>
     </EmbeddedResource>

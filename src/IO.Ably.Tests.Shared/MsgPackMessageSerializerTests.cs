@@ -5,6 +5,8 @@ using FluentAssertions;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Types;
 using MessagePack;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -604,6 +606,118 @@ namespace IO.Ably.Tests
             bytes.Add((byte)(0xa0 + str.Length));
             bytes.AddRange(System.Text.Encoding.GetEncoding("utf-8").GetBytes(str));
             return bytes.ToArray();
+        }
+
+        /// <summary>
+        /// Test fixture class for msgpack test data.
+        /// </summary>
+        public class MsgpackTestFixture
+        {
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("data")]
+            public object Data { get; set; }
+
+            [JsonProperty("encoding")]
+            public string Encoding { get; set; }
+
+            [JsonProperty("numRepeat")]
+            public int NumRepeat { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            [JsonProperty("msgpack")]
+            public string MsgPack { get; set; }
+        }
+
+        /// <summary>
+        /// Loads msgpack test fixtures from the embedded resource.
+        /// </summary>
+        private static List<MsgpackTestFixture> LoadMsgpackFixtures()
+        {
+            var json = ResourceHelper.GetResource("msgpack_test_fixtures.json");
+            return JsonConvert.DeserializeObject<List<MsgpackTestFixture>>(json);
+        }
+
+        /// <summary>
+        /// Provides test data for msgpack decoding tests.
+        /// Each test case is named after the fixture name for better test reporting.
+        /// </summary>
+        public static IEnumerable<object[]> MsgpackDecodingFixtures
+        {
+            get
+            {
+                var fixtures = LoadMsgpackFixtures();
+                foreach (var fixture in fixtures)
+                {
+                    // Pass fixture.Name as first parameter for better test display names
+                    yield return new object[] { fixture.Name, fixture };
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MsgpackDecodingFixtures))]
+        public void TestMsgpackDecoding(string testName, MsgpackTestFixture fixture)
+        {
+            Output.WriteLine($"Testing: {testName}");
+
+            // Decode base64 msgpack data
+            var msgpackData = Convert.FromBase64String(fixture.MsgPack);
+
+            // Deserialize to ProtocolMessage
+            var protoMsg = MsgPackHelper.Deserialise<ProtocolMessage>(msgpackData);
+            protoMsg.Should().NotBeNull();
+            protoMsg.Messages.Should().NotBeNull();
+            protoMsg.Messages.Should().HaveCount(1);
+
+            var msg = protoMsg.Messages[0];
+
+            // Decode the message data using FromEncoded
+            var decodedMsg = Message.FromEncoded(msg);
+
+            // Verify decoded data based on type
+            switch (fixture.Type)
+            {
+                case "string":
+                    decodedMsg.Data.Should().BeOfType<string>();
+                    var expectedString = string.Concat(Enumerable.Repeat(fixture.Data.ToString(), fixture.NumRepeat));
+                    decodedMsg.Data.Should().Be(expectedString);
+                    (decodedMsg.Data as string).Length.Should().Be(fixture.NumRepeat);
+                    break;
+
+                case "binary":
+                    decodedMsg.Data.Should().BeOfType<byte[]>();
+                    var expectedBytes = System.Text.Encoding.UTF8.GetBytes(
+                        string.Concat(Enumerable.Repeat(fixture.Data.ToString(), fixture.NumRepeat)));
+                    (decodedMsg.Data as byte[]).Should().Equal(expectedBytes);
+                    (decodedMsg.Data as byte[]).Length.Should().Be(fixture.NumRepeat);
+                    break;
+
+                case "jsonObject":
+                    // For JSON objects, compare as JToken for proper equality
+                    var expectedJson = JsonConvert.SerializeObject(fixture.Data);
+                    var actualJson = JsonConvert.SerializeObject(decodedMsg.Data);
+                    JToken.DeepEquals(JToken.Parse(expectedJson), JToken.Parse(actualJson)).Should().BeTrue();
+                    break;
+
+                case "jsonArray":
+                    // For JSON arrays, compare as JToken for proper equality
+                    var expectedArrayJson = JsonConvert.SerializeObject(fixture.Data);
+                    var actualArrayJson = JsonConvert.SerializeObject(decodedMsg.Data);
+                    JToken.DeepEquals(JToken.Parse(expectedArrayJson), JToken.Parse(actualArrayJson)).Should().BeTrue();
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Unknown fixture type: {fixture.Type}");
+            }
+
+            // TODO: Re-encode the message and verify it matches the original
+            // Create a new message with the decoded data and encode it
+            // Similar to `TestMsgpackDecoding` test in `proto_message_decoding_test.go`
+            // This will need omitting keys for null values, current serializer omits keys with nulls.
         }
 
         public MsgPackMessageSerializerTests(ITestOutputHelper output)

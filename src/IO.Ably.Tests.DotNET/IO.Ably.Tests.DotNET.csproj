@@ -14,6 +14,7 @@
     <EmbeddedResource Include="..\..\common\test-resources\crypto-data-128.json" Link="crypto-data-128.json" />
     <EmbeddedResource Include="..\..\common\test-resources\crypto-data-256.json" Link="crypto-data-256.json" />
     <EmbeddedResource Include="..\..\common\test-resources\messages-encoding.json" Link="messages-encoding.json" />
+    <EmbeddedResource Include="..\..\common\test-resources\msgpack_test_fixtures.json" Link="msgpack_test_fixtures.json" />
     <EmbeddedResource Include="..\..\common\test-resources\test-app-setup.json" Link="test-app-setup.json" />
     <EmbeddedResource Include="MsgPackStatsTest.json" />
     <EmbeddedResource Include="StatsFixture.json">
