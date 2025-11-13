@@ -68,10 +68,8 @@ Task("_NetFramework_Unit_Tests_WithRetry")
         // Display summary
         testRetryHelper.DisplayRetryResultsSummary(".NET Framework Unit", initialFailedTests, stillFailedTests);
         
-        if (stillFailedTests.Any())
-        {
-            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
-        }
+        // Validate and throw if non-flaky tests failed
+        testRetryHelper.ValidateFlakyTests(stillFailedTests);
     }
 });
 
@@ -141,10 +139,8 @@ Task("_NetFramework_Integration_Tests_WithRetry")
         // Display summary
         testRetryHelper.DisplayRetryResultsSummary(".NET Framework Integration", initialFailedTests, stillFailedTests);
         
-        if (stillFailedTests.Any())
-        {
-            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
-        }
+        // Validate and throw if non-flaky tests failed
+        testRetryHelper.ValidateFlakyTests(stillFailedTests);
     }
 });
 
@@ -215,10 +211,8 @@ Task("_NetStandard_Unit_Tests_WithRetry")
         // Display summary
         testRetryHelper.DisplayRetryResultsSummary(".NET Standard Unit", initialFailedTests, stillFailedTests);
         
-        if (stillFailedTests.Any())
-        {
-            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
-        }
+        // Validate and throw if non-flaky tests failed
+        testRetryHelper.ValidateFlakyTests(stillFailedTests);
     }
 });
 
@@ -285,10 +279,8 @@ Task("_NetStandard_Integration_Tests_WithRetry")
         // Display summary
         testRetryHelper.DisplayRetryResultsSummary(".NET Standard Integration", initialFailedTests, stillFailedTests);
         
-        if (stillFailedTests.Any())
-        {
-            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
-        }
+        // Validate and throw if non-flaky tests failed
+        testRetryHelper.ValidateFlakyTests(stillFailedTests);
     }
 });
 

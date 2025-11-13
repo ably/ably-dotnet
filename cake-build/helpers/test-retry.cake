@@ -124,16 +124,6 @@ public class TestRetryHelper
     {
         var passedTests = initialFailedTests.Except(stillFailedTests).ToList();
         
-        // Display summary table
-        _context.Information("");
-        _context.Information("╔════════════════════════════════════════════════════════════════╗");
-        _context.Information($"║              TEST RETRY SUMMARY - {testType,-25} ║");
-        _context.Information("╠════════════════════════════════════════════════════════════════╣");
-        _context.Information($"║ Total Tests Retried:        {initialFailedTests.Count,3}                              ║");
-        _context.Information($"║ Passed After Retry:         {passedTests.Count,3}                              ║");
-        _context.Information($"║ Still Failed After Retry:   {stillFailedTests.Count,3}                              ║");
-        _context.Information("╚════════════════════════════════════════════════════════════════╝");
-        
         if (passedTests.Any())
         {
             _context.Information("");
@@ -147,10 +137,10 @@ public class TestRetryHelper
         if (stillFailedTests.Any())
         {
             _context.Information("");
-            _context.Error("✗ Tests that FAILED after retry:");
+            _context.Warning("✗ Tests that FAILED after retry:");
             foreach (var test in stillFailedTests)
             {
-                _context.Error($"  • {test}");
+                _context.Warning($"  • {test}");
             }
         }
         else
@@ -160,6 +150,40 @@ public class TestRetryHelper
         }
         
         _context.Information("");
+    }
+    
+    /// <summary>
+    /// Validates failed tests and throws an exception if any non-flaky tests failed.
+    /// Tests ending with "_Flaky" are ignored.
+    /// </summary>
+    /// <param name="stillFailedTests">List of tests that still failed after retry</param>
+    public void ValidateFlakyTests(List<string> stillFailedTests)
+    {
+        if (!stillFailedTests.Any())
+        {
+            return;
+        }
+        
+        var nonFlakyFailedTests = stillFailedTests.Where(test => !test.EndsWith("_Flaky")).ToList();
+        
+        if (nonFlakyFailedTests.Any())
+        {
+            _context.Error("");
+            _context.Error($"✗ {nonFlakyFailedTests.Count} non-flaky test(s) failed after retry:");
+            foreach (var test in nonFlakyFailedTests)
+            {
+                _context.Error($"  • {test}");
+            }
+            _context.Error("");
+            
+            throw new Exception($"{nonFlakyFailedTests.Count} test(s) failed after retry");
+        }
+        else
+        {
+            _context.Information("");
+            _context.Information($"ℹ All {stillFailedTests.Count} failed test(s) are marked as flaky (ending with '_Flaky')");
+            _context.Information("");
+        }
     }
 }
 
