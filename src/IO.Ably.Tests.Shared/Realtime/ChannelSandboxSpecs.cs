@@ -868,14 +868,11 @@ namespace IO.Ably.Tests.Realtime
         {
             get
             {
-                if (Defaults.MsgPackEnabled)
-#pragma warning disable 162
-                {
-                    yield return new object[] { Protocol.MsgPack, GetAes128FixtureData() };
-                    yield return new object[] { Protocol.MsgPack, GetAes256FixtureData() };
-                }
-#pragma warning restore 162
+                // Fixture data for MsgPack
+                yield return new object[] { Protocol.MsgPack, GetAes128FixtureData() };
+                yield return new object[] { Protocol.MsgPack, GetAes256FixtureData() };
 
+                // Fixture data for Json
                 yield return new object[] { Protocol.Json, GetAes128FixtureData() };
                 yield return new object[] { Protocol.Json, GetAes256FixtureData() };
             }

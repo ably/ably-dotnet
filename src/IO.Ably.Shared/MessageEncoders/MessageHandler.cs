@@ -20,12 +20,12 @@ namespace IO.Ably.MessageEncoders
 
         private readonly Protocol _protocol;
 
-        private static List<MessageEncoder> AllEncoders { get; } = new List<MessageEncoder>
+        internal static List<MessageEncoder> AllEncoders { get; } = new List<MessageEncoder>
         {
             new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
         };
 
-        private List<MessageEncoder> Encoders { get; }
+        internal List<MessageEncoder> Encoders { get; }
 
         private ILogger Logger { get; }
 
@@ -353,7 +353,7 @@ namespace IO.Ably.MessageEncoders
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
-                result = Result.Combine(result, DecodePayload(payload, context, encoders));
+                result = Result.Combine(result, DecodePayload(payload, context, encoders, Logger));
             }
 
             return result;
@@ -476,7 +476,7 @@ namespace IO.Ably.MessageEncoders
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(message, index);
-                var decodeResult = DecodePayload(message, context, Encoders)
+                var decodeResult = DecodePayload(message, context, Encoders, Logger)
                     .IfFailure(error => Logger.Warning($"Error decoding message with id: {message.Id}. Error: {error.Message}. Exception: {error.InnerException?.Message}"));
 
                 result = Result.Combine(result, decodeResult);

@@ -20,18 +20,15 @@ namespace IO.Ably.Tests
         /// <inheritdoc/>
         public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {
+            // Return Protocol.Json with relevant data
             var d = new List<object> { Protocol.Json };
             d.AddRange(_data);
             yield return d.ToArray();
 
-            if (Defaults.MsgPackEnabled)
-#pragma warning disable 162
-            {
-                d = new List<object> { Protocol.MsgPack };
-                d.AddRange(_data);
-                yield return d.ToArray();
-            }
-#pragma warning restore 162
+            // Return Protocol.MsgPack with relevant data
+            d = new List<object> { Protocol.MsgPack };
+            d.AddRange(_data);
+            yield return d.ToArray();
         }
     }
 }

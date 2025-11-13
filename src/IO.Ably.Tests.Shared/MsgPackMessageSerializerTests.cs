@@ -65,19 +65,26 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage(messageAction);
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x82);
-            expectedMessage.AddRange(SerializeString("action"));
-            expectedMessage.Add((byte)messageAction);
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            expectedMessage.Add(0);
+            List<byte> expectedMessage = BuildExpectedProtocolMessage(action: messageAction);
 
             // Act
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
+
+            ValidateAndLog(expectedMessage.ToArray(), result as byte[]);
+
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
+        }
+
+        private void ValidateAndLog(byte[] expectedBytes, byte[] actualBytes)
+        {
+            if (!expectedBytes.SequenceEqual(actualBytes))
+            {
+                Output.WriteLine($"Expected: {BitConverter.ToString(expectedBytes)}");
+                Output.WriteLine($"Actual:   {BitConverter.ToString(actualBytes)}");
+            }
         }
 
         [Theory]
@@ -90,25 +97,16 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage() { Channel = channel };
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x82);
-            expectedMessage.AddRange(SerializeString("action"));
-            expectedMessage.Add(0);
-            if (!string.IsNullOrEmpty(channel))
-            {
-                expectedMessage[0]++;
-                expectedMessage.AddRange(SerializeString("channel"));
-                expectedMessage.AddRange(SerializeString(channel));
-            }
-
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            expectedMessage.Add(0);
+            List<byte> expectedMessage = BuildExpectedProtocolMessage(channel: channel);
 
             // Act
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
+
+            ValidateAndLog(expectedMessage.ToArray(), result as byte[]);
+
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -121,27 +119,17 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x82);
-            expectedMessage.AddRange(SerializeString("action"));
-            expectedMessage.Add(0);
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            if (Math.Abs(msgSerial) < 255)
-            {
-                expectedMessage.Add(BitConverter.GetBytes(msgSerial).First());
-            }
-            else
-            {
-                expectedMessage.Add(0xd1);
-                expectedMessage.AddRange(BitConverter.GetBytes(msgSerial).TakeWhile(c => c > 0).Reverse());
-            }
+            List<byte> expectedMessage = BuildExpectedProtocolMessage(msgSerial: msgSerial);
 
             // Act
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
-            Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
+
+            ValidateAndLog(expectedMessage.ToArray(), result as byte[]);
+
+            Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
         [Theory]
@@ -149,33 +137,17 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x82);
-            expectedMessage.AddRange(SerializeString("action"));
-            expectedMessage.Add(0);
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            expectedMessage.Add(0);
-            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
-            if (validMessages.Any())
-            {
-                expectedMessage[0]++;
-                expectedMessage.AddRange(SerializeString("messages"));
-                expectedMessage.Add((byte)((0x09 << 4) + validMessages.Count()));
-                foreach (Message msg in validMessages)
-                {
-                    expectedMessage.Add((0x08 << 4) + 1);
-                    expectedMessage.AddRange(SerializeString("name"));
-                    expectedMessage.AddRange(SerializeString(msg.Name));
-                }
-            }
+            List<byte> expectedMessage = BuildExpectedProtocolMessage(messages: messages);
 
             // Act
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
+
+            ValidateAndLog(expectedMessage.ToArray(), result as byte[]);
+
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -185,36 +157,16 @@ namespace IO.Ably.Tests
         {
             // Arrange
             ProtocolMessage message = new ProtocolMessage() { Presence = messages };
-            List<byte> expectedMessage = new List<byte>();
-            expectedMessage.Add(0x82);
-            expectedMessage.AddRange(SerializeString("action"));
-            expectedMessage.Add(0);
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            expectedMessage.Add(0);
-            if (messages.Length > 0)
-            {
-                expectedMessage[0]++;
-                expectedMessage.AddRange(SerializeString("presence"));
-                expectedMessage.Add((byte)((0x09 << 4) + messages.Length));
-                foreach (PresenceMessage msg in messages)
-                {
-                    expectedMessage.Add((0x08 << 4) + 1);
-                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.ClientId) ? 0 : 1);
-                    expectedMessage.AddRange(SerializeString("action"));
-                    expectedMessage.Add((byte)msg.Action);
-                    if (!string.IsNullOrEmpty(msg.ClientId))
-                    {
-                        expectedMessage.AddRange(SerializeString("clientId"));
-                        expectedMessage.AddRange(SerializeString(msg.ClientId));
-                    }
-                }
-            }
+            List<byte> expectedMessage = BuildExpectedProtocolMessage(presence: messages);
 
             // Act
             object result = MsgPackHelper.Serialise(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
+
+            ValidateAndLog(expectedMessage.ToArray(), result as byte[]);
+
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -441,6 +393,208 @@ namespace IO.Ably.Tests
             {
                 Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
                 Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
+            }
+        }
+
+        /// <summary>
+        /// Builds the expected MessagePack byte array for a ProtocolMessage with all 15 fields.
+        /// Allows customization of specific fields by passing actual values.
+        /// </summary>
+        /// <param name="action">Optional action value (null by default)</param>
+        /// <param name="channel">Optional channel value (null by default)</param>
+        /// <param name="msgSerial">Optional msgSerial value (null by default)</param>
+        /// <param name="messages">Optional messages array (null by default)</param>
+        /// <param name="presence">Optional presence array (null by default)</param>
+        /// <returns>List of bytes representing the expected MessagePack structure</returns>
+        private static List<byte> BuildExpectedProtocolMessage(
+            ProtocolMessage.MessageAction? action = null,
+            string channel = null,
+            long? msgSerial = null,
+            Message[] messages = null,
+            PresenceMessage[] presence = null)
+        {
+            List<byte> expectedMessage = new List<byte>();
+            // MessagePack now serializes all 15 fields (including nulls) in declaration order
+            expectedMessage.Add(0x8F); // map with 15 elements
+
+            // Fields in declaration order: params, action, auth, flags, count, error, id, channel,
+            // channelSerial, connectionId, msgSerial, timestamp, messages, presence, connectionDetails
+            expectedMessage.AddRange(SerializeString("params"));
+            expectedMessage.Add(0xc0); // null
+
+            expectedMessage.AddRange(SerializeString("action"));
+            expectedMessage.Add(action.HasValue ? (byte)action.Value : (byte)0);
+
+            expectedMessage.AddRange(SerializeString("auth"));
+            expectedMessage.Add(0xc0); // null
+            expectedMessage.AddRange(SerializeString("flags"));
+            expectedMessage.Add(0xc0); // null
+            expectedMessage.AddRange(SerializeString("count"));
+            expectedMessage.Add(0xc0); // null
+            expectedMessage.AddRange(SerializeString("error"));
+            expectedMessage.Add(0xc0); // null
+            expectedMessage.AddRange(SerializeString("id"));
+            expectedMessage.Add(0xc0); // null
+
+            expectedMessage.AddRange(SerializeString("channel"));
+            if (channel == null)
+            {
+                expectedMessage.Add(0xc0); // null
+            }
+            else
+            {
+                // Empty string is serialized as empty string, not null
+                expectedMessage.AddRange(SerializeString(channel));
+            }
+
+            expectedMessage.AddRange(SerializeString("channelSerial"));
+            expectedMessage.Add(0xc0); // null
+            expectedMessage.AddRange(SerializeString("connectionId"));
+            expectedMessage.Add(0xc0); // null
+
+            expectedMessage.AddRange(SerializeString("msgSerial"));
+            SerializeMsgSerial(expectedMessage, msgSerial ?? 0);
+
+            expectedMessage.AddRange(SerializeString("timestamp"));
+            expectedMessage.Add(0xc0); // null
+
+            expectedMessage.AddRange(SerializeString("messages"));
+            SerializeMessages(expectedMessage, messages);
+
+            expectedMessage.AddRange(SerializeString("presence"));
+            SerializePresence(expectedMessage, presence);
+
+            expectedMessage.AddRange(SerializeString("connectionDetails"));
+            expectedMessage.Add(0xc0); // null
+
+            return expectedMessage;
+        }
+
+        private static void SerializeMsgSerial(List<byte> bytes, long msgSerial)
+        {
+            if (msgSerial >= 0 && msgSerial <= 127)
+            {
+                // Positive fixint (0x00 to 0x7f)
+                bytes.Add((byte)msgSerial);
+            }
+            else if (msgSerial < 0 && msgSerial >= -32)
+            {
+                // Negative fixint (0xe0 to 0xff)
+                bytes.Add((byte)msgSerial);
+            }
+            else if (msgSerial >= 0 && msgSerial <= 255)
+            {
+                // uint8 (0xcc)
+                bytes.Add(0xcc);
+                bytes.Add((byte)msgSerial);
+            }
+            else if (msgSerial >= 0 && msgSerial <= 65535)
+            {
+                // uint16 (0xcd) - MessagePack uses unsigned for positive values
+                bytes.Add(0xcd);
+                bytes.AddRange(BitConverter.GetBytes((ushort)msgSerial).Reverse());
+            }
+            else if (msgSerial < 0 && msgSerial >= -128)
+            {
+                // int8 (0xd0)
+                bytes.Add(0xd0);
+                bytes.Add((byte)msgSerial);
+            }
+            else if (msgSerial < 0 && msgSerial >= -32768)
+            {
+                // int16 (0xd1)
+                bytes.Add(0xd1);
+                bytes.AddRange(BitConverter.GetBytes((short)msgSerial).Reverse());
+            }
+            else
+            {
+                // int64 (0xd3) for larger values
+                bytes.Add(0xd3);
+                bytes.AddRange(BitConverter.GetBytes(msgSerial).Reverse());
+            }
+        }
+
+        private static void SerializeMessages(List<byte> bytes, Message[] messages)
+        {
+            if (messages == null || messages.Length == 0)
+            {
+                bytes.Add(0x90); // empty array
+                return;
+            }
+
+            // Messages are serialized with all fields including nulls, but empty messages are NOT filtered by OnSerializing
+            // The actual serialization includes ALL messages, even those with empty names
+            bytes.Add((byte)((0x09 << 4) + messages.Length));
+            foreach (Message msg in messages)
+            {
+                // Each message now has 9 fields in declaration order: id, clientId, connectionId, connectionKey, name, timestamp, data, extras, encoding
+                bytes.Add(0x89); // map with 9 elements
+                bytes.AddRange(SerializeString("id"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("clientId"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("connectionId"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("connectionKey"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("name"));
+                if (string.IsNullOrEmpty(msg.Name))
+                {
+                    bytes.Add(0xc0); // null for empty name
+                }
+                else
+                {
+                    bytes.AddRange(SerializeString(msg.Name));
+                }
+
+                bytes.AddRange(SerializeString("timestamp"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("data"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("extras"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("encoding"));
+                bytes.Add(0xc0); // null
+            }
+        }
+
+        private static void SerializePresence(List<byte> bytes, PresenceMessage[] messages)
+        {
+            if (messages == null || messages.Length == 0)
+            {
+                bytes.Add(0x90); // empty array
+                return;
+            }
+
+            bytes.Add((byte)((0x09 << 4) + messages.Length));
+            foreach (PresenceMessage msg in messages)
+            {
+                // Each presence message now has 8 fields in declaration order: id, action, clientId, connectionId, connectionKey, data, encoding, timestamp
+                bytes.Add(0x88); // map with 8 elements
+                bytes.AddRange(SerializeString("id"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("action"));
+                bytes.Add((byte)msg.Action);
+                bytes.AddRange(SerializeString("clientId"));
+                if (!string.IsNullOrEmpty(msg.ClientId))
+                {
+                    bytes.AddRange(SerializeString(msg.ClientId));
+                }
+                else
+                {
+                    bytes.Add(0xc0); // null
+                }
+
+                bytes.AddRange(SerializeString("connectionId"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("connectionKey"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("data"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("encoding"));
+                bytes.Add(0xc0); // null
+                bytes.AddRange(SerializeString("timestamp"));
+                bytes.Add(0xc0); // null
             }
         }
 

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Tests;
 using Xunit;
 using Xunit.Abstractions;
-
-#pragma warning disable 162
 
 namespace IO.Ably.AcceptanceTests
 {
@@ -78,6 +77,33 @@ namespace IO.Ably.AcceptanceTests
                 var processedMessages = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
                 processedMessages.First().Encoding.Should().Be(encoding);
             }
+        }
+
+        [Fact]
+        public void WithTextProtocolAllEncoderAvailable()
+        {
+            // All encoders
+            var allEncoders = MessageHandler.AllEncoders;
+            allEncoders.Should().HaveCount(5);
+            // Encoders available for given MessageHandler
+            var messageHandler = new MessageHandler(DefaultLogger.LoggerInstance, Protocol.Json);
+            messageHandler.Encoders.Should().HaveCount(5);
+            // Available encoders are same as all encoders
+            Assert.Equal(messageHandler.Encoders, MessageHandler.AllEncoders);
+        }
+
+        [Fact]
+        public void WithBinaryProtocolAllEncodersExceptBase64Encoder()
+        {
+            // All encoders
+            var allEncoders = MessageHandler.AllEncoders;
+            allEncoders.Should().HaveCount(5);
+            // Encoders available for given MessageHandler
+            var messageHandler = new MessageHandler(DefaultLogger.LoggerInstance, Protocol.MsgPack);
+            messageHandler.Encoders.Should().HaveCount(4);
+
+            messageHandler.Encoders.Should().BeSubsetOf(allEncoders);
+            messageHandler.Encoders.Should().NotContain(encoder => encoder is Base64Encoder);
         }
 
         [Trait("spec", "RSL4d")]

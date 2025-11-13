@@ -26,6 +26,7 @@ Task("_NetFramework_Unit_Tests_WithRetry")
     
     var resultsPath = paths.TestResults.CombineWithFilePath("xunit-netframework-unit.xml");
     
+    var initialFailedTests = new List<string>();
     try
     {
         var settings = testExecutionHelper.CreateXUnitSettings("xunit-netframework-unit", isIntegration: false);
@@ -34,20 +35,31 @@ Task("_NetFramework_Unit_Tests_WithRetry")
     catch
     {
         Warning("Some tests failed. Retrying failed tests...");
+        initialFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
     }
     
-    testExecutionHelper.RetryFailedXUnitTests(
-        testAssemblies,
-        resultsPath,
-        testRetryHelper,
-        (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: false, isRetry: true)
-    );
-    
-    // Check if any tests still failed after retry
-    var stillFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
-    if (stillFailedTests.Any())
+    if (initialFailedTests.Any())
     {
-        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        testExecutionHelper.RetryFailedXUnitTests(
+            testAssemblies,
+            resultsPath,
+            testRetryHelper,
+            (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: false, isRetry: true)
+        );
+        
+        // Check retry result files to see if tests still failed
+        var stillFailedTests = new List<string>();
+        for (int i = 1; i <= initialFailedTests.Count; i++)
+        {
+            var retryResultsPath = paths.TestResults.CombineWithFilePath($"xunit-netframework-unit-{i}.xml");
+            var retryFailed = testRetryHelper.FindFailedXUnitTests(retryResultsPath);
+            stillFailedTests.AddRange(retryFailed);
+        }
+        
+        if (stillFailedTests.Any())
+        {
+            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        }
     }
 });
 
@@ -75,6 +87,7 @@ Task("_NetFramework_Integration_Tests_WithRetry")
     
     var resultsPath = paths.TestResults.CombineWithFilePath("xunit-netframework-integration.xml");
     
+    var initialFailedTests = new List<string>();
     try
     {
         var settings = testExecutionHelper.CreateXUnitSettings("xunit-netframework-integration", isIntegration: true);
@@ -83,20 +96,31 @@ Task("_NetFramework_Integration_Tests_WithRetry")
     catch
     {
         Warning("Some tests failed. Retrying failed tests...");
+        initialFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
     }
     
-    testExecutionHelper.RetryFailedXUnitTests(
-        testAssemblies,
-        resultsPath,
-        testRetryHelper,
-        (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: true, isRetry: true)
-    );
-    
-    // Check if any tests still failed after retry
-    var stillFailedTests = testRetryHelper.FindFailedXUnitTests(resultsPath);
-    if (stillFailedTests.Any())
+    if (initialFailedTests.Any())
     {
-        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        testExecutionHelper.RetryFailedXUnitTests(
+            testAssemblies,
+            resultsPath,
+            testRetryHelper,
+            (test) => testExecutionHelper.CreateXUnitSettings("retry", isIntegration: true, isRetry: true)
+        );
+        
+        // Check retry result files to see if tests still failed
+        var stillFailedTests = new List<string>();
+        for (int i = 1; i <= initialFailedTests.Count; i++)
+        {
+            var retryResultsPath = paths.TestResults.CombineWithFilePath($"xunit-netframework-integration-{i}.xml");
+            var retryFailed = testRetryHelper.FindFailedXUnitTests(retryResultsPath);
+            stillFailedTests.AddRange(retryFailed);
+        }
+        
+        if (stillFailedTests.Any())
+        {
+            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        }
     }
 });
 
@@ -131,6 +155,7 @@ Task("_NetStandard_Unit_Tests_WithRetry")
     var filter = testExecutionHelper.CreateUnitTestFilter(IsRunningOnUnix());
     var settings = testExecutionHelper.CreateDotNetTestSettings(resultsPath, filter, framework, configuration);
     
+    var initialFailedTests = new List<string>();
     try
     {
         testExecutionHelper.RunDotNetTests(project, settings);
@@ -138,15 +163,26 @@ Task("_NetStandard_Unit_Tests_WithRetry")
     catch
     {
         Warning("Some tests failed. Retrying failed tests...");
+        initialFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
     }
     
-    testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
-    
-    // Check if any tests still failed after retry
-    var stillFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
-    if (stillFailedTests.Any())
+    if (initialFailedTests.Any())
     {
-        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
+        
+        // Check retry result files to see if tests still failed
+        var stillFailedTests = new List<string>();
+        for (int i = 1; i <= initialFailedTests.Count; i++)
+        {
+            var retryResultsPath = paths.TestResults.CombineWithFilePath($"tests-netstandard-unit-{i}.trx");
+            var retryFailed = testRetryHelper.FindFailedDotNetTests(retryResultsPath);
+            stillFailedTests.AddRange(retryFailed);
+        }
+        
+        if (stillFailedTests.Any())
+        {
+            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        }
     }
 });
 
@@ -177,6 +213,7 @@ Task("_NetStandard_Integration_Tests_WithRetry")
     var filter = testExecutionHelper.CreateIntegrationTestFilter();
     var settings = testExecutionHelper.CreateDotNetTestSettings(resultsPath, filter, framework, configuration);
     
+    var initialFailedTests = new List<string>();
     try
     {
         testExecutionHelper.RunDotNetTests(project, settings);
@@ -184,15 +221,26 @@ Task("_NetStandard_Integration_Tests_WithRetry")
     catch
     {
         Warning("Some tests failed. Retrying failed tests...");
+        initialFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
     }
     
-    testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
-    
-    // Check if any tests still failed after retry
-    var stillFailedTests = testRetryHelper.FindFailedDotNetTests(resultsPath);
-    if (stillFailedTests.Any())
+    if (initialFailedTests.Any())
     {
-        throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        testExecutionHelper.RetryFailedDotNetTests(project, resultsPath, testRetryHelper, framework, configuration);
+        
+        // Check retry result files to see if tests still failed
+        var stillFailedTests = new List<string>();
+        for (int i = 1; i <= initialFailedTests.Count; i++)
+        {
+            var retryResultsPath = paths.TestResults.CombineWithFilePath($"tests-netstandard-integration-{i}.trx");
+            var retryFailed = testRetryHelper.FindFailedDotNetTests(retryResultsPath);
+            stillFailedTests.AddRange(retryFailed);
+        }
+        
+        if (stillFailedTests.Any())
+        {
+            throw new Exception($"{stillFailedTests.Count} test(s) failed after retry");
+        }
     }
 });
 
