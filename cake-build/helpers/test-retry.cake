@@ -18,25 +18,41 @@ public class TestRetryHelper
         var failedTests = new List<string>();
         
         if (!_context.FileExists(resultsPath))
+        {
+            _context.Warning($"Results file not found: {resultsPath}");
             return failedTests;
+        }
         
         try
         {
             var doc = System.Xml.Linq.XDocument.Load(resultsPath.FullPath);
-            var nodes = doc.XPathSelectElements("//test-case[@success='False']");
             
-            foreach (var node in nodes)
+            // XUnit v2 XML format uses @result='Fail' attribute
+            // Try both formats for compatibility
+            var failedNodes = doc.XPathSelectElements("//test[@result='Fail']")
+                .Concat(doc.XPathSelectElements("//test-case[@result='Fail']"))
+                .Concat(doc.XPathSelectElements("//test-case[@success='False']"));
+            
+            foreach (var node in failedNodes)
             {
                 var testName = node.Attribute("name")?.Value;
                 if (!string.IsNullOrEmpty(testName))
                 {
-                    failedTests.Add(TrimTestMethod(testName));
+                    var trimmedName = TrimTestMethod(testName);
+                    if (!failedTests.Contains(trimmedName))
+                    {
+                        _context.Information($"Found failed test: {trimmedName}");
+                        failedTests.Add(trimmedName);
+                    }
                 }
             }
+            
+            _context.Information($"Total failed tests found: {failedTests.Count}");
         }
         catch (Exception ex)
         {
             _context.Warning($"Error parsing XUnit results: {ex.Message}");
+            _context.Warning($"Stack trace: {ex.StackTrace}");
         }
         
         return failedTests;
@@ -96,6 +112,54 @@ public class TestRetryHelper
             }
         }
         return basePath;
+    }
+    
+    /// <summary>
+    /// Displays a formatted summary table of test retry results
+    /// </summary>
+    /// <param name="testType">The type of tests (e.g., ".NET Framework Unit", ".NET Standard Integration")</param>
+    /// <param name="initialFailedTests">List of tests that failed initially</param>
+    /// <param name="stillFailedTests">List of tests that still failed after retry</param>
+    public void DisplayRetryResultsSummary(string testType, List<string> initialFailedTests, List<string> stillFailedTests)
+    {
+        var passedTests = initialFailedTests.Except(stillFailedTests).ToList();
+        
+        // Display summary table
+        _context.Information("");
+        _context.Information("╔════════════════════════════════════════════════════════════════╗");
+        _context.Information($"║              TEST RETRY SUMMARY - {testType,-25} ║");
+        _context.Information("╠════════════════════════════════════════════════════════════════╣");
+        _context.Information($"║ Total Tests Retried:        {initialFailedTests.Count,3}                              ║");
+        _context.Information($"║ Passed After Retry:         {passedTests.Count,3}                              ║");
+        _context.Information($"║ Still Failed After Retry:   {stillFailedTests.Count,3}                              ║");
+        _context.Information("╚════════════════════════════════════════════════════════════════╝");
+        
+        if (passedTests.Any())
+        {
+            _context.Information("");
+            _context.Information("✓ Tests that PASSED on retry:");
+            foreach (var test in passedTests)
+            {
+                _context.Information($"  • {test}");
+            }
+        }
+        
+        if (stillFailedTests.Any())
+        {
+            _context.Information("");
+            _context.Error("✗ Tests that FAILED after retry:");
+            foreach (var test in stillFailedTests)
+            {
+                _context.Error($"  • {test}");
+            }
+        }
+        else
+        {
+            _context.Information("");
+            _context.Information("✓ All retried tests passed!");
+        }
+        
+        _context.Information("");
     }
 }
 
