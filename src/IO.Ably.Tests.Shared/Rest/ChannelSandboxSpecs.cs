@@ -11,6 +11,7 @@ using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using IO.Ably.Tests.Shared.Helpers;
 
 namespace IO.Ably.Tests.Rest
 {
@@ -368,7 +369,7 @@ namespace IO.Ably.Tests.Rest
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)message.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {
@@ -408,7 +409,7 @@ namespace IO.Ably.Tests.Rest
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)message.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {

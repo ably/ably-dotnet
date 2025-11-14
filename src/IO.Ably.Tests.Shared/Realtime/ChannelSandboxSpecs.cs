@@ -11,6 +11,7 @@ using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Extensions;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -910,7 +911,7 @@ namespace IO.Ably.Tests.Realtime
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {

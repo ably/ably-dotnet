@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using MessagePack;
 using Newtonsoft.Json;
@@ -700,14 +701,14 @@ namespace IO.Ably.Tests
                     // For JSON objects, compare as JToken for proper equality
                     var expectedJson = JsonConvert.SerializeObject(fixture.Data);
                     var actualJson = JsonConvert.SerializeObject(decodedMsg.Data);
-                    JToken.DeepEquals(JToken.Parse(expectedJson), JToken.Parse(actualJson)).Should().BeTrue();
+                    JAssert.DeepEquals(JToken.Parse(expectedJson), JToken.Parse(actualJson), Output).Should().BeTrue();
                     break;
 
                 case "jsonArray":
                     // For JSON arrays, compare as JToken for proper equality
                     var expectedArrayJson = JsonConvert.SerializeObject(fixture.Data);
                     var actualArrayJson = JsonConvert.SerializeObject(decodedMsg.Data);
-                    JToken.DeepEquals(JToken.Parse(expectedArrayJson), JToken.Parse(actualArrayJson)).Should().BeTrue();
+                    JAssert.DeepEquals(JToken.Parse(expectedArrayJson), JToken.Parse(actualArrayJson), Output).Should().BeTrue();
                     break;
 
                 default:
