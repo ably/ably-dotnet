@@ -11,6 +11,7 @@ using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using IO.Ably.Tests.Shared.Helpers;
 
 namespace IO.Ably.Tests.Rest
 {
@@ -368,7 +369,7 @@ namespace IO.Ably.Tests.Rest
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)message.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {
@@ -408,7 +409,7 @@ namespace IO.Ably.Tests.Rest
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)message.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {
@@ -537,22 +538,14 @@ namespace IO.Ably.Tests.Rest
         {
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
 
-            var httpClient = (await AblySandboxFixture.GetSettings()).GetHttpClient();
-
             var rawMessage = new JObject
             {
                 ["data"] = messageData["data"],
                 ["encoding"] = messageData["encoding"],
             };
 
-            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post)
-            {
-                RequestBody = rawMessage.ToJson().GetBytes(),
-            };
-
             var client1 = await GetRestClient(protocol);
-            await client1.AblyAuth.AddAuthHeader(request);
-            await httpClient.Execute(request);
+            client1.Request(HttpMethod.Post, $"/channels/{channelName}/messages", null, rawMessage);
 
             await Task.Delay(1000);
 
@@ -581,7 +574,6 @@ namespace IO.Ably.Tests.Rest
             JObject messageData)
         {
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
-            var httpClient = (await AblySandboxFixture.GetSettings()).GetHttpClient();
             var expectedType = (string)messageData["expectedType"];
 
             var client1 = await GetRestClient(protocol);
@@ -603,13 +595,10 @@ namespace IO.Ably.Tests.Rest
 
             await Task.Delay(1000);
 
-            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get);
-            await client1.AblyAuth.AddAuthHeader(request);
-            var response = await httpClient.Execute(request);
+            var response = await client1.Request(HttpMethod.Get, $"/channels/{channelName}/messages", null);
 
             // Assert
-            var historyData = JArray.Parse(response.TextResponse);
-            var responseData = (JObject)historyData.First;
+            var responseData = response.Items.First();
             responseData.Should().NotBeNull();
 
             if (expectedType == "binary")

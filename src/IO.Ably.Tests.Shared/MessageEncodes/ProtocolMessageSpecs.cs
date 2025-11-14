@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using System.Linq;
+using Xunit;
+using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {
@@ -7,12 +10,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithMsgPackEncoding_CanSerialiseAndDeserializeProtocolMessage()
         {
-#if MSGPACK
-            if (!Defaults.MsgPackEnabled)
-            {
-                return;
-            }
-
+            // MsgPack is always enabled now
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, "boo");
             message.Presence = new[] { new PresenceMessage(PresenceAction.Enter, "123", "my data") };
 
@@ -21,7 +19,6 @@ namespace IO.Ably.Tests
 
             result.Action.Should().Be(message.Action);
             result.Presence.First().Data.Should().Be(message.Presence[0].Data);
-#endif
         }
     }
 }

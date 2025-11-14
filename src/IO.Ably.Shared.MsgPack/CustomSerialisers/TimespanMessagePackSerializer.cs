@@ -1,25 +1,24 @@
 using System;
-using MsgPack;
-using MsgPack.Serialization;
+using MessagePack;
+using MessagePack.Formatters;
 
 namespace IO.Ably.CustomSerialisers
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable SA1600 // Elements should be documented
-    public class TimespanMessagePackSerializer : MessagePackSerializer<TimeSpan>
+    public class TimespanFormatter : IMessagePackFormatter<TimeSpan>
     {
-        public TimespanMessagePackSerializer(SerializationContext ownerContext)
-            : base(ownerContext) { }
-
-        protected override void PackToCore(Packer packer, TimeSpan objectTree)
+        /// <inheritdoc/>
+        public void Serialize(ref MessagePackWriter writer, TimeSpan value, MessagePackSerializerOptions options)
         {
-            packer.Pack((long)objectTree.TotalMilliseconds);
+            writer.Write((long)value.TotalMilliseconds);
         }
 
-        protected override TimeSpan UnpackFromCore(Unpacker unpacker)
+        /// <inheritdoc/>
+        public TimeSpan Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            var data = unpacker.LastReadData;
-            return TimeSpan.FromMilliseconds(data.AsInt64());
+            var milliseconds = reader.ReadInt64();
+            return TimeSpan.FromMilliseconds(milliseconds);
         }
     }
 #pragma warning restore SA1600 // Elements should be documented

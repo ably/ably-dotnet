@@ -16,12 +16,13 @@ namespace IO.Ably.Tests.Push
     {
         public class GeneralTests : MockHttpRestSpecs
         {
-            [Fact]
+            [Theory]
+            [ProtocolData]
             [Trait("spec", "RSH6")]
             [Trait("spec", "RSH6a")]
-            public void WhenLocalDeviceHasDeviceIdentityToken_ShouldAddHeaderToRequestWithCorrectValue()
+            public void WhenLocalDeviceHasDeviceIdentityToken_ShouldAddHeaderToRequestWithCorrectValue(Protocol protocol)
             {
-                var request = new AblyRequest("/", HttpMethod.Get);
+                var request = new AblyRequest("/", HttpMethod.Get, protocol);
                 var localDevice = new LocalDevice() { DeviceIdentityToken = "test" };
 
                 _ = GetRestClient();
@@ -30,12 +31,13 @@ namespace IO.Ably.Tests.Push
                 request.Headers.Should().ContainKey(Defaults.DeviceIdentityTokenHeader).WhoseValue.Should().Be("test");
             }
 
-            [Fact]
+            [Theory]
+            [ProtocolData]
             [Trait("spec", "RSH6")]
             [Trait("spec", "RSH6b")]
-            public void WhenLocalDeviceHasDeviceSecret_ShouldAddHeaderToRequestWithCorrectValue()
+            public void WhenLocalDeviceHasDeviceSecret_ShouldAddHeaderToRequestWithCorrectValue(Protocol protocol)
             {
-                var request = new AblyRequest("/", HttpMethod.Get);
+                var request = new AblyRequest("/", HttpMethod.Get, protocol);
                 var localDevice = new LocalDevice() { DeviceSecret = "test" };
 
                 _ = GetRestClient();
@@ -44,11 +46,12 @@ namespace IO.Ably.Tests.Push
                 request.Headers.Should().ContainKey(Defaults.DeviceSecretHeader).WhoseValue.Should().Be("test");
             }
 
-            [Fact]
+            [Theory]
+            [ProtocolData]
             [Trait("spec", "RSH6")]
-            public void WhenLocalDeviceHasBothDeviceIdentityTokenAndSecret_ShouldOnlyAddIdentityTokenHeader()
+            public void WhenLocalDeviceHasBothDeviceIdentityTokenAndSecret_ShouldOnlyAddIdentityTokenHeader(Protocol protocol)
             {
-                var request = new AblyRequest("/", HttpMethod.Get);
+                var request = new AblyRequest("/", HttpMethod.Get, protocol);
                 var localDevice = new LocalDevice() { DeviceIdentityToken = "test", DeviceSecret = "secret" };
 
                 _ = GetRestClient();
@@ -58,11 +61,12 @@ namespace IO.Ably.Tests.Push
                 request.Headers.Should().NotContainKey(Defaults.DeviceSecretHeader);
             }
 
-            [Fact]
+            [Theory]
+            [ProtocolData]
             [Trait("spec", "RSH6")]
-            public void WhenLocalDevice_DoesNOT_HaveEitherDeviceIdentityTokenAndSecret_ShouldNotAddAnyHeaders()
+            public void WhenLocalDevice_DoesNOT_HaveEitherDeviceIdentityTokenAndSecret_ShouldNotAddAnyHeaders(Protocol protocol)
             {
-                var request = new AblyRequest("/", HttpMethod.Get);
+                var request = new AblyRequest("/", HttpMethod.Get, protocol);
                 var localDevice = new LocalDevice();
 
                 _ = GetRestClient();

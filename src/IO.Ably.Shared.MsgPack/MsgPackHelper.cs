@@ -1,56 +1,35 @@
 using System;
-using System.IO;
+using System.Text;
 using IO.Ably.CustomSerialisers;
-using MsgPack;
-using MsgPack.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using MessagePack;
+using MessagePack.Resolvers;
 
 namespace IO.Ably
 {
     internal static class MsgPackHelper
     {
-        private static readonly SerializationContext Context;
-
-        static MsgPackHelper()
-        {
-            Context = GetContext();
-        }
-
-        private static SerializationContext GetContext()
-        {
-            var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map };
-            context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
-            context.Serializers.Register(new TimespanMessagePackSerializer(context));
-            context.Serializers.Register(new IO_Ably_CapabilitySerializer(context));
-            context.Serializers.Register(new IO_Ably_TokenRequestSerializer(context));
-            context.Serializers.Register(new IO_Ably_Auth_TokenDetailsSerializer(context));
-            context.Serializers.Register(new IO_Ably_ConnectionDetailsMessageSerializer(context));
-            context.Serializers.Register(new IO_Ably_ErrorInfoSerializer(context));
-            context.Serializers.Register(new IO_Ably_MessageCountSerializer(context));
-            context.Serializers.Register(new IO_Ably_MessageTypesSerializer(context));
-            context.Serializers.Register(new IO_Ably_RequestCountSerializer(context));
-            context.Serializers.Register(new IO_Ably_ResourceCountSerializer(context));
-            context.Serializers.Register(new IO_Ably_ConnectionTypesSerializer(context));
-            context.Serializers.Register(new IO_Ably_OutboundMessageTrafficSerializer(context));
-            context.Serializers.Register(new IO_Ably_InboundMessageTrafficSerializer(context));
-            context.Serializers.Register(new IO_Ably_MessageSerializer(context));
-            context.Serializers.Register(new IO_Ably_PresenceMessageSerializer(context));
-            context.Serializers.Register(new IO_Ably_PresenceMessage_ActionTypeSerializer(context));
-            context.Serializers.Register(new IO_Ably_StatsSerializer(context));
-            context.Serializers.Register(new IO_Ably_Types_ProtocolMessageSerializer(context));
-            context.Serializers.Register(new IO_Ably_Types_ProtocolMessage_MessageActionSerializer(context));
-            context.Serializers.Register(new System_Net_HttpStatusCodeSerializer(context));
-
-            return context;
-        }
+        private static readonly MessagePackSerializerOptions Options =
+            MessagePackSerializerOptions.Standard
+                .WithResolver(CompositeResolver.Create(
+                    AblyResolver.Instance,
+                    AblyGeneratedResolver.Instance,
+                    StandardResolver.Instance));
 
         public static byte[] Serialise(object obj)
         {
-            var serialiser = Context.GetSerializer(obj.GetType());
-            using (var ms = new MemoryStream())
+            if (obj == null)
             {
-                serialiser.Pack(ms, obj, PackerCompatibilityOptions.None);
-                return ms.ToArray();
+                return null;
             }
+
+            if (obj is JToken value)
+            {
+                return MessagePackSerializer.ConvertFromJson(value.ToString());
+            }
+
+            return MessagePackSerializer.Serialize(obj.GetType(), obj, Options);
         }
 
         public static object Deserialise(byte[] byteArray, Type objectType)
@@ -60,21 +39,60 @@ namespace IO.Ably
                 return null;
             }
 
-            using (var ms = new MemoryStream(byteArray))
+            // Checks if given type is subset of JToken
+            if (typeof(JToken).IsAssignableFrom(objectType))
             {
-                var serialiser = Context.GetSerializer(objectType);
-                return serialiser.Unpack(ms);
+                return JToken.Parse(ToJsonString(byteArray));
             }
-        }
 
-        public static object DeserialiseMsgPackObject(byte[] byteArray)
-        {
-            return Deserialise(byteArray, typeof(MessagePackObject));
+            return MessagePackSerializer.Deserialize(objectType, byteArray, Options);
         }
 
         public static T Deserialise<T>(byte[] byteArray)
         {
-            return (T)Deserialise(byteArray, typeof(T));
+            if (byteArray == null || byteArray.Length == 0)
+            {
+                return default(T);
+            }
+
+            return MessagePackSerializer.Deserialize<T>(byteArray, Options);
+        }
+
+        // This uses MessagePack's built-in JSON conversion which handles all MessagePack types
+        public static string ToJsonString(byte[] byteArray)
+        {
+            if (byteArray == null || byteArray.Length == 0)
+            {
+                return null;
+            }
+
+            return MessagePackSerializer.ConvertToJson(byteArray, Options);
+        }
+
+        public static string DecodeMsgPackObject(byte[] byteArray)
+        {
+            if (byteArray == null || byteArray.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                // Convert MessagePack binary data to JSON string for pretty printing
+                return JToken.Parse(ToJsonString(byteArray)).ToString(Formatting.Indented);
+            }
+            catch (Exception)
+            {
+                // Last resort: return hex representation for debugging
+                var sb = new StringBuilder(byteArray.Length * 2);
+                sb.Append("0x");
+                foreach (byte b in byteArray)
+                {
+                    sb.AppendFormat("{0:x2}", b);
+                }
+
+                return sb.ToString();
+            }
         }
     }
 }

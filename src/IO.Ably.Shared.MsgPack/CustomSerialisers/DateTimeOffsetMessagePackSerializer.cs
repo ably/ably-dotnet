@@ -1,25 +1,24 @@
 using System;
-using MsgPack;
-using MsgPack.Serialization;
+using MessagePack;
+using MessagePack.Formatters;
 
 namespace IO.Ably.CustomSerialisers
 {
 #pragma warning disable SA1600 // Elements should be documented
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public class DateTimeOffsetMessagePackSerializer : MessagePackSerializer<DateTimeOffset>
+    public class DateTimeOffsetFormatter : IMessagePackFormatter<DateTimeOffset>
     {
-        public DateTimeOffsetMessagePackSerializer(SerializationContext ownerContext)
-            : base(ownerContext) { }
-
-        protected override void PackToCore(Packer packer, DateTimeOffset objectTree)
+        /// <inheritdoc/>
+        public void Serialize(ref MessagePackWriter writer, DateTimeOffset value, MessagePackSerializerOptions options)
         {
-            packer.Pack((long)objectTree.ToUnixTimeInMilliseconds());
+            writer.Write(value.ToUnixTimeInMilliseconds());
         }
 
-        protected override DateTimeOffset UnpackFromCore(Unpacker unpacker)
+        /// <inheritdoc/>
+        public DateTimeOffset Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            var data = unpacker.LastReadData;
-            return data.AsInt64().FromUnixTimeInMilliseconds();
+            var milliseconds = reader.ReadInt64();
+            return milliseconds.FromUnixTimeInMilliseconds();
         }
     }
 #pragma warning restore SA1600 // Elements should be documented

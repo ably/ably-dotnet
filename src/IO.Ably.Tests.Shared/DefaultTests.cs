@@ -36,11 +36,5 @@ namespace IO.Ably.Tests.Shared
             var fallbackHosts = Defaults.GetEnvironmentFallbackHosts("sandbox");
             Assert.Equal(expectedFallBackHosts, fallbackHosts);
         }
-
-        [Fact]
-        public void Defaults_ProtocolIsJson()
-        {
-            Defaults.Protocol.Should().Be(Protocol.Json);
-        }
     }
 }

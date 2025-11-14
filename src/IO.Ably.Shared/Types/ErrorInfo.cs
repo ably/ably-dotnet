@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,6 +11,7 @@ namespace IO.Ably
     /// <summary>
     /// An exception type encapsulating error information containing an Ably specific error code and generic status code.
     /// </summary>
+    [MessagePackObject(keyAsPropertyName: true)]
     public class ErrorInfo
     {
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", ErrorCodes.NoError);
@@ -31,54 +33,63 @@ namespace IO.Ably
         /// <summary>
         /// Ably error code (see https://github.com/ably/ably-common/blob/main/protocol/errors.json).
         /// </summary>
+        [Key("code")]
         [JsonProperty("code")]
         public int Code { get; set; }
 
         /// <summary>
         /// The http status code corresponding to this error.
         /// </summary>
+        [Key("statusCode")]
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
 
         /// <summary>
         /// Additional reason information, where available.
         /// </summary>
+        [Key("message")]
         [JsonProperty("message")]
         public string Message { get; set; }
 
         /// <summary>
         /// Link to specification detail for this error code, where available. Spec TI4.
         /// </summary>
+        [Key("href")]
         [JsonProperty("href")]
         public string Href { get; set; }
 
         /// <summary>
         /// Additional cause information, where available.
         /// </summary>
+        [Key("cause")]
         [JsonProperty("cause")]
         public ErrorInfo Cause { get; set; }
 
         /// <summary>
         /// Is this Error as result of a 401 Unauthorized HTTP response.
         /// </summary>
+        [IgnoreMember]
         public bool IsUnAuthorizedError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Unauthorized;
 
         /// <summary>
         /// Is this Error as result of a 403 Forbidden HTTP response.
         /// </summary>
+        [IgnoreMember]
         public bool IsForbiddenError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Forbidden;
 
         /// <summary>
         /// Is the error Code a token error code.
         /// </summary>
+        [IgnoreMember]
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
 
         /// <summary>
         /// Get or Sets the InnerException.
         /// </summary>
+        [IgnoreMember]
         public Exception InnerException { get; set; }
 
         /// <summary>
@@ -179,22 +190,29 @@ namespace IO.Ably
             int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : ErrorCodes.InternalError;
             string reason = string.Empty;
 
-            if (response.Type == ResponseType.Json)
+            string errorResponse;
+            if (response.Type == ResponseType.Binary)
             {
-                try
+                errorResponse = MsgPackHelper.ToJsonString(response.Body);
+            }
+            else
+            {
+                errorResponse = response.TextResponse;
+            }
+
+            try
+            {
+                var json = JObject.Parse(errorResponse);
+                if (json["error"] != null)
                 {
-                    var json = JObject.Parse(response.TextResponse);
-                    if (json["error"] != null)
-                    {
-                        reason = (string)json["error"]["message"];
-                        errorCode = (int)json["error"]["code"];
-                    }
+                    reason = (string)json["error"]["message"];
+                    errorCode = (int)json["error"]["code"];
                 }
-                catch (Exception ex)
-                {
-                    // If there is no json or there is something wrong we don't want to throw from here.
-                    Debug.WriteLine(ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                // If there is no json or there is something wrong we don't want to throw from here.
+                Debug.WriteLine(ex.Message);
             }
 
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);

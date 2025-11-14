@@ -598,7 +598,7 @@ namespace IO.Ably.Tests
 
             var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability)).Result;
 
-            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
+            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox", UseBinaryProtocol = protocol.IsBinary() });
 
             var error =
                 await
@@ -655,7 +655,7 @@ namespace IO.Ably.Tests
             {
                 TokenDetails = token,
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             tokenClient.AblyAuth.ClientId.Should().BeNullOrEmpty();
@@ -678,7 +678,7 @@ namespace IO.Ably.Tests
             {
                 TokenDetails = token,
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
             await
                 Assert.ThrowsAsync<AblyException>(
@@ -698,7 +698,7 @@ namespace IO.Ably.Tests
             {
                 TokenDetails = token,
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             var channel = tokenClient.Channels["pesisted:test"];
@@ -723,7 +723,7 @@ namespace IO.Ably.Tests
             {
                 TokenDetails = token,
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             var channel = tokenClient.Channels["pesisted:test"];
@@ -747,7 +747,7 @@ namespace IO.Ably.Tests
             {
                 AuthUrl = new Uri(authUrl),
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
@@ -771,7 +771,7 @@ namespace IO.Ably.Tests
             {
                 AuthUrl = new Uri(authUrl),
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol,
+                UseBinaryProtocol = protocol.IsBinary(),
                 HttpRequestTimeout = new TimeSpan(0, 0, 20)
             });
 
@@ -794,12 +794,12 @@ namespace IO.Ably.Tests
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeDataString(tokenJson);
 
             var client = new AblyRealtime(new ClientOptions
-                                                 {
-                                                     AuthUrl = new Uri(authUrl),
-                                                     Environment = settings.Environment,
-                                                     UseBinaryProtocol = protocol == Defaults.Protocol,
-                                                     HttpRequestTimeout = new TimeSpan(0, 0, 20)
-                                                 });
+            {
+                AuthUrl = new Uri(authUrl),
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol.IsBinary(),
+                HttpRequestTimeout = new TimeSpan(0, 0, 20)
+            });
 
             await client.WaitForState();
             client.Connection.State.Should().Be(ConnectionState.Connected);
@@ -816,12 +816,12 @@ namespace IO.Ably.Tests
             var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeDataString(incorrectJson);
 
             var client = new AblyRealtime(new ClientOptions
-                                              {
-                                                  AuthUrl = new Uri(authUrl),
-                                                  Environment = settings.Environment,
-                                                  UseBinaryProtocol = protocol == Defaults.Protocol,
-                                                  HttpRequestTimeout = new TimeSpan(0, 0, 20)
-                                              });
+            {
+                AuthUrl = new Uri(authUrl),
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol.IsBinary(),
+                HttpRequestTimeout = new TimeSpan(0, 0, 20)
+            });
 
             var tsc = new TaskCompletionAwaiter();
             ErrorInfo err = null;
@@ -848,7 +848,7 @@ namespace IO.Ably.Tests
             {
                 options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" }).Convert();
                 options.Environment = settings.Environment;
-                options.UseBinaryProtocol = protocol == Defaults.Protocol;
+                options.UseBinaryProtocol = protocol.IsBinary();
             });
 
             var channel = authCallbackClient.Channels["pesisted:test"];
@@ -871,7 +871,7 @@ namespace IO.Ably.Tests
             {
                 options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                 options.Environment = settings.Environment;
-                options.UseBinaryProtocol = protocol == Defaults.Protocol;
+                options.UseBinaryProtocol = protocol.IsBinary();
             });
 
             var channel = authCallbackClient.Channels["pesisted:test"];
