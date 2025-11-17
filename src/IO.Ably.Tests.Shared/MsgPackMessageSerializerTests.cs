@@ -660,6 +660,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
+        [Trait("spec", "RSL6a3")]
         [MemberData(nameof(MsgpackDecodingFixtures))]
         public void TestMsgpackDecoding(string testName, MsgpackTestFixture fixture)
         {

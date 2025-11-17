@@ -17,8 +17,34 @@ namespace IO.Ably.CustomSerialisers
         /// <inheritdoc/>
         public DateTimeOffset Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            var milliseconds = reader.ReadInt64();
-            return milliseconds.FromUnixTimeInMilliseconds();
+            var nextType = reader.NextMessagePackType;
+
+            // Handle integer types (Int64, Int32, etc.)
+            if (nextType == MessagePackType.Integer)
+            {
+                var milliseconds = reader.ReadInt64();
+                return milliseconds.FromUnixTimeInMilliseconds();
+            }
+
+            // Handle float types (Single, Double)
+            if (nextType == MessagePackType.Float)
+            {
+                var milliseconds = reader.ReadDouble();
+                return ((long)milliseconds).FromUnixTimeInMilliseconds();
+            }
+
+            // Handle string type (parse DateTimeOffset string representation)
+            if (nextType == MessagePackType.String)
+            {
+                var value = reader.ReadString();
+                if (DateTimeOffset.TryParse(value, out var result))
+                {
+                    return result;
+                }
+            }
+
+            // Return MinValue if unable to parse
+            return DateTimeOffset.MinValue;
         }
     }
 #pragma warning restore SA1600 // Elements should be documented
