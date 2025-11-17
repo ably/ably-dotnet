@@ -5,7 +5,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using Newtonsoft.Json.Linq;
 
-namespace IO.Ably.Shared.MsgPack
+namespace IO.Ably.MsgPack.CustomSerialisers
 {
     internal class JObjectMessagePackSerializer : IMessagePackFormatter<JObject>
     {
@@ -23,6 +23,13 @@ namespace IO.Ably.Shared.MsgPack
 
         JObject IMessagePackFormatter<JObject>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
+            // Check if there's any data left to read from the current position
+            var remainingSequence = reader.Sequence.Slice(reader.Position);
+            if (remainingSequence.Length == 0)
+            {
+                return null;
+            }
+
             if (reader.TryReadNil())
             {
                 return null;

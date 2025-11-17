@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Shared.CustomSerialisers;
+using IO.Ably.CustomSerialisers;
 using IO.Ably.Types;
 using MessagePack;
 using Newtonsoft.Json;

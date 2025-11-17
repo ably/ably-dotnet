@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using IO.Ably.MessageEncoders;
 using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
-using MessagePack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Tests.MsgPack
 {
     // NOTE: The old GenerateMsgPackSerializers class has been removed.
     // MessagePack-CSharp v3.x uses automatic source generation during build.

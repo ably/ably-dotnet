@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace IO.Ably.CustomSerialisers
+namespace IO.Ably.MsgPack.CustomSerialisers
 {
     /// <summary>
     /// Custom formatter for ChannelParams that serializes it as a dictionary.

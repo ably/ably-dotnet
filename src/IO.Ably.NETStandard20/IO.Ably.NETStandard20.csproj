@@ -36,9 +36,6 @@
 
   <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" />
 
-  <!-- Always include MsgPack project - no conditional compilation -->
-  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" />
-
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />
   </ItemGroup>

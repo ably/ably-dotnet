@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MessagePack;
 using MessagePack.Resolvers;
+using IO.Ably.MsgPack.CustomSerialisers;
 
 namespace IO.Ably
 {
