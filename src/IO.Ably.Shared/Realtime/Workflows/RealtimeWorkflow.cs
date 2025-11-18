@@ -726,7 +726,17 @@ namespace IO.Ably.Realtime.Workflow
                                 State.Connection.ClearKeyAndId();
                             }
 
-                            var connectingHost = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost());
+                            var defaultRealtimeHost = Client.Options.FullRealtimeHost();
+
+                            // Always retry on defaultPrimaryHost first when connecting command triggered by Disconnected/Suspended state timeout.
+                            var connectingHost = defaultRealtimeHost;
+
+                            // Otherwise use host fallbacks if connecting command triggered by other commands
+                            if (cmd.TriggeredByMessage.Contains("OnTimeOut()") == false)
+                            {
+                               connectingHost = AttemptsHelpers.GetHost(State, defaultRealtimeHost);
+                            }
+
                             SetNewHostInState(connectingHost);
 
                             var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
@@ -787,11 +797,12 @@ namespace IO.Ably.Realtime.Workflow
                         break;
                     case SetDisconnectedStateCommand cmd:
 
-                        var (retryInstantly, clearKey) = await GetDisconnectFlags();
-                        if (clearKey)
+                        if (cmd.ClearConnectionKey)
                         {
                             State.Connection.ClearKey();
                         }
+
+                        var retryInstantly = await CheckInstantRetryFlag();
 
                         var disconnectedState = new ConnectionDisconnectedState(ConnectionManager, cmd.Error, Logger)
                         {
@@ -823,19 +834,19 @@ namespace IO.Ably.Realtime.Workflow
                             return SetConnectingStateCommand.Create().TriggeredBy(command);
                         }
 
-                        async Task<(bool retry, bool clearKey)> GetDisconnectFlags()
+                        async Task<bool> CheckInstantRetryFlag()
                         {
                             if (cmd.RetryInstantly)
                             {
-                                return (true, cmd.ClearConnectionKey);
+                                return true;
                             }
 
                             if ((cmd.Error != null && cmd.Error.IsRetryableStatusCode()) || cmd.Exception != null)
                             {
-                                return (await Client.RestClient.CanConnectToAbly(), true);
+                                return await Client.RestClient.CanConnectToAbly();
                             }
 
-                            return (false, cmd.ClearConnectionKey);
+                            return false;
                         }
 
                         break;
