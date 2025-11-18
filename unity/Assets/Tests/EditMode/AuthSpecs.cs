@@ -9,7 +9,6 @@ using Cysharp.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
 using NUnit.Framework;
-using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Assets.Tests.EditMode
@@ -374,7 +373,7 @@ namespace Assets.Tests.EditMode
                 };
                 await Task.Delay(2000);
                 // This makes sure we get server time
-                ((AblyAuth) mainClient.Auth).SetServerTime();
+                await ((AblyAuth) mainClient.Auth).SetServerTime();
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(mainClient.StatsAsync());
                 Assert.AreSame(ErrorInfo.NonRenewableToken, ex.ErrorInfo);

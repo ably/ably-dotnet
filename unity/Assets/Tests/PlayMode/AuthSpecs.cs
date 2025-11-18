@@ -375,7 +375,7 @@ namespace Assets.Tests.PlayMode
                 };
                 await Task.Delay(2000);
                 // This makes sure we get server time
-                ((AblyAuth) mainClient.Auth).SetServerTime();
+                await ((AblyAuth) mainClient.Auth).SetServerTime();
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(mainClient.StatsAsync());
                 Assert.AreSame(ErrorInfo.NonRenewableToken, ex.ErrorInfo);

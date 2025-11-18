@@ -14,6 +14,8 @@ namespace Assets.Tests.AblySandbox
 
         private static Dictionary<string, TestEnvironmentSettings> _settings = new Dictionary<string, TestEnvironmentSettings>();
 
+        private static Protocol sandboxJsonProtocol = Protocol.Json;
+
         public async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
             environment = environment ?? "sandbox";
@@ -47,11 +49,11 @@ namespace Assets.Tests.AblySandbox
                 CipherMode.CBC,
                 ((string)cipher["iv"]).FromBase64());
 
-            var request = new AblyRequest("/apps", HttpMethod.Post);
+            var request = new AblyRequest("/apps", HttpMethod.Post, sandboxJsonProtocol);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
-            request.Protocol = Protocol.Json;
+            request.Protocol = sandboxJsonProtocol;
 
             AblyHttpClient client = settings.GetHttpClient(environment);
             var response = await RetryExecute(() => client.Execute(request));
@@ -114,8 +116,8 @@ namespace Assets.Tests.AblySandbox
             json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
 
             AblyHttpClient client = settings.GetHttpClient();
-            var request = new AblyRequest("/stats", HttpMethod.Post);
-            request.Protocol = Protocol.Json;
+            var request = new AblyRequest("/stats", HttpMethod.Post, sandboxJsonProtocol);
+            request.Protocol = sandboxJsonProtocol;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
 
