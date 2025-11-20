@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -340,6 +341,98 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             realtimeHosts.Should().HaveCount(2);
             realtimeHosts.First().Should().Match(x => client.State.Connection.FallbackHosts.Contains(x));
             realtimeHosts.Last().Should().Be("realtime.ably.io");
+        }
+
+        [Fact]
+        [Trait("spec", "RTN17f")]
+        public async Task WhenNonRetryableError_ShouldAlwaysTryDefaultHostFirst()
+        {
+            var client = await GetConnectedClient(opts =>
+            {
+                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+                opts.SuspendedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+
+            // Reduced connectionStateTTL for limited disconnected retries upto 20 seconds
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(20);
+
+            var realtimeHosts = new List<string>();
+            FakeTransportFactory.InitialiseFakeTransport = p => realtimeHosts.Add(p.Parameters.Host);
+
+            client.Connection.On(ConnectionEvent.Connecting, stateChange =>
+            {
+                if (stateChange.Previous == ConnectionState.Disconnected)
+                {
+                    client.DisconnectWithNonRetryableError(false);
+                }
+            });
+
+            // Receive first disconnect message on CONNECTED client, will call above callback after timeout
+            await client.DisconnectWithNonRetryableError();
+
+            await new ConditionalAwaiter(() => client.Connection.State == ConnectionState.Suspended, null, 120);
+
+            client.Connection.State.Should().Be(ConnectionState.Suspended);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            client.DisconnectWithNonRetryableError(false);
+
+            await client.WaitForState(ConnectionState.Suspended);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            realtimeHosts.Should().AllBe("realtime.ably.io");
+        }
+
+        [Fact]
+        [Trait("spec", "RTN17j")]
+        public async Task WhenInternetConnectionIsDown_ShouldAlwaysTryDefaultHostFirst()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Forbidden)
+            {
+                Content = new StringContent("Internet not available")
+            };
+
+            var handler = new FakeHttpMessageHandler(response);
+
+            var realtimeHosts = new List<string>();
+            FakeTransportFactory.InitialiseFakeTransport = p => realtimeHosts.Add(p.Parameters.Host);
+
+            var client = GetClientWithFakeTransportAndMessageHandler(
+                opts =>
+                {
+                    opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+                    opts.SuspendedRetryTimeout = TimeSpan.FromSeconds(2);
+                },
+                handler);
+            client.Options.SkipInternetCheck = false;
+
+            // Reduced connectionStateTTL for limited disconnected retries upto 20 seconds
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(20);
+
+            await client.ConnectClient(); // On the default host
+
+            client.Connection.On(ConnectionEvent.Connecting, stateChange =>
+            {
+                if (stateChange.Previous == ConnectionState.Disconnected)
+                {
+                    client.DisconnectWithRetryableError(false);
+                }
+            });
+
+            // Receive first disconnect message on CONNECTED client, will call above callback after timeout
+            await client.DisconnectWithRetryableError();
+
+            await new ConditionalAwaiter(() => client.Connection.State == ConnectionState.Suspended, null, 120);
+
+            client.Connection.State.Should().Be(ConnectionState.Suspended);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            client.DisconnectWithRetryableError(false);
+
+            await client.WaitForState(ConnectionState.Suspended);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            realtimeHosts.Should().AllBe("realtime.ably.io");
         }
 
         public ConnectionFallbackSpecs(ITestOutputHelper output)
