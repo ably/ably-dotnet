@@ -40,7 +40,7 @@ namespace Assets.Tests.EditMode
 
         public AblySandbox.AblySandbox AblySandbox { get; set; }
 
-        static Protocol[] _protocols = { Protocol.Json };
+        static Protocol[] _protocols = { Protocol.Json, Protocol.MsgPack };
 
         [UnityTest]
         public IEnumerator TestConnectionStateChange([ValueSource(nameof(_protocols))] Protocol protocol)

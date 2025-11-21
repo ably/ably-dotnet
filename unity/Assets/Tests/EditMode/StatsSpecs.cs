@@ -53,7 +53,7 @@ namespace Assets.Tests.EditMode
             return result.Items;
         }
 
-        static Protocol[] _protocols = { Protocol.Json };
+        static Protocol[] _protocols = { Protocol.Json, Protocol.MsgPack };
 
         [Property("spec", "G3")]
         [UnityTest]

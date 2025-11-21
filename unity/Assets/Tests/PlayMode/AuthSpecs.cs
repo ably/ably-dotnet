@@ -42,7 +42,7 @@ namespace Assets.Tests.PlayMode
 
         public AblySandbox.AblySandbox AblySandbox { get; set; }
 
-        private static Protocol[] _protocols = { Protocol.Json };
+        private static Protocol[] _protocols = { Protocol.Json, Protocol.MsgPack };
 
         private static TokenParams CreateTokenParams(Capability capability, TimeSpan? ttl = null)
         {
