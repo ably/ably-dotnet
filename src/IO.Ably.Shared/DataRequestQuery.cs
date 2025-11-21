@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace IO.Ably
 {

@@ -62,14 +62,8 @@ namespace IO.Ably
             return () => DateTimeOffset.UtcNow;
         }
 
-#if MSGPACK
-        internal const Protocol DefaultProtocol = IO.Ably.Protocol.MsgPack;
+        // MsgPack encoding is enabled by default, value is set to ClientOptions.UseBinaryProtocol
         internal const bool MsgPackEnabled = true;
-#else
-        internal const Protocol Protocol = IO.Ably.Protocol.Json;
-        internal const bool MsgPackEnabled = false;
-
-#endif
 
         static Defaults()
         {

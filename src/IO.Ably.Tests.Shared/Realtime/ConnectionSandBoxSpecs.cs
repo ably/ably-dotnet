@@ -829,7 +829,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 AuthUrl = new Uri(authUrl),
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol
+                UseBinaryProtocol = protocol.IsBinary()
             });
 
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
@@ -1129,34 +1129,29 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
             });
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
 
             client.Connection.On((args) =>
             {
-                stateChanges.Add(args.Current);
+                stateChanges.Add(args);
             });
 
-            await client.Auth.AuthorizeAsync(new TokenParams { Ttl = TimeSpan.FromSeconds(5) });
+            await client.Auth.AuthorizeAsync(new TokenParams { Ttl = TimeSpan.FromSeconds(1) });
 
             var channel = client.Channels.Get("shortToken_test" + protocol);
             await channel.AttachAsync();
 
-            int count = 0;
-            while (true)
+            await new ConditionalAwaiter(() => stateChanges.Count(ev => ev.Current == ConnectionState.Connected) >= 3);
+            var disconnectedStates = stateChanges.FindAll(ev => ev.Current == ConnectionState.Disconnected);
+            disconnectedStates.Count.Should().BeGreaterThanOrEqualTo(2);
+            foreach (var state in disconnectedStates)
             {
-                Interlocked.Increment(ref count);
-                channel.Publish("test", "test");
-                await Task.Delay(2000);
-                if (count == 10)
-                {
-                    break;
-                }
+                state.Current.Should().Be(ConnectionState.Disconnected);
+                state.Reason.Should().NotBeNull();
+                state.Reason.Code.Should().Be(ErrorCodes.TokenExpired);
             }
 
-            stateChanges.Count(x => x == ConnectionState.Connected).Should().BeGreaterThan(2);
-
-            await client.WaitForState();
-            client.Connection.State.Should().Be(ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
         }
 
         [Theory]

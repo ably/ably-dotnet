@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\JsonSerializationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageDataConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerializers\MessageExtrasConverterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseTests.cs" />
@@ -72,8 +73,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\ProtocolMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessagePack\SerializationTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\MsgPackHelperTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\MsgPackMessageSerializerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\CapabilityFormatterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\ChannelParamsFormatterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\DateTimeOffsetFormatterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\JObjectMessagePackSerializerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\MessageExtrasFormatterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\SimpleBufferWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\TimespanFormatterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachineTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\FakeMobileDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ListDeviceDetailsRequestTests.cs" />
@@ -156,5 +164,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\SemanticVersionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ErrorPolicyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ReconnectionStrategyTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\" />
   </ItemGroup>
 </Project>

@@ -217,7 +217,7 @@ namespace Assets.Tests.PlayMode
                 var handler = new FakeHttpMessageHandler(response);
                 var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-                await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+                await client.Execute(new AblyRequest("/test", HttpMethod.Get, protocol));
                 string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
                 Assert.AreEqual(1, values.Length);
                 string[] agentValues = values[0].Split(' ');

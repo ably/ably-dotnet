@@ -28,6 +28,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\DecodingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcDiffErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\AblyGeneratedResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\AblyResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\CapabilityMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\ChannelParamsFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\JObjectMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\MessageExtrasMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerialisers\TimespanMessagePackSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\MsgPackHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachine.Events.cs" />
