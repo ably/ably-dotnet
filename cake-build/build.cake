@@ -1,6 +1,10 @@
+#addin nuget:?package=Mono.Cecil&version=0.11.5
+
 #load "helpers/paths.cake"
+#load "helpers/deps.cake"
 #load "helpers/utils.cake"
 #load "helpers/tools.cake"
+#load "helpers/license.cake"
 #load "helpers/test-retry.cake"
 #load "helpers/build-config.cake"
 #load "helpers/frameworks.cake"
@@ -8,6 +12,7 @@
 #load "tasks/build.cake"
 #load "tasks/test.cake"
 #load "tasks/package.cake"
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS

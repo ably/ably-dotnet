@@ -88,5 +88,92 @@ public class ILRepackHelper
     }
 }
 
-var ilRepackHelper = new ILRepackHelper(Context);
+public class MonoCecilHelper
+{
+    private readonly ICakeContext _context;
+    
+    public MonoCecilHelper(ICakeContext context)
+    {
+        _context = context;
+    }
+    
+    public FilePath MergeResources(FilePath targetDll, FilePath[] resourceFiles)
+    {
+        if (!_context.FileExists(targetDll))
+        {
+            throw new Exception($"Target DLL not found: {targetDll}");
+        }
+        
+        if (resourceFiles == null || resourceFiles.Length == 0)
+        {
+            _context.Information("No resource files to embed, returning original DLL path");
+            return targetDll;
+        }
+        
+        // Validate resource files exist
+        foreach (var resourcePath in resourceFiles)
+        {
+            if (!_context.FileExists(resourcePath))
+            {
+                throw new Exception($"Resource file not found (skipping): {resourcePath.FullPath}");
+            }
+        }
+        
+        _context.Information($"Embedding {resourceFiles.Length} resource file(s) into {targetDll.GetFilename()}...");
+        
+        byte[] modifiedAssemblyBytes;
+        
+        // Use ReaderParameters to avoid file locking when reading
+        var readerParams = new Mono.Cecil.ReaderParameters { ReadWrite = false };
+        
+        // Load the assembly using Mono.Cecil with proper disposal
+        using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(targetDll.FullPath, readerParams))
+        {
+            var module = assembly.MainModule;
+            
+            // Add each resource file as an embedded resource
+            foreach (var resourcePath in resourceFiles)
+            {
+                if (_context.FileExists(resourcePath))
+                {
+                    // Extract the filename to use as the resource name
+                    var resourceName = System.IO.Path.GetFileName(resourcePath.FullPath);
+                    
+                    // Load the file content
+                    byte[] fileBytes = System.IO.File.ReadAllBytes(resourcePath.FullPath);
+                    
+                    // Create the Embedded Resource
+                    var newResource = new Mono.Cecil.EmbeddedResource(
+                        resourceName,
+                        Mono.Cecil.ManifestResourceAttributes.Public,
+                        fileBytes
+                    );
+                    
+                    // Add to the Module's Resources collection
+                    module.Resources.Add(newResource);
+                    
+                    _context.Information($"  ✓ Embedded resource: {resourceName}");
+                }
+            }
+            
+            // Write the Assembly to a memory stream to avoid file locking
+            using (var memoryStream = new System.IO.MemoryStream())
+            {
+                var writerParams = new Mono.Cecil.WriterParameters();
+                assembly.Write(memoryStream, writerParams);
+                modifiedAssemblyBytes = memoryStream.ToArray();
+            }
+        }
+        
+        // Now write the bytes to the file - all Mono.Cecil resources are disposed
+        System.IO.File.WriteAllBytes(targetDll.FullPath, modifiedAssemblyBytes);
+        
+        _context.Information($"✓ Resources embedded into {targetDll}");
+        
+        // Return the path to the modified DLL (file handles are now closed)
+        return targetDll;
+    }
+}
 
+var ilRepackHelper = new ILRepackHelper(Context);
+var monoCecilHelper = new MonoCecilHelper(Context);
