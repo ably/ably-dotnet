@@ -20,14 +20,30 @@ namespace IO.Ably.Tests.Realtime
                 new ProtocolMessage(ProtocolMessage.MessageAction.Message) { Messages = new[] { message }, Channel = channel });
         }
 
-        public static async Task DisconnectWithRetryableError(this AblyRealtime client)
+        public static async Task DisconnectWithRetryableError(this AblyRealtime client, bool waitForDisconnectedState = true)
         {
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
                 Error = new ErrorInfo { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            await client.WaitForState(ConnectionState.Disconnected);
+            if (waitForDisconnectedState)
+            {
+                await client.WaitForState(ConnectionState.Disconnected);
+            }
+        }
+
+        public static async Task DisconnectWithNonRetryableError(this AblyRealtime client, bool waitForDisconnectedState = true)
+        {
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                Error = new ErrorInfo { StatusCode = HttpStatusCode.Forbidden }
+            });
+
+            if (waitForDisconnectedState)
+            {
+                await client.WaitForState(ConnectionState.Disconnected);
+            }
         }
 
         public static async Task ConnectClient(this AblyRealtime client)
