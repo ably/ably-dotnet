@@ -31,7 +31,8 @@ public class Deps
         "System.Buffers.dll",
         "Microsoft.Bcl.AsyncInterfaces.dll",
         "System.Collections.Immutable.dll",
-        "Microsoft.NET.StringTools.dll"
+        "Microsoft.NET.StringTools.dll",
+        "System.Numerics.Vectors.dll"
     };
 
     private readonly string _newtonsoftDll = "Newtonsoft.Json.dll";
@@ -39,7 +40,7 @@ public class Deps
     // Instance property that accesses the paths instance
     private FilePath UnityNewtonsoftDll => _paths.Root
         .Combine("lib/unity/AOT")
-        .CombineWithFilePath("_newtonsoftDll");
+        .CombineWithFilePath(_newtonsoftDll);
     
     /// <summary>
     /// Gets all Unity package dependencies (common + msgpack DLLs) combined with the base path

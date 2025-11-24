@@ -82,6 +82,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\MessageExtrasFormatterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\SimpleBufferWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPack\CustomSerializers\TimespanFormatterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MsgPack\MsgPackTestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ActivationStateMachineTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\FakeMobileDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Push\ListDeviceDetailsRequestTests.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using IO.Ably.Tests.Shared.MsgPack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,9 +19,9 @@ namespace IO.Ably.Tests.MsgPack
         public void CanSerialiseListOfMessagesAndDeserialiseThem()
         {
             var message = new Message("example", "The quick brown fox jumped over the lazy dog");
-            var serialised = MsgPackHelper.Serialise(new List<Message> { message });
+            var serialised = MsgPackHelper.Serialise<List<Message>>(new List<Message> { message });
 
-            var result = MsgPackHelper.Deserialise(serialised, typeof(List<Message>)) as List<Message>;
+            var result = MsgPackHelper.Deserialise<List<Message>>(serialised);
             var resultMessage = result.First();
 
             resultMessage.Data.Should().Be(message.Data);
@@ -40,8 +41,8 @@ namespace IO.Ably.Tests.MsgPack
             var list = new[] { allAllowed, withOneResource, withTwoResources };
             foreach (var item in list)
             {
-                var data = MsgPackHelper.Serialise(item);
-                var unpacked = MsgPackHelper.Deserialise(data, typeof(Capability));
+                var data = MsgPackHelper.Serialise<Capability>(item);
+                var unpacked = MsgPackHelper.Deserialise<Capability>(data);
                 Assert.Equal(item, unpacked);
             }
         }
@@ -63,10 +64,10 @@ namespace IO.Ably.Tests.MsgPack
                 "hqV0b2tlbtmIRGFDX2ZBLkR6cXdOWkZITklsX0dwVVI2RU5wZXFld1luemY1THRJMkwyUkNQMGVEU3M1OTdfNk9YRVc1dnVtU0hpQm4ycGR4UDdnZTQyMFVOYnJxcEthU19XNGFXRTVvYzE1T3JpR0xfOGhFTExHcGdERW9Oc25VaXhXSWl6R3Zoc25LVkZZVKdrZXlOYW1lrURhQ19mQS5DaFBIc1GmaXNzdWVkzwAAAVSXUWN9p2V4cGlyZXPPAAABVJeIUf2qY2FwYWJpbGl0eat7IioiOlsiKiJdfahjbGllbnRJZKMxMjM="
                     .FromBase64();
 
-            var packed = MsgPackHelper.Serialise(details);
-            var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
+            var packed = MsgPackHelper.Serialise<TokenDetails>(details);
+            var unpacked = MsgPackHelper.Deserialise<TokenDetails>(packed);
             unpacked.Should().BeEquivalentTo(details);
-            var unpackedFromRaw = MsgPackHelper.Deserialise(bytes, typeof(TokenDetails));
+            var unpackedFromRaw = MsgPackHelper.Deserialise<TokenDetails>(bytes);
             unpackedFromRaw.Should().BeEquivalentTo(details);
         }
 
@@ -79,7 +80,7 @@ namespace IO.Ably.Tests.MsgPack
 
             var expected = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource("MsgPackStatsTest.json"));
 
-            var unpacked = (List<Stats>)MsgPackHelper.Deserialise(bytes, typeof(List<Stats>));
+            var unpacked = MsgPackHelper.Deserialise<List<Stats>>(bytes);
 
             unpacked.Should().BeEquivalentTo(expected);
         }
@@ -95,8 +96,8 @@ namespace IO.Ably.Tests.MsgPack
                 Capability = new Capability(),
             };
 
-            var packed = MsgPackHelper.Serialise(details);
-            var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
+            var packed = MsgPackHelper.Serialise<TokenDetails>(details);
+            var unpacked = MsgPackHelper.Deserialise<TokenDetails>(packed);
             unpacked.Should().BeEquivalentTo(details);
         }
 
@@ -104,8 +105,8 @@ namespace IO.Ably.Tests.MsgPack
         public void CanSerialiseAndDeserialiseBase64ByteArray()
         {
             var message = new Message() { Name = "example", Data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64() };
-            var serialised = MsgPackHelper.Serialise(new List<Message> { message });
-            var resultMessage = MsgPackHelper.Deserialise(serialised, typeof(List<Message>)) as List<Message>;
+            var serialised = MsgPackHelper.Serialise<List<Message>>(new List<Message> { message });
+            var resultMessage = MsgPackHelper.Deserialise<List<Message>>(serialised);
             var data = resultMessage.First().Data as byte[];
             data.Should().BeEquivalentTo(message.Data as byte[]);
             resultMessage.First().Name.Should().Be(message.Name);
@@ -119,7 +120,7 @@ namespace IO.Ably.Tests.MsgPack
 
             // MessagePackObject doesn't exist in MessagePack-CSharp v3.x
             // Deserialize to a dictionary instead and convert to JSON
-            var decodedMessagePack = MsgPackHelper.Deserialise(value.FromBase64(), typeof(System.Collections.Generic.Dictionary<string, object>));
+            var decodedMessagePack = MsgPackHelper.Deserialise<Dictionary<string, object>>(value.FromBase64(), MsgPackTestExtensions.GetTestOptions());
             var jsonString = JsonHelper.Serialize(decodedMessagePack);
             var response = JsonHelper.Deserialize<TokenResponse>(jsonString);
 
@@ -135,8 +136,8 @@ namespace IO.Ably.Tests.MsgPack
         public void CanDeserialiseConnectionDetailsMessages()
         {
             var connectionDetails = new ConnectionDetails() { ClientId = "123", ConnectionStateTtl = TimeSpan.FromSeconds(60) };
-            var serialized = MsgPackHelper.Serialise(connectionDetails);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ConnectionDetails));
+            var serialized = MsgPackHelper.Serialise<ConnectionDetails>(connectionDetails);
+            var deserialized = MsgPackHelper.Deserialise<ConnectionDetails>(serialized);
             deserialized.Should().BeEquivalentTo(connectionDetails);
         }
     }

@@ -78,7 +78,7 @@ namespace Assets.Tests.PlayMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 Assert.AreEqual(ChannelState.Initialized, channel.State);
 
                 var channelStates = new List<ChannelState>();
@@ -108,7 +108,7 @@ namespace Assets.Tests.PlayMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 await channel.AttachAsync();
 
                 var eventName = "chat";
@@ -154,7 +154,7 @@ namespace Assets.Tests.PlayMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, (options, _) => options.ClientId = "sac");
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 await channel.AttachAsync();
 
                 var presenceMessages = new Dictionary<PresenceAction, string>();

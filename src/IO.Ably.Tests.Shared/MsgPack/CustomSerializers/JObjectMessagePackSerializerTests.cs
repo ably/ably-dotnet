@@ -2,6 +2,7 @@ using System.Buffers;
 using FluentAssertions;
 using IO.Ably.MsgPack.CustomSerialisers;
 using IO.Ably.Tests.Shared.Helpers;
+using IO.Ably.Tests.Shared.MsgPack;
 using MessagePack;
 using MessagePack.Formatters;
 using Newtonsoft.Json.Linq;
@@ -13,6 +14,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
     public class JObjectMessagePackSerializerTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
+
+        private MessagePackSerializerOptions _msgPackTestOptions = MsgPackTestExtensions.GetTestOptions();
 
         public JObjectMessagePackSerializerTests(ITestOutputHelper testOutputHelper)
         {
@@ -28,8 +31,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["key2"] = "value2"
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -49,8 +52,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 }
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -65,8 +68,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["number"] = 42
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -86,8 +89,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["object"] = new JObject { ["nested"] = "value" }
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -129,8 +132,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         {
             var jObject = new JObject();
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Count.Should().Be(0);
@@ -146,8 +149,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["third"] = 3
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -180,8 +183,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 }
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -199,8 +202,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["newline"] = "line1\nline2"
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -217,8 +220,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["negative"] = -999999999
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized["int32Max"].Value<int>().Should().Be(int.MaxValue);
@@ -235,8 +238,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["nonEmptyArray"] = new JArray { 1, 2, 3 }
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -251,8 +254,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["notNull"] = "value"
             };
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized["nullValue"].Type.Should().Be(JTokenType.Null);
@@ -271,8 +274,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             }";
             var jObject = JObject.Parse(originalJson);
 
-            var serialized = MsgPackHelper.Serialise(jObject);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(JObject)) as JObject;
+            var serialized = MsgPackHelper.Serialise<JObject>(jObject);
+            var deserialized = MsgPackHelper.Deserialise<JObject>(serialized);
 
             deserialized.Should().NotBeNull();
             JAssert.DeepEquals(jObject, deserialized, _testOutputHelper).Should().BeTrue();
@@ -321,8 +324,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 Timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             };
 
-            var serialized = MsgPackHelper.Serialise(containerData);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(TestContainer)) as TestContainer;
+            var serialized = MsgPackHelper.Serialise<TestContainer>(containerData, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<TestContainer>(serialized, _msgPackTestOptions);
 
             deserialized.Should().NotBeNull();
             deserialized.Id.Should().Be(123);

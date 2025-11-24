@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions;
 using IO.Ably.MsgPack.CustomSerialisers;
+using IO.Ably.Tests.Shared.MsgPack;
 using MessagePack;
 using Xunit;
 
@@ -8,6 +9,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
 {
     public class DateTimeOffsetFormatterTests
     {
+        private MessagePackSerializerOptions _msgPackTestOptions = MsgPackTestExtensions.GetTestOptions();
+
         [MessagePackObject(keyAsPropertyName: true)]
         public class TestClass
         {
@@ -27,11 +30,11 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldSerializeDateTimeOffsetToMilliseconds()
         {
             var originalDateTimeOffset = new TestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
-            var serialized = MsgPackHelper.Serialise(originalDateTimeOffset);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalDateTimeOffset, _msgPackTestOptions);
 
             serialized.Should().NotBeNull();
 
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.DateTimeOffset.Should().Be(originalDateTimeOffset.DateTimeOffset);
         }
 
@@ -39,8 +42,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldPreserveTimezoneInformation()
         {
             var originalDateTimeOffset = new TestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
-            var serialized = MsgPackHelper.Serialise(originalDateTimeOffset);
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalDateTimeOffset, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.DateTimeOffset.Should().Be(originalDateTimeOffset.DateTimeOffset);
         }
 
@@ -121,8 +124,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleNullableDateTimeOffset()
         {
             var originalDateTimeOffset = new NullableTestClass(new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero));
-            var serialized = MsgPackHelper.Serialise(originalDateTimeOffset);
-            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<NullableTestClass>(originalDateTimeOffset, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized, _msgPackTestOptions);
             deserialized.DateTimeOffset.Should().Be(originalDateTimeOffset.DateTimeOffset);
         }
 
@@ -130,8 +133,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleNullDateTimeOffset()
         {
             var originalDateTimeOffset = new NullableTestClass();
-            var serialized = MsgPackHelper.Serialise(originalDateTimeOffset);
-            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<NullableTestClass>(originalDateTimeOffset, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized, _msgPackTestOptions);
             deserialized.DateTimeOffset.Should().BeNull();
         }
     }

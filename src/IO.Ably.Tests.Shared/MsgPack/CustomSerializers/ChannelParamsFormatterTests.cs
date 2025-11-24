@@ -12,8 +12,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         {
             var channelParams = new ChannelParams();
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Count.Should().Be(0);
@@ -27,8 +27,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["key1"] = "value1"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Count.Should().Be(1);
@@ -45,8 +45,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["key3"] = "value3"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Count.Should().Be(3);
@@ -58,8 +58,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         [Fact]
         public void ShouldHandleNullChannelParams()
         {
-            var serialized = MsgPackHelper.Serialise(null as ChannelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(null as ChannelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().BeNull();
         }
@@ -87,7 +87,7 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["param2"] = "value2"
             };
 
-            var bytes = MsgPackHelper.Serialise(channelParams);
+            var bytes = MsgPackHelper.Serialise<ChannelParams>(channelParams);
 
             // Verify it's serialized as a map
             var reader = new MessagePackReader(bytes);
@@ -104,8 +104,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["delta"] = "vcdiff"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Should().ContainKey("rewind");
@@ -124,8 +124,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["unicode"] = "こんにちは"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized["key"].Should().Be("value with spaces");
@@ -142,8 +142,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["notEmpty"] = "value"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized["empty"].Should().Be(string.Empty);
@@ -160,8 +160,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
                 ["third"] = "3"
             };
 
-            var serialized = MsgPackHelper.Serialise(channelParams);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ChannelParams)) as ChannelParams;
+            var serialized = MsgPackHelper.Serialise<ChannelParams>(channelParams);
+            var deserialized = MsgPackHelper.Deserialise<ChannelParams>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Count.Should().Be(3);

@@ -69,7 +69,7 @@ namespace IO.Ably.Tests.MsgPack
             List<byte> expectedMessage = BuildExpectedProtocolMessage(action: messageAction);
 
             // Act
-            object result = MsgPackHelper.Serialise(message);
+            object result = MsgPackHelper.Serialise<ProtocolMessage>(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
@@ -101,7 +101,7 @@ namespace IO.Ably.Tests.MsgPack
             List<byte> expectedMessage = BuildExpectedProtocolMessage(channel: channel);
 
             // Act
-            object result = MsgPackHelper.Serialise(message);
+            object result = MsgPackHelper.Serialise<ProtocolMessage>(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests.MsgPack
             List<byte> expectedMessage = BuildExpectedProtocolMessage(msgSerial: msgSerial);
 
             // Act
-            object result = MsgPackHelper.Serialise(message);
+            object result = MsgPackHelper.Serialise<ProtocolMessage>(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
@@ -142,7 +142,7 @@ namespace IO.Ably.Tests.MsgPack
             List<byte> expectedMessage = BuildExpectedProtocolMessage(messages: messages);
 
             // Act
-            object result = MsgPackHelper.Serialise(message);
+            object result = MsgPackHelper.Serialise<ProtocolMessage>(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
@@ -161,7 +161,7 @@ namespace IO.Ably.Tests.MsgPack
             List<byte> expectedMessage = BuildExpectedProtocolMessage(presence: messages);
 
             // Act
-            object result = MsgPackHelper.Serialise(message);
+            object result = MsgPackHelper.Serialise<ProtocolMessage>(message);
 
             // Assert
             result.Should().BeOfType<byte[]>();
@@ -321,7 +321,7 @@ namespace IO.Ably.Tests.MsgPack
         public void DeserializesMessageCorrectly_Count(int count)
         {
             // Arrange
-            byte[] expectedMessage = MsgPackHelper.Serialise(new ProtocolMessage() { Count = count }) as byte[];
+            byte[] expectedMessage = MsgPackHelper.Serialise<ProtocolMessage>(new ProtocolMessage() { Count = count }) as byte[];
 
             // Act
             ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage);
