@@ -55,28 +55,7 @@ namespace IO.Ably.Tests.MessageEncodes
             }
         }
 
-        public class EncodeWithBinaryProtocol : Base64EncoderTests
-        {
-            [Fact]
-            public void WithBinaryData_LeavesDataAndEncodingIntact()
-            {
-                if (!Defaults.MsgPackEnabled)
-                {
-                    return;
-                }
-
-#pragma warning disable 162
-                IPayload payload = new Message { Data = _binaryData };
-
-                payload = _encoder.Encode(payload, new DecodingContext()).Value;
-
-                payload.Data.Should().Be(_binaryData);
-                payload.Encoding.Should().BeNull();
-#pragma warning restore 162
-            }
-        }
-
-        public class EncodeWithTextProtocol : Base64EncoderTests
+        public class Encode : Base64EncoderTests
         {
             [Fact]
             public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEncoding()

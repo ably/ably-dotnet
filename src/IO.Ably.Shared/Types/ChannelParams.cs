@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using MessagePack;
 
 namespace IO.Ably
 {

@@ -17,10 +17,8 @@ namespace IO.Ably.Tests.Realtime
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
         [Theory]
-#if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
-#endif
         [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [InlineData(Protocol.Json, ConnectionState.Connected)]
         [Trait("spec", "RTN20a")]

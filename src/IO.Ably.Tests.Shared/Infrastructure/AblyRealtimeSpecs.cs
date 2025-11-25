@@ -161,7 +161,7 @@ namespace IO.Ably.Tests
         {
             if (client == null)
             {
-                return GetConnectedClient().MapAsync(x => x.Channels.Get(TestChannelName, channelOptions));
+                return GetConnectedClient(opts => { opts.UseBinaryProtocol = false; }).MapAsync(x => x.Channels.Get(TestChannelName, channelOptions));
             }
 
             return Task.FromResult(client.Channels.Get(TestChannelName, channelOptions));

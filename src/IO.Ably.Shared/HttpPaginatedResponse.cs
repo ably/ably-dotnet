@@ -76,9 +76,19 @@ namespace IO.Ably
 
             ExecuteDataQueryFunc = executeDataQueryFunc;
 
-            if (response.TextResponse.IsNotEmpty())
+            string jsonData;
+            if (response.Type == ResponseType.Binary)
             {
-                var data = JToken.Parse(response.TextResponse);
+                jsonData = MsgPackHelper.ToJsonString(response.Body);
+            }
+            else
+            {
+                jsonData = response.TextResponse;
+            }
+
+            if (jsonData.IsNotEmpty())
+            {
+                var data = JToken.Parse(jsonData);
                 if (data is JArray arr)
                 {
                     foreach (var token in arr)

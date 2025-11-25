@@ -101,11 +101,15 @@ namespace IO.Ably.Tests
 
             // Act
             if (Defaults.MsgPackEnabled)
-#pragma warning disable 162
             {
                 options.UseBinaryProtocol.Should().BeTrue();
             }
-#pragma warning restore 162
+            else
+            {
+#pragma warning disable CS0162 // Unreachable code detected
+                options.UseBinaryProtocol.Should().BeFalse();
+#pragma warning restore CS0162 // Unreachable code detected
+            }
         }
 
         [Fact]

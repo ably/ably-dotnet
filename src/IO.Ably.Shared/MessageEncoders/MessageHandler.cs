@@ -20,10 +20,12 @@ namespace IO.Ably.MessageEncoders
 
         private readonly Protocol _protocol;
 
-        private static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
+        internal static List<MessageEncoder> AllEncoders { get; } = new List<MessageEncoder>
         {
             new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VcDiffEncoder(), Base64Encoder,
         };
+
+        internal List<MessageEncoder> Encoders { get; }
 
         private ILogger Logger { get; }
 
@@ -31,25 +33,28 @@ namespace IO.Ably.MessageEncoders
         {
             Logger = logger;
             _protocol = protocol;
+            if (IsMsgPack())
+            {
+                Encoders = AllEncoders.Where(encoder => encoder != Base64Encoder).ToList(); // No need for Base64Encoder for MsgPack
+            }
+            else
+            {
+                Encoders = AllEncoders;
+            }
         }
 
         private IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
         {
-            if (response.Type != ResponseType.Json)
+            if (response.Type == ResponseType.Json)
             {
-                throw new AblyException(
-                    $"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
+                var messages = JsonHelper.Deserialize<List<PresenceMessage>>(response.TextResponse);
+                ProcessMessages(messages, context);
+                return messages;
             }
 
-            var messages = JsonHelper.Deserialize<List<PresenceMessage>>(response.TextResponse);
-            ProcessMessages(messages, context);
-            return messages;
-
-#if MSGPACK
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
-            ProcessMessages(payloads, options);
+            ProcessMessages(payloads, context);
             return payloads;
-#endif
         }
 
         private IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
@@ -61,31 +66,40 @@ namespace IO.Ably.MessageEncoders
                 return messages;
             }
 
-#if MSGPACK
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<Message>)) as List<Message>;
-            ProcessMessages(payloads, options);
+            ProcessMessages(payloads, context);
             return payloads;
-#else
-            throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
-
-#endif
         }
 
-        private static void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
-            _ = DecodePayloads(context, payloads as IEnumerable<IMessage>);
+            _ = DecodePayloads(context, payloads as IEnumerable<IMessage>, Encoders);
         }
 
         public void SetRequestBody(AblyRequest request)
         {
             request.RequestBody = GetRequestBody(request);
-#if MSGPACK
-            if (_protocol == Protocol.MsgPack && Logger.IsDebug)
+            if (IsMsgPack() && Logger.IsDebug)
             {
                 LogRequestBody(request.RequestBody);
             }
-#endif
+        }
+
+        private void LogRequestBody(byte[] requestBody)
+        {
+            if (Logger.IsDebug && requestBody != null)
+            {
+                try
+                {
+                    var msgPackObject = MsgPackHelper.DecodeMsgPackObject(requestBody);
+                    Logger.Debug("Request body (MsgPack): " + msgPackObject);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Error logging request body", ex);
+                }
+            }
         }
 
         private byte[] GetRequestBody(AblyRequest request)
@@ -102,19 +116,16 @@ namespace IO.Ably.MessageEncoders
                     request.ChannelOptions);
             }
 
-#if MSGPACK
             byte[] result;
-            if (_protocol == Protocol.Json || !Defaults.MsgPackEnabled)
-            {
-                result = JsonHelper.Serialize(request.PostData).GetBytes();
-            }
-            else
+            if (IsMsgPack())
             {
                 result = MsgPackHelper.Serialise(request.PostData);
             }
-#else
-            byte[] result = JsonHelper.Serialize(request.PostData).GetBytes();
-#endif
+            else
+            {
+                result = JsonHelper.Serialize(request.PostData).GetBytes();
+            }
+
             if (Logger.IsDebug)
             {
                 Logger.Debug("Request body: " + result.GetText());
@@ -126,31 +137,35 @@ namespace IO.Ably.MessageEncoders
         private byte[] GetMessagesRequestBody(IEnumerable<Message> payloads, ChannelOptions options)
         {
             EncodePayloads(new DecodingContext(options), payloads);
-#if MSGPACK
-            if (_protocol == Protocol.MsgPack)
+            byte[] result;
+            if (IsMsgPack())
             {
-                return MsgPackHelper.Serialise(payloads);
+                result = MsgPackHelper.Serialise(payloads);
             }
-#endif
-            return JsonHelper.Serialize(payloads).GetBytes();
-        }
-
-        internal static Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
-        {
-            var result = Result.Ok();
-            foreach (var payload in payloads)
+            else
             {
-                result = Result.Combine(result, EncodePayload(payload, context));
+                result = JsonHelper.Serialize(payloads).GetBytes();
             }
 
             return result;
         }
 
-        internal static Result EncodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
+        {
+            var result = Result.Ok();
+            foreach (var payload in payloads)
+            {
+                result = Result.Combine(result, EncodePayload(payload, context, Encoders));
+            }
+
+            return result;
+        }
+
+        internal Result EncodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
-            foreach (var encoder in encoders ?? DefaultEncoders)
+            foreach (var encoder in encoders)
             {
                 var encodeResult = encoder.Encode(payload, context);
                 if (encodeResult.IsSuccess)
@@ -197,7 +212,7 @@ namespace IO.Ably.MessageEncoders
 
         internal static Result DecodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null, ILogger logger = null)
         {
-            var actualEncoders = (encoders ?? DefaultEncoders).ToList();
+            var actualEncoders = (encoders ?? AllEncoders).ToList();
             var pp = context.PreviousPayload; // We take a chance that this will not be modified but replaced
 
             var (processResult, decodedPayload) = Decode();
@@ -309,7 +324,7 @@ namespace IO.Ably.MessageEncoders
             }
             else
             {
-                result?.Items.AddRange(ParseOther<T>(response));
+                result?.Items.AddRange(ParseOther<T>(response, _protocol));
             }
 
             return result;
@@ -325,22 +340,20 @@ namespace IO.Ably.MessageEncoders
         {
             LogResponse(response);
 
-            var responseText = response.TextResponse;
-#if MSGPACK
-            if (_protocol == Protocol.MsgPack)
+            if (IsMsgPack())
             {
                 return (T)MsgPackHelper.Deserialise(response.Body, typeof(T));
             }
-#endif
-            return JsonHelper.Deserialize<T>(responseText);
+
+            return JsonHelper.Deserialize<T>(response.TextResponse);
         }
 
-        private static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
+        private Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
-                result = Result.Combine(result, DecodePayload(payload, context, encoders));
+                result = Result.Combine(result, DecodePayload(payload, context, encoders, Logger));
             }
 
             return result;
@@ -360,12 +373,11 @@ namespace IO.Ably.MessageEncoders
                 try
                 {
                     var responseBody = response.TextResponse;
-#if MSGPACK
-                    if (_protocol == Protocol.MsgPack && response.Body != null)
+                    if (IsMsgPack() && response.Body != null)
                     {
-                        responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
+                        responseBody = MsgPackHelper.DecodeMsgPackObject(response.Body);
                     }
-#endif
+
                     Logger.Debug($"Response: {responseBody}");
                 }
                 catch (Exception ex)
@@ -375,15 +387,14 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private static IEnumerable<T> ParseOther<T>(AblyResponse response)
+        private static IEnumerable<T> ParseOther<T>(AblyResponse response, Protocol protocol)
         {
             var body = response.TextResponse;
-#if MSGPACK
-            if (_protocol == Protocol.MsgPack)
+            if (protocol == Protocol.MsgPack)
             {
-                return (List<Stats>)MsgPackHelper.Deserialise(response.Body, typeof(List<Stats>));
+                return (List<T>)MsgPackHelper.Deserialise(response.Body, typeof(List<T>));
             }
-#endif
+
             return JsonHelper.Deserialize<List<T>>(body) ?? new List<T>();
         }
 
@@ -405,15 +416,11 @@ namespace IO.Ably.MessageEncoders
         {
             ProtocolMessage protocolMessage;
 
-#if MSGPACK
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (IsMsgPack() && Defaults.MsgPackEnabled)
+            if (IsMsgPack())
             {
-
-                protocolMessage = (ProtocolMessage) MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
+                protocolMessage = (ProtocolMessage)MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
             }
             else
-#endif
             {
                 protocolMessage = JsonHelper.Deserialize<ProtocolMessage>(data.Text);
             }
@@ -469,7 +476,7 @@ namespace IO.Ably.MessageEncoders
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(message, index);
-                var decodeResult = DecodePayload(message, context, DefaultEncoders)
+                var decodeResult = DecodePayload(message, context, Encoders, Logger)
                     .IfFailure(error => Logger.Warning($"Error decoding message with id: {message.Id}. Error: {error.Message}. Exception: {error.InnerException?.Message}"));
 
                 result = Result.Combine(result, decodeResult);
@@ -507,15 +514,12 @@ namespace IO.Ably.MessageEncoders
         {
             RealtimeTransportData data;
 
-#if MSGPACK
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (IsMsgPack() && Defaults.MsgPackEnabled)
+            if (IsMsgPack())
             {
                 var bytes = MsgPackHelper.Serialise(protocolMessage);
-                data = new RealtimeTransportData(bytes) {Original = protocolMessage};
+                data = new RealtimeTransportData(bytes) { Original = protocolMessage };
             }
             else
-#endif
             {
                 var text = JsonHelper.Serialize(protocolMessage);
                 data = new RealtimeTransportData(text) { Original = protocolMessage };
@@ -524,18 +528,16 @@ namespace IO.Ably.MessageEncoders
             return data;
         }
 
-#if MSGPACK
         private bool IsMsgPack()
         {
             return _protocol == Protocol.MsgPack;
         }
-#endif
 
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null)
             where T : IMessage
         {
             var context = options.ToDecodingContext();
-            var result = DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
+            var result = DecodePayload(encoded, context, AllEncoders, DefaultLogger.LoggerInstance);
             if (result.IsFailure)
             {
                 throw new AblyException(result.Error);
@@ -550,7 +552,7 @@ namespace IO.Ably.MessageEncoders
             var context = options.ToDecodingContext();
             foreach (var encoded in encodedArray)
             {
-                DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
+                DecodePayload(encoded, context, AllEncoders, DefaultLogger.LoggerInstance);
             }
 
             return encodedArray;

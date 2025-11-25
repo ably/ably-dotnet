@@ -28,7 +28,7 @@ namespace Assets.Tests.AblySandbox
         {
             var factory = IoC.TransportFactory;
             var transport
-                = new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Defaults.Protocol : Protocol.Json);
+                = new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json);
 
             transport.BeforeDataProcessed = BeforeDataProcessed;
             OnTransportCreated(transport);

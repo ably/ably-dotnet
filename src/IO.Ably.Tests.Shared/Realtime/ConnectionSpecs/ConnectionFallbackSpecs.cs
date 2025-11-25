@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("[12345678]") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = GetClientWithFakeTransportAndMessageHandler(messageHandler: handler);
+            var client = GetClientWithFakeTransportAndMessageHandler(opts => { opts.UseBinaryProtocol = false; }, messageHandler: handler);
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
@@ -224,7 +224,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("[12345678]") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = GetClientWithFakeTransportAndMessageHandler(null, handler);
+            var client = GetClientWithFakeTransportAndMessageHandler(opts => { opts.UseBinaryProtocol = false; }, messageHandler: handler);
 
             await client.ConnectClient(); // On the default host
             await client.DisconnectWithRetryableError();

@@ -317,13 +317,13 @@ namespace IO.Ably
             logMessage.AppendLine($"Type: {ablyResponse.Type}");
 
             logMessage.AppendLine("---- Response Body ----");
-            if (ablyResponse.Type != ResponseType.Binary)
+            if (ablyResponse.Type == ResponseType.Binary)
+            {
+                logMessage.AppendLine(MsgPackHelper.DecodeMsgPackObject(ablyResponse.Body));
+            }
+            else
             {
                 logMessage.AppendLine(ablyResponse.TextResponse);
-            }
-            else if (ablyResponse.Body != null)
-            {
-                logMessage.AppendLine(ablyResponse.Body.GetText());
             }
 
             Logger.Debug(logMessage.ToString());
@@ -392,13 +392,18 @@ namespace IO.Ably
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-#if MSGPACK
-            if(request.Protocol == Protocol.MsgPack)
-                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
-#endif
+            // Set Accept headers based on protocol preference
+            if (request.Protocol == Protocol.MsgPack)
+            {
+                // Prefer msgpack
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.MsgPack)));
+            }
+            else
+            {
+                // Prefer JSON
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
+            }
 
-            // Always accept JSON
-            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post || message.Method == HttpMethod.Put)
             {
                 if (request.PostParameters.Any() && request.RequestBody.Length == 0)

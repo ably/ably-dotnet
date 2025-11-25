@@ -11,6 +11,7 @@ using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Extensions;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Shared.Helpers;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -868,14 +869,11 @@ namespace IO.Ably.Tests.Realtime
         {
             get
             {
-                if (Defaults.MsgPackEnabled)
-#pragma warning disable 162
-                {
-                    yield return new object[] { Defaults.Protocol, GetAes128FixtureData() };
-                    yield return new object[] { Defaults.Protocol, GetAes256FixtureData() };
-                }
-#pragma warning restore 162
+                // Fixture data for MsgPack
+                yield return new object[] { Protocol.MsgPack, GetAes128FixtureData() };
+                yield return new object[] { Protocol.MsgPack, GetAes256FixtureData() };
 
+                // Fixture data for Json
                 yield return new object[] { Protocol.Json, GetAes128FixtureData() };
                 yield return new object[] { Protocol.Json, GetAes256FixtureData() };
             }
@@ -913,7 +911,7 @@ namespace IO.Ably.Tests.Realtime
                 }
                 else if (encoding == "json")
                 {
-                    JToken.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JAssert.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData, Output).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 }
                 else
                 {
@@ -928,13 +926,13 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        [InlineData(ChannelState.Detached)]
-        [InlineData(ChannelState.Failed)]
-        [InlineData(ChannelState.Suspended)]
+        [ProtocolData(ChannelState.Detached)]
+        [ProtocolData(ChannelState.Failed)]
+        [ProtocolData(ChannelState.Suspended)]
         [Trait("spec", "RTL11")]
-        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedPresenceMessageAndCallbackShouldIndicateError(ChannelState state)
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedPresenceMessageAndCallbackShouldIndicateError(Protocol protocol, ChannelState state)
         {
-            var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
                 {
                     // A bogus AuthUrl will cause connection to become disconnected
                     options.AuthUrl = new Uri("http://235424c24.fake:49999");
@@ -969,13 +967,13 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        [InlineData(ChannelState.Detached)]
-        [InlineData(ChannelState.Failed)]
-        [InlineData(ChannelState.Suspended)]
+        [ProtocolData(ChannelState.Detached)]
+        [ProtocolData(ChannelState.Failed)]
+        [ProtocolData(ChannelState.Suspended)]
         [Trait("spec", "RTL11a")]
-        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(Protocol protocol, ChannelState state)
         {
-            var client = await GetRealtimeClient(Defaults.Protocol);
+            var client = await GetRealtimeClient(protocol);
             var channel = client.Channels.Get("test".AddRandomSuffix());
             var tsc = new TaskCompletionAwaiter(5000);
 

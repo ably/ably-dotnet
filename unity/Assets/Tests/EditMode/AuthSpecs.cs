@@ -9,7 +9,6 @@ using Cysharp.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
 using NUnit.Framework;
-using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Assets.Tests.EditMode
@@ -374,7 +373,7 @@ namespace Assets.Tests.EditMode
                 };
                 await Task.Delay(2000);
                 // This makes sure we get server time
-                ((AblyAuth) mainClient.Auth).SetServerTime();
+                await ((AblyAuth) mainClient.Auth).SetServerTime();
 
                 var ex = await E7Assert.ThrowsAsync<AblyException>(mainClient.StatsAsync());
                 Assert.AreSame(ErrorInfo.NonRenewableToken, ex.ErrorInfo);
@@ -730,7 +729,7 @@ namespace Assets.Tests.EditMode
                 {
                     TokenDetails = token,
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol
+                    UseBinaryProtocol = protocol.IsBinary()
                 });
 
                 Assert.IsTrue(string.IsNullOrEmpty(tokenClient.AblyAuth.ClientId));
@@ -755,7 +754,7 @@ namespace Assets.Tests.EditMode
                 {
                     TokenDetails = token,
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol
+                    UseBinaryProtocol = protocol.IsBinary()
                 });
 
                 await E7Assert.ThrowsAsync<AblyException>(tokenClient.Channels["test"]
@@ -776,7 +775,7 @@ namespace Assets.Tests.EditMode
                 {
                     TokenDetails = token,
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol
+                    UseBinaryProtocol = protocol.IsBinary()
                 });
 
                 var channel = tokenClient.Channels["pesisted:test"];
@@ -801,7 +800,7 @@ namespace Assets.Tests.EditMode
                 {
                     TokenDetails = token,
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol
+                    UseBinaryProtocol = protocol.IsBinary()
                 });
 
                 var channel = tokenClient.Channels["pesisted:test"];
@@ -827,7 +826,7 @@ namespace Assets.Tests.EditMode
                 {
                     AuthUrl = new Uri(authUrl),
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol
+                    UseBinaryProtocol = protocol.IsBinary()
                 });
 
                 var channel = authUrlClient.Channels["pesisted:test"];
@@ -853,7 +852,7 @@ namespace Assets.Tests.EditMode
                 {
                     AuthUrl = new Uri(authUrl),
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol,
+                    UseBinaryProtocol = protocol.IsBinary(),
                     HttpRequestTimeout = new TimeSpan(0, 0, 20)
                 });
 
@@ -881,7 +880,7 @@ namespace Assets.Tests.EditMode
                 {
                     AuthUrl = new Uri(authUrl),
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol,
+                    UseBinaryProtocol = protocol.IsBinary(),
                     HttpRequestTimeout = new TimeSpan(0, 0, 20),
                     AutomaticNetworkStateMonitoring = false
                 });
@@ -906,7 +905,7 @@ namespace Assets.Tests.EditMode
                 {
                     AuthUrl = new Uri(authUrl),
                     Environment = settings.Environment,
-                    UseBinaryProtocol = protocol == Defaults.Protocol,
+                    UseBinaryProtocol = protocol.IsBinary(),
                     HttpRequestTimeout = new TimeSpan(0, 0, 20),
                     AutomaticNetworkStateMonitoring = false
                 });
@@ -939,7 +938,7 @@ namespace Assets.Tests.EditMode
                     options.AuthCallback = tokenParams =>
                         tokenClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "*" }).Convert();
                     options.Environment = settings.Environment;
-                    options.UseBinaryProtocol = protocol == Defaults.Protocol;
+                    options.UseBinaryProtocol = protocol.IsBinary();
                 });
 
                 var channel = authCallbackClient.Channels["pesisted:test"];
@@ -965,7 +964,7 @@ namespace Assets.Tests.EditMode
                     options.AuthCallback = async tokenParams =>
                         await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams { ClientId = "*" });
                     options.Environment = settings.Environment;
-                    options.UseBinaryProtocol = protocol == Defaults.Protocol;
+                    options.UseBinaryProtocol = protocol.IsBinary();
                 });
 
                 var channel = authCallbackClient.Channels["pesisted:test"];

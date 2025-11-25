@@ -15,9 +15,7 @@ namespace IO.Ably
         private string _realtimeHost;
         private string _restHost;
         private Func<DateTimeOffset> _nowFunc;
-#if MSGPACK
-        private bool _useBinaryProtocol;
-#endif
+        private bool _useBinaryProtocol = Defaults.MsgPackEnabled; // Default to true for better performance
         private string[] _fallbackHosts;
 
         /// <summary>
@@ -257,23 +255,15 @@ namespace IO.Ably
         public int TlsPort { get; set; } = Defaults.TlsPort;
 
         /// <summary>
-        /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
-        /// If true, the MsgPack binary format is used (if available in the current build
-        /// Default: false.
+        /// If false, forces the library to use the JSON encoding for REST and Realtime operations.
+        /// If true, the MsgPack binary format is used for improved performance and reduced bandwidth usage.
+        /// Binary protocol typically results in 20-30% smaller message sizes and faster serialization.
+        /// Default: true.
         /// </summary>
         public bool UseBinaryProtocol
         {
-#if MSGPACK
             get { return _useBinaryProtocol; }
-#else
-            get { return false; }
-#endif
-
-#if MSGPACK
             set { _useBinaryProtocol = value; }
-#else
-            set { _ = value; }
-#endif
         }
 
         /// <summary>

@@ -24,18 +24,11 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(true, "msgpack")]
         [InlineData(false, "json")]
         [Trait("spec", "RTN2a")]
-        public void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
+        public async void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
         {
-            if (!Defaults.MsgPackEnabled)
-            {
-                return;
-            }
-
-#pragma warning disable 162
-            _ = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
+            _ = await GetConnectedClient(opts => opts.UseBinaryProtocol = useBinary);
             LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhoseValue.Should().Be(format);
-#pragma warning restore 162
         }
 
         [Theory]

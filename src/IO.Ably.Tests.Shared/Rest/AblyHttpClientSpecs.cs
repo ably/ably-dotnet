@@ -10,53 +10,57 @@ namespace IO.Ably.Tests
 {
     public class AblyHttpClientSpecs
     {
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7")]
-        public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost()
+        public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost(Protocol protocol)
         {
             var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = true });
 
-            var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
+            var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get, protocol));
 
             url.Scheme.Should().Be("https");
             url.Host.Should().Be(Defaults.RestHost);
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7")]
-        public void WithSecureFalse_CreatesNonSecureRestUrlsWithDefaultRestHost()
+        public void WithSecureFalse_CreatesNonSecureRestUrlsWithDefaultRestHost(Protocol protocol)
         {
             var client = new AblyHttpClient(new AblyHttpOptions { IsSecure = false });
 
-            var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
+            var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get, protocol));
 
             url.Scheme.Should().Be("http");
             url.Host.Should().Be(Defaults.RestHost);
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7a")]
         [Trait("spec", "G4")]
-        public async Task WhenCallingUrl_AddsDefaultAblyLibraryVersionHeader()
+        public async Task WhenCallingUrl_AddsDefaultAblyLibraryVersionHeader(Protocol protocol)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get, protocol));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version").ToArray();
             values.Should().NotBeEmpty();
             values.First().Should().Be(Defaults.ProtocolVersion);
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7c")]
-        public async Task WhenCallingUrl_AddsRequestIdIfSetTrue()
+        public async Task WhenCallingUrl_AddsRequestIdIfSetTrue(Protocol protocol)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions { AddRequestIds = true }, handler);
-            var ablyRequest = new AblyRequest("/test", HttpMethod.Get);
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Get, protocol);
             ablyRequest.AddHeaders(new Dictionary<string, string> { { "request_id", "custom_request_id" } });
             await client.Execute(ablyRequest);
             var values = handler.LastRequest.Headers.GetValues("request_id").ToArray();
@@ -64,14 +68,15 @@ namespace IO.Ably.Tests
             values.First().Should().StartWith("custom_request_id");
         }
 
-        [Fact]
-        public async Task WhenCallingUrlWithPostParamsAndEmptyBody_PassedTheParamsAsUrlEncodedValues()
+        [Theory]
+        [ProtocolData]
+        public async Task WhenCallingUrlWithPostParamsAndEmptyBody_PassedTheParamsAsUrlEncodedValues(Protocol protocol)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-            var ablyRequest = new AblyRequest("/test", HttpMethod.Post)
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Post, protocol)
             {
                 PostParameters = new Dictionary<string, string> { { "test", "test" }, { "best", "best" } },
             };
@@ -82,15 +87,16 @@ namespace IO.Ably.Tests
             formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7d")]
-        public async Task WhenCallingUrl_AddsDefaultAblyAgentHeader()
+        public async Task WhenCallingUrl_AddsDefaultAblyAgentHeader(Protocol protocol)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get, protocol));
             string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
             values.Should().HaveCount(1);
             string[] agentValues = values[0].Split(' ');
@@ -113,9 +119,10 @@ namespace IO.Ably.Tests
             }
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSC7d6")]
-        public async Task WhenCallingUrl_AddsCustomizedAblyAgentHeader()
+        public async Task WhenCallingUrl_AddsCustomizedAblyAgentHeader(Protocol protocol)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
@@ -131,7 +138,7 @@ namespace IO.Ably.Tests
 
             var client = new AblyHttpClient(ablyHttpOptions, handler);
 
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get, protocol));
             string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
             values.Should().HaveCount(1);
             string[] agentValues = values[0].Split(' ');
