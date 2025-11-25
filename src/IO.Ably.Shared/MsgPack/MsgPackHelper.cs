@@ -21,14 +21,13 @@ namespace IO.Ably
         {
                 AblyGeneratedResolver.Instance,       // 1. Check generated code first (Fastest/Specific)
                 AblyResolver.Instance,                // 2. Check manual custom resolvers
-                BuiltinResolver.Instance,             // 3. Check standard types (List, DateTime)
-                DynamicGenericResolver.Instance,      // Priority 4: Collections, arrays, tuples
-                PrimitiveObjectResolver.Instance,     // Priority 5: typeof(object) fields
+                BuiltinResolver.Instance,             // 3. Check standard types (primitives, DateTime, collections)
+                DynamicGenericResolver.Instance,      // 4: Check generic collections, arrays, tuples, enums
+                PrimitiveObjectResolver.Instance,     // 5: Check typeof(object) fields
         };
 
         private static readonly MessagePackSerializerOptions DefaultOptions = MessagePackSerializerOptions.Standard
-            .WithResolver(CompositeResolver.Create(Resolvers))
-            .WithSecurity(MessagePackSecurity.UntrustedData);
+            .WithResolver(CompositeResolver.Create(Resolvers));
 
         public static byte[] Serialise<T>(T obj, MessagePackSerializerOptions options = null)
         {

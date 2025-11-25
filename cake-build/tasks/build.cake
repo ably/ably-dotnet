@@ -129,6 +129,7 @@ Task("_Build_Ably_Unity_Dll")
     // Get Unity dependency licenses and embed them into primaryDll
     // MergeResources returns the path to the modified DLL (same as input, but ensures file handles are closed)
     var unityLicenseFile = licenseHelper.GetUnityDependencyLicenses();
+    // You can use ILDASM or ILSpy to decode unity/Assets/Ably/Plugins/IO.Ably.dll and check THIRD_PARTY_LICENSES.txt
     var primaryDllWithResources = monoCecilHelper.MergeResources(primaryDll, new FilePath[] { unityLicenseFile });
     
     var dllsToMerge = deps.GetUnityPackageDependencies(netStandard20BinPath);
