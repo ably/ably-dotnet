@@ -11,8 +11,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldSerializeAndDeserializeAllowAllCapability()
         {
             var allAllowed = Capability.AllowAll;
-            var serialized = MsgPackHelper.Serialise(allAllowed);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(Capability)) as Capability;
+            var serialized = MsgPackHelper.Serialise<Capability>(allAllowed);
+            var deserialized = MsgPackHelper.Deserialise<Capability>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Should().Be(allAllowed);
@@ -25,8 +25,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             var withOneResource = new Capability();
             withOneResource.AddResource("test").AllowPresence().AllowPublish().AllowSubscribe();
 
-            var serialized = MsgPackHelper.Serialise(withOneResource);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(Capability)) as Capability;
+            var serialized = MsgPackHelper.Serialise<Capability>(withOneResource);
+            var deserialized = MsgPackHelper.Deserialise<Capability>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Should().Be(withOneResource);
@@ -40,8 +40,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             withTwoResources.AddResource("one").AllowAll();
             withTwoResources.AddResource("two").AllowPublish().AllowSubscribe();
 
-            var serialized = MsgPackHelper.Serialise(withTwoResources);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(Capability)) as Capability;
+            var serialized = MsgPackHelper.Serialise<Capability>(withTwoResources);
+            var deserialized = MsgPackHelper.Deserialise<Capability>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Should().Be(withTwoResources);
@@ -53,8 +53,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         {
             var emptyCapability = new Capability();
 
-            var serialized = MsgPackHelper.Serialise(emptyCapability);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(Capability)) as Capability;
+            var serialized = MsgPackHelper.Serialise<Capability>(emptyCapability);
+            var deserialized = MsgPackHelper.Deserialise<Capability>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.ToJson().Should().Be(emptyCapability.ToJson());
@@ -138,8 +138,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             capability.AddResource("private:*").AllowPublish().AllowSubscribe();
             capability.AddResource("presence:*").AllowPresence();
 
-            var serialized = MsgPackHelper.Serialise(capability);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(Capability)) as Capability;
+            var serialized = MsgPackHelper.Serialise<Capability>(capability);
+            var deserialized = MsgPackHelper.Deserialise<Capability>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Should().Be(capability);

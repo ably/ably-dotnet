@@ -33,8 +33,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Delta.Should().NotBeNull();
@@ -57,8 +57,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Delta.Should().NotBeNull();
@@ -84,8 +84,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             ((string)deserialized.ToJson()["random"]).Should().Be("boo");
@@ -99,8 +99,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         [Trait("spec", "tm2i")]
         public void ShouldHandleNullMessageExtras()
         {
-            var serialized = MsgPackHelper.Serialise(null as MessageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(null as MessageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().BeNull();
         }
@@ -127,8 +127,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             var jObject = new JObject();
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.ToJson().Should().NotBeNull();
@@ -151,8 +151,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             var deserializedJson = deserialized.ToJson();
@@ -173,8 +173,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             deserialized.Delta.Should().NotBeNull();
@@ -199,8 +199,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(originalJObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             var deserializedJson = deserialized.ToJson();
@@ -237,8 +237,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
             };
             var messageExtras = MessageExtras.From(jObject);
 
-            var serialized = MsgPackHelper.Serialise(messageExtras);
-            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(MessageExtras)) as MessageExtras;
+            var serialized = MsgPackHelper.Serialise<MessageExtras>(messageExtras);
+            var deserialized = MsgPackHelper.Deserialise<MessageExtras>(serialized);
 
             deserialized.Should().NotBeNull();
             var deserializedJson = deserialized.ToJson();

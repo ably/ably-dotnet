@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions;
 using IO.Ably.MsgPack.CustomSerialisers;
+using IO.Ably.Tests.Shared.MsgPack;
 using MessagePack;
 using Xunit;
 
@@ -8,6 +9,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
 {
     public class TimespanFormatterTests
     {
+        private MessagePackSerializerOptions _msgPackTestOptions = MsgPackTestExtensions.GetTestOptions();
+
         [MessagePackObject(keyAsPropertyName: true)]
         public class TestClass
         {
@@ -27,11 +30,11 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldSerializeTimeSpanToMilliseconds()
         {
             var originalTimeSpan = new TestClass(TimeSpan.FromSeconds(60));
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalTimeSpan, _msgPackTestOptions);
 
             serialized.Should().NotBeNull();
 
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().Be(originalTimeSpan.TimeSpan);
         }
 
@@ -39,8 +42,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldPreserveTimeSpanValue()
         {
             var originalTimeSpan = new TestClass(TimeSpan.FromMinutes(5));
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalTimeSpan, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().Be(originalTimeSpan.TimeSpan);
         }
 
@@ -106,8 +109,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleZeroTimeSpan()
         {
             var originalTimeSpan = new TestClass(TimeSpan.Zero);
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalTimeSpan, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().Be(TimeSpan.Zero);
         }
 
@@ -115,8 +118,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleNegativeTimeSpan()
         {
             var originalTimeSpan = new TestClass(TimeSpan.FromSeconds(-30));
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
-            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<TestClass>(originalTimeSpan, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<TestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().Be(TimeSpan.FromSeconds(-30));
         }
 
@@ -139,8 +142,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleNullableTimeSpan()
         {
             var originalTimeSpan = new NullableTestClass(TimeSpan.FromSeconds(60));
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
-            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<NullableTestClass>(originalTimeSpan, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().Be(originalTimeSpan.TimeSpan);
         }
 
@@ -148,8 +151,8 @@ namespace IO.Ably.Tests.MsgPack.CustomSerializers
         public void ShouldHandleNullTimeSpan()
         {
             var originalTimeSpan = new NullableTestClass();
-            var serialized = MsgPackHelper.Serialise(originalTimeSpan);
-            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized);
+            var serialized = MsgPackHelper.Serialise<NullableTestClass>(originalTimeSpan, _msgPackTestOptions);
+            var deserialized = MsgPackHelper.Deserialise<NullableTestClass>(serialized, _msgPackTestOptions);
             deserialized.TimeSpan.Should().BeNull();
         }
     }

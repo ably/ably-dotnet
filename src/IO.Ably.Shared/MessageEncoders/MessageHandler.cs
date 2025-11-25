@@ -52,7 +52,7 @@ namespace IO.Ably.MessageEncoders
                 return messages;
             }
 
-            var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
+            var payloads = MsgPackHelper.Deserialise<List<PresenceMessage>>(response.Body);
             ProcessMessages(payloads, context);
             return payloads;
         }
@@ -66,7 +66,7 @@ namespace IO.Ably.MessageEncoders
                 return messages;
             }
 
-            var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<Message>)) as List<Message>;
+            var payloads = MsgPackHelper.Deserialise<List<Message>>(response.Body);
             ProcessMessages(payloads, context);
             return payloads;
         }
@@ -119,7 +119,8 @@ namespace IO.Ably.MessageEncoders
             byte[] result;
             if (IsMsgPack())
             {
-                result = MsgPackHelper.Serialise(request.PostData);
+                // Use dynamic to preserve the runtime type for MsgPack serialization
+                result = MsgPackHelper.SerialiseObject(request.PostData);
             }
             else
             {
@@ -342,7 +343,7 @@ namespace IO.Ably.MessageEncoders
 
             if (IsMsgPack())
             {
-                return (T)MsgPackHelper.Deserialise(response.Body, typeof(T));
+                return MsgPackHelper.Deserialise<T>(response.Body);
             }
 
             return JsonHelper.Deserialize<T>(response.TextResponse);
@@ -392,7 +393,7 @@ namespace IO.Ably.MessageEncoders
             var body = response.TextResponse;
             if (protocol == Protocol.MsgPack)
             {
-                return (List<T>)MsgPackHelper.Deserialise(response.Body, typeof(List<T>));
+                return MsgPackHelper.Deserialise<List<T>>(response.Body);
             }
 
             return JsonHelper.Deserialize<List<T>>(body) ?? new List<T>();
@@ -418,7 +419,7 @@ namespace IO.Ably.MessageEncoders
 
             if (IsMsgPack())
             {
-                protocolMessage = (ProtocolMessage)MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
+                protocolMessage = MsgPackHelper.Deserialise<ProtocolMessage>(data.Data);
             }
             else
             {

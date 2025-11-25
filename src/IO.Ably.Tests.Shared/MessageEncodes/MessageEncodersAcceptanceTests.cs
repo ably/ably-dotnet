@@ -289,7 +289,7 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-                var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
+                var messages = MsgPackHelper.Deserialise<List<Message>>(LastRequest.RequestBody);
                 return messages.First();
             }
         }
@@ -308,7 +308,7 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-                var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
+                var messages = MsgPackHelper.Deserialise<List<Message>>(LastRequest.RequestBody);
                 return messages.First();
             }
 

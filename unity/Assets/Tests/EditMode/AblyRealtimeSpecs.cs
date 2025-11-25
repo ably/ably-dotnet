@@ -40,7 +40,7 @@ namespace Assets.Tests.EditMode
 
         public AblySandbox.AblySandbox AblySandbox { get; set; }
 
-        static Protocol[] _protocols = { Protocol.Json };
+        static Protocol[] _protocols = { Protocol.Json, Protocol.MsgPack };
 
         [UnityTest]
         public IEnumerator TestConnectionStateChange([ValueSource(nameof(_protocols))] Protocol protocol)
@@ -78,7 +78,7 @@ namespace Assets.Tests.EditMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 Assert.AreEqual(ChannelState.Initialized, channel.State);
 
                 var channelStates = new List<ChannelState>();
@@ -108,7 +108,7 @@ namespace Assets.Tests.EditMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol);
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 await channel.AttachAsync();
 
                 var eventName = "chat";
@@ -154,7 +154,7 @@ namespace Assets.Tests.EditMode
                 var realtimeClient = await AblySandbox.GetRealtimeClient(protocol, (options, _) => options.ClientId = "sac");
                 await realtimeClient.WaitForState(ConnectionState.Connected);
 
-                var channel = realtimeClient.Channels.Get("TestChannel");
+                var channel = realtimeClient.Channels.Get("TestChannel".AddRandomSuffix());
                 await channel.AttachAsync();
 
                 var presenceMessages = new Dictionary<PresenceAction, string>();

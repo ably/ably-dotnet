@@ -125,25 +125,15 @@ Task("_Build_Ably_Unity_Dll")
     {
         throw new Exception($"Primary DLL not found: {primaryDll}. Please build the IO.Ably.NETStandard20 project first.");
     }
+
+    // Get Unity dependency licenses and embed them into primaryDll
+    // MergeResources returns the path to the modified DLL (same as input, but ensures file handles are closed)
+    var unityLicenseFile = licenseHelper.GetUnityDependencyLicenses();
+    // You can use ILDASM or ILSpy to decode unity/Assets/Ably/Plugins/IO.Ably.dll and check THIRD_PARTY_LICENSES.txt
+    var primaryDllWithResources = monoCecilHelper.MergeResources(primaryDll, new FilePath[] { unityLicenseFile });
     
-    var newtonsoftDll = paths.Root
-        .Combine("lib/unity/AOT")
-        .CombineWithFilePath("Newtonsoft.Json.dll");
-    
-    if (!FileExists(newtonsoftDll))
-    {
-        throw new Exception($"Newtonsoft.Json.dll not found at: {newtonsoftDll}");
-    }
-    
-    var dllsToMerge = new[]
-    {
-        netStandard20BinPath.CombineWithFilePath("IO.Ably.DeltaCodec.dll"),
-        netStandard20BinPath.CombineWithFilePath("System.Runtime.CompilerServices.Unsafe.dll"),
-        netStandard20BinPath.CombineWithFilePath("System.Threading.Channels.dll"),
-        netStandard20BinPath.CombineWithFilePath("System.Threading.Tasks.Extensions.dll"),
-        newtonsoftDll
-    };
-    
+    var dllsToMerge = deps.GetUnityPackageDependencies(netStandard20BinPath);
+
     var unityOutputPath = paths.Root.Combine("unity/Assets/Ably/Plugins");
     var outputDll = unityOutputPath.CombineWithFilePath("IO.Ably.dll");
     
@@ -153,9 +143,9 @@ Task("_Build_Ably_Unity_Dll")
         DeleteFile(outputDll);
         Information($"Deleted existing DLL: {outputDll}");
     }
-    
-    // Merge all dependencies into primary DLL in one go
-    ilRepackHelper.MergeDLLs(primaryDll, dllsToMerge, outputDll);
+
+    // Use the DLL with embedded resources for merging
+    ilRepackHelper.MergeDLLs(primaryDllWithResources, dllsToMerge.ToArray(), outputDll);
     
     Information($"✓ Unity DLL created at: {outputDll}");
 });
