@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using IO.Ably.Transport;
 using Newtonsoft.Json;
@@ -412,6 +413,16 @@ namespace IO.Ably
         /// RSC7d6.
         /// </summary>
         public Dictionary<string, string> Agents { get; set; }
+
+        /// <summary>
+        /// Allows injection of an externally managed HttpClient instance.
+        /// When provided, the library will use this HttpClient instead of creating its own.
+        /// This enables proper HttpClient lifecycle management and connection pooling.
+        /// The injected HttpClient should be configured with appropriate timeouts and handlers.
+        /// Default: null (library creates its own HttpClient).
+        /// </summary>
+        [JsonIgnore]
+        public HttpClient HttpClient { get; set; }
 
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc

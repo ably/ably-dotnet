@@ -263,9 +263,8 @@ namespace IO.Ably.Tests
             {
                 var options = new ClientOptions(ValidKey);
                 optionsClient(options);
-                var client = new AblyRest(options);
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
-                return client;
+                options.HttpClient = new HttpClient(_handler);
+                return new AblyRest(options);
             }
 
             [Fact]
@@ -470,9 +469,8 @@ namespace IO.Ably.Tests
             {
                 var options = new ClientOptions(ValidKey);
                 optionsClient?.Invoke(options);
-                var client = new AblyRest(options);
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
-                return client;
+                options.HttpClient = new HttpClient(_handler);
+                return new AblyRest(options);
             }
 
             [Fact]
@@ -487,7 +485,7 @@ namespace IO.Ably.Tests
                 });
 
                 var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), new HttpClient(handler));
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 handler.NumberOfRequests.Should().Be(6); // 1 primary host and remaining fallback hosts
@@ -676,7 +674,7 @@ namespace IO.Ably.Tests
                 });
 
                 var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), new HttpClient(handler));
 
                 await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 attemptedList.AddRange(handler.Requests.Select(x => x.RequestUri.Host).ToList());
@@ -706,7 +704,7 @@ namespace IO.Ably.Tests
                         now = now.AddSeconds(10);
                     });
 
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), new HttpClient(handler));
 
                 _ = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
@@ -750,7 +748,7 @@ namespace IO.Ably.Tests
 
                 var handler = new FakeHttpMessageHandler(GetResponse);
 
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), new HttpClient(handler));
 
                 MakeAnyRequest(client); // This will generate 2 requests - 1 failed and 1 succeed
                 MakeAnyRequest(client); // This will generate 1 request which should be using fallback host
@@ -796,7 +794,7 @@ namespace IO.Ably.Tests
 
                 var handler = new FakeHttpMessageHandler(GetResponse);
 
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), new HttpClient(handler));
 
                 MakeAnyRequest(client); // This will generate 2 requests - 1 failed and 1 succeed
                 MakeAnyRequest(client); // This will generate 2 request one to fallback host and the next one to the default host
@@ -998,6 +996,89 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
 
             channel.Name.Should().Be("Test");
+        }
+
+        public class ExternalHttpClientSpecs : MockHttpRestSpecs
+        {
+            [Fact]
+            public void WithoutExternalHttpClient_ShouldCreateNewHttpClient()
+            {
+                // Arrange
+                var options = new ClientOptions(ValidKey);
+                options.HttpClient.Should().BeNull();
+
+                // Act
+                var client = new AblyRest(options);
+
+                // Assert
+                client.HttpClient.Client.Should().NotBeNull();
+            }
+
+            [Fact]
+            public void WithExternalHttpClient_ShouldUseProvidedClient()
+            {
+                // Arrange
+                var externalHttpClient = new HttpClient();
+                var options = new ClientOptions(ValidKey)
+                {
+                    HttpClient = externalHttpClient
+                };
+
+                // Act
+                var client = new AblyRest(options);
+
+                // Assert
+                client.HttpClient.Client.Should().BeSameAs(externalHttpClient);
+            }
+
+            [Fact]
+            public void WithExternalHttpClient_ShouldStillAddAblyHeaders()
+            {
+                // Arrange
+                var externalHttpClient = new HttpClient();
+                var options = new ClientOptions(ValidKey)
+                {
+                    HttpClient = externalHttpClient
+                };
+
+                // Act
+                var client = new AblyRest(options);
+
+                // Assert
+                client.HttpClient.Client.DefaultRequestHeaders.Contains("X-Ably-Version").Should().BeTrue();
+                client.HttpClient.Client.DefaultRequestHeaders.Contains("Ably-Agent").Should().BeTrue();
+            }
+
+            [Fact]
+            public async Task WithExternalHttpClient_ShouldMakeSuccessfulRequests()
+            {
+                // Arrange
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"intervalId\":\"test\"}]")
+                };
+                var handler = new FakeHttpMessageHandler(response);
+                var externalHttpClient = new HttpClient(handler);
+                var options = new ClientOptions(ValidKey)
+                {
+                    HttpClient = externalHttpClient,
+                    UseBinaryProtocol = false
+                };
+
+                // Act
+                var client = new AblyRest(options);
+                var stats = await client.StatsAsync();
+
+                // Assert
+                handler.NumberOfRequests.Should().Be(1);
+                stats.Should().NotBeNull();
+                stats.Items.First().IntervalId.Should().Be("test");
+            }
+
+            public ExternalHttpClientSpecs(ITestOutputHelper output)
+                : base(output)
+            {
+            }
         }
 
         public RestSpecs(ITestOutputHelper output)

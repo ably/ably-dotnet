@@ -14,12 +14,12 @@ namespace IO.Ably
         private readonly Random _random = new Random();
         private string _realtimeConnectedFallbackHost;
 
-        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
+        internal AblyHttpClient(AblyHttpOptions options)
         {
             Now = options.NowFunc;
             Logger = options.Logger ?? DefaultLogger.LoggerInstance;
             Options = options;
-            CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
+            CreateInternalHttpClient(options.HttpRequestTimeout, options.HttpClient);
             SendAsync = InternalSendAsync;
         }
 
@@ -68,11 +68,22 @@ namespace IO.Ably
             }
         }
 
-        internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
+        internal void CreateInternalHttpClient(TimeSpan timeout, HttpClient externalHttpClient = null)
         {
-            Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion); // RSC7a
-            Client.DefaultRequestHeaders.Add(Agent.AblyAgentHeader, Agent.AblyAgentIdentifier(Options.Agents)); // RSC7d
+            Client = externalHttpClient ?? new HttpClient();
+
+            // RSC7a
+            if (!Client.DefaultRequestHeaders.Contains("X-Ably-Version"))
+            {
+                Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion);
+            }
+
+            // RSC7d
+            if (!Client.DefaultRequestHeaders.Contains(Agent.AblyAgentHeader))
+            {
+                Client.DefaultRequestHeaders.Add(Agent.AblyAgentHeader, Agent.AblyAgentIdentifier(Options.Agents));
+            }
+
             Client.Timeout = timeout;
         }
 
