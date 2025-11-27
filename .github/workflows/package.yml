@@ -89,7 +89,7 @@ jobs:
             ${{ github.workspace }}/*.nupkg
 
   package-push:
-    runs-on: macos-13
+    runs-on: macos-14
     env:
       DOTNET_NOLOGO: true
 

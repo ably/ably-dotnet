@@ -62,7 +62,7 @@ namespace IO.Ably.Tests
             // Get a very short lived token and wait for it to expire
             var authClient = await GetRestClient(protocol);
             var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(1) });
-            await Task.Delay(TimeSpan.FromMilliseconds(2));
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
 
             // Modify the expiry date to fool the client it has a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);

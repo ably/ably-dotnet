@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -41,7 +42,7 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+            var client = new AblyHttpClient(new AblyHttpOptions { HttpClient = new HttpClient(handler) });
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version").ToArray();
@@ -55,7 +56,7 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions { AddRequestIds = true }, handler);
+            var client = new AblyHttpClient(new AblyHttpOptions { AddRequestIds = true, HttpClient = new HttpClient(handler) });
             var ablyRequest = new AblyRequest("/test", HttpMethod.Get);
             ablyRequest.AddHeaders(new Dictionary<string, string> { { "request_id", "custom_request_id" } });
             await client.Execute(ablyRequest);
@@ -69,7 +70,7 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+            var client = new AblyHttpClient(new AblyHttpOptions { HttpClient = new HttpClient(handler) });
 
             var ablyRequest = new AblyRequest("/test", HttpMethod.Post)
             {
@@ -88,7 +89,7 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+            var client = new AblyHttpClient(new AblyHttpOptions { HttpClient = new HttpClient(handler) });
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
@@ -127,9 +128,10 @@ namespace IO.Ably.Tests
                     { "agent1", "value1" },
                     { "agent2", "value2" },
                 },
+                HttpClient = new HttpClient(handler)
             };
 
-            var client = new AblyHttpClient(ablyHttpOptions, handler);
+            var client = new AblyHttpClient(ablyHttpOptions);
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             string[] values = handler.LastRequest.Headers.GetValues("Ably-Agent").ToArray();
@@ -188,6 +190,89 @@ namespace IO.Ably.Tests
             {
                 var response = new HttpResponseMessage(statusCode);
                 AblyHttpClient.IsRetryableResponse(response).Should().Be(expected);
+            }
+        }
+
+        public class ExternalHttpClientSpecs
+        {
+            [Fact]
+            public void WithExternalHttpClient_ShouldUseProvidedClient()
+            {
+                // Arrange
+                var externalHttpClient = new HttpClient();
+                var options = new AblyHttpOptions { HttpClient = externalHttpClient };
+
+                // Act
+                var ablyHttpClient = new AblyHttpClient(options);
+
+                // Assert
+                ablyHttpClient.Client.Should().BeSameAs(externalHttpClient);
+            }
+
+            [Fact]
+            public void WithExternalHttpClient_ShouldStillAddAblyHeaders()
+            {
+                // Arrange
+                var externalHttpClient = new HttpClient();
+                var options = new AblyHttpOptions { HttpClient = externalHttpClient };
+
+                // Act
+                var ablyHttpClient = new AblyHttpClient(options);
+
+                // Assert
+                ablyHttpClient.Client.DefaultRequestHeaders.Contains("X-Ably-Version").Should().BeTrue();
+                ablyHttpClient.Client.DefaultRequestHeaders.Contains("Ably-Agent").Should().BeTrue();
+            }
+
+            [Fact]
+            public void WithExternalHttpClient_ShouldSetTimeout()
+            {
+                // Arrange
+                var externalHttpClient = new HttpClient();
+                var timeout = TimeSpan.FromSeconds(30);
+                var options = new AblyHttpOptions
+                {
+                    HttpClient = externalHttpClient,
+                    HttpRequestTimeout = timeout
+                };
+
+                // Act
+                var ablyHttpClient = new AblyHttpClient(options);
+
+                // Assert
+                ablyHttpClient.Client.Timeout.Should().Be(timeout);
+            }
+
+            [Fact]
+            public void WithoutExternalHttpClient_ShouldCreateNewClient()
+            {
+                // Arrange
+                var options = new AblyHttpOptions();
+                options.HttpClient.Should().BeNull();
+
+                // Act
+                var ablyHttpClient = new AblyHttpClient(options);
+
+                // Assert
+                ablyHttpClient.Client.Should().NotBeNull();
+            }
+
+            [Fact]
+            public async Task WithExternalHttpClient_ShouldMakeSuccessfulRequests()
+            {
+                // Arrange
+                var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+                var handler = new FakeHttpMessageHandler(response);
+                var externalHttpClient = new HttpClient(handler);
+                var options = new AblyHttpOptions { HttpClient = externalHttpClient };
+                var ablyHttpClient = new AblyHttpClient(options);
+
+                // Act
+                var result = await ablyHttpClient.Execute(new AblyRequest("/test", HttpMethod.Get));
+
+                // Assert
+                result.StatusCode.Should().Be(HttpStatusCode.Accepted);
+                handler.NumberOfRequests.Should().Be(1);
             }
         }
     }

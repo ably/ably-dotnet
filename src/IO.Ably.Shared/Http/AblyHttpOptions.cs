@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace IO.Ably
 {
@@ -37,6 +38,8 @@ namespace IO.Ably
 
         public Dictionary<string, string> Agents { get; set; }
 
+        public HttpClient HttpClient { get; set; }
+
         public AblyHttpOptions()
         {
             // Used for testing
@@ -73,6 +76,7 @@ namespace IO.Ably
             FallbackHostsUseDefault = options.FallbackHostsUseDefault;
             AddRequestIds = options.AddRequestIds;
             Agents = options.Agents;
+            HttpClient = options.HttpClient;
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -75,13 +76,12 @@ namespace IO.Ably.Tests
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests
-            var client = new AblyRealtime(clientOptions, mobileDevice);
             if (fakeMessageHandler != null)
             {
-                client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), fakeMessageHandler);
+                clientOptions.HttpClient = new HttpClient(fakeMessageHandler);
             }
 
-            return client;
+            return new AblyRealtime(clientOptions, mobileDevice);
         }
 
         internal AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)

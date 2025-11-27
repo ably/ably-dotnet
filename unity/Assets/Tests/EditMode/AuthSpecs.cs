@@ -95,7 +95,7 @@ namespace Assets.Tests.EditMode
                     Ttl = TimeSpan.FromMilliseconds(1)
                 });
 
-                await Task.Delay(TimeSpan.FromMilliseconds(2));
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
 
                 // Modify the expiry date to fool the client it has a valid token
                 almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
