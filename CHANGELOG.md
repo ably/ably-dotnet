@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.18](https://github.com/ably/ably-dotnet/tree/1.2.18) (2025-11-27)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.17...1.2.18)
+
+**Merged pull requests:**
+
+- [ECO-5646] Fix behaviour when internet connection is not available in https://github.com/ably/ably-dotnet/pull/1320
+- [ECO-5650] ClientOptions.HttpClient for better connection pool management in https://github.com/ably/ably-dotnet/pull/1323
+
 ## [1.2.17](https://github.com/ably/ably-dotnet/tree/1.2.17) (2025-11-10)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.2.16...1.2.17)

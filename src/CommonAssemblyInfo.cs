@@ -7,8 +7,8 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("Ably")]
 [assembly: AssemblyProduct("Ably .NET Library")]
-[assembly: AssemblyVersion("1.2.17")]
-[assembly: AssemblyFileVersion("1.2.17")]
-[assembly: AssemblyInformationalVersion("1.2.17")]
+[assembly: AssemblyVersion("1.2.18")]
+[assembly: AssemblyFileVersion("1.2.18")]
+[assembly: AssemblyInformationalVersion("1.2.18")]
 [assembly: AssemblyCopyright("Copyright © Ably 2025")]
 
