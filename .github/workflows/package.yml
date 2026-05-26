@@ -20,6 +20,9 @@ on:
         description: 'Ably version'
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   package-library:
     runs-on: windows-2022
