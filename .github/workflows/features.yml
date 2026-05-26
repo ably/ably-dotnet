@@ -11,7 +11,8 @@ permissions:
 
 jobs:
   build:
-    uses: ably/features/.github/workflows/sdk-features.yml@6b3fc7a8ede2ebdd7a6325314f3a96c6466f1453 # main as of 2026-05-26
+    # Track the live SDK feature spec on main rather than pinning.
+    uses: ably/features/.github/workflows/sdk-features.yml@main # zizmor: ignore[unpinned-uses]
     with:
       repository-name: ably-dotnet
     secrets:
