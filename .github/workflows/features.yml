@@ -6,11 +6,14 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   build:
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
     # Track the live SDK feature spec on main rather than pinning.
     uses: ably/features/.github/workflows/sdk-features.yml@main # zizmor: ignore[unpinned-uses]
     with:
