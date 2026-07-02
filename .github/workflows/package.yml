@@ -20,16 +20,20 @@ on:
         description: 'Ably version'
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   package-library:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           submodules: 'recursive'
+          persist-credentials: false
 
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: |
             3.1.426
@@ -37,7 +41,7 @@ jobs:
             7.0.410
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         
       - name: Install Android SDK Platform 30
         shell: pwsh
@@ -79,10 +83,12 @@ jobs:
         run: dotnet tool restore
 
       - name: Package
-        run: ./package.cmd ${{ github.event.inputs.version }}
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: ./package.cmd $env:VERSION
         
       - name: Archive package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ably-package
           path: |
@@ -94,17 +100,18 @@ jobs:
       DOTNET_NOLOGO: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           submodules: 'recursive'
+          persist-credentials: false
 
       - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
           xcode-version: '14.3'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         
       - name: Install Android SDK Platform 30
         run: |
@@ -112,7 +119,7 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;30.0.3"
 
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: |
             3.1.426
@@ -137,10 +144,12 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Push (iOS & Android)
-        run: ./package-push.sh ${{ github.event.inputs.version }}
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: ./package-push.sh "$VERSION"
 
       - name: Archive push packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ably-push-package
           path: |
@@ -149,12 +158,13 @@ jobs:
   package-unity:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           submodules: 'recursive'
+          persist-credentials: false
 
       - name: Download dotnet framework
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: |
             2.1.818
@@ -164,10 +174,12 @@ jobs:
         run: dotnet tool restore
 
       - name: Package Unity
-        run: ./package-unity.sh ${{ github.event.inputs.version }}
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: ./package-unity.sh "$VERSION"
         
       - name: Archive Unity package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ably-unity-package
           path: |
@@ -178,7 +190,7 @@ jobs:
     needs: [package-library, package-push, package-unity]
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: artifacts
           
@@ -223,7 +235,7 @@ jobs:
           echo "Total files: $(ls -1 output-package | wc -l)"
           
       - name: Upload merged artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: output-package
           path: output-package/
