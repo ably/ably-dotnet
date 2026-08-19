@@ -59,6 +59,36 @@ PM> Install-Package ably.io
 dotnet add package ably.io
 ```
 
+### Device and server packages
+
+Two companion packages provide entry points named for where your code runs. They are thin: the clients
+they return are the ones documented below, with the same API key, options and API surface.
+
+| Package | Install when your code runs on | Entry point |
+| --- | --- | --- |
+| [ably.io.pubsub.device](https://www.nuget.org/packages/ably.io.pubsub.device/) | An end-user device: mobile, desktop, browser or embedded app | `PubSubDevice.CreateClient(...)` |
+| [ably.io.pubsub.server](https://www.nuget.org/packages/ably.io.pubsub.server/) | A server you run: ASP.NET, Azure, a worker or a console app | `PubSubServer.CreateRealtimeClient(...)`, `PubSubServer.CreateHttpClient(...)` |
+
+```shell
+dotnet add package ably.io.pubsub.server
+```
+
+```csharp
+using IO.Ably.PubSub.Server;
+
+var realtime = PubSubServer.CreateRealtimeClient("<API_KEY>");
+var rest = PubSubServer.CreateHttpClient("<API_KEY>");
+```
+
+```csharp
+using IO.Ably.PubSub.Device;
+
+var realtime = PubSubDevice.CreateClient("<API_KEY>");
+```
+
+Neither package is required. Applications using `AblyRealtime` and `AblyRest` from `ably.io` directly
+continue to work unchanged.
+
 ### MAUI configuration
 
 When using Ably in a MAUI project, be aware of potential issues caused by assembly trimming, as `ably-dotnet` relies on the reflection API. 

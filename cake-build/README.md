@@ -98,16 +98,21 @@ Currently, we have two scripts to generate NuGet packages:
 
 ### 1. package.cmd
 
-- Responsible for creating core `ably.io` NuGet package.
+- Responsible for creating core `ably.io` NuGet package, plus the `ably.io.pubsub.device` and
+  `ably.io.pubsub.server` packages, which release in lockstep with it.
 - Works only on Windows due to a dependency on the .NET Framework.
 
 ```cmd
 .\package.cmd 1.2.3
 ```
 
-Above command creates `ably.io.1.2.3.nupkg` package at root.
+Above command creates `ably.io.1.2.3.nupkg`, `ably.io.pubsub.device.1.2.3.nupkg` and
+`ably.io.pubsub.server.1.2.3.nupkg` packages at root.
 
-During release process, this package is hosted on [nuget.org/packages/ably.io](https://www.nuget.org/packages/ably.io).
+During release process, these packages are hosted on:
+- [nuget.org/packages/ably.io](https://www.nuget.org/packages/ably.io)
+- [nuget.org/packages/ably.io.pubsub.device](https://www.nuget.org/packages/ably.io.pubsub.device)
+- [nuget.org/packages/ably.io.pubsub.server](https://www.nuget.org/packages/ably.io.pubsub.server)
 
 ### 2. package-push.sh / package-push.cmd
 
