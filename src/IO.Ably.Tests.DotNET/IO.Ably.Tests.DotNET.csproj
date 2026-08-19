@@ -48,6 +48,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj" />
+    <ProjectReference Include="..\IO.Ably.PubSub.Device\IO.Ably.PubSub.Device.csproj" />
+    <ProjectReference Include="..\IO.Ably.PubSub.Server\IO.Ably.PubSub.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>  	
