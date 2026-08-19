@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>ably.io.pubsub.device</id>
+        <version>$version$</version>
+        <title>Ably Pub/Sub Device</title>
+        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford, Tom Kirby-Green, Sachin Shinde</authors>
+        <owners>Ably Real-time Ltd</owners>
+        <license type="expression">Apache-2.0</license>
+        <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+        <icon>icon.png</icon>
+        <readme>README.md</readme>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Ably Pub/Sub client for applications running on an end-user device - mobile, desktop, browser or embedded. Adds PubSubDevice.CreateClient as the entry point, over the client and API of the ably.io SDK. See https://www.ably.io for more info.</description>
+        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
+        <copyright>©2025 Ably Real-time Ltd</copyright>
+        <tags>ably realtime messaging websocket pubsub presence device client dotnet csharp maui netstandard xamarin unity</tags>
+        <repository type="git" url="https://github.com/ably/ably-dotnet.git" branch="main" />
+        <language />
+        <dependencies>
+
+          <group>
+            <!-- TODO: Find a way to dynamically update this dependency.
+            The PubSub packages release in lockstep with the core, so the lower bound is the
+            version they ship alongside; bump it with every release. -->
+            <dependency id="ably.io" version="[1.2.19,2.0.0]" />
+          </group>
+
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\src\IO.Ably.PubSub.Device\bin\$configuration$\netstandard2.0\IO.Ably.PubSub.Device.dll" target="lib\netstandard2.0" />
+        <file src="..\src\IO.Ably.PubSub.Device\bin\$configuration$\netstandard2.0\IO.Ably.PubSub.Device.pdb" target="lib\netstandard2.0" />
+        <file src="..\src\IO.Ably.PubSub.Device\bin\$configuration$\netstandard2.0\IO.Ably.PubSub.Device.xml" target="lib\netstandard2.0" />
+        <file src="..\README.md" target="README.md" />
+        <file src="..\images\logo.png" target="icon.png" />
+    </files>
+</package>

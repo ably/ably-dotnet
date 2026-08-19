@@ -86,14 +86,7 @@ Task("_Package_Create_NuGet")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
-    Information($"Creating NuGet package version {version}...");
-    
-    var nuspecFile = paths.Root.CombineWithFilePath("nuget/io.ably.nuspec");
-    
-    if (!FileExists(nuspecFile))
-    {
-        throw new Exception($"Nuspec file not found: {nuspecFile}");
-    }
+    Information($"Creating NuGet packages version {version}...");
     
     var nugetSettings = new NuGetPackSettings
     {
@@ -112,9 +105,27 @@ Task("_Package_Create_NuGet")
         nugetSettings.ToolPath = nugetPath;
     }
     
-    NuGetPack(nuspecFile, nugetSettings);
+    // The core package plus the per-side PubSub wrappers, which release in lockstep with it.
+    var packages = new Dictionary<string, string>
+    {
+        { "nuget/io.ably.nuspec", "ably.io" },
+        { "nuget/io.ably.pubsub.device.nuspec", "ably.io.pubsub.device" },
+        { "nuget/io.ably.pubsub.server.nuspec", "ably.io.pubsub.server" }
+    };
     
-    Information($"✓ Package created: ably.io.{version}.nupkg");
+    foreach (var package in packages)
+    {
+        var nuspecFile = paths.Root.CombineWithFilePath(package.Key);
+        
+        if (!FileExists(nuspecFile))
+        {
+            throw new Exception($"Nuspec file not found: {nuspecFile}");
+        }
+        
+        NuGetPack(nuspecFile, nugetSettings);
+        
+        Information($"✓ Package created: {package.Value}.{version}.nupkg");
+    }
 });
 
 Task("_Restore_Push_Package")
@@ -242,7 +253,7 @@ Task("_Package_Unity")
 ///////////////////////////////////////////////////////////////////////////////
 
 Task("Package")
-    .Description("Create main NuGet package (ably.io)")
+    .Description("Create main NuGet package (ably.io) and the PubSub device/server packages")
     .IsDependentOn("_Package_Create_NuGet");
 
 Task("PushPackage")
