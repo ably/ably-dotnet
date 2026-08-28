@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -103,6 +104,46 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _context.ShouldQueueCommand<SetConnectingStateCommand>();
+        }
+
+        [Fact]
+        [Trait("spec", "RTN14d")]
+        public void StartTimer_ShouldReportTheDelayItActuallyWaits()
+        {
+            // RTN14d - retryIn is "the time in milliseconds until the next connection attempt", so
+            // the value handed to the application is the one the timer was started with, RTB1 backoff
+            // and jitter included.
+            _state.StartTimer();
+
+            _timer.LastDelay.Should().BeGreaterThan(TimeSpan.Zero);
+            _state.RetryIn.Should().Be(_timer.LastDelay);
+        }
+
+        // UTS: realtime/unit/RTB1/disconnected-retry-delay-0
+        [Fact]
+        [Trait("spec", "RTN14d")]
+        [Trait("spec", "RTB1")]
+        public void StartTimer_ShouldApplyTheBackoffAndJitter()
+        {
+            _state.StartTimer();
+
+            // RTB1a's coefficient is 1 for the first retry and RTB1b's jitter is 0.8 to 1.0.
+            var nominal = _context.RetryTimeout;
+            _timer.LastDelay.Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(nominal.TotalMilliseconds * 0.8));
+            _timer.LastDelay.Should().BeLessOrEqualTo(nominal);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN14d")]
+        public void WhenRetryingInstantly_ShouldReportNoWaitAndNotStartTheTimer()
+        {
+            var state = GetState();
+            state.RetryInstantly = true;
+
+            state.StartTimer();
+
+            state.RetryIn.Should().Be(TimeSpan.Zero);
+            _timer.StartedWithAction.Should().BeFalse();
         }
 
         private ConnectionDisconnectedState GetState(ErrorInfo error = null)
