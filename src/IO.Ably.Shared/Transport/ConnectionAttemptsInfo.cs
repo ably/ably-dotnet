@@ -23,10 +23,23 @@ namespace IO.Ably.Transport
 
         internal bool TriedToRenewToken { get; private set; }
 
+        /// <summary>
+        /// How many times we have skipped the disconnected retry timeout and reconnected straight
+        /// away since last being connected. RTN17j sanctions retrying immediately to work through the
+        /// fallback domains, but the traversal must be bounded or RTB1 is never reached.
+        /// </summary>
+        internal int InstantRetryCount { get; private set; }
+
         public void Reset()
         {
             Attempts.Clear();
             TriedToRenewToken = false;
+            InstantRetryCount = 0;
+        }
+
+        public void RecordInstantRetry()
+        {
+            InstantRetryCount++;
         }
 
         public void RecordTokenRetry()
@@ -82,10 +95,16 @@ namespace IO.Ably.Transport
 
         private void RecordAttemptFailure(ConnectionState state, Exception ex)
         {
-            if (Attempts.Any())
+            // Mirrors the ErrorInfo overload above, including the empty-collection case, which is
+            // the normal one here: the only caller passing an exception is the transport dropping out
+            // of CONNECTED, and entering CONNECTED has just cleared the collection. Dropping it would
+            // leave FirstAttempt null, delaying the RTN14e clock, and DisconnectedCount at zero,
+            // which feeds RTN17 host selection.
+            var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(_now());
+            attempt.FailedStates.Add(new AttemptFailedState(state, ex));
+            if (Attempts.Count == 0)
             {
-                var attempt = Attempts.Last();
-                attempt.FailedStates.Add(new AttemptFailedState(state, ex));
+                Attempts.Add(attempt);
             }
         }
     }
