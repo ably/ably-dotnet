@@ -6,7 +6,7 @@
     <SharedGUID>1609f12c-8216-4e7c-ade0-240bfe160242</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>IO.Ably.Tests.Shared</Import_RootNamespace>
+    <Import_RootNamespace>Ably.PubSub.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AblyInsecureRequestExceptionTests.cs" />

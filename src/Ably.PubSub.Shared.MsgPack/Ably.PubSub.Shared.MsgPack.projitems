@@ -6,7 +6,7 @@
     <SharedGUID>eebf3249-3ca3-4078-a188-f8b916c3f4c2</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>IO.Ably.Shared.MsgPack</Import_RootNamespace>
+    <Import_RootNamespace>Ably.PubSub.Shared.MsgPack</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityMessagePackSerializer.cs" />

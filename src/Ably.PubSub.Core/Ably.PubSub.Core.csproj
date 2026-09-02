@@ -5,7 +5,7 @@
     <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
     <Configurations>Debug;Release;package</Configurations>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AssemblyName>IO.Ably</AssemblyName>
+    <AssemblyName>Ably.PubSub.Core</AssemblyName>
     <RootNamespace>IO.Ably</RootNamespace>
   </PropertyGroup>
 	
@@ -24,17 +24,17 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\IO.Ably.NETStandard20.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Ably.PubSub.Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\IO.Ably.NETStandard20.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Ably.PubSub.Core.xml</DocumentationFile>
   </PropertyGroup>
 
-  <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" />
+  <Import Project="..\Ably.PubSub.Shared\Ably.PubSub.Shared.projitems" Label="Shared" />
 
-  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />
+  <Import Project="..\Ably.PubSub.Shared.MsgPack\Ably.PubSub.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />
 
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />

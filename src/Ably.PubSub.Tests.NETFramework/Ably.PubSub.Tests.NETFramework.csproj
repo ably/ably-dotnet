@@ -7,8 +7,8 @@
     <ProjectGuid>{567FEEF7-41AF-42F2-AD34-546A278355B1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IO.Ably.Tests.NETFramework</RootNamespace>
-    <AssemblyName>IO.Ably.Tests.NETFramework</AssemblyName>
+    <RootNamespace>Ably.PubSub.Tests.NETFramework</RootNamespace>
+    <AssemblyName>Ably.PubSub.Tests.NETFramework</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>8</LangVersion>
@@ -72,25 +72,25 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\1">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\1">
       <Link>delta\1</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\1.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\1.vcdiff">
       <Link>delta\1.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\2">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\2">
       <Link>delta\2</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\2.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\2.vcdiff">
       <Link>delta\2.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\3">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\3">
       <Link>delta\3</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\3.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\3.vcdiff">
       <Link>delta\3.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\4">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\4">
       <Link>delta\4</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="MsgPackStatsTest.json" />
@@ -140,11 +140,11 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj">
+    <ProjectReference Include="..\Ably.PubSub.Core.NETFramework\Ably.PubSub.Core.NETFramework.csproj">
       <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
-      <Name>IO.Ably.NETFramework</Name>
+      <Name>Ably.PubSub.Core.NETFramework</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\Ably.PubSub.Tests.Shared\Ably.PubSub.Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

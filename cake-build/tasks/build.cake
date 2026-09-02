@@ -84,7 +84,7 @@ Task("_Build_Ably_Unity_Dll")
     Information("Merging Unity dependencies into IO.Ably.dll...");
     
     var netStandard20BinPath = paths.Src
-        .Combine("IO.Ably.NETStandard20")
+        .Combine("Ably.PubSub.Core")
         .Combine("bin/Release/netstandard2.0");
     
     if (!DirectoryExists(netStandard20BinPath))
@@ -96,7 +96,7 @@ Task("_Build_Ably_Unity_Dll")
     
     if (!FileExists(primaryDll))
     {
-        throw new Exception($"Primary DLL not found: {primaryDll}. Please build the IO.Ably.NETStandard20 project first.");
+        throw new Exception($"Primary DLL not found: {primaryDll}. Please build the Ably.PubSub.Core project first.");
     }
     
     var newtonsoftDll = paths.Root

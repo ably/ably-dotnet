@@ -23,10 +23,10 @@ public class BuildPaths
         Lib = Root.Combine("lib");
         TestResults = Root.Combine("test-results");
         
-        MainSolution = Src.CombineWithFilePath("IO.Ably.sln");
-        NetStandardSolution = Src.CombineWithFilePath("IO.Ably.NetStandard.sln");
-        NetFrameworkSolution = Src.CombineWithFilePath("IO.Ably.NetFramework.sln");
-        PackageSolution = Src.CombineWithFilePath("IO.Ably.Package.sln");
+        MainSolution = Src.CombineWithFilePath("Ably.PubSub.sln");
+        NetStandardSolution = Src.CombineWithFilePath("Ably.PubSub.NetStandard.sln");
+        NetFrameworkSolution = Src.CombineWithFilePath("Ably.PubSub.NetFramework.sln");
+        PackageSolution = Src.CombineWithFilePath("Ably.PubSub.Package.sln");
         
         DeltaCodecProject = Lib.CombineWithFilePath("delta-codec/IO.Ably.DeltaCodec/IO.Ably.DeltaCodec.csproj");
     }

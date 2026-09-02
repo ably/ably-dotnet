@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj" />
+    <ProjectReference Include="..\Ably.PubSub.Core\Ably.PubSub.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>  	
@@ -61,29 +61,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\1">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\1">
       <Link>delta\1</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\1.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\1.vcdiff">
       <Link>delta\1.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\2">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\2">
       <Link>delta\2</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\2.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\2.vcdiff">
       <Link>delta\2.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\3">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\3">
       <Link>delta\3</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\3.vcdiff">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\3.vcdiff">
       <Link>delta\3.vcdiff</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\IO.Ably.Tests.Shared\delta-test-messages\4">
+    <EmbeddedResource Include="..\Ably.PubSub.Tests.Shared\delta-test-messages\4">
       <Link>delta\4</Link>
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\Ably.PubSub.Tests.Shared\Ably.PubSub.Tests.Shared.projitems" Label="Shared" />
 
 </Project>
