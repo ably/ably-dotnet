@@ -476,9 +476,7 @@ namespace IO.Ably.Realtime.Workflow
                                 }
                                 catch (AblyException e)
                                 {
-                                    return SetDisconnectedStateCommand.Create(
-                                            e.ErrorInfo,
-                                            clearConnectionKey: true)
+                                    return SetDisconnectedStateCommand.Create(e.ErrorInfo)
                                         .TriggeredBy(cmd);
                                 }
                             }
@@ -506,9 +504,7 @@ namespace IO.Ably.Realtime.Workflow
                 case HandleConnectingDisconnectedCommand cmd:
 
                     // Suspending is decided in the SetDisconnectedStateCommand handler, for every path.
-                    return SetDisconnectedStateCommand.Create(
-                            cmd.Error ?? ErrorInfo.ReasonDisconnected,
-                            clearConnectionKey: true)
+                    return SetDisconnectedStateCommand.Create(cmd.Error ?? ErrorInfo.ReasonDisconnected)
                         .TriggeredBy(cmd);
 
                 case HandleConnectingErrorCommand cmd:
@@ -522,9 +518,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     if (error.IsRetryableStatusCode())
                     {
-                        return SetDisconnectedStateCommand.Create(
-                                error,
-                                clearConnectionKey: true)
+                         return SetDisconnectedStateCommand.Create(error)
                             .TriggeredBy(cmd);
                     }
                     else
@@ -764,9 +758,9 @@ namespace IO.Ably.Realtime.Workflow
             //    RTN16f initialises it from the recovery key, which carries no connectionId, so
             //    success is judged by the absence of an error.
             //
-            // Broader than testing for an error on the message, which a connection cleared per
-            // RTN15g would fail: it reconnects fresh, and Ably answers with a new connectionId and
-            // no error - exactly the case that most needs a new sequence.
+            // Broader than testing for an error on the message: a resume the server refuses is
+            // answered with a new connectionId and, often, no error at all - exactly the case that
+            // most needs a new sequence.
             //
             // Must be evaluated before Update below, which overwrites the id being compared, and
             // before Options.Recover is cleared for RTN16k.
@@ -792,7 +786,7 @@ namespace IO.Ably.Realtime.Workflow
 
             Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
 
-            // RTN15c7, RTN15g3, RTN11d - a connection that is not a continuation of the one we held
+            // RTN15c7, RTN11d - a connection that is not a continuation of the one we held
             // restarts the message serial sequence at zero.
             if (connectionContinues == false)
             {
@@ -882,13 +876,6 @@ namespace IO.Ably.Realtime.Workflow
                                 State.Connection.ClearKey();
                             }
 
-                            // RTN15g - If a client has been disconnected for longer
-                            // than the connectionStateTtl, it should not attempt to resume.
-                            if (State.Connection.HasConnectionStateTtlPassed(Now))
-                            {
-                                State.Connection.ClearKeyAndId();
-                            }
-
                             var defaultRealtimeHost = Client.Options.FullRealtimeHost();
 
                             // RTN17 - every attempt considers a fallback, including the timer driven
@@ -970,16 +957,12 @@ namespace IO.Ably.Realtime.Workflow
                         // about and a throwing transition cannot strand the messages uncalled.
                         // ably-js orders it the same way: enactStateChange then failQueuedMessages.
                         //
-                        // RTN7e - the queued messages are failed with "an error representing the
-                        // reason for the state change", taken off the state object so it is this
-                        // transition's reason even if SetState early-returns. In the finally, after
-                        // the transition, so a publisher's callback sees the state it is being told
-                        // about and a throwing transition cannot strand the messages uncalled.
-                        // ably-js orders it the same way: enactStateChange then failQueuedMessages.
-                        //
-                        // RTN8d and RTN9d share that finally: the connection has entered the state
-                        // by the time SetState rethrows, so a throw must not leave it reporting a
-                        // terminal state while still holding a resumable key and a live transport.
+                        // RTN8d, RTN9d - the key and id go the other way round, before the
+                        // transition, because SetState emits the state change and with no
+                        // SynchronizationContext that emit is inline. Nothing between here and the
+                        // emit reads either field.
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d
+
                         try
                         {
                             SetState(failedState);
@@ -987,7 +970,6 @@ namespace IO.Ably.Realtime.Workflow
                         finally
                         {
                             ClearAckQueueAndFailMessages(failedState.Error);
-                            State.Connection.ClearKeyAndId(); // RTN8d, RTN9d
                             ConnectionManager.DestroyTransport();
                         }
 
@@ -1018,15 +1000,8 @@ namespace IO.Ably.Realtime.Workflow
                         // diverting would emit SUSPENDED and then immediately CONNECTING.
                         if (cmd.SkipAttach == false && State.ShouldSuspend(Now))
                         {
-                            return SetSuspendedStateCommand.Create(
-                                    cmd.Error ?? ErrorInfo.ReasonSuspended,
-                                    clearConnectionKey: true)
+                            return SetSuspendedStateCommand.Create(cmd.Error ?? ErrorInfo.ReasonSuspended)
                                 .TriggeredBy(command);
-                        }
-
-                        if (cmd.ClearConnectionKey)
-                        {
-                            State.Connection.ClearKey();
                         }
 
                         bool? connectivityAnswer = null;
@@ -1140,8 +1115,8 @@ namespace IO.Ably.Realtime.Workflow
                         var connectedTransport = transport?.State == TransportState.Connected;
 
                         var closingState = new ConnectionClosingState(ConnectionManager, connectedTransport, Logger);
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d - before the emit
                         SetState(closingState);
-                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d
 
                         if (connectedTransport)
                         {
@@ -1154,11 +1129,6 @@ namespace IO.Ably.Realtime.Workflow
 
                     case SetSuspendedStateCommand cmd:
 
-                        if (cmd.ClearConnectionKey)
-                        {
-                            State.Connection.ClearKey();
-                        }
-
                         var suspendedState = new ConnectionSuspendedState(ConnectionManager, cmd.Error, Logger);
 
                         // RTN7e and the teardown - see the note on the FAILED case.
@@ -1169,12 +1139,6 @@ namespace IO.Ably.Realtime.Workflow
                         finally
                         {
                             ClearAckQueueAndFailMessages(suspendedState.Error);
-
-                            // Deliberately NOT RTN8d/RTN9d, which name only CLOSED, CLOSING and
-                            // FAILED. Clearing here is this library's pre-6.1.0 behaviour, kept
-                            // because it is coupled to the connectionStateTtl freshness check that
-                            // also predates 6.1.0.
-                            State.Connection.ClearKeyAndId();
 
                             // Needed here as well as in the DISCONNECTED handler, which diverts to
                             // this case before reaching its own DestroyTransport. A surviving
@@ -1191,7 +1155,9 @@ namespace IO.Ably.Realtime.Workflow
                             Exception = cmd.Exception,
                         };
 
-                        // RTN7e and the teardown - see the note on the FAILED case.
+                        // RTN7e, RTN8d, RTN9d and the teardown - see the note on the FAILED case.
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d - before the emit
+
                         try
                         {
                             SetState(closedState);
@@ -1199,7 +1165,6 @@ namespace IO.Ably.Realtime.Workflow
                         finally
                         {
                             ClearAckQueueAndFailMessages(closedState.Error);
-                            State.Connection.ClearKeyAndId(); // RTN8d, RTN9d
                             ConnectionManager.DestroyTransport();
                         }
 

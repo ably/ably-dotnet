@@ -204,13 +204,12 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetDisconnectedStateCommand : RealtimeCommand
     {
-        private SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception, bool clearConnectionKey)
+        private SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception)
         {
             Error = error;
             RetryInstantly = retryInstantly;
             SkipAttach = skipAttach;
             Exception = exception;
-            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
@@ -221,45 +220,36 @@ namespace IO.Ably.Realtime.Workflow
 
         public Exception Exception { get; }
 
-        public bool ClearConnectionKey { get; }
-
         protected override string ExplainData()
         {
             return $"RetryInstantly: {RetryInstantly}" +
                    "SkipAttach: " + SkipAttach +
                    ((Error != null) ? " Error: " + Error : string.Empty) +
-                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty) +
-                " ClearConnectionKey: " + ClearConnectionKey;
+                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty);
         }
 
         public static SetDisconnectedStateCommand Create(
             ErrorInfo error,
             bool retryInstantly = false,
             bool skipAttach = false,
-            Exception exception = null,
-            bool clearConnectionKey = false)
-            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception, clearConnectionKey);
+            Exception exception = null)
+            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception);
     }
 
     internal class SetSuspendedStateCommand : RealtimeCommand
     {
-        private SetSuspendedStateCommand(ErrorInfo error, bool clearConnectionKey)
+        private SetSuspendedStateCommand(ErrorInfo error)
         {
             Error = error;
-            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
 
-        public bool ClearConnectionKey { get; }
-
-        public static SetSuspendedStateCommand Create(ErrorInfo error, bool clearConnectionKey = false) => new SetSuspendedStateCommand(error, clearConnectionKey);
+        public static SetSuspendedStateCommand Create(ErrorInfo error) => new SetSuspendedStateCommand(error);
 
         protected override string ExplainData()
         {
-            var message = (Error != null) ? " Error: " + Error : string.Empty;
-            message += " ClearConnectionKey:" + ClearConnectionKey;
-            return message;
+            return (Error != null) ? " Error: " + Error : string.Empty;
         }
     }
 
