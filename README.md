@@ -13,6 +13,25 @@ Find out more:
 * [Ably Pub/Sub docs.](https://ably.com/docs/basics)
 * [Ably Pub/Sub examples.](https://ably.com/examples?product=pubsub)
 
+> [!NOTE]
+> **2.0 is in development on this branch.**
+>
+> Ably Pub/Sub is being split into a device-side package and a server-side package, so that Ably can tell which side of an application a client belongs to. From 2.0 the .NET SDK ships as a set of NuGet packages:
+>
+> | Package | Use it for |
+> |---------|------------|
+> | `Ably.PubSub.Device` | End-user device applications (desktop, mobile, Unity, MAUI, browser-adjacent clients) — *added in the next PR in this stack* |
+> | `Ably.PubSub.Server` | Server-side and backend applications — *added in the next PR in this stack* |
+> | `Ably.PubSub.Core` | Internal implementation shared by the two packages above. Not intended for direct use; you receive it transitively |
+>
+> The compiled assembly is now `Ably.PubSub.Core.dll`. The code namespace is unchanged: `using IO.Ably;` and every public type name stay as they are for now.
+>
+> Today's [`ably.io`](https://www.nuget.org/packages/ably.io) 1.x package is unaffected and continues from a 1.x maintenance branch for a year after 2.0 becomes generally available; it is never published from this branch again. The same applies to `ably.io.push.android` and `ably.io.push.ios`, whose Xamarin-era projects are not part of the 2.0 set (see [PushNotifications.md](./PushNotifications.md)).
+>
+> Never reference `ably.io` and `Ably.PubSub.*` from the same project: they share the `IO.Ably` namespace, so mixing them is a compile error by design.
+>
+> The installation and usage instructions below still describe the 1.x package and are rewritten later in this stack.
+
 ---
 
 ## Getting started
@@ -32,11 +51,8 @@ Everything you need to get started with Ably:
 | .NET | 6.0+, .NET Core 2.0+ |
 | .NET Framework | 4.6.2+ |
 | Mono | 5.4+ |
-| Xamarin.Android | 8.0+ |
-| Xamarin.iOS | 10.14+ |
-| Xamarin.Mac| 3.8+ |
+| .NET for Android, .NET for iOS and MAUI | via `netstandard2.0` |
 | Unity | 2019.x+ |
-| MAUI | .NET 6.0+|
 
 > [!IMPORTANT]
 > SDK versions < 1.2.12 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
@@ -63,11 +79,11 @@ dotnet add package ably.io
 
 When using Ably in a MAUI project, be aware of potential issues caused by assembly trimming, as `ably-dotnet` relies on the reflection API. 
 
-Add the following to your `.csproj` file to prevent trimming of the `IO.Ably` assembly:
+Add the following to your `.csproj` file to prevent trimming of the Ably assembly:
 
 ```xml
 <ItemGroup>
-  <TrimmerRootAssembly Include="IO.Ably" />
+  <TrimmerRootAssembly Include="Ably.PubSub.Core" />
 </ItemGroup>
 ```
 
@@ -121,7 +137,7 @@ clientOpts.LogHandler = new CustomLogHandler();
 
 ### Unity usage
 
-- Download latest `ably.io.*.unitypackage` from [releases section](https://github.com/ably/ably-dotnet/releases) and include it in the unity project.
+- Download latest `ably.pubsub.*.unitypackage` from [releases section](https://github.com/ably/ably-dotnet/releases) and include it in the unity project.
 - For more information, check [Unity README](./unity/README.md)
 
 ## Releases
