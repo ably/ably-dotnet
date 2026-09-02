@@ -81,7 +81,7 @@ Task("_Build_Ably_Unity_Dll")
     .Description("Create merged Unity DLL with all dependencies")
     .Does(() =>
 {
-    Information("Merging Unity dependencies into IO.Ably.dll...");
+    Information("Merging Unity dependencies into Ably.PubSub.Core.dll...");
     
     var netStandard20BinPath = paths.Src
         .Combine("Ably.PubSub.Core")
@@ -92,7 +92,7 @@ Task("_Build_Ably_Unity_Dll")
         throw new Exception($"NETStandard2.0 bin directory not found: {netStandard20BinPath}. Please build the project first.");
     }
     
-    var primaryDll = netStandard20BinPath.CombineWithFilePath("IO.Ably.dll");
+    var primaryDll = netStandard20BinPath.CombineWithFilePath("Ably.PubSub.Core.dll");
     
     if (!FileExists(primaryDll))
     {
@@ -118,7 +118,7 @@ Task("_Build_Ably_Unity_Dll")
     };
     
     var unityOutputPath = paths.Root.Combine("unity/Assets/Ably/Plugins");
-    var outputDll = unityOutputPath.CombineWithFilePath("IO.Ably.dll");
+    var outputDll = unityOutputPath.CombineWithFilePath("Ably.PubSub.Core.dll");
     
     // Delete existing output DLL if it exists
     if (FileExists(outputDll))
