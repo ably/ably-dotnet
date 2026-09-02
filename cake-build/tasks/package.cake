@@ -32,15 +32,16 @@ Task("_Package_Create_NuGet")
     .WithCriteria(() => !string.IsNullOrEmpty(version))
     .Does(() =>
 {
-    Information($"Creating NuGet package version {version}...");
-    
-    var nuspecFile = paths.Root.CombineWithFilePath("nuget/io.ably.nuspec");
-    
-    if (!FileExists(nuspecFile))
+    Information($"Creating NuGet packages version {version}...");
+
+    // The lockstep package set. Every package here is built from this repository
+    // and released at the same version. Stack PR 2 adds the door packages
+    // (ably.pubsub.device.nuspec, ably.pubsub.server.nuspec) to this list.
+    var nuspecFiles = new[]
     {
-        throw new Exception($"Nuspec file not found: {nuspecFile}");
-    }
-    
+        "nuget/ably.pubsub.core.nuspec"
+    };
+
     var nugetSettings = new NuGetPackSettings
     {
         Version = version,
@@ -50,17 +51,27 @@ Task("_Package_Create_NuGet")
         },
         OutputDirectory = paths.Root
     };
-    
+
     // Use local nuget.exe if available
     var nugetPath = paths.Root.CombineWithFilePath("tools/nuget.exe");
     if (FileExists(nugetPath))
     {
         nugetSettings.ToolPath = nugetPath;
     }
-    
-    NuGetPack(nuspecFile, nugetSettings);
-    
-    Information($"✓ Package created: ably.io.{version}.nupkg");
+
+    foreach (var nuspec in nuspecFiles)
+    {
+        var nuspecFile = paths.Root.CombineWithFilePath(nuspec);
+
+        if (!FileExists(nuspecFile))
+        {
+            throw new Exception($"Nuspec file not found: {nuspecFile}");
+        }
+
+        NuGetPack(nuspecFile, nugetSettings);
+
+        Information($"✓ Packed {nuspecFile.GetFilename()} at version {version}");
+    }
 });
 
 Task("_Package_Unity")
@@ -70,7 +81,7 @@ Task("_Package_Unity")
     Information($"Creating Unity package version {version}...");
     
     var unityPackagerPath = paths.Root.Combine("unity-packager");
-    var outputPath = paths.Root.CombineWithFilePath($"ably.io.{version}.unitypackage");
+    var outputPath = paths.Root.CombineWithFilePath($"ably.pubsub.{version}.unitypackage");
     
     // Clone unity-packager if not exists
     if (!DirectoryExists(unityPackagerPath))
@@ -114,7 +125,7 @@ Task("_Package_Unity")
 ///////////////////////////////////////////////////////////////////////////////
 
 Task("Package")
-    .Description("Create main NuGet package (ably.io)")
+    .Description("Create the NuGet packages (Ably.PubSub.Core)")
     .IsDependentOn("_Package_Create_NuGet");
 
 Task("UnityPackage")
