@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e7e70efe-5064-4a03-a7a6-8ac678e14c8a" name="@Umair's-MacBook-Pro 2026-09-02 14:39:44" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:39:44.8816670+01:00" queuing="2026-09-02T14:39:44.8816670+01:00" start="2026-09-02T14:39:44.2713790+01:00" finish="2026-09-02T14:39:44.8836690+01:00" />
+  <TestSettings name="default" id="6388f5e8-1fa3-4c30-b019-75758890e044">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_39_44" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="8832f993-1696-4411-baf0-119f95928678" testId="1e76bfed-2287-d9df-c825-55329d3aea36" testName="IO.Ably.Tests.Push.PushChannelTests+WhenPlatformSupportsPushNotifications.RestChannel_ShouldInitialisePushChannel" computerName="Umair's-MacBook-Pro" duration="00:00:00.0112774" startTime="2026-09-02T14:39:44.8233040+01:00" endTime="2026-09-02T14:39:44.8233210+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8832f993-1696-4411-baf0-119f95928678">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 48
+   at IO.Ably.Tests.Push.PushChannelTests.WhenPlatformSupportsPushNotifications.GetRealtimeClient() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Push/PushChannelTests.cs:line 46
+   at IO.Ably.Tests.Push.PushChannelTests.WhenPlatformSupportsPushNotifications.RestChannel_ShouldInitialisePushChannel() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Push/PushChannelTests.cs:line 30</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.Push.PushChannelTests+WhenPlatformSupportsPushNotifications.RestChannel_ShouldInitialisePushChannel" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="1e76bfed-2287-d9df-c825-55329d3aea36">
+      <Execution id="8832f993-1696-4411-baf0-119f95928678" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Push.PushChannelTests+WhenPlatformSupportsPushNotifications" name="RestChannel_ShouldInitialisePushChannel" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1e76bfed-2287-d9df-c825-55329d3aea36" executionId="8832f993-1696-4411-baf0-119f95928678" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(48,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Push/PushChannelTests.cs(46,0): at IO.Ably.Tests.Push.PushChannelTests.WhenPlatformSupportsPushNotifications.GetRealtimeClient()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Push/PushChannelTests.cs(30,0): at IO.Ably.Tests.Push.PushChannelTests.WhenPlatformSupportsPushNotifications.RestChannel_ShouldInitialisePushChannel()
+[xUnit.net 00:00:00.36]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:44.8221850+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Push.PushChannelTests+WhenPlatformSupportsPushNotifications.RestChannel_ShouldInitialisePushChannel [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

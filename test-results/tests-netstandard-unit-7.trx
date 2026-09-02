@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e6dfe65a-eebf-4021-90b3-0e2f1ef920e3" name="@Umair's-MacBook-Pro 2026-09-02 14:39:25" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:39:25.7712520+01:00" queuing="2026-09-02T14:39:25.7712520+01:00" start="2026-09-02T14:39:25.1675870+01:00" finish="2026-09-02T14:39:25.7733180+01:00" />
+  <TestSettings name="default" id="0278747e-a8eb-4081-9e84-a84c78760029">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_39_25" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="9c04deec-13aa-447d-9435-f804ffd7c7c9" testId="fb2f0bc3-ec91-43fa-2d61-fbeadcc9e0d3" testName="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;1iZPfA.BjcI_g:wpNhw5RCw6rDjisl&quot;, isToken: False)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0033597" startTime="2026-09-02T14:39:25.7128830+01:00" endTime="2026-09-02T14:39:25.7129000+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9c04deec-13aa-447d-9435-f804ffd7c7c9">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.AblyRest..ctor(String apiKey) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 26
+   at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 73</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a5ff2feb-cc21-49aa-b9f4-6e95fd06083d" testId="ff98e5cd-ec28-483c-1edc-4910e91ce8ff" testName="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM&quot;..., isToken: True)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001243" startTime="2026-09-02T14:39:25.7147460+01:00" endTime="2026-09-02T14:39:25.7147470+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a5ff2feb-cc21-49aa-b9f4-6e95fd06083d">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.AblyRest..ctor(String apiKey) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 26
+   at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 73</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="39907a4c-d2a5-4ab7-9b44-2f0f0a7cb158" testId="cb31eff0-7abf-1b16-e07d-b9d89ec94816" testName="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;boo.Boo:boo&quot;, isToken: False)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000926" startTime="2026-09-02T14:39:25.7150270+01:00" endTime="2026-09-02T14:39:25.7150270+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39907a4c-d2a5-4ab7-9b44-2f0f0a7cb158">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.AblyRest..ctor(String apiKey) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 26
+   at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 73</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e1a65aae-37f9-4586-9ede-de28b3174f2d" testId="44e59726-839a-e76e-ba66-4b6b74d51f75" testName="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;fake token&quot;, isToken: True)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000821" startTime="2026-09-02T14:39:25.7149030+01:00" endTime="2026-09-02T14:39:25.7149040+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e1a65aae-37f9-4586-9ede-de28b3174f2d">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.AblyRest..ctor(String apiKey) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 26
+   at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 73</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM&quot;..., isToken: True)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="ff98e5cd-ec28-483c-1edc-4910e91ce8ff">
+      <Execution id="a5ff2feb-cc21-49aa-b9f4-6e95fd06083d" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient" name="WithAString_ShouldRecogniseBetweenKeyAndToken" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;boo.Boo:boo&quot;, isToken: False)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="cb31eff0-7abf-1b16-e07d-b9d89ec94816">
+      <Execution id="39907a4c-d2a5-4ab7-9b44-2f0f0a7cb158" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient" name="WithAString_ShouldRecogniseBetweenKeyAndToken" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;fake token&quot;, isToken: True)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="44e59726-839a-e76e-ba66-4b6b74d51f75">
+      <Execution id="e1a65aae-37f9-4586-9ede-de28b3174f2d" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient" name="WithAString_ShouldRecogniseBetweenKeyAndToken" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: &quot;1iZPfA.BjcI_g:wpNhw5RCw6rDjisl&quot;, isToken: False)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="fb2f0bc3-ec91-43fa-2d61-fbeadcc9e0d3">
+      <Execution id="9c04deec-13aa-447d-9435-f804ffd7c7c9" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient" name="WithAString_ShouldRecogniseBetweenKeyAndToken" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="fb2f0bc3-ec91-43fa-2d61-fbeadcc9e0d3" executionId="9c04deec-13aa-447d-9435-f804ffd7c7c9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ff98e5cd-ec28-483c-1edc-4910e91ce8ff" executionId="a5ff2feb-cc21-49aa-b9f4-6e95fd06083d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cb31eff0-7abf-1b16-e07d-b9d89ec94816" executionId="39907a4c-d2a5-4ab7-9b44-2f0f0a7cb158" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44e59726-839a-e76e-ba66-4b6b74d51f75" executionId="e1a65aae-37f9-4586-9ede-de28b3174f2d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="4" executed="4" passed="0" failed="4" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.35]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.35]       Stack Trace:
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(26,0): at IO.Ably.AblyRest..ctor(String apiKey)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(73,0): at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken)
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(26,0): at IO.Ably.AblyRest..ctor(String apiKey)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(73,0): at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken)
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(26,0): at IO.Ably.AblyRest..ctor(String apiKey)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(73,0): at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken)
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(26,0): at IO.Ably.AblyRest..ctor(String apiKey)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(73,0): at IO.Ably.Tests.RestSpecs.WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(String key, Boolean isToken)
+[xUnit.net 00:00:00.36]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:25.7118590+01:00">
+        <Text>[xUnit.net 00:00:00.35]     IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl", isToken: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:25.7147620+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM"..., isToken: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:25.7149540+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: "fake token", isToken: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:25.7150380+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.RestSpecs+WhenInitialisingRestClient.WithAString_ShouldRecogniseBetweenKeyAndToken(key: "boo.Boo:boo", isToken: False) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

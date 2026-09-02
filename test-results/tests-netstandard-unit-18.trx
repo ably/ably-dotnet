@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="9b7086d3-aa88-4f56-9ea5-a9986df6cee2" name="@Umair's-MacBook-Pro 2026-09-02 14:39:36" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:39:36.2298790+01:00" queuing="2026-09-02T14:39:36.2298790+01:00" start="2026-09-02T14:39:35.6189960+01:00" finish="2026-09-02T14:39:36.2318700+01:00" />
+  <TestSettings name="default" id="45ea2af8-1383-41d3-8948-b4f14898f2fd">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_39_36" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="8e981ea6-642d-436b-8672-0bc3a3cb38f8" testId="c55a3f43-920c-2b22-1a82-f074b2d8f3f4" testName="IO.Ably.Tests.RestSpecs+FallbackSpecs.ShouldRetryRequestANumberOfTimes" computerName="Umair's-MacBook-Pro" duration="00:00:00.0053524" startTime="2026-09-02T14:39:36.1731140+01:00" endTime="2026-09-02T14:39:36.1731300+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e981ea6-642d-436b-8672-0bc3a3cb38f8">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.Tests.RestSpecs.FallbackSpecs.CreateClient(Action`1 optionsClient) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 473
+   at IO.Ably.Tests.RestSpecs.FallbackSpecs.ShouldRetryRequestANumberOfTimes() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 520
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+FallbackSpecs.ShouldRetryRequestANumberOfTimes" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="c55a3f43-920c-2b22-1a82-f074b2d8f3f4">
+      <Execution id="8e981ea6-642d-436b-8672-0bc3a3cb38f8" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+FallbackSpecs" name="ShouldRetryRequestANumberOfTimes" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="c55a3f43-920c-2b22-1a82-f074b2d8f3f4" executionId="8e981ea6-642d-436b-8672-0bc3a3cb38f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.20]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.33]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.33]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(473,0): at IO.Ably.Tests.RestSpecs.FallbackSpecs.CreateClient(Action`1 optionsClient)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(520,0): at IO.Ably.Tests.RestSpecs.FallbackSpecs.ShouldRetryRequestANumberOfTimes()
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:36.1720940+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.RestSpecs+FallbackSpecs.ShouldRetryRequestANumberOfTimes [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

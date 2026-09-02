@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="2142400c-ff10-4673-b4c6-0ab3f6b69a61" name="@Umair's-MacBook-Pro 2026-09-02 14:39:59" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:39:59.5314790+01:00" queuing="2026-09-02T14:39:59.5314790+01:00" start="2026-09-02T14:39:56.8686850+01:00" finish="2026-09-02T14:39:59.5337410+01:00" />
+  <TestSettings name="default" id="111feb91-0a0b-496e-8457-0d065e098cf9">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_39_59" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7a93ccd0-3dea-4221-859d-c5078ec56df5" testId="43e8f2ac-ab41-a618-6c3f-f32f0338b931" testName="IO.Ably.Tests.RestSandBoxSpecs+WithTokenAuthAndInvalidToken.Time_ShouldReturnAValidDateTimeOffset(protocol: Json)" computerName="Umair's-MacBook-Pro" duration="00:00:02.0287766" startTime="2026-09-02T14:39:59.4840190+01:00" endTime="2026-09-02T14:39:59.4840490+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7a93ccd0-3dea-4221-859d-c5078ec56df5">
+      <Output>
+        <StdOut>Test end disposing connections: 0</StdOut>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.Tests.SandboxSpecs.GetRestClient(Protocol protocol, Action`1 optionsAction, String environment) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/SandboxSpecs.cs:line 89
+   at IO.Ably.Tests.RestSandBoxSpecs.Time_ShouldReturnAValidDateTimeOffset(Protocol protocol) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSandBoxSpecs.cs:line 33
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.RestSandBoxSpecs+WithTokenAuthAndInvalidToken.Time_ShouldReturnAValidDateTimeOffset(protocol: Json)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="43e8f2ac-ab41-a618-6c3f-f32f0338b931">
+      <Execution id="7a93ccd0-3dea-4221-859d-c5078ec56df5" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSandBoxSpecs+WithTokenAuthAndInvalidToken" name="Time_ShouldReturnAValidDateTimeOffset" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="43e8f2ac-ab41-a618-6c3f-f32f0338b931" executionId="7a93ccd0-3dea-4221-859d-c5078ec56df5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.20]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.33]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.34]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:02.40]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:02.40]       Stack Trace:
+[xUnit.net 00:00:02.40]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:02.40]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:02.40]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/SandboxSpecs.cs(89,0): at IO.Ably.Tests.SandboxSpecs.GetRestClient(Protocol protocol, Action`1 optionsAction, String environment)
+[xUnit.net 00:00:02.40]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSandBoxSpecs.cs(33,0): at IO.Ably.Tests.RestSandBoxSpecs.Time_ShouldReturnAValidDateTimeOffset(Protocol protocol)
+[xUnit.net 00:00:02.40]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.40]       Output:
+[xUnit.net 00:00:02.40]         Test end disposing connections: 0
+[xUnit.net 00:00:02.41]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:39:59.4829080+01:00">
+        <Text>[xUnit.net 00:00:02.40]     IO.Ably.Tests.RestSandBoxSpecs+WithTokenAuthAndInvalidToken.Time_ShouldReturnAValidDateTimeOffset(protocol: Json) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

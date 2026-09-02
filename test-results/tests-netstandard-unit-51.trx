@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="824e580f-b3ba-40a2-934d-8c0b97d23e29" name="@Umair's-MacBook-Pro 2026-09-02 14:40:10" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:40:10.3845020+01:00" queuing="2026-09-02T14:40:10.3845020+01:00" start="2026-09-02T14:40:09.7790680+01:00" finish="2026-09-02T14:40:10.3866460+01:00" />
+  <TestSettings name="default" id="8d392e87-f549-4c15-ab75-5d2f9ad112eb">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_40_10" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c11b8f54-159b-4087-87ee-255df6e1651e" testId="9d52a667-e5f2-d9f5-d9ae-bf00c2e8c14e" testName="IO.Ably.Tests.RestInitSpecs.Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort" computerName="Umair's-MacBook-Pro" duration="00:00:00.0032131" startTime="2026-09-02T14:40:10.3377390+01:00" endTime="2026-09-02T14:40:10.3377560+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c11b8f54-159b-4087-87ee-255df6e1651e">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(Action`1 init) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 44
+   at IO.Ably.Tests.RestInitSpecs.Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestInitSpecs.cs:line 173</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.RestInitSpecs.Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="9d52a667-e5f2-d9f5-d9ae-bf00c2e8c14e">
+      <Execution id="c11b8f54-159b-4087-87ee-255df6e1651e" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestInitSpecs" name="Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9d52a667-e5f2-d9f5-d9ae-bf00c2e8c14e" executionId="c11b8f54-159b-4087-87ee-255df6e1651e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.33]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.33]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(44,0): at IO.Ably.AblyRest..ctor(Action`1 init)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestInitSpecs.cs(173,0): at IO.Ably.Tests.RestInitSpecs.Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort()
+[xUnit.net 00:00:00.36]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:10.3367540+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.RestInitSpecs.Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

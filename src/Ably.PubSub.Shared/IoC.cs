@@ -11,13 +11,17 @@ namespace IO.Ably
     {
         private static readonly IPlatform Platform;
 
-        /// <summary>Load AblyPlatform.dll, instantiate AblyPlatform.PlatformImpl type.</summary>
+        /// <summary>Instantiate the IO.Ably.Platform type contributed by the platform head.</summary>
         static IoC()
         {
             try
             {
-                var name = new AssemblyName("IO.Ably");
-                var asm = Assembly.Load(name);
+                // Platform.cs lives in the platform head (Ably.PubSub.Core or
+                // Ably.PubSub.Core.NETFramework) and is compiled into the same assembly as this
+                // shared code, so look it up in this assembly rather than loading one by name.
+                // Loading by name silently degraded every platform service to its fallback the
+                // moment the assembly was renamed from IO.Ably to Ably.PubSub.Core.
+                var asm = typeof(IoC).GetTypeInfo().Assembly;
                 var type = asm.GetType("IO.Ably.Platform");
                 if (type != null)
                 {

@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="794129f8-d630-4d05-a262-fb9f17dbca1d" name="@Umair's-MacBook-Pro 2026-09-02 14:40:08" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:40:08.4122550+01:00" queuing="2026-09-02T14:40:08.4122550+01:00" start="2026-09-02T14:40:07.8141610+01:00" finish="2026-09-02T14:40:08.4144370+01:00" />
+  <TestSettings name="default" id="8bad96fa-af14-4da6-ae6f-9376de732b52">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_40_08" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="a04e7c59-3436-4b85-972b-e2adaa15ca39" testId="95838f3e-aa57-6320-8530-9aef316ba186" testName="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 504)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000602" startTime="2026-09-02T14:40:08.3686610+01:00" endTime="2026-09-02T14:40:08.3686620+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a04e7c59-3436-4b85-972b-e2adaa15ca39">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 43
+   at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs:line 22
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 89
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 68
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0c452c8c-8bba-4060-97a0-a1571d9cb8cf" testId="c726094a-41bb-4fe6-e8af-8bda50a8cbdf" testName="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 503)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000631" startTime="2026-09-02T14:40:08.3684860+01:00" endTime="2026-09-02T14:40:08.3684870+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c452c8c-8bba-4060-97a0-a1571d9cb8cf">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 43
+   at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs:line 22
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 89
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 68
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9ca39d20-8569-4e59-93a7-b7f8d2cab1dc" testId="4e20928b-99d7-b677-1538-6ab404fba813" testName="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 500)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000693" startTime="2026-09-02T14:40:08.3683120+01:00" endTime="2026-09-02T14:40:08.3683130+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9ca39d20-8569-4e59-93a7-b7f8d2cab1dc">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 43
+   at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs:line 22
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 89
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 68
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f790256f-cf16-4019-8967-b69444a386c7" testId="24412301-1b92-cd39-3867-775b317f8b6b" testName="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 501)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0039802" startTime="2026-09-02T14:40:08.3660060+01:00" endTime="2026-09-02T14:40:08.3660230+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f790256f-cf16-4019-8967-b69444a386c7">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 43
+   at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs:line 22
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 89
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 68
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4437e704-5e19-4629-8173-6acdbd8e9e48" testId="76706b2b-e429-d391-51e7-482055bea502" testName="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 502)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001230" startTime="2026-09-02T14:40:08.3680900+01:00" endTime="2026-09-02T14:40:08.3680910+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4437e704-5e19-4629-8173-6acdbd8e9e48">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 43
+   at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs:line 22
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 89
+   at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs:line 68
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 502)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="76706b2b-e429-d391-51e7-482055bea502">
+      <Execution id="4437e704-5e19-4629-8173-6acdbd8e9e48" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs" name="CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 501)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="24412301-1b92-cd39-3867-775b317f8b6b">
+      <Execution id="f790256f-cf16-4019-8967-b69444a386c7" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs" name="CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 504)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="95838f3e-aa57-6320-8530-9aef316ba186">
+      <Execution id="a04e7c59-3436-4b85-972b-e2adaa15ca39" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs" name="CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 500)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="4e20928b-99d7-b677-1538-6ab404fba813">
+      <Execution id="9ca39d20-8569-4e59-93a7-b7f8d2cab1dc" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs" name="CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 503)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="c726094a-41bb-4fe6-e8af-8bda50a8cbdf">
+      <Execution id="0c452c8c-8bba-4060-97a0-a1571d9cb8cf" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs" name="CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="95838f3e-aa57-6320-8530-9aef316ba186" executionId="a04e7c59-3436-4b85-972b-e2adaa15ca39" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c726094a-41bb-4fe6-e8af-8bda50a8cbdf" executionId="0c452c8c-8bba-4060-97a0-a1571d9cb8cf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4e20928b-99d7-b677-1538-6ab404fba813" executionId="9ca39d20-8569-4e59-93a7-b7f8d2cab1dc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24412301-1b92-cd39-3867-775b317f8b6b" executionId="f790256f-cf16-4019-8967-b69444a386c7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="76706b2b-e429-d391-51e7-482055bea502" executionId="4437e704-5e19-4629-8173-6acdbd8e9e48" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="0" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(43,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs(22,0): at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(89,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(68,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(43,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs(22,0): at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(89,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(68,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(43,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs(22,0): at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(89,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(68,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(43,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs(22,0): at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(89,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(68,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(43,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/MockHttpRealtimeSpecs.cs(22,0): at IO.Ably.Tests.MockHttpRealtimeSpecs.GetRealtimeClient(Func`2 handleRequestFunc, Action`1 setOptionsAction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(89,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.GetRealtime(Action`1 optionsAction, Boolean internetCheckOk)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ConnectionAttemptsInfoSpecs.cs(68,0): at IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(Int32 httpCode)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:08.3648720+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 501) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:08.3680030+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 502) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:08.3681980+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 500) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:08.3684220+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 503) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:08.3685650+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ConnectionAttemptsInfoSpecs.CanAttemptFallback_WithDefaultHostAndAppropriateError_ShouldBeTrue(httpCode: 504) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,465 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3b4c382d-1807-4f8f-8117-1bc6e5eb3440" name="@Umair's-MacBook-Pro 2026-09-02 14:40:15" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:40:15.1424970+01:00" queuing="2026-09-02T14:40:15.1424970+01:00" start="2026-09-02T14:40:14.5665260+01:00" finish="2026-09-02T14:40:15.1516140+01:00" />
+  <TestSettings name="default" id="74dff593-9013-4d8c-95fd-de2dd72a14eb">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_40_15" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e33330fa-ced4-42e6-a424-b06fedba5f64" testId="1bb07b41-21f9-7d49-8f04-e023a4c98ed0" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnected)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000642" startTime="2026-09-02T14:40:15.1274250+01:00" endTime="2026-09-02T14:40:15.1274250+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e33330fa-ced4-42e6-a424-b06fedba5f64">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e7dfb158-488b-43ef-b7d4-906d43ab368d" testId="f05d0a4a-ec8a-f584-4a7d-5b97ccf7bea7" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Heartbeat)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000686" startTime="2026-09-02T14:40:15.1271640+01:00" endTime="2026-09-02T14:40:15.1271640+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7dfb158-488b-43ef-b7d4-906d43ab368d">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5406c58d-bbf5-42e6-95bc-faf326afab06" testId="28f16149-17f7-d259-5594-0f83c89d5613" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detach)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000718" startTime="2026-09-02T14:40:15.1270310+01:00" endTime="2026-09-02T14:40:15.1270310+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5406c58d-bbf5-42e6-95bc-faf326afab06">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="aae53f41-f626-4395-a651-6352440c683f" testId="50c1aa81-3983-b6c4-a373-5f6e3ba60cab" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attach)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000748" startTime="2026-09-02T14:40:15.1133270+01:00" endTime="2026-09-02T14:40:15.1133270+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aae53f41-f626-4395-a651-6352440c683f">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b181fc2d-35ae-4a15-ac9b-3de64f0df934" testId="ecd71109-ce9c-32f0-1620-9f684ef9038f" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Closed)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000686" startTime="2026-09-02T14:40:15.1136460+01:00" endTime="2026-09-02T14:40:15.1136470+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b181fc2d-35ae-4a15-ac9b-3de64f0df934">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2ff3b0a6-b84e-4687-9af4-378507b922f7" testId="86e0bfd8-e7e8-d3aa-9edb-1ad92b45b558" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Message)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000754" startTime="2026-09-02T14:40:15.1126990+01:00" endTime="2026-09-02T14:40:15.1126990+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2ff3b0a6-b84e-4687-9af4-378507b922f7">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="058b2e79-67b3-46f6-a39e-6dfde0d0ab32" testId="d707659d-bf47-69e7-6787-99bb0b9e352b" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnect)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0110947" startTime="2026-09-02T14:40:15.1103060+01:00" endTime="2026-09-02T14:40:15.1103230+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="058b2e79-67b3-46f6-a39e-6dfde0d0ab32">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="37288587-273b-4bda-bc68-6f4ba737439e" testId="87cc4b8d-96cd-9edf-6f63-2d302b8e7462" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attached)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000715" startTime="2026-09-02T14:40:15.1267120+01:00" endTime="2026-09-02T14:40:15.1267120+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="37288587-273b-4bda-bc68-6f4ba737439e">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1b4931b8-c147-401f-809b-bc46d57fdf35" testId="258b91b1-fcd3-fc87-26c2-9939aa0aab9a" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detached)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001537" startTime="2026-09-02T14:40:15.1123470+01:00" endTime="2026-09-02T14:40:15.1123480+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b4931b8-c147-401f-809b-bc46d57fdf35">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9a607b6b-2158-449c-87ad-84617c09eb99" testId="d7096ab1-e388-2747-b7bb-65279b32cd02" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connect)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0009628" startTime="2026-09-02T14:40:15.1128820+01:00" endTime="2026-09-02T14:40:15.1128820+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a607b6b-2158-449c-87ad-84617c09eb99">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="58a4b8b5-b449-4575-8940-a88d39221ffb" testId="1866de6a-4868-dfa2-27a9-e2f9c24b376e" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Close)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000641" startTime="2026-09-02T14:40:15.1272940+01:00" endTime="2026-09-02T14:40:15.1272940+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="58a4b8b5-b449-4575-8940-a88d39221ffb">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ecfc728e-31e9-4921-91d4-f21b4572c3df" testId="c7ccee46-643a-d380-7b39-9837d83da452" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Error)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000688" startTime="2026-09-02T14:40:15.1134880+01:00" endTime="2026-09-02T14:40:15.1134880+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ecfc728e-31e9-4921-91d4-f21b4572c3df">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1a425151-e7b5-4efc-a9fd-146cf94cfd55" testId="e5cf275b-78bd-5517-3bae-570ec479798a" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Sync)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000766" startTime="2026-09-02T14:40:15.1268860+01:00" endTime="2026-09-02T14:40:15.1268870+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1a425151-e7b5-4efc-a9fd-146cf94cfd55">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="07808065-55c8-4fe0-a526-f42872860b43" testId="cc0407fb-4fc7-810b-5d85-6500435db4c2" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Presence)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000790" startTime="2026-09-02T14:40:15.1131310+01:00" endTime="2026-09-02T14:40:15.1131320+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="07808065-55c8-4fe0-a526-f42872860b43">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9095f134-43bc-4e1c-9b57-137cb38f7a55" testId="c36e303e-84f1-2cb0-c43f-0be6b7bf65a3" testName="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connected)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0000843" startTime="2026-09-02T14:40:15.1125390+01:00" endTime="2026-09-02T14:40:15.1125390+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9095f134-43bc-4e1c-9b57-137cb38f7a55">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 140
+   at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs:line 426
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnect)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="d707659d-bf47-69e7-6787-99bb0b9e352b">
+      <Execution id="058b2e79-67b3-46f6-a39e-6dfde0d0ab32" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Heartbeat)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="f05d0a4a-ec8a-f584-4a7d-5b97ccf7bea7">
+      <Execution id="e7dfb158-488b-43ef-b7d4-906d43ab368d" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connect)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="d7096ab1-e388-2747-b7bb-65279b32cd02">
+      <Execution id="9a607b6b-2158-449c-87ad-84617c09eb99" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detached)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="258b91b1-fcd3-fc87-26c2-9939aa0aab9a">
+      <Execution id="1b4931b8-c147-401f-809b-bc46d57fdf35" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Error)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="c7ccee46-643a-d380-7b39-9837d83da452">
+      <Execution id="ecfc728e-31e9-4921-91d4-f21b4572c3df" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attached)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="87cc4b8d-96cd-9edf-6f63-2d302b8e7462">
+      <Execution id="37288587-273b-4bda-bc68-6f4ba737439e" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Sync)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="e5cf275b-78bd-5517-3bae-570ec479798a">
+      <Execution id="1a425151-e7b5-4efc-a9fd-146cf94cfd55" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Message)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="86e0bfd8-e7e8-d3aa-9edb-1ad92b45b558">
+      <Execution id="2ff3b0a6-b84e-4687-9af4-378507b922f7" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Close)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="1866de6a-4868-dfa2-27a9-e2f9c24b376e">
+      <Execution id="58a4b8b5-b449-4575-8940-a88d39221ffb" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connected)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="c36e303e-84f1-2cb0-c43f-0be6b7bf65a3">
+      <Execution id="9095f134-43bc-4e1c-9b57-137cb38f7a55" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnected)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="1bb07b41-21f9-7d49-8f04-e023a4c98ed0">
+      <Execution id="e33330fa-ced4-42e6-a424-b06fedba5f64" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attach)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="50c1aa81-3983-b6c4-a373-5f6e3ba60cab">
+      <Execution id="aae53f41-f626-4395-a651-6352440c683f" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Presence)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="cc0407fb-4fc7-810b-5d85-6500435db4c2">
+      <Execution id="07808065-55c8-4fe0-a526-f42872860b43" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detach)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="28f16149-17f7-d259-5594-0f83c89d5613">
+      <Execution id="5406c58d-bbf5-42e6-95bc-faf326afab06" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Closed)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="ecd71109-ce9c-32f0-1620-9f684ef9038f">
+      <Execution id="b181fc2d-35ae-4a15-ac9b-3de64f0df934" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests" name="WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1bb07b41-21f9-7d49-8f04-e023a4c98ed0" executionId="e33330fa-ced4-42e6-a424-b06fedba5f64" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f05d0a4a-ec8a-f584-4a7d-5b97ccf7bea7" executionId="e7dfb158-488b-43ef-b7d4-906d43ab368d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="28f16149-17f7-d259-5594-0f83c89d5613" executionId="5406c58d-bbf5-42e6-95bc-faf326afab06" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50c1aa81-3983-b6c4-a373-5f6e3ba60cab" executionId="aae53f41-f626-4395-a651-6352440c683f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ecd71109-ce9c-32f0-1620-9f684ef9038f" executionId="b181fc2d-35ae-4a15-ac9b-3de64f0df934" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="86e0bfd8-e7e8-d3aa-9edb-1ad92b45b558" executionId="2ff3b0a6-b84e-4687-9af4-378507b922f7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d707659d-bf47-69e7-6787-99bb0b9e352b" executionId="058b2e79-67b3-46f6-a39e-6dfde0d0ab32" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="87cc4b8d-96cd-9edf-6f63-2d302b8e7462" executionId="37288587-273b-4bda-bc68-6f4ba737439e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="258b91b1-fcd3-fc87-26c2-9939aa0aab9a" executionId="1b4931b8-c147-401f-809b-bc46d57fdf35" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7096ab1-e388-2747-b7bb-65279b32cd02" executionId="9a607b6b-2158-449c-87ad-84617c09eb99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1866de6a-4868-dfa2-27a9-e2f9c24b376e" executionId="58a4b8b5-b449-4575-8940-a88d39221ffb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7ccee46-643a-d380-7b39-9837d83da452" executionId="ecfc728e-31e9-4921-91d4-f21b4572c3df" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e5cf275b-78bd-5517-3bae-570ec479798a" executionId="1a425151-e7b5-4efc-a9fd-146cf94cfd55" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc0407fb-4fc7-810b-5d85-6500435db4c2" executionId="07808065-55c8-4fe0-a526-f42872860b43" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c36e303e-84f1-2cb0-c43f-0be6b7bf65a3" executionId="9095f134-43bc-4e1c-9b57-137cb38f7a55" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="15" executed="15" passed="0" failed="15" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.31]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.31]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.35]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.35]       Stack Trace:
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.35]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(140,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetDisconnectedClient(ClientOptions options)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/RealtimeWorkflowSpecs.cs(426,0): at IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs.AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(MessageAction action)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1092960+01:00">
+        <Text>[xUnit.net 00:00:00.35]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnect) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1123400+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detached) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1125930+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connected) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1127280+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Message) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1128490+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Connect) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1129640+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Presence) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1132460+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attach) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1134250+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Error) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1136050+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Closed) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1448860+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Attached) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1449140+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Sync) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1449400+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Detach) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1449680+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Heartbeat) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1449920+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Close) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:15.1450220+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.NETFramework.Realtime.RealtimeWorkflowSpecs+AckProtocolTests.WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(action: Disconnected) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

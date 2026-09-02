@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="90c085c1-a17d-4ee2-8a9e-c65cafa68fd7" name="@Umair's-MacBook-Pro 2026-09-02 14:40:47" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:40:47.9271420+01:00" queuing="2026-09-02T14:40:47.9271420+01:00" start="2026-09-02T14:40:47.3238850+01:00" finish="2026-09-02T14:40:47.9291190+01:00" />
+  <TestSettings name="default" id="b824e19b-2c5b-4d7e-bca1-3d7c7b9afc61">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_40_47" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="fd672fcf-1f06-4bef-a2e3-c24bbc2ef582" testId="562fc91f-abf4-0097-508d-5ee941ca436c" testName="IO.Ably.Tests.RestSpecs+HostSpecs.WithLogHandler_ShouldUseNewLogHandler" computerName="Umair's-MacBook-Pro" duration="00:00:00.0049403" startTime="2026-09-02T14:40:47.8682500+01:00" endTime="2026-09-02T14:40:47.8682690+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd672fcf-1f06-4bef-a2e3-c24bbc2ef582">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.get_MobileDevice() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 50
+   at IO.Ably.AblyRest..ctor(ClientOptions clientOptions) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs:line 53
+   at IO.Ably.Tests.RestSpecs.HostSpecs.WithLogHandler_ShouldUseNewLogHandler() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs:line 356</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.RestSpecs+HostSpecs.WithLogHandler_ShouldUseNewLogHandler" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="562fc91f-abf4-0097-508d-5ee941ca436c">
+      <Execution id="fd672fcf-1f06-4bef-a2e3-c24bbc2ef582" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.RestSpecs+HostSpecs" name="WithLogHandler_ShouldUseNewLogHandler" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="562fc91f-abf4-0097-508d-5ee941ca436c" executionId="fd672fcf-1f06-4bef-a2e3-c24bbc2ef582" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.35]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.35]       Stack Trace:
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(50,0): at IO.Ably.IoC.get_MobileDevice()
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRest.cs(53,0): at IO.Ably.AblyRest..ctor(ClientOptions clientOptions)
+[xUnit.net 00:00:00.35]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Rest/RestSpecs.cs(356,0): at IO.Ably.Tests.RestSpecs.HostSpecs.WithLogHandler_ShouldUseNewLogHandler()
+[xUnit.net 00:00:00.35]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:47.8669400+01:00">
+        <Text>[xUnit.net 00:00:00.35]     IO.Ably.Tests.RestSpecs+HostSpecs.WithLogHandler_ShouldUseNewLogHandler [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

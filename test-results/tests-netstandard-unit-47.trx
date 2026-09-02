@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="76c9bffd-2b3e-41db-a78b-c84d2046f1e0" name="@Umair's-MacBook-Pro 2026-09-02 14:40:06" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-02T14:40:06.4954980+01:00" queuing="2026-09-02T14:40:06.4954980+01:00" start="2026-09-02T14:40:05.8758060+01:00" finish="2026-09-02T14:40:06.4977570+01:00" />
+  <TestSettings name="default" id="9b42a693-636f-43fd-bbb1-c11f61be8759">
+    <Deployment runDeploymentRoot="_Umair's-MacBook-Pro_2026-09-02_14_40_06" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="a7b2c01b-d664-4f14-9497-e38759c5b170" testId="091b2ede-dbb1-2e17-ee12-454d4705d63a" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Initialized)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001147" startTime="2026-09-02T14:40:06.4362200+01:00" endTime="2026-09-02T14:40:06.4362200+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a7b2c01b-d664-4f14-9497-e38759c5b170">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fd9ad787-d7e6-4f04-98a2-d0a4e2735c89" testId="b8faccef-cd84-5544-16c1-389ffc782aad" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attaching)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001044" startTime="2026-09-02T14:40:06.4368840+01:00" endTime="2026-09-02T14:40:06.4368840+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd9ad787-d7e6-4f04-98a2-d0a4e2735c89">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f71e84ce-cdd7-4382-b8ea-ee3c1c438be6" testId="f29c98ae-5a76-3fe6-86a1-abf4cbb533a1" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detaching)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0002150" startTime="2026-09-02T14:40:06.4359440+01:00" endTime="2026-09-02T14:40:06.4359450+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f71e84ce-cdd7-4382-b8ea-ee3c1c438be6">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3bca6754-9543-4987-ba29-fd6473e2acc9" testId="b8a2ada6-5507-45c3-df54-19078116da67" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detached)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001016" startTime="2026-09-02T14:40:06.4371080+01:00" endTime="2026-09-02T14:40:06.4371080+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3bca6754-9543-4987-ba29-fd6473e2acc9">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="55795670-b8ac-4808-a506-6323e5b552cb" testId="fadc302e-f27f-b4b3-337a-98ec186d9fdb" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attached)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0119723" startTime="2026-09-02T14:40:06.4339050+01:00" endTime="2026-09-02T14:40:06.4339240+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="55795670-b8ac-4808-a506-6323e5b552cb">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="552a1887-5ccd-4ad5-b8eb-2f0aeedab92b" testId="62604f39-41d7-5024-cd48-dcaf3912f2dd" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Suspended)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001029" startTime="2026-09-02T14:40:06.4366560+01:00" endTime="2026-09-02T14:40:06.4366560+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="552a1887-5ccd-4ad5-b8eb-2f0aeedab92b">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2613569f-f9f2-499c-8b3a-d4e400b3c2ac" testId="17216c08-0480-c436-7973-5ef65a01bec4" testName="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Failed)" computerName="Umair's-MacBook-Pro" duration="00:00:00.0001057" startTime="2026-09-02T14:40:06.4364380+01:00" endTime="2026-09-02T14:40:06.4364390+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2613569f-f9f2-499c-8b3a-d4e400b3c2ac">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NullReferenceException : Object reference not set to an instance of an object.</Message>
+          <StackTrace>   at IO.Ably.IoC.RegisterOsNetworkStateChanged() in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs:line 40
+   at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs:line 73
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 71
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 103
+   at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs:line 117
+   at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs:line 31
+   at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state) in /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs:line 422
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attached)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="fadc302e-f27f-b4b3-337a-98ec186d9fdb">
+      <Execution id="55795670-b8ac-4808-a506-6323e5b552cb" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Initialized)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="091b2ede-dbb1-2e17-ee12-454d4705d63a">
+      <Execution id="a7b2c01b-d664-4f14-9497-e38759c5b170" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Failed)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="17216c08-0480-c436-7973-5ef65a01bec4">
+      <Execution id="2613569f-f9f2-499c-8b3a-d4e400b3c2ac" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detached)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="b8a2ada6-5507-45c3-df54-19078116da67">
+      <Execution id="3bca6754-9543-4987-ba29-fd6473e2acc9" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attaching)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="b8faccef-cd84-5544-16c1-389ffc782aad">
+      <Execution id="fd9ad787-d7e6-4f04-98a2-d0a4e2735c89" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detaching)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="f29c98ae-5a76-3fe6-86a1-abf4cbb533a1">
+      <Execution id="f71e84ce-cdd7-4382-b8ea-ee3c1c438be6" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+    <UnitTest name="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Suspended)" storage="/users/umair/git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/ably.pubsub.tests.dotnet/bin/release/net6.0/ably.pubsub.tests.dotnet.dll" id="62604f39-41d7-5024-cd48-dcaf3912f2dd">
+      <Execution id="552a1887-5ccd-4ad5-b8eb-2f0aeedab92b" />
+      <TestMethod codeBase="/Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.DotNET/bin/Release/net6.0/Ably.PubSub.Tests.DotNET.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs" name="WhenConnectionIsDisconnected_ChannelStateShouldNotChange" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="091b2ede-dbb1-2e17-ee12-454d4705d63a" executionId="a7b2c01b-d664-4f14-9497-e38759c5b170" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8faccef-cd84-5544-16c1-389ffc782aad" executionId="fd9ad787-d7e6-4f04-98a2-d0a4e2735c89" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f29c98ae-5a76-3fe6-86a1-abf4cbb533a1" executionId="f71e84ce-cdd7-4382-b8ea-ee3c1c438be6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8a2ada6-5507-45c3-df54-19078116da67" executionId="3bca6754-9543-4987-ba29-fd6473e2acc9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fadc302e-f27f-b4b3-337a-98ec186d9fdb" executionId="55795670-b8ac-4808-a506-6323e5b552cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="62604f39-41d7-5024-cd48-dcaf3912f2dd" executionId="552a1887-5ccd-4ad5-b8eb-2f0aeedab92b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="17216c08-0480-c436-7973-5ef65a01bec4" executionId="2613569f-f9f2-499c-8b3a-d4e400b3c2ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="7" executed="7" passed="0" failed="7" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.19]   Discovering: Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Discovered:  Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.32]   Starting:    Ably.PubSub.Tests.DotNET
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.36]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.36]       Stack Trace:
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.36]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]       System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:00.37]       Stack Trace:
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/IoC.cs(40,0): at IO.Ably.IoC.RegisterOsNetworkStateChanged()
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/AblyRealtime.cs(73,0): at IO.Ably.AblyRealtime..ctor(ClientOptions options, Func`3 createRestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(71,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetRealtimeClient(ClientOptions options, Func`2 handleRequestFunc, IMobileDevice mobileDevice)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(103,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetClientWithFakeTransport(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Infrastructure/AblyRealtimeSpecs.cs(117,0): at IO.Ably.Tests.AblyRealtimeSpecs.GetConnectedClient(Action`1 optionsAction, Func`2 handleRequestFunc)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Shared/Extensions/TaskExtensions.cs(31,0): at IO.Ably.TaskExtensions.MapAsync[T,TResult](Task`1 start, Func`2 mapFunction)
+[xUnit.net 00:00:00.37]         /Users/umair/Git/ably-dotnet/.claude/worktrees/agent-a3395f683ef309fa0/src/Ably.PubSub.Tests.Shared/Realtime/ChannelSpecs.cs(422,0): at IO.Ably.Tests.Realtime.ChannelSpecs.ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+[xUnit.net 00:00:00.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.37]   Finished:    Ably.PubSub.Tests.DotNET
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4327850+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attached) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4358590+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detaching) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4360850+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Initialized) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4363160+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Failed) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4365570+01:00">
+        <Text>[xUnit.net 00:00:00.36]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Suspended) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4367510+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Attaching) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Umair's-MacBook-Pro" outcome="Error" timestamp="2026-09-02T14:40:06.4369680+01:00">
+        <Text>[xUnit.net 00:00:00.37]     IO.Ably.Tests.Realtime.ChannelSpecs+ConnectionStateChangeEffectSpecs.WhenConnectionIsDisconnected_ChannelStateShouldNotChange(state: Detached) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
