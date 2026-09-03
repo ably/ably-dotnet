@@ -960,12 +960,16 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15g")]
-        [Trait("spec", "RTN15g1")]
-        // "RTN15g2" It can't implement that spec item because RTN23a is not even implemented
-        [Trait("spec", "RTN15g3")]
-        public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
+        [Trait("spec", "RTN14h")]
+        [Trait("spec", "RTN8d")]
+        [Trait("spec", "RTN9d")]
+        [Trait("spec", "RTN15c6")]
+        public async Task WhenDisconnectedPastTTL_ShouldStillResume_AndReattachChannels(Protocol protocol)
         {
+            // RTN14h, which replaces RTN15g as of specification 6.1.0 - the client always attempts
+            // the resume and lets the server decide whether continuity survives. Against a live
+            // endpoint the reconnect comes back with the connectionId we were holding, which is only
+            // possible because the resume param went out (RTN15b1).
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000);
@@ -974,14 +978,11 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
             string initialConnectionId = client.Connection.Id;
-            TimeSpan connectionStateTtl = client.Connection.ConnectionStateTtl;
+            string initialConnectionKey = client.Connection.Key;
 
-            var aliveAt1 = client.Connection.ConfirmedAliveAt;
-            var aliveAt2 = aliveAt1;
-
-            // RTN15g3 ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached
+            // RTL3d - channels that were ATTACHED, ATTACHING or SUSPENDED are reattached on
+            // entering CONNECTED regardless of whether the resume succeeded.
             var channels = new List<RealtimeChannel>
             {
                 client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel,
@@ -997,25 +998,21 @@ namespace IO.Ably.Tests.Realtime
             channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
             channels[2].State.Should().Be(ChannelState.Suspended);
 
-            DateTime disconnectedAt = DateTime.MinValue;
-            DateTime reconnectedAt = DateTime.MinValue;
             string newConnectionId = string.Empty;
 
             await WaitFor(60000, done =>
             {
-                client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
+                client.Connection.Once(ConnectionEvent.Disconnected, _ =>
                 {
-                    disconnectedAt = DateTime.UtcNow;
+                    // RTN8d, RTN9d - DISCONNECTED is not a terminal state, so both survive.
+                    client.Connection.Id.Should().Be(initialConnectionId);
+                    client.Connection.Key.Should().Be(initialConnectionKey);
+
                     channels[1].Attach();
-                    client.Connection.Once(ConnectionEvent.Connecting, change3 =>
+                    client.Connection.Once(ConnectionEvent.Connected, _ =>
                     {
-                        reconnectedAt = DateTime.UtcNow;
-                        client.Connection.Once(ConnectionEvent.Connected, change4 =>
-                        {
-                            newConnectionId = client.Connection.Id;
-                            aliveAt2 = client.Connection.ConfirmedAliveAt;
-                            done();
-                        });
+                        newConnectionId = client.Connection.Id;
+                        done();
                     });
                 });
 
@@ -1023,15 +1020,10 @@ namespace IO.Ably.Tests.Realtime
                 client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
             });
 
-            var reconnectedInTime = reconnectedAt - disconnectedAt;
-
-            var (lowerBound, _) = ReconnectionStrategyTest.Bounds(1, 5000);
-            reconnectedInTime.TotalMilliseconds.Should().BeGreaterThan(lowerBound);
-
+            // RTN15c6 - the server still held the connection, so the resume succeeded and the
+            // connectionId comes back unchanged.
             initialConnectionId.Should().NotBeNullOrEmpty();
-            initialConnectionId.Should().NotBe(newConnectionId);
-            connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
-            aliveAt1.Value.Should().BeBefore(aliveAt2.Value);
+            newConnectionId.Should().Be(initialConnectionId);
 
             await channels[0].WaitForAttachedState();
             await channels[1].WaitForAttachedState();

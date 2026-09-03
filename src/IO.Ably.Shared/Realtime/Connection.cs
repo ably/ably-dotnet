@@ -181,10 +181,13 @@ namespace IO.Ably.Realtime
         /// <returns>recoveryKey.</returns>
         public string CreateRecoveryKey()
         {
+            // RTN16g3, which replaces RTN16g2 as of specification 6.1.0 - null in CLOSED, CLOSING
+            // and FAILED, and SUSPENDED is deliberately not among them. RTN8d and RTN9d keep the
+            // key through SUSPENDED because RTN14h always attempts a resume, so the connection is
+            // still recoverable there and the key has to be available to hand over.
             if (Key.IsEmpty() || InnerState.State == Realtime.ConnectionState.Closing
                               || InnerState.State == Realtime.ConnectionState.Closed
-                              || InnerState.State == Realtime.ConnectionState.Failed
-                              || InnerState.State == Realtime.ConnectionState.Suspended)
+                              || InnerState.State == Realtime.ConnectionState.Failed)
             {
                 return string.Empty;
             }

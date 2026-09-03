@@ -34,6 +34,11 @@ namespace IO.Ably.Realtime.Workflow
         // way of figuring out when processing has finished
         private volatile bool _processingCommand;
         private bool _heartbeatMonitorDisconnectRequested;
+
+        // Null until first asked. See ProtocolHeartbeatsNotRequestedByCaller.
+        private bool? _protocolHeartbeatsNotRequested;
+
+        private bool _warnedIdleCheckInactive;
         private bool _disposedValue;
 
         private AblyRealtime Client { get; }
@@ -108,7 +113,7 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     while (true)
                     {
-                        QueueCommand(HeartbeatMonitorCommand.Create(Connection.ConfirmedAliveAt, Connection.ConnectionStateTtl).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
+                        QueueCommand(HeartbeatMonitorCommand.Create(Now()).TriggeredBy("AblyRealtime.HeartbeatMonitor()"));
                         await Task.Delay(Client.Options.HeartbeatMonitorDelay, _heartbeatMonitorCancellationTokenSource.Token);
                     }
                 },
@@ -196,7 +201,8 @@ namespace IO.Ably.Realtime.Workflow
 
         internal async Task<IEnumerable<RealtimeCommand>> ProcessCommand(RealtimeCommand command)
         {
-            bool shouldLogCommand = !((command is EmptyCommand) || (command is ListCommand));
+            // Ticks every second, so logging each one would bury everything else at Debug.
+            bool shouldLogCommand = !((command is EmptyCommand) || (command is ListCommand) || (command is HeartbeatMonitorCommand));
             try
             {
                 if (Logger.IsDebug && shouldLogCommand)
@@ -233,7 +239,7 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.CurrentStateObject?.AbortTimer();
                         return Enumerable.Empty<RealtimeCommand>();
                     case HeartbeatMonitorCommand cmd:
-                        return await HandleHeartbeatMonitorCommand(cmd);
+                        return HandleHeartbeatMonitorCommand(cmd);
                     default:
                         var next = await ProcessCommandInner(command);
                         return new[]
@@ -251,31 +257,96 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private async Task<IEnumerable<RealtimeCommand>> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
+        /// <summary>
+        /// RTN23a - a transport silent for longer than maxIdleInterval plus realtimeRequestTimeout
+        /// is treated as dead and disconnected. Any inbound message counts as activity, not just
+        /// Heartbeats, which is why ProcessMessage refreshes the timestamp rather than the Heartbeat
+        /// handler. Data we send does not count.
+        /// </summary>
+        private IEnumerable<RealtimeCommand> HandleHeartbeatMonitorCommand(HeartbeatMonitorCommand command)
         {
-            if (!command.ConfirmedAliveAt.HasValue)
+            var connection = State.Connection;
+
+            // Only meaningful while Connected: elsewhere there is no live transport, and
+            // ConfirmedAliveAt may still hold a previous transport's timestamp.
+            if (connection.State != ConnectionState.Connected)
+            {
+                _heartbeatMonitorDisconnectRequested = false;
+
+                // Re-armed per transport, since maxIdleInterval is a per-transport promise.
+                _warnedIdleCheckInactive = false;
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            // RTN23b - without protocol heartbeats Ably may satisfy maxIdleInterval with websocket
+            // ping frames, which this library cannot observe, leaving nothing to measure.
+            if (ProtocolHeartbeatsNotRequestedByCaller())
             {
                 return Enumerable.Empty<RealtimeCommand>();
             }
 
-            TimeSpan delta = Now() - command.ConfirmedAliveAt.Value;
-            if (delta > command.ConnectionStateTtl)
+            // No promised idle period to measure against.
+            var maxIdleInterval = connection.MaxIdleInterval;
+            if (maxIdleInterval.HasValue == false || maxIdleInterval.Value <= TimeSpan.Zero)
             {
-                if (!_heartbeatMonitorDisconnectRequested)
+                if (_warnedIdleCheckInactive == false)
                 {
-                    _heartbeatMonitorDisconnectRequested = true;
-                    return new RealtimeCommand[] { SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected).TriggeredBy(command) };
+                    _warnedIdleCheckInactive = true;
+
+                    // Logged because the two causes differ: absent means no CONNECTED carried the
+                    // field, zero is CD2h's explicit "arbitrarily-long levels of inactivity".
+                    Logger.Debug(
+                        maxIdleInterval.HasValue
+                            ? "Ably set maxIdleInterval to 0, so it guarantees no inactivity limit. Idle connection detection is off."
+                            : "No maxIdleInterval received from Ably, so idle connection detection is off.");
                 }
-            }
-            else
-            {
-                if (_heartbeatMonitorDisconnectRequested)
-                {
-                    _heartbeatMonitorDisconnectRequested = false;
-                }
+
+                return Enumerable.Empty<RealtimeCommand>();
             }
 
-            return Enumerable.Empty<RealtimeCommand>();
+            if (connection.ConfirmedAliveAt.HasValue == false)
+            {
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            // Measured to when the tick was queued, not to now. The workflow is a single reader, so
+            // work queued ahead of the tick - an inbound AUTH awaiting the application's
+            // authCallback - would otherwise be charged to the transport.
+            var idleFor = command.QueuedAt - connection.ConfirmedAliveAt.Value;
+
+            // A window that cannot be represented can never elapse. maxIdleInterval is unbounded off
+            // the wire, and an OverflowException here would be logged and dropped by the command
+            // loop, silently killing detection for the life of the connection.
+            if (maxIdleInterval.Value >= TimeSpan.MaxValue - Client.Options.RealtimeRequestTimeout)
+            {
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            var allowedIdleTime = maxIdleInterval.Value + Client.Options.RealtimeRequestTimeout;
+
+            if (idleFor <= allowedIdleTime)
+            {
+                _heartbeatMonitorDisconnectRequested = false;
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            if (_heartbeatMonitorDisconnectRequested)
+            {
+                return Enumerable.Empty<RealtimeCommand>();
+            }
+
+            _heartbeatMonitorDisconnectRequested = true;
+
+            var error = ErrorInfo.NoActivityFrom(idleFor);
+            Logger.Warning($"{error.Message} The limit was {allowedIdleTime.TotalSeconds:0.#}s.");
+
+            // RTN15a - a transport we have given up on counts as disconnected unexpectedly, so
+            // RTN15h3's immediate reconnect applies. Requested explicitly because NoActivityFrom
+            // carries 408, which the instant retry check does not recognise on its own.
+            return new RealtimeCommand[]
+            {
+                SetDisconnectedStateCommand.Create(error, retryInstantly: true).TriggeredBy(command),
+            };
         }
 
         /// <summary>
@@ -289,6 +360,17 @@ namespace IO.Ably.Realtime.Workflow
             switch (command)
             {
                 case ConnectCommand _:
+
+                    // RTN11d - connect() out of CLOSED or FAILED starts afresh. The channel half,
+                    // back to INITIALIZED with errorReason unset, is done per channel by the command
+                    // queued below; Id and Key are already emptied on entering CLOSED or FAILED.
+                    if (State.Connection.State == ConnectionState.Closed ||
+                        State.Connection.State == ConnectionState.Failed)
+                    {
+                        State.Connection.ErrorReason = null;
+                        State.Connection.MessageSerial = 0;
+                    }
+
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
                         ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create().TriggeredBy(command));
@@ -333,7 +415,20 @@ namespace IO.Ably.Realtime.Workflow
                     if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
                         var sendResult = SendMessage(cmd.ProtocolMessage, cmd.Callback);
-                        if (sendResult.IsFailure && State.Connection.CurrentStateObject.CanQueue && Client.Options.QueueMessages)
+
+                        // Never queue a message already awaiting an ACK. One instance in both queues
+                        // would be sent twice on reconnect, and SendMessage's second MsgSerial
+                        // assignment would renumber the copy WaitingForAck reads live, leaving a hole
+                        // in the sequence RTN7b requires to be unique and serially incrementing.
+                        //
+                        // Unreachable today only by coincidence - AckRequired implies CanSend, and
+                        // CanQueue is false in CONNECTED - so the invariant is stated rather than
+                        // left to three unrelated facts. ably-js keeps it deliberately, via
+                        // MessageQueue's sendAttempted flag.
+                        if (sendResult.IsFailure &&
+                            cmd.ProtocolMessage.AckRequired == false &&
+                            State.Connection.CurrentStateObject.CanQueue &&
+                            Client.Options.QueueMessages)
                         {
                             Logger.Debug("Failed to send message. Queuing it.");
                             State.PendingMessages.Add(new MessageAndCallback(
@@ -381,9 +476,7 @@ namespace IO.Ably.Realtime.Workflow
                                 }
                                 catch (AblyException e)
                                 {
-                                    return SetDisconnectedStateCommand.Create(
-                                            e.ErrorInfo,
-                                            clearConnectionKey: true)
+                                    return SetDisconnectedStateCommand.Create(e.ErrorInfo)
                                         .TriggeredBy(cmd);
                                 }
                             }
@@ -409,20 +502,10 @@ namespace IO.Ably.Realtime.Workflow
                     }
 
                 case HandleConnectingDisconnectedCommand cmd:
-                    if (State.ShouldSuspend(Now))
-                    {
-                        return SetSuspendedStateCommand.Create(
-                                cmd.Error ?? ErrorInfo.ReasonSuspended,
-                                clearConnectionKey: true)
-                            .TriggeredBy(cmd);
-                    }
-                    else
-                    {
-                        return SetDisconnectedStateCommand.Create(
-                                cmd.Error ?? ErrorInfo.ReasonDisconnected,
-                                clearConnectionKey: true)
-                            .TriggeredBy(cmd);
-                    }
+
+                    // Suspending is decided in the SetDisconnectedStateCommand handler, for every path.
+                    return SetDisconnectedStateCommand.Create(cmd.Error ?? ErrorInfo.ReasonDisconnected)
+                        .TriggeredBy(cmd);
 
                 case HandleConnectingErrorCommand cmd:
                     var error = cmd.Error ?? cmd.Exception?.ErrorInfo ?? ErrorInfo.ReasonUnknown;
@@ -435,17 +518,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     if (error.IsRetryableStatusCode())
                     {
-                        if (State.ShouldSuspend(Now))
-                        {
-                            return SetSuspendedStateCommand.Create(
-                                    error,
-                                    clearConnectionKey: true)
-                                .TriggeredBy(cmd);
-                        }
-
-                        return SetDisconnectedStateCommand.Create(
-                                error,
-                                clearConnectionKey: true)
+                         return SetDisconnectedStateCommand.Create(error)
                             .TriggeredBy(cmd);
                     }
                     else
@@ -559,6 +632,79 @@ namespace IO.Ably.Realtime.Workflow
             return EmptyCommand.Instance;
         }
 
+        /// <summary>
+        /// Whether the caller's own transportParams entry has displaced ours, leaving RTN23b's
+        /// protocol heartbeats unrequested. RTN23b guarantees them only for exactly
+        /// `heartbeats=true`; anything else lets Ably use transport-level pings, which
+        /// ClientWebSocket does not surface.
+        /// </summary>
+        /// <returns>true when protocol heartbeats have not been requested.</returns>
+        private bool ProtocolHeartbeatsNotRequestedByCaller()
+        {
+            // Answered once - TransportParams is fixed at client construction.
+            if (_protocolHeartbeatsNotRequested.HasValue)
+            {
+                return _protocolHeartbeatsNotRequested.Value;
+            }
+
+            _protocolHeartbeatsNotRequested = ComputeProtocolHeartbeatsNotRequested();
+            return _protocolHeartbeatsNotRequested.Value;
+        }
+
+        private bool ComputeProtocolHeartbeatsNotRequested()
+        {
+            var transportParams = Client.Options.TransportParams;
+            if (transportParams == null)
+            {
+                return false;
+            }
+
+            // Case-insensitive because DictionaryExtensions.Merge drops our own heartbeats param on a
+            // case-insensitive key match, so "Heartbeats" reaches the wire in place of ours.
+            var callerEntry = transportParams.FirstOrDefault(x => x.Key.EqualsTo("heartbeats"));
+            if (callerEntry.Key == null)
+            {
+                return false;
+            }
+
+            // Two conditions, because Merge has already dropped ours on a case-insensitive key match:
+            //  - the value must be "true"; RTN23b guarantees protocol heartbeats only for that, and
+            //    treats false or unspecified as permission to use any transport-level mechanism.
+            //  - the key must be exactly "heartbeats"; any other spelling is a param Ably ignores,
+            //    which reads as unspecified.
+            string value;
+            try
+            {
+                value = callerEntry.Value?.ToString();
+            }
+            catch (Exception ex)
+            {
+                // Unguarded, a throwing ToString would escape every tick and be dropped by the
+                // command loop, killing RTN23a silently. TransportParams.ConvertValue guards it too.
+                Logger.Error($"Could not read transportParams['{callerEntry.Key}'] as a string.", ex);
+                value = null;
+            }
+
+            var keyIsExact = callerEntry.Key.EqualsTo("heartbeats", caseSensitive: true);
+            var valueIsTrue = value.EqualsTo("true");
+            var disabled = keyIsExact == false || valueIsTrue == false;
+
+            if (disabled)
+            {
+                // Named separately because the two halves need different fixes.
+                var reason = keyIsExact
+                    ? $"transportParams sets heartbeats to '{value}', not 'true'."
+                    : $"transportParams sets '{callerEntry.Key}'; Ably only reads 'heartbeats'.";
+
+                Logger.Warning(
+                    $"{reason} Ably may then keep this connection alive with websocket pings, which " +
+                    "this library cannot see, so idle connection detection is off and a silently " +
+                    "dropped connection will not be detected. Set heartbeats to 'true' to enable it.");
+            }
+
+            return disabled;
+        }
+
         private void SetNewHostInState(string newHost)
         {
             if (IsFallbackHost())
@@ -599,12 +745,31 @@ namespace IO.Ably.Realtime.Workflow
         {
             var info = new ConnectionInfo(cmd.Message);
 
-            // recover is used when set via clientOptions#recover initially, resume will be used for all subsequent requests.
-            var isConnectionResumeOrRecoverAttempt = State.Connection.Key.IsNotEmpty() || Client.Options.Recover.IsNotEmpty();
+            // Whether this Connected continues the message serial sequence we are already part of.
+            // One that does not must restart at zero per RTN15c7, renumbering anything still
+            // awaiting an ACK. Three ways to continue:
+            //
+            //  - an RTN24 update, which arrives on the connection we already hold;
+            //  - a successful resume (RTN15c6), judged on the connectionId alone. RTN15c6's "and no
+            //    error property" describes what Ably sends, while the reset belongs to RTN15c7,
+            //    which is keyed on "a new connectionId". ably-js discriminates the same way, on
+            //    connIdChanged;
+            //  - a successful recover, which deliberately adopts a previous connection's counter.
+            //    RTN16f initialises it from the recovery key, which carries no connectionId, so
+            //    success is judged by the absence of an error.
+            //
+            // Broader than testing for an error on the message: a resume the server refuses is
+            // answered with a new connectionId and, often, no error at all - exactly the case that
+            // most needs a new sequence.
+            //
+            // Must be evaluated before Update below, which overwrites the id being compared, and
+            // before Options.Recover is cleared for RTN16k.
+            var isRecoverAttempt = Client.Options.Recover.IsNotEmpty();
+            var connectionContinues = cmd.IsUpdate ||
+                                      (isRecoverAttempt && cmd.Message.Error == null) ||
+                                      (State.Connection.Id.IsNotEmpty() && State.Connection.Id == info.ConnectionId);
 
-            var failedResumeOrRecover = State.Connection.Id != info.ConnectionId && cmd.Message.Error != null; // RTN15c7, RTN16d
-
-            State.Connection.Update(info); // RTN16d, RTN15e
+            State.Connection.Update(info, cmd.IsUpdate); // RTN16d, RTN15e, RTN23a
 
             if (info.ClientId.IsNotEmpty())
             {
@@ -621,25 +786,17 @@ namespace IO.Ably.Realtime.Workflow
 
             Client.Options.Recover = null; // RTN16k, explicitly setting null so it won't be used for subsequent connection requests
 
-            // RTN15c7
-            if (isConnectionResumeOrRecoverAttempt && failedResumeOrRecover)
+            // RTN15c7, RTN11d - a connection that is not a continuation of the one we held
+            // restarts the message serial sequence at zero.
+            if (connectionContinues == false)
             {
                 State.Connection.MessageSerial = 0;
             }
 
-            // RTN15g3, RTN15c6, RTN15c7, RTN16l - for resume/recovered or when connection ttl passed, re-attach channels
-            if (State.Connection.HasConnectionStateTtlPassed(Now) || isConnectionResumeOrRecoverAttempt)
-            {
-                foreach (var channel in Channels)
-                {
-                    if (channel.State == ChannelState.Attaching || channel.State == ChannelState.Attached || channel.State == ChannelState.Suspended)
-                    {
-                        ((RealtimeChannel)channel).Attach(null, null, null, true); // state changes as per RTL2g
-                    }
-                }
-            }
-
-            SendPendingMessagesOnConnected(failedResumeOrRecover); // RTN19a
+            // The RTL3d reattach lives in RealtimeChannel.ConnectionStateChanged, not here: that
+            // handler runs inside NotifyUpdate's internal handlers, so the channel transitions land
+            // before CONNECTED reaches external listeners, as RTL3d1 requires.
+            SendPendingMessagesOnConnected(connectionContinues); // RTN19a
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)
@@ -719,22 +876,39 @@ namespace IO.Ably.Realtime.Workflow
                                 State.Connection.ClearKey();
                             }
 
-                            // RTN15g - If a client has been disconnected for longer
-                            // than the connectionStateTtl, it should not attempt to resume.
-                            if (State.Connection.HasConnectionStateTtlPassed(Now))
-                            {
-                                State.Connection.ClearKeyAndId();
-                            }
-
                             var defaultRealtimeHost = Client.Options.FullRealtimeHost();
 
-                            // Always retry on defaultPrimaryHost first when connecting command triggered by Disconnected/Suspended state timeout.
+                            // RTN17 - every attempt considers a fallback, including the timer driven
+                            // ones. Excluding those would lock a client out once the immediate retry
+                            // budget is spent, since every remaining attempt is timer driven and so
+                            // pinned to the primary.
+                            //
+                            // Asked speculatively, which costs nothing: GetHost only reads state, and
+                            // RTN17i is its job - it returns to the primary whenever the last host
+                            // was a fallback.
+                            var candidateHost = AttemptsHelpers.GetHost(State, defaultRealtimeHost);
                             var connectingHost = defaultRealtimeHost;
 
-                            // Otherwise use host fallbacks if connecting command triggered by other commands
-                            if (cmd.TriggeredByMessage.Contains("OnTimeOut()") == false)
+                            // RTN17j - the connectivity check comes before the decision to use an
+                            // alternative host. If the internet is unreachable the problem is not this
+                            // host, so stay on the primary rather than working through fallbacks that
+                            // cannot answer either.
+                            //
+                            // The answer is carried on the command, so it cannot outlive the decision
+                            // it was taken for or be picked up by a CONNECTING another path queued.
+                            // Held on the workflow it would have no bound, because the command loop
+                            // abandons a nested batch once its depth guard trips.
+                            //
+                            // Note HandleConnectingTokenError reaches CreateTransport through
+                            // AttemptANewConnection without a check - an RTN17j hole this does not
+                            // close.
+                            var alreadyConfirmed = cmd.ConnectivityConfirmed;
+
+                            if (candidateHost == defaultRealtimeHost ||
+                                alreadyConfirmed == true ||
+                                (alreadyConfirmed == null && await Client.RestClient.CanConnectToAbly()))
                             {
-                               connectingHost = AttemptsHelpers.GetHost(State, defaultRealtimeHost);
+                                connectingHost = candidateHost;
                             }
 
                             SetNewHostInState(connectingHost);
@@ -773,14 +947,31 @@ namespace IO.Ably.Realtime.Workflow
 
                     case SetFailedStateCommand cmd:
 
-                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
-
                         var error = TransformIfTokenErrorAndNotRetryable();
                         var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
-                        SetState(failedState);
-                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
-                        ConnectionManager.DestroyTransport();
+                        // RTN7e - the queued messages are failed with "an error representing the
+                        // reason for the state change", taken off the state object so it is this
+                        // transition's reason even if SetState early-returns. In the finally, after
+                        // the transition, so a publisher's callback sees the state it is being told
+                        // about and a throwing transition cannot strand the messages uncalled.
+                        // ably-js orders it the same way: enactStateChange then failQueuedMessages.
+                        //
+                        // RTN8d, RTN9d - the key and id go the other way round, before the
+                        // transition, because SetState emits the state change and with no
+                        // SynchronizationContext that emit is inline. Nothing between here and the
+                        // emit reads either field.
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d
+
+                        try
+                        {
+                            SetState(failedState);
+                        }
+                        finally
+                        {
+                            ClearAckQueueAndFailMessages(failedState.Error);
+                            ConnectionManager.DestroyTransport();
+                        }
 
                         ErrorInfo TransformIfTokenErrorAndNotRetryable()
                         {
@@ -797,11 +988,23 @@ namespace IO.Ably.Realtime.Workflow
                         break;
                     case SetDisconnectedStateCommand cmd:
 
-                        if (cmd.ClearConnectionKey)
+                        // RTN14e - measured here because this is the one place every path into
+                        // DISCONNECTED converges. Checking only the two connection-attempt failure
+                        // handlers misses the token and auth retry paths, which do not pass through
+                        // either: a client whose token source keeps failing would loop CONNECTING and
+                        // DISCONNECTED indefinitely without ever suspending.
+                        //
+                        // Ordered before CheckInstantRetryFlag so that suspending beats retrying.
+                        //
+                        // SkipAttach is excluded: the caller has already queued the next command, so
+                        // diverting would emit SUSPENDED and then immediately CONNECTING.
+                        if (cmd.SkipAttach == false && State.ShouldSuspend(Now))
                         {
-                            State.Connection.ClearKey();
+                            return SetSuspendedStateCommand.Create(cmd.Error ?? ErrorInfo.ReasonSuspended)
+                                .TriggeredBy(command);
                         }
 
+                        bool? connectivityAnswer = null;
                         var retryInstantly = await CheckInstantRetryFlag();
 
                         var disconnectedState = new ConnectionDisconnectedState(ConnectionManager, cmd.Error, Logger)
@@ -809,6 +1012,14 @@ namespace IO.Ably.Realtime.Workflow
                             RetryInstantly = retryInstantly,
                             Exception = cmd.Exception,
                         };
+
+                        if (cmd.SkipAttach)
+                        {
+                            // RTN14d - retryIn must be the delay actually waited. skipAttach means
+                            // the caller has already queued the next command, so there is no wait,
+                            // and StartTimer, which records the real figure, never runs.
+                            disconnectedState.RetryIn = TimeSpan.Zero;
+                        }
 
                         SetState(disconnectedState, skipTimer: cmd.SkipAttach);
 
@@ -831,7 +1042,21 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (retryInstantly)
                         {
-                            return SetConnectingStateCommand.Create().TriggeredBy(command);
+                            State.AttemptsInfo.RecordInstantRetry();
+
+                            // Handed to the command returned on the next line, and only to that one.
+                            // Both this handler and the CONNECTING one need to know whether the
+                            // internet is reachable - one to decide whether to retry now, the other
+                            // whether to accept a fallback - and both were asking, on the workflow's
+                            // single reader thread, one after the other. Two checks at up to
+                            // MaxHttpOpenTimeout each is a loop held for twice as long as it needs to
+                            // be on every failing attempt, and it eats into the RTN14e budget this
+                            // series worked to make punctual.
+                            //
+                            // Carried on the command so it cannot go stale or be consumed by anything
+                            // else. A timer driven retry carries no answer and takes its own check.
+                            return SetConnectingStateCommand.Create(connectivityConfirmed: connectivityAnswer)
+                                .TriggeredBy(command);
                         }
 
                         async Task<bool> CheckInstantRetryFlag()
@@ -841,9 +1066,42 @@ namespace IO.Ably.Realtime.Workflow
                                 return true;
                             }
 
-                            if ((cmd.Error != null && cmd.Error.IsRetryableStatusCode()) || cmd.Exception != null)
+                            // RTN17j sanctions reconnecting immediately, rather than waiting out the
+                            // disconnected retry timeout, to work through the fallback domains. It
+                            // does not sanction doing so without end, and every failed attempt
+                            // produces another DISCONNECTED carrying an exception that qualifies
+                            // again - so the traversal is bounded by the number of domains to
+                            // traverse. Past that we are in RTN14d, where attempts are periodic and
+                            // spaced per RTB1, and host selection continues at that slower pace.
+                            var domainCount = 1 + State.Connection.FallbackHosts.Count;
+                            if (State.AttemptsInfo.InstantRetryCount >= domainCount)
                             {
-                                return await Client.RestClient.CanConnectToAbly();
+                                return false;
+                            }
+
+                            // RTN15a and RTN15h3 - an unexpected transport drop or a non-token
+                            // DISCONNECTED both earn an immediate reconnect. The first two tests
+                            // cover the drop, the third the DISCONNECTED, which carries no status
+                            // code of its own.
+                            //
+                            // Token errors are excluded because RTN15h3 is the "error other than a
+                            // token error" clause: RTN15h2 owns them and has already queued its own
+                            // CONNECTING behind this command, so granting a retry here too gives two
+                            // overlapping attempts.
+                            //
+                            // Gated on the connectivity check, because the retry this grants is
+                            // where host selection happens and RTN17j requires a check before an
+                            // alternative host is used.
+                            var reconnectImmediately = cmd.Exception != null
+                                                       || (cmd.Error != null && cmd.Error.IsRetryableStatusCode())
+                                                       || (State.Connection.State == ConnectionState.Connected
+                                                           && cmd.Error?.IsTokenError != true);
+
+                            if (reconnectImmediately)
+                            {
+                                // Remembered so the CONNECTING behind this command does not repeat it.
+                                connectivityAnswer = await Client.RestClient.CanConnectToAbly();
+                                return connectivityAnswer.Value;
                             }
 
                             return false;
@@ -857,8 +1115,8 @@ namespace IO.Ably.Realtime.Workflow
                         var connectedTransport = transport?.State == TransportState.Connected;
 
                         var closingState = new ConnectionClosingState(ConnectionManager, connectedTransport, Logger);
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d - before the emit
                         SetState(closingState);
-                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
 
                         if (connectedTransport)
                         {
@@ -871,32 +1129,44 @@ namespace IO.Ably.Realtime.Workflow
 
                     case SetSuspendedStateCommand cmd:
 
-                        if (cmd.ClearConnectionKey)
-                        {
-                            State.Connection.ClearKey();
-                        }
-
-                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonSuspended);
-
                         var suspendedState = new ConnectionSuspendedState(ConnectionManager, cmd.Error, Logger);
-                        SetState(suspendedState);
-                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
+
+                        // RTN7e and the teardown - see the note on the FAILED case.
+                        try
+                        {
+                            SetState(suspendedState);
+                        }
+                        finally
+                        {
+                            ClearAckQueueAndFailMessages(suspendedState.Error);
+
+                            // Needed here as well as in the DISCONNECTED handler, which diverts to
+                            // this case before reaching its own DestroyTransport. A surviving
+                            // transport keeps its listener for up to suspendedRetryTimeout.
+                            ConnectionManager.DestroyTransport();
+                        }
 
                         break;
 
                     case SetClosedStateCommand cmd:
-
-                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
                         {
                             Exception = cmd.Exception,
                         };
 
-                        SetState(closedState);
-                        State.Connection.ClearKeyAndId(); // RTN8c, RTN9c
+                        // RTN7e, RTN8d, RTN9d and the teardown - see the note on the FAILED case.
+                        State.Connection.ClearKeyAndId(); // RTN8d, RTN9d - before the emit
 
-                        ConnectionManager.DestroyTransport();
+                        try
+                        {
+                            SetState(closedState);
+                        }
+                        finally
+                        {
+                            ClearAckQueueAndFailMessages(closedState.Error);
+                            ConnectionManager.DestroyTransport();
+                        }
 
                         break;
                 }
@@ -927,6 +1197,8 @@ namespace IO.Ably.Realtime.Workflow
                 Logger.Debug(message);
             }
 
+            var notified = false;
+
             try
             {
                 if (newState.IsUpdate == false)
@@ -954,13 +1226,28 @@ namespace IO.Ably.Realtime.Workflow
                     Logger.Debug($"xx {newState.State}: Skipping attaching.");
                 }
 
+                notified = true;
                 UpdateStateAndNotifyConnection(newState);
             }
-            catch (AblyException ex)
+            catch (Exception ex)
             {
-                Logger.Error("Error attaching to context", ex);
+                // Everything, not just AblyException: anything else thrown by StartTimer or the
+                // state object would reach the command loop, which logs and drops it, leaving the
+                // connection with no transport, no timer and no state change emitted. The transition
+                // is still completed below and the exception still rethrown.
+                Logger.Error($"Error attaching to context while changing state to {newState.State}", ex);
 
-                UpdateStateAndNotifyConnection(newState);
+                // Only if the notify has not already happened. A throw during the transition lands
+                // here after the state change has been emitted - StartTimer is one source, and a
+                // negative retry timeout reaches System.Threading.Timer. Not a channel's
+                // ConnectionStateChanged, which RealtimeChannels guards per channel. Re-emitting is harmless for an ordinary transition, which the
+                // same-state check swallows, but an RTN24 update has no such check and was emitted
+                // twice. The flag is set before the call so a throw from inside it does not trigger
+                // a second attempt either.
+                if (notified == false)
+                {
+                    UpdateStateAndNotifyConnection(newState);
+                }
 
                 newState.AbortTimer();
 
@@ -977,26 +1264,42 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private void SendPendingMessagesOnConnected(bool failedResumeOrRecover)
+        private void SendPendingMessagesOnConnected(bool connectionContinues)
         {
-            // RTN19a1
-            if (failedResumeOrRecover)
+            if (connectionContinues)
             {
-                foreach (var messageAndCallback in State.WaitingForAck)
-                {
-                    State.PendingMessages.Add(new MessageAndCallback(
-                        messageAndCallback.Message,
-                        messageAndCallback.Callback,
-                        messageAndCallback.Logger));
-                }
-            }
-            else
-            {
-                // RTN19a2 - successful resume, msgSerial doesn't change
+                // RTN19a2 - the same connection is still expecting the serials these messages were
+                // originally given, so resend them unchanged and leave them awaiting their ACK.
                 foreach (var message in State.WaitingForAck.Select(x => x.Message))
                 {
                     ConnectionManager.SendToTransport(message);
                 }
+            }
+            else
+            {
+                // RTN19a1, RTN19a2 - a different connection means a fresh serial sequence, so
+                // requeue rather than resend. The loop below hands each message to SendMessage,
+                // which assigns a serial from the counter that HandleConnectedCommand has just
+                // reset and re-registers it for its ACK.
+                //
+                // Resending these unchanged would leave the server's sequence sitting at the old
+                // high water mark while ours restarted at zero, and Ably silently discards a
+                // message whose serial is below what it has already seen - no ACK, no NACK, so the
+                // publish callback would never be called at all.
+                //
+                // WaitingForAck is cleared because SendMessage re-registers each message as it
+                // goes; stale entries would hold serials of the old sequence that the next ACK also
+                // matches, running their callbacks twice.
+                //
+                // Inserted at the front, not appended: PendingMessages is the RTL6c2 queue and
+                // already holds anything published while disconnected, which happened *after* these.
+                // Appending would give the newer messages the lower serials and reverse publish
+                // order. ably-js prepends for the same reason.
+                State.PendingMessages.InsertRange(
+                    0,
+                    State.WaitingForAck.Select(x => new MessageAndCallback(x.Message, x.Callback, x.Logger)));
+
+                State.WaitingForAck.Clear();
             }
 
             if (Logger.IsDebug && State.PendingMessages.Count > 0)
@@ -1016,15 +1319,30 @@ namespace IO.Ably.Realtime.Workflow
             State.PendingMessages.Clear();
         }
 
+        /// <summary>
+        /// RTN7e - when the connection enters SUSPENDED, CLOSED or FAILED, everything that has not
+        /// been acknowledged has failed and must be reported as such.
+        /// </summary>
         private void ClearAckQueueAndFailMessages(ErrorInfo error)
         {
+            var messageError = error ?? ErrorInfo.ReasonUnknown;
+
             foreach (var item in State.WaitingForAck.Where(x => x.Callback != null))
             {
-                var messageError = error ?? ErrorInfo.ReasonUnknown;
                 item.SafeExecute(false, messageError);
             }
 
             State.WaitingForAck.Clear();
+
+            // RTN7e covers RTL6c2 as well as RTL6c1: a message submitted via either "should be
+            // considered failed ... and removed from any RTN19a retry queue". PendingMessages is the
+            // RTL6c2 queue.
+            foreach (var item in State.PendingMessages.Where(x => x.Callback != null))
+            {
+                item.SafeExecute(false, messageError);
+            }
+
+            State.PendingMessages.Clear();
         }
 
         public void QueueAck(ProtocolMessage message, Action<bool, ErrorInfo> callback)

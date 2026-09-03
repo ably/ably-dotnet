@@ -154,21 +154,30 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetConnectingStateCommand : RealtimeCommand
     {
-        private SetConnectingStateCommand(bool clearConnectionKey, bool retryAuth)
+        private SetConnectingStateCommand(bool clearConnectionKey, bool retryAuth, bool? connectivityConfirmed)
         {
             ClearConnectionKey = clearConnectionKey;
             RetryAuth = retryAuth;
+            ConnectivityConfirmed = connectivityConfirmed;
         }
 
         public bool ClearConnectionKey { get; }
 
         public bool RetryAuth { get; }
 
-        public static SetConnectingStateCommand Create(bool clearConnectionKey = false, bool retryAuth = false) => new SetConnectingStateCommand(clearConnectionKey, retryAuth);
+        /// <summary>
+        /// The connectivity answer already obtained by the DISCONNECTED that queued this command, so
+        /// the RTN17j check is not paid for twice in one cycle. Null when there is no answer on hand
+        /// - a timer driven retry, or a caller's Connect() - and those take their own.
+        /// </summary>
+        public bool? ConnectivityConfirmed { get; }
+
+        public static SetConnectingStateCommand Create(bool clearConnectionKey = false, bool retryAuth = false, bool? connectivityConfirmed = null) =>
+            new SetConnectingStateCommand(clearConnectionKey, retryAuth, connectivityConfirmed);
 
         protected override string ExplainData()
         {
-            return string.Empty;
+            return ConnectivityConfirmed.HasValue ? $"ConnectivityConfirmed: {ConnectivityConfirmed}" : string.Empty;
         }
     }
 
@@ -195,13 +204,12 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetDisconnectedStateCommand : RealtimeCommand
     {
-        private SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception, bool clearConnectionKey)
+        private SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception)
         {
             Error = error;
             RetryInstantly = retryInstantly;
             SkipAttach = skipAttach;
             Exception = exception;
-            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
@@ -212,45 +220,36 @@ namespace IO.Ably.Realtime.Workflow
 
         public Exception Exception { get; }
 
-        public bool ClearConnectionKey { get; }
-
         protected override string ExplainData()
         {
             return $"RetryInstantly: {RetryInstantly}" +
                    "SkipAttach: " + SkipAttach +
                    ((Error != null) ? " Error: " + Error : string.Empty) +
-                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty) +
-                " ClearConnectionKey: " + ClearConnectionKey;
+                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty);
         }
 
         public static SetDisconnectedStateCommand Create(
             ErrorInfo error,
             bool retryInstantly = false,
             bool skipAttach = false,
-            Exception exception = null,
-            bool clearConnectionKey = false)
-            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception, clearConnectionKey);
+            Exception exception = null)
+            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception);
     }
 
     internal class SetSuspendedStateCommand : RealtimeCommand
     {
-        private SetSuspendedStateCommand(ErrorInfo error, bool clearConnectionKey)
+        private SetSuspendedStateCommand(ErrorInfo error)
         {
             Error = error;
-            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
 
-        public bool ClearConnectionKey { get; }
-
-        public static SetSuspendedStateCommand Create(ErrorInfo error, bool clearConnectionKey = false) => new SetSuspendedStateCommand(error, clearConnectionKey);
+        public static SetSuspendedStateCommand Create(ErrorInfo error) => new SetSuspendedStateCommand(error);
 
         protected override string ExplainData()
         {
-            var message = (Error != null) ? " Error: " + Error : string.Empty;
-            message += " ClearConnectionKey:" + ClearConnectionKey;
-            return message;
+            return (Error != null) ? " Error: " + Error : string.Empty;
         }
     }
 
@@ -485,24 +484,27 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
+    /// <summary>
+    /// A periodic tick asking the workflow to check whether the current transport has gone idle for
+    /// longer than RTN23a allows. Carries no state: the handler reads RealtimeState on the workflow
+    /// thread rather than the timer sampling it off-thread.
+    /// </summary>
     internal class HeartbeatMonitorCommand : RealtimeCommand
     {
-        private HeartbeatMonitorCommand(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl)
+        private HeartbeatMonitorCommand(DateTimeOffset queuedAt)
         {
-            ConfirmedAliveAt = confirmedAliveAt;
-            ConnectionStateTtl = connectionStateTtl;
+            QueuedAt = queuedAt;
         }
 
-        public DateTimeOffset? ConfirmedAliveAt { get; }
+        /// <summary>
+        /// When this tick was queued, which is the moment idleness is judged against. Reading the
+        /// clock in the handler would charge any wait behind a slow command to the transport.
+        /// </summary>
+        public DateTimeOffset QueuedAt { get; }
 
-        public TimeSpan ConnectionStateTtl { get; }
+        public static HeartbeatMonitorCommand Create(DateTimeOffset queuedAt) =>
+            new HeartbeatMonitorCommand(queuedAt);
 
-        public static HeartbeatMonitorCommand Create(DateTimeOffset? confirmedAliveAt, TimeSpan connectionStateTtl) =>
-            new HeartbeatMonitorCommand(confirmedAliveAt, connectionStateTtl);
-
-        protected override string ExplainData()
-        {
-            return $"ConfirmedAliveAt: {ConfirmedAliveAt}. ConnectionStateTtl {ConnectionStateTtl}";
-        }
+        protected override string ExplainData() => $"QueuedAt: {QueuedAt:O}";
     }
 }
